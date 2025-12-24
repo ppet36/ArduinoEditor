@@ -1,0 +1,4092 @@
+# ArduinoEditor bundle
+# Copyright (C) 2025, Pavel Petržela
+# This file is distributed under the same license as the ArduinoEditor package.
+# Pavel Petržela (r17c@seznam.cz), 2025
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ArduinoEditor\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-12-23 18:18+0100\n"
+"PO-Revision-Date: 2025-12-09 22:52:00+0100\n"
+"Last-Translator: Pavel Petržela <r17c@seznam.cz>\n"
+"Language-Team: -\n"
+"Language: cs_CZ\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1)?0:((n>=2 && n<=4)?1:2);\n"
+"X-Generator: Poedit 3.8\n"
+
+#: ai_client.cpp:57
+msgid ""
+"Extra JSON request parameters must be a JSON object (e.g. {\"temperature"
+"\":0.2})."
+msgstr ""
+"Dodatečné JSON parametry požadavku musí být validní JSON objekt (např. "
+"{\"temperature\":0.2})."
+
+#: ai_client.cpp:65
+#, c-format
+msgid "Invalid extra request JSON: %s"
+msgstr "Nesprávné dodatečné JSON parametry požadavku: %s"
+
+#: ai_client.cpp:104
+msgid "Failed to initialize HTTP client (cURL)."
+msgstr "Nepodařilo se inicializovat HTTP klienta (cURL)."
+
+#: ai_client.cpp:210
+msgid "HTTP request failed: "
+msgstr "HTTP požadavek selhal: "
+
+#: ai_client.cpp:238
+#, c-format
+msgid "HTTP error %ld from AI endpoint: %s"
+msgstr "HTTP chyba %ld z AI endpointu: %s"
+
+#: ai_client.cpp:247
+#, c-format
+msgid ""
+"HTTP error %ld from AI endpoint. Response body:\n"
+"%s"
+msgstr "HTTP chyba %ld z AI endpointu. Tělo odpovědi:%s"
+
+#: ai_client.cpp:307
+msgid "No API key found in the system secret store or OPENAI_API_KEY."
+msgstr ""
+"Nemáte uložený API klíč v systémovém zabezpečeném úložišti nebo nastavenou "
+"proměnnou prostředí OPENAI_API_KEY."
+
+#: ai_client.cpp:315 ai_client.cpp:335 ai_client.cpp:409
+msgid "AI is not enabled or not configured."
+msgstr "AI není povoleno nebo nakonfigurováno."
+
+#: ai_client.cpp:386
+msgid "Could not extract assistant text."
+msgstr "Nelze rozparsovat text odpovědi AI asistenta."
+
+#: ai_client.cpp:461
+msgid "HTTP request failed."
+msgstr "HTTP požadavek selhal."
+
+#: ai_client.cpp:479
+msgid "Could not extract assistant text from AI response."
+msgstr "Nelze rozparsovat text odpovědi AI asistenta."
+
+#: ai_client.cpp:706
+msgid ""
+"Could not extract assistant text from AI response.\n"
+"Raw JSON (truncated):\n"
+msgstr ""
+"Nelze rozparsovat odpověď AI asistenta.\n"
+"Zkrácený záznam odpovědi:\n"
+
+#: ai_client.cpp:787
+msgid ""
+"Could not extract assistant text from AI response.\n"
+"Raw response (truncated):\n"
+msgstr ""
+"Nelze rozparsovat odpověď AI asistenta.\n"
+"Zkrácený záznam odpovědi:\n"
+
+#: ai_client.cpp:792
+#, c-format
+msgid "Failed to parse AI response: %s"
+msgstr "Nelze rozparsovat AI odpověď: %s"
+
+#: ard_aboutdlg.cpp:17
+#, c-format
+msgid ""
+"<html>\n"
+"<body bgcolor=\"%s\">\n"
+"   <a name=\"top\"></a>\n"
+"   <h2>Arduino Editor %s</h2>\n"
+"\n"
+"   <p>\n"
+"     <b>Modern Arduino IDE powered by Clang</b>\n"
+"     <p>\n"
+"       <i>Fast code completion. Smart navigation. No nonsense.</i>\n"
+"     </p>\n"
+"   </p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <p>\n"
+"     Arduino Editor is a modern development environment for Arduino "
+"projects\n"
+"     built on the Clang toolchain. It provides fast and precise code "
+"completion,\n"
+"     smart navigation tools, real-time error highlighting, and full support "
+"for\n"
+"     multi-file Arduino sketches.\n"
+"   </p>\n"
+"\n"
+"   <p>\n"
+"     The goal of the project is to offer a stable, powerful and professional "
+"IDE\n"
+"     as a drop-in alternative for the official Arduino IDE.\n"
+"   </p>\n"
+"\n"
+"   <h3>Key Features</h3>\n"
+"   <ul>\n"
+"     <li><a href=\"#async\">Asynchronous processing</a> - the UI stays "
+"responsive even on large projects</li>\n"
+"     <li><a href=\"#navigation\">Smart navigation</a> - go to definition, "
+"follow symbol, hover information</li>\n"
+"     <li><a href=\"#clang\">Clang-based engine</a> for parsing, symbol "
+"resolution and code completion</li>\n"
+"     <li><a href=\"#project\">Project-wide support</a> for structured "
+"sketches and multiple .ino/.cpp/.hpp files</li>\n"
+"     <li><a href=\"#refactoring\">Advanced refactoring</a> - safe, semantic "
+"code transformations</li>\n"
+"     <li><a href=\"#ai\">AI-assisted development</a> - patch-based edits "
+"with diff preview and user control</li>\n"
+"     <li><a href=\"#editor\">Configurable editor</a> - colors, fonts and "
+"behavior can be customized</li>\n"
+"     <li><a href=\"#cli\">Arduino CLI integration</a> for building and "
+"uploading sketches</li>\n"
+"   </ul>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <a name=\"async\"></a>\n"
+"   <h3>Asynchronous Processing</h3>\n"
+"   <p>\n"
+"     Heavy operations such as parsing, indexing, compilation and AI requests "
+"are executed\n"
+"     asynchronously to keep the user interface responsive.\n"
+"   </p>\n"
+"   <p><a href=\"#top\">Back to top</a></p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <a name=\"navigation\"></a>\n"
+"   <h3>Smart Navigation</h3>\n"
+"   <ul>\n"
+"     <li>Go to definition / declaration</li>\n"
+"     <li>Navigate between symbol references across files</li>\n"
+"     <li>Navigation history with backward and forward movement</li>\n"
+"     <li>Hover information powered by semantic analysis</li>\n"
+"   </ul>\n"
+"   <p><a href=\"#top\">Back to top</a></p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <a name=\"clang\"></a>\n"
+"   <h3>Clang-based Engine</h3>\n"
+"   <p>\n"
+"     The editor uses Clang/LLVM to understand code semantically (AST-based), "
+"enabling\n"
+"     precise completion, symbol resolution and on-the-fly diagnostics while "
+"editing.\n"
+"   </p>\n"
+"   <p><a href=\"#top\">Back to top</a></p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <a name=\"project\"></a>\n"
+"   <h3>Project-wide Multi-file Support</h3>\n"
+"   <p>\n"
+"     Full support for structured sketches and multiple files (.ino/.cpp/."
+"hpp), including\n"
+"     project-wide indexing, navigation and explicit support for structured "
+"Arduino projects.\n"
+"   </p>\n"
+"   <p><a href=\"#top\">Back to top</a></p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <a name=\"refactoring\"></a>\n"
+"   <h3>Advanced Refactoring</h3>\n"
+"   <p>\n"
+"     Clang-powered refactoring tools help you change code safely and "
+"predictably.\n"
+"     Transformations are semantic (AST-based), not simple text "
+"replacements.\n"
+"   </p>\n"
+"   <ul>\n"
+"     <li>Rename symbol across the project with full semantic awareness</li>\n"
+"     <li>Extract function from selected code blocks</li>\n"
+"     <li>Inline variable and introduce variable refactorings</li>\n"
+"      <li>Create implementation from declaration and declaration from "
+"implementation</li>\n"
+"   </ul>\n"
+"   <p><a href=\"#top\">Back to top</a></p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <a name=\"ai\"></a>\n"
+"   <h3>AI-Assisted Development</h3>\n"
+"   <p>\n"
+"     Arduino Editor includes a deeply integrated AI assistant designed to "
+"work directly\n"
+"     with your project structure and source code.\n"
+"   </p>\n"
+"   <ul>\n"
+"     <li>Context-aware code modifications using structured patches</li>\n"
+"     <li>Multi-file awareness for complex sketches</li>\n"
+"     <li>Explicit diff previews before applying any change</li>\n"
+"     <li>AI-assisted error analysis and problem solving</li>\n"
+"     <li>Session-based conversations with persistent history</li>\n"
+"   </ul>\n"
+"   <p>\n"
+"     The AI never modifies code blindly: every change is explicit, "
+"reviewable and\n"
+"     user-approved.\n"
+"   </p>\n"
+"   <p><a href=\"#top\">Back to top</a></p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <a name=\"editor\"></a>\n"
+"   <h3>Configurable Editor</h3>\n"
+"   <p>\n"
+"     Customize colors, fonts and behavior, with support for system light and "
+"dark themes.\n"
+"   </p>\n"
+"   <p><a href=\"#top\">Back to top</a></p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <a name=\"cli\"></a>\n"
+"   <h3>Arduino CLI Integration</h3>\n"
+"   <p>\n"
+"       Deep integration with arduino-cli for building, uploading, library "
+"management,\n"
+"       board management and compiler toolchain configuration.\n"
+"   </p>\n"
+"   <p><a href=\"#top\">Back to top</a></p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <p>\n"
+"     <b>Author:</b> Pavel Petrzela (ppet36)<br/>\n"
+"     <b>Powered by:</b> wxWidgets, Clang/LLVM, Arduino CLI\n"
+"   </p>\n"
+"</body>\n"
+"</html>\n"
+msgstr ""
+"<html>\n"
+"<body bgcolor=\"%s\">\n"
+"   <a name=\"top\"></a>\n"
+"   <h2>Arduino Editor %s</h2>\n"
+"\n"
+"   <p>\n"
+"     <b>Moderní Arduino IDE postavené na Clangu</b>\n"
+"     <p>\n"
+"       <i>Rychlé doplňování kódu. Chytrá navigace. Bez zbytečností.</i>\n"
+"     </p>\n"
+"   </p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <p>\n"
+"     Arduino Editor je moderní vývojové prostředí pro Arduino projekty,\n"
+"     postavené na nástrojích Clang. Poskytuje rychlé a přesné doplňování "
+"kódu,\n"
+"     chytré navigační nástroje, zvýrazňování chyb v reálném čase a plnou "
+"podporu\n"
+"     vícesouborových Arduino sketchů.\n"
+"   </p>\n"
+"\n"
+"   <p>\n"
+"     Cílem projektu je nabídnout stabilní, výkonné a profesionální IDE\n"
+"     jako přímou alternativu k oficiálnímu Arduino IDE.\n"
+"   </p>\n"
+"\n"
+"   <h3>Hlavní funkce</h3>\n"
+"   <ul>\n"
+"     <li><a href=\"#async\">Asynchronní zpracování</a> – uživatelské "
+"rozhraní zůstává\n"
+"     responzivní i u velkých projektů</li>\n"
+"     <li><a href=\"#navigation\">Chytrá navigace</a> – přechod na definici,\n"
+"     sledování symbolů, informace při najetí myší</li>\n"
+"     <li><a href=\"#clang\">Engine založený na Clangu</a> pro parsování,\n"
+"     práci se symboly a doplňování kódu</li>\n"
+"     <li><a href=\"#project\">Podpora projektů</a> pro strukturované sketche "
+"a\n"
+"     více souborů .ino/.cpp/.hpp</li>\n"
+"     <li><a href=\"#refactoring\">Pokročilý refaktoring</a> – bezpečné,\n"
+"     sémantické úpravy kódu</li>\n"
+"     <li><a href=\"#ai\">Vývoj asistovaný AI</a> – úpravy kódu pomocí "
+"patchů\n"
+"     s kontrolou uživatele</li>\n"
+"     <li><a href=\"#editor\">Konfigurovatelný editor</a> – přizpůsobení "
+"barev,\n"
+"     fontů a chování editoru</li>\n"
+"     <li><a href=\"#cli\">Integrace Arduino CLI</a> pro překlad a nahrávání\n"
+"     sketchů</li>\n"
+"   </ul>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <a name=\"async\"></a>\n"
+"   <h3>Asynchronní zpracování</h3>\n"
+"   <p>\n"
+"     Náročné operace, jako je parsování, indexování, překlad nebo AI "
+"požadavky,\n"
+"     jsou prováděny asynchronně, aby zůstalo uživatelské rozhraní plynulé a\n"
+"     responzivní.\n"
+"   </p>\n"
+"   <p><a href=\"#top\">Zpět nahoru</a></p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <a name=\"navigation\"></a>\n"
+"   <h3>Chytrá navigace</h3>\n"
+"   <ul>\n"
+"     <li>Přechod na definici nebo deklaraci</li>\n"
+"     <li>Navigace mezi referencemi symbolů napříč soubory</li>\n"
+"     <li>Historie navigace s možností návratu zpět a vpřed</li>\n"
+"     <li>Informace při najetí myší založené na sémantické analýze</li>\n"
+"   </ul>\n"
+"   <p><a href=\"#top\">Zpět nahoru</a></p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <a name=\"clang\"></a>\n"
+"   <h3>Engine založený na Clangu</h3>\n"
+"   <p>\n"
+"     Editor využívá Clang/LLVM k sémantickému porozumění kódu (AST), což "
+"umožňuje\n"
+"     přesné doplňování, práci se symboly a průběžnou diagnostiku během psaní "
+"kódu.\n"
+"   </p>\n"
+"   <p><a href=\"#top\">Zpět nahoru</a></p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <a name=\"project\"></a>\n"
+"   <h3>Podpora vícesouborových projektů</h3>\n"
+"   <p>\n"
+"     Plná podpora strukturovaných sketchů a více souborů (.ino/.cpp/.hpp), "
+"včetně\n"
+"     projektového indexování, navigace a explicitní podpory strukturovaných\n"
+"     Arduino projektů.\n"
+"   </p>\n"
+"   <p><a href=\"#top\">Zpět nahoru</a></p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <a name=\"refactoring\"></a>\n"
+"   <h3>Pokročilý refaktoring</h3>\n"
+"   <p>\n"
+"     Refaktoringové nástroje postavené na Clangu umožňují bezpečné a\n"
+"     předvídatelné úpravy kódu. Změny jsou sémantické (AST), nikoli pouhé\n"
+"     textové nahrazování.\n"
+"   </p>\n"
+"   <ul>\n"
+"     <li>Přejmenování symbolu v celém projektu se sémantickou kontrolou</"
+"li>\n"
+"     <li>Vytažení funkce z vybraného bloku kódu</li>\n"
+"     <li>Inline proměnné a zavedení nové proměnné</li>\n"
+"     <li>Vytvoření implementace z deklarace a deklarace z implementace</li>\n"
+"   </ul>\n"
+"   <p><a href=\"#top\">Zpět nahoru</a></p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <a name=\"ai\"></a>\n"
+"   <h3>Vývoj asistovaný AI</h3>\n"
+"   <p>\n"
+"     Arduino Editor obsahuje hluboce integrovaného AI asistenta navrženého "
+"pro\n"
+"     přímou práci se strukturou projektu a zdrojovým kódem.\n"
+"   </p>\n"
+"   <ul>\n"
+"     <li>Úpravy kódu s ohledem na kontext pomocí strukturovaných patchů</"
+"li>\n"
+"     <li>Povědomí o více souborech u složitějších sketchů</li>\n"
+"     <li>Explicitní náhled změn před jejich aplikací</li>\n"
+"     <li>AI asistence při analýze chyb a řešení problémů</li>\n"
+"     <li>Konverzace v relacích s perzistentní historií</li>\n"
+"   </ul>\n"
+"   <p>\n"
+"     AI nikdy nemění kód naslepo – každá změna je explicitní, "
+"kontrolovatelná\n"
+"     a schvalovaná uživatelem.\n"
+"   </p>\n"
+"   <p><a href=\"#top\">Zpět nahoru</a></p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <a name=\"editor\"></a>\n"
+"   <h3>Konfigurovatelný editor</h3>\n"
+"   <p>\n"
+"     Přizpůsobení barev, fontů a chování editoru, včetně podpory\n"
+"     systémového světlého a tmavého režimu.\n"
+"   </p>\n"
+"   <p><a href=\"#top\">Zpět nahoru</a></p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <a name=\"cli\"></a>\n"
+"   <h3>Integrace Arduino CLI</h3>\n"
+"   <p>\n"
+"     Hluboká integrace s arduino-cli pro překlad, nahrávání, správu "
+"knihoven,\n"
+"     správu desek a konfiguraci překladového toolchainu.\n"
+"   </p>\n"
+"   <p><a href=\"#top\">Zpět nahoru</a></p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <p>\n"
+"     <b>Autor:</b> Pavel Petržela (ppet36)<br/>\n"
+"     <b>Postaveno na:</b> wxWidgets, Clang/LLVM, Arduino CLI\n"
+"   </p>\n"
+"</body>\n"
+"</html>\n"
+
+#: ard_aboutdlg.cpp:170
+#, c-format
+msgid ""
+"\n"
+"<html>\n"
+"<body bgcolor=\"%s\">\n"
+"  <h3>Arduino Editor License (GPLv3)</h3>\n"
+"  <p>\n"
+"    Arduino Editor is free software: you can redistribute it and/or modify "
+"it\n"
+"    under the terms of the GNU General Public License version 3 (GPLv3).\n"
+"  </p>\n"
+"  <p>\n"
+"    For the full license text see:<br>\n"
+"    <a href=\"https://www.gnu.org/licenses/gpl-3.0.html#license-text\">\n"
+"      https://www.gnu.org/licenses/gpl-3.0.html\n"
+"    </a>\n"
+"  </p>\n"
+"\n"
+"  <hr>\n"
+"\n"
+"  <h3>wxWidgets License</h3>\n"
+"  <p>\n"
+"    wxWidgets is distributed under the wxWidgets License.\n"
+"  </p>\n"
+"  <p>\n"
+"    For details see:<br>\n"
+"    <a href=\"https://www.wxwidgets.org/about/licence/\">\n"
+"      https://www.wxwidgets.org/about/licence/\n"
+"    </a>\n"
+"  </p>\n"
+"\n"
+"  <hr>\n"
+"\n"
+"  <h3>Clang/LLVM License</h3>\n"
+"  <p>\n"
+"    Clang and LLVM are distributed under the Apache License v2.0\n"
+"    with LLVM exceptions.\n"
+"  </p>\n"
+"  <p>\n"
+"    For details see:<br>\n"
+"    <a href=\"https://llvm.org/docs/DeveloperPolicy.html#license\">\n"
+"      https://llvm.org/docs/DeveloperPolicy.html#license\n"
+"    </a>\n"
+"  </p>\n"
+"\n"
+"  <hr>\n"
+"\n"
+"  <h3>arduino-cli License (GPLv3)</h3>\n"
+"  <p>\n"
+"    arduino-cli is distributed under the terms of the GNU General Public "
+"License\n"
+"    version 3 (GPLv3).\n"
+"  </p>\n"
+"  <p>\n"
+"    For the full license text see:<br>\n"
+"    <a href=\"https://github.com/arduino/arduino-cli/blob/master/LICENSE.txt"
+"\">\n"
+"      https://github.com/arduino/arduino-cli/blob/master/LICENSE.txt\n"
+"    </a>\n"
+"  </p>\n"
+"</body>\n"
+"</html>\n"
+msgstr ""
+"\n"
+"<html>\n"
+"<body bgcolor=\"%s\">\n"
+"  <h3>Licence Arduino Editor (GPLv3)</h3>\n"
+"  <p>\n"
+"    Arduino Editor je svobodný software: můžete jej redistribuovat a/nebo "
+"upravovat\n"
+"    za podmínek GNU General Public License verze 3 (GPLv3).\n"
+"  </p>\n"
+"  <p>\n"
+"    Pro úplný text licence viz:<br>\n"
+"    <a href=\"https://www.gnu.org/licenses/gpl-3.0.html#license-text\">\n"
+"      https://www.gnu.org/licenses/gpl-3.0.html\n"
+"    </a>\n"
+"  </p>\n"
+"\n"
+"  <hr>\n"
+"\n"
+"  <h3>Licence wxWidgets</h3>\n"
+"  <p>\n"
+"    wxWidgets je distribuován pod licencí wxWidgets License.\n"
+"  </p>\n"
+"  <p>\n"
+"    Pro podrobnosti viz:<br>\n"
+"    <a href=\"https://www.wxwidgets.org/about/licence/\">\n"
+"      https://www.wxwidgets.org/about/licence/\n"
+"    </a>\n"
+"  </p>\n"
+"\n"
+"  <hr>\n"
+"\n"
+"  <h3>Licence Clang/LLVM</h3>\n"
+"  <p>\n"
+"    Clang a LLVM jsou distribuovány pod licencí Apache License v2.0\n"
+"    s výjimkami LLVM.\n"
+"  </p>\n"
+"  <p>\n"
+"    Pro podrobnosti viz:<br>\n"
+"    <a href=\"https://llvm.org/docs/DeveloperPolicy.html#license\">\n"
+"      https://llvm.org/docs/DeveloperPolicy.html#license\n"
+"    </a>\n"
+"  </p>\n"
+"\n"
+"  <hr>\n"
+"\n"
+"  <h3>Licence arduino-cli (GPLv3)</h3>\n"
+"  <p>\n"
+"    arduino-cli je distribuován za podmínek GNU General Public License\n"
+"    verze 3 (GPLv3).\n"
+"  </p>\n"
+"  <p>\n"
+"    Pro úplný text licence viz:<br>\n"
+"    <a href=\"https://github.com/arduino/arduino-cli/blob/master/LICENSE.txt"
+"\">\n"
+"      https://github.com/arduino/arduino-cli/blob/master/LICENSE.txt\n"
+"    </a>\n"
+"  </p>\n"
+"</body>\n"
+"</html>\n"
+
+#: ard_aboutdlg.cpp:234 ard_ed_frm.cpp:2449
+msgid "About Arduino Editor"
+msgstr "O aplikaci Arduino Editor"
+
+#: ard_aboutdlg.cpp:281
+msgid "About"
+msgstr "O aplikaci"
+
+#: ard_aboutdlg.cpp:300
+msgid "Licenses"
+msgstr "Licence"
+
+#: ard_ai.cpp:651 ard_aipnl.cpp:456
+#, c-format
+msgid "%s (in: %d, out: %d, tot: %d) tokens"
+msgstr "%s (dovnitř: %d, ven: %d, celkem: %d) tokenů"
+
+#: ard_ai.cpp:705
+msgid "Another AI action is running."
+msgstr "Jiná AI akce běží."
+
+#: ard_ai.cpp:706 ard_ai.cpp:713 ard_ai.cpp:2838 ard_ai.cpp:3148
+#: ard_ai.cpp:3171 ard_ai.cpp:3467 ard_ai.cpp:3536
+msgid "Arduino Editor AI"
+msgstr "Arduino Editor AI"
+
+#: ard_ai.cpp:712
+msgid "AI is disabled. Enable it in Settings -> AI."
+msgstr "AI je zakázáno. Povolte jej v Nastavení -> AI."
+
+#: ard_ai.cpp:747
+msgid "Please select some code you want to explain."
+msgstr "Vyberte prosím nějaký kód pro vysvětlení."
+
+#: ard_ai.cpp:748 ard_ai.cpp:760 ard_ai.cpp:782 ard_ai.cpp:3491
+msgid "AI explain selection"
+msgstr "AI vysvětlení"
+
+#: ard_ai.cpp:759
+msgid "The selected text is empty or whitespace only."
+msgstr "Vybraný text je buď prázdný nebo obsahuje jen mezery."
+
+#: ard_ai.cpp:767
+msgid ""
+"You are an expert Arduino/C++ assistant integrated into an IDE. Explain the "
+"selected code snippet in a clear and concise way. Focus on what it does, "
+"important details, side-effects and possible pitfalls. Answer in English."
+msgstr ""
+"You are an expert Arduino/C++ assistant integrated into an IDE. Explain the "
+"selected code snippet in a clear and concise way. Focus on what it does, "
+"important details, side-effects and possible pitfalls. Answer in Czech."
+
+#: ard_ai.cpp:773
+msgid ""
+"Please explain the following C++/Arduino code snippet:\n"
+"\n"
+"```cpp\n"
+msgstr ""
+"Please explain the following C++/Arduino code snippet:\n"
+"\n"
+"```cpp\n"
+
+#: ard_ai.cpp:775 ard_ai.cpp:849
+msgid ""
+"\n"
+"```"
+msgstr ""
+"\n"
+"```"
+
+#: ard_ai.cpp:781 ard_ai.cpp:1170 ard_ai.cpp:1283 ard_ai.cpp:1404
+#: ard_ai.cpp:1478 ard_ai.cpp:1765
+msgid "Failed to start AI request."
+msgstr "Nepodařilo spustit AI požadavek."
+
+#: ard_ai.cpp:832
+msgid ""
+"You are an expert C++/Arduino assistant integrated into an IDE.\n"
+"You will receive:\n"
+"1) A single C++ declaration of the symbol that should be documented.\n"
+"2) Additional surrounding code for context.\n"
+"You MUST generate a concise Doxygen-style documentation comment for that "
+"symbol only.\n"
+"Rules:\n"
+"- Output ONLY a C++ documentation comment block starting with \"/**\" and "
+"ending with \"*/\".\n"
+"- Do not include the declaration or definition itself.\n"
+"- Use clear English sentences.\n"
+"- For functions/methods, include @param and @return tags where appropriate.\n"
+"- Do not add any text outside the comment block."
+msgstr ""
+"You are an expert C++/Arduino assistant integrated into an IDE.\n"
+"You will receive:\n"
+"1) A single C++ declaration of the symbol that should be documented.\n"
+"2) Additional surrounding code for context.\n"
+"You MUST generate a concise Doxygen-style documentation comment for that "
+"symbol only.\n"
+"Rules:\n"
+"- Output ONLY a C++ documentation comment block starting with \"/**\" and "
+"ending with \"*/\".\n"
+"- Do not include the declaration or definition itself.\n"
+"- Use clear Czech sentences.\n"
+"- For functions/methods, include @param and @return tags where appropriate.\n"
+"- Do not add any text outside the comment block."
+
+#: ard_ai.cpp:846
+#, c-format
+msgid ""
+"Generate a documentation comment for the symbol %s in the following C++/"
+"Arduino code:\n"
+"\n"
+"```cpp\n"
+msgstr ""
+"Generate a documentation comment for the symbol %s in the following C++/"
+"Arduino code:\n"
+"\n"
+"```cpp\n"
+
+#: ard_ai.cpp:880
+msgid "This symbol is already documented."
+msgstr "Tento symbol je již zdokumentován."
+
+#: ard_ai.cpp:880 ard_ai.cpp:889 ard_ai.cpp:899 ard_ai.cpp:961 ard_ai.cpp:1043
+#: ard_ai.cpp:1099 ard_ai.cpp:1160 ard_ai.cpp:1171 ard_ai.cpp:1199
+#: ard_ai.cpp:1210 ard_ai.cpp:1219 ard_ai.cpp:1274 ard_ai.cpp:1284
+#: ard_ai.cpp:3436 ard_ai.cpp:3497 ard_ai.cpp:3523
+msgid "AI generate documentation"
+msgstr "AI generování dokumentace"
+
+#: ard_ai.cpp:888 ard_ai.cpp:1198 ard_ai.cpp:1323 ard_refactor.cpp:649
+#: ard_refactor.cpp:908 ard_refactor.cpp:1120
+msgid "No symbol under the cursor."
+msgstr "Na pozici kurzoru nebyl nalezen žádný symbol."
+
+#: ard_ai.cpp:898
+msgid "No suitable type or context for documentation at the cursor."
+msgstr "Symbol pod kurzorem není dokumentační funkcí podporován."
+
+#: ard_ai.cpp:960
+msgid "No documentation comments to insert."
+msgstr "Žádné dokumentační komentáře k vložení."
+
+#: ard_ai.cpp:1039
+#, c-format
+msgid ""
+"Documentation was generated, but no suitable insertion points were found "
+"(%zu symbol(s))."
+msgstr ""
+"Dokumentace byla vygenerována, ale pro %zu symbolů nebylo nalezeno místo "
+"vložení."
+
+#: ard_ai.cpp:1096
+#, c-format
+msgid "Documentation generated for %zu symbol(s)."
+msgstr "Dokumentace vygenerována pro %zu symbolů."
+
+#: ard_ai.cpp:1159
+msgid "No functions or methods found that need documentation."
+msgstr "Není žádná funkce či metoda, která potřebuje dokumentaci."
+
+#: ard_ai.cpp:1209
+msgid "Cursor is not on a class or struct declaration."
+msgstr "Kurzor není na deklaraci třídy nebo struktury."
+
+#: ard_ai.cpp:1218
+msgid "Class body range is not available."
+msgstr "Rozsah těla třídy není dostupný."
+
+#: ard_ai.cpp:1273
+msgid "No methods found in the current class that need documentation."
+msgstr ""
+"Nejsou žádné metody v aktuální třídě, které by potřebovaly dokumentaci."
+
+#: ard_ai.cpp:1324 ard_ai.cpp:1340 ard_ai.cpp:1349 ard_ai.cpp:1405
+#: ard_ai.cpp:3529
+msgid "AI optimize function or method"
+msgstr "AI optimalizace funkce nebo metody"
+
+#: ard_ai.cpp:1339
+msgid "Cursor is not on a function or method declaration."
+msgstr "Kurzor není na deklaraci funkce nebo metody."
+
+#: ard_ai.cpp:1348
+msgid "Function or method body range is not available."
+msgstr "Rozsah těla funkce nebo metody není dostupný."
+
+#: ard_ai.cpp:1479 ard_ai.cpp:3503
+msgid "AI solve project errors"
+msgstr "AI řešení chyb projektu"
+
+#: ard_ai.cpp:1542
+msgid "please "
+msgstr "prosím "
+
+#: ard_ai.cpp:1544
+msgid "pls "
+msgstr "pls "
+
+#: ard_ai.cpp:1766 ard_ai.cpp:3515
+msgid "AI interactive chat"
+msgstr "AI interaktivní chat"
+
+#: ard_ai.cpp:1909
+msgid ""
+"(Loaded previous session context.)\n"
+"\n"
+msgstr ""
+"(Načten předchozí kontext sezení.)\n"
+"\n"
+
+#: ard_ai.cpp:2016
+#, c-format
+msgid ""
+"\n"
+"\n"
+"<patch into file %s (%d-%d)>\n"
+msgstr ""
+"\n"
+"\n"
+"<úprava v souboru %s (%d-%d)>\n"
+
+#: ard_ai.cpp:2023
+#, c-format
+msgid ""
+"\n"
+"\n"
+"<info with type %s requested>\n"
+msgstr ""
+"\n"
+"\n"
+"<informace API typu %s byla vyžádána>\n"
+
+#: ard_ai.cpp:2825
+msgid ""
+"\n"
+"\n"
+"<patch rejected: file_range required>\n"
+msgstr ""
+"\n"
+"\n"
+"<patch zamítnut: je vyžadováno file_range>\n"
+
+#: ard_ai.cpp:2837
+msgid "AI requested more information too many times."
+msgstr "Počet požadavků na AI překročil nastavený limit."
+
+#: ard_ai.cpp:3122
+msgid ""
+"\n"
+"\n"
+"<patch rejected>"
+msgstr ""
+"\n"
+"\n"
+"<záplata odmítnuta>"
+
+#: ard_ai.cpp:3148
+msgid "New sketch file can not be created!"
+msgstr "Nepodařilo se vytvořit nový soubor sketche!"
+
+#: ard_ai.cpp:3170
+msgid "AI patch does not apply to the current file."
+msgstr "AI patch nenáleží aktuálnímu souboru."
+
+#: ard_ai.cpp:3178
+#, c-format
+msgid ""
+"\n"
+"\n"
+"<patch applied into file %s>\n"
+msgstr ""
+"\n"
+"\n"
+"<úprava provedena v souboru %s>\n"
+
+#: ard_ai.cpp:3229
+#, c-format
+msgid "<info with type %s requested>\n"
+msgstr "<informace API typu %s byla vyžádána>\n"
+
+#: ard_ai.cpp:3435
+msgid "Failed to start AI request for next symbol."
+msgstr "Nepodařilo spustit AI požadavek pro následující symbol."
+
+#: ard_ai.cpp:3481
+msgid "Unknown AI error."
+msgstr "Neznámá AI chyba."
+
+#: ard_ai.cpp:3490 ard_ai.cpp:3496 ard_ai.cpp:3502 ard_ai.cpp:3514
+#: ard_ai.cpp:3522 ard_ai.cpp:3528 ard_ai.cpp:3535
+msgid "AI request failed:\n"
+msgstr "AI požadavek selhal:\n"
+
+#: ard_aimdldlg.cpp:55
+msgid "AI model"
+msgstr "AI model"
+
+#: ard_aimdldlg.cpp:86
+msgid "Name:"
+msgstr "Název:"
+
+#: ard_aimdldlg.cpp:90
+msgid "Endpoint URL:"
+msgstr "URL endpointu:"
+
+#: ard_aimdldlg.cpp:94
+msgid "Model:"
+msgstr "Název modelu:"
+
+#: ard_aimdldlg.cpp:98
+msgid "Maximum AI iterations:"
+msgstr "Maximální počet AI iterací:"
+
+#: ard_aimdldlg.cpp:104
+msgid "Request timeout (seconds, 0 = no limit):"
+msgstr "Časový limit požadavku (v sekundách, 0 = bez omezení):"
+
+#: ard_aimdldlg.cpp:111
+msgid "Force file_range policy (AI must inspect files before PATCH)"
+msgstr ""
+"Vynutit file_range pravidlo (AI se musí podívat na soubor před jeho úpravou)"
+
+#: ard_aimdldlg.cpp:115
+msgid "Keep full AI context (include all requested code and info)"
+msgstr ""
+"Zachovat úplný AI kontext (včetně veškerého vyžádaného kódu a informací)"
+
+#: ard_aimdldlg.cpp:119
+msgid "Limit AI context to last applied change (floating window)"
+msgstr "Omezit AI kontext na poslední provedenou změnu (plovoucí okno)"
+
+#: ard_aimdldlg.cpp:124
+msgid "Authentication"
+msgstr "Autentikace"
+
+#: ard_aimdldlg.cpp:125
+msgid "This endpoint requires an API key"
+msgstr "Tento endpoint vyžaduje API klíč"
+
+#: ard_aimdldlg.cpp:130
+msgid "API key:"
+msgstr "API klíč:"
+
+#: ard_aimdldlg.cpp:135
+msgid "Clear stored key"
+msgstr "Vymazat uložený klíč"
+
+#: ard_aimdldlg.cpp:141
+msgid "The API key is stored using the system's secure keychain."
+msgstr "API klíč je ukládán pomocí systémového zabezpečeného úložiště."
+
+#: ard_aimdldlg.cpp:147
+msgid "Extra request JSON"
+msgstr "Dodatečné JSON parametry"
+
+#: ard_aimdldlg.cpp:171 ard_ed_frm.cpp:3788
+msgid "Delete"
+msgstr "Smazat"
+
+#: ard_aimdldlg.cpp:172
+msgid "Export..."
+msgstr "Exportovat..."
+
+#: ard_aimdldlg.cpp:173
+msgid "Test"
+msgstr "Test"
+
+#: ard_aimdldlg.cpp:181 ard_boptdlg.cpp:58 ard_fmtdlg.cpp:169 utils.cpp:829
+msgid "OK"
+msgstr "OK"
+
+#: ard_aimdldlg.cpp:182 ard_boptdlg.cpp:59 ard_diff.cpp:108 ard_ed_frm.cpp:2126
+#: ard_fmtdlg.cpp:170 utils.cpp:830
+msgid "Cancel"
+msgstr "Storno"
+
+#: ard_aimdldlg.cpp:241
+msgid "A key is already stored. Leave empty to keep it."
+msgstr "Klíč je již uložen. Ponechte prázdné pro jeho uchování."
+
+#: ard_aimdldlg.cpp:243
+msgid "Enter your API key (will be stored securely)."
+msgstr "Zadejte váš API klíč (bude uložen zabezpečeně)."
+
+#: ard_aimdldlg.cpp:279
+msgid "Export model to JSON"
+msgstr "Export definice modelu do JSON"
+
+#: ard_aimdldlg.cpp:280 ard_setdlg.cpp:1553
+msgid "JSON files (*.json)|*.json|All files|*.*"
+msgstr "JSON soubory (*.json)|*.json|Všechny soubory (*.*)|*.*"
+
+#: ard_aimdldlg.cpp:286
+msgid "Failed to write file."
+msgstr "Nepodařilo se zapsat do souboru."
+
+#: ard_aimdldlg.cpp:286
+msgid "Export"
+msgstr "Export"
+
+#: ard_aimdldlg.cpp:299 ard_aimdldlg.cpp:415
+msgid "Invalid JSON"
+msgstr "Chybné JSON"
+
+#: ard_aimdldlg.cpp:323 ard_aimdldlg.cpp:423
+msgid "Endpoint URL is empty."
+msgstr "URL endpointu je prázdné."
+
+#: ard_aimdldlg.cpp:323 ard_aimdldlg.cpp:344 ard_aimdldlg.cpp:423
+msgid "Validation"
+msgstr "Kontrola"
+
+#: ard_aimdldlg.cpp:344
+msgid ""
+"API key is required for this endpoint (no key provided and none stored)."
+msgstr "Tento endpoint vyžaduje API klíč (není zadán ani uložen)."
+
+#: ard_aimdldlg.cpp:389
+msgid "Connection test succeeded."
+msgstr "Připojení bylo úspěšné."
+
+#: ard_aimdldlg.cpp:389 ard_aimdldlg.cpp:391
+msgid "AI Test"
+msgstr "AI Test"
+
+#: ard_aimdldlg.cpp:391
+msgid "Connection test failed."
+msgstr "Připojení se nepodařilo"
+
+#: ard_aimdldlg.cpp:450
+msgid ""
+"System keyring (Secret Service) is not available in this session.\n"
+"\n"
+"The API key will NOT be saved and you will have to enter it again next "
+"time.\n"
+"\n"
+"Tip: On Linux/Raspberry Pi this usually means there is no DBus session "
+"(DBUS_SESSION_BUS_ADDRESS is missing) or no secret-service provider is "
+"running."
+msgstr ""
+"Systémový keyring (Secret Service) není v této relaci dostupný.\n"
+"\n"
+"API klíč NEBUDE uložen a při příštím použití jej bude nutné zadat znovu.\n"
+"\n"
+"Tip: Na Linuxu / Raspberry Pi to obvykle znamená, že neběží DBus relace "
+"(chybí `DBUS_SESSION_BUS_ADDRESS`) nebo není spuštěn žádný poskytovatel "
+"secret-service."
+
+#: ard_aimdldlg.cpp:454
+msgid "API key not saved"
+msgstr "API klíč není uložen"
+
+#: ard_aimdldlg.cpp:492
+msgid "Failed to save AI API key to the system secret store."
+msgstr "Chyba při ukládání API klíče do systémového zabezpečeného úložiště."
+
+#: ard_aipnl.cpp:20
+msgid ""
+"AI chat ready.\n"
+"You can ask coding questions or request refactoring.\n"
+"\n"
+"The chat has access to all sketch files.\n"
+"It may request files, propose modifications as patches,\n"
+"and - with your confirmation - create new files.\n"
+"\n"
+"Type your message and press Enter to send.\n"
+"(Shift+Enter inserts a new line.)"
+msgstr ""
+"AI chat připraven.\n"
+"Můžete pokládat dotazy nebo žádat refaktoring.\n"
+"\n"
+"Chat má přístup ke všem souborům sketche.\n"
+"Může si je vyžádat, navrhovat úpravy pomocí patchů\n"
+"a po potvrzení také vytvářet nové soubory.\n"
+"\n"
+"Zadejte zprávu a stiskněte Enter.\n"
+"(Shift+Enter vloží nový řádek.)"
+
+#: ard_aipnl.cpp:186
+msgid "(no saved sessions)"
+msgstr "(žádná uložená sezení)"
+
+#: ard_aipnl.cpp:311
+msgid "[AI] Failed to load saved session."
+msgstr "[AI] Nepodařilo se načíst uložené sezení."
+
+#: ard_aipnl.cpp:415
+msgid "[AI] Interactive actions are not available."
+msgstr "[AI] Interaktivní akce nejsou dostupné."
+
+#: ard_aipnl.cpp:431
+msgid "[AI] Failed to start interactive chat request."
+msgstr "[AI] Nepodařilo se spustit interaktivní požadavek."
+
+#: ard_aipnl.cpp:484
+msgid "[AI ERROR] Unknown error"
+msgstr "[AI CHYBA] Neznámá chyba"
+
+#: ard_aipnl.cpp:486
+#, c-format
+msgid "[AI ERROR] %s"
+msgstr "[AI CHYBA] %s"
+
+#: ard_boptdlg.cpp:34
+msgid "<unknown>"
+msgstr "<neznámý>"
+
+#: ard_borsel.cpp:22 ard_ed_frm.cpp:378
+msgid "Select board"
+msgstr "Vyberte desku"
+
+#: ard_borsel.cpp:145 ard_borsel.cpp:427 ard_finsymdlg.cpp:26
+#: ard_libman.cpp:148
+msgid "Name"
+msgstr "Jméno"
+
+#: ard_borsel.cpp:151 ard_borsel.cpp:432
+msgid "Board"
+msgstr "Deska"
+
+#: ard_borsel.cpp:165
+msgid "Filter boards..."
+msgstr "Filtrovat desky..."
+
+#: ard_borsel.cpp:180
+msgid "Programmer:"
+msgstr "Programátor:"
+
+#: ard_borsel.cpp:204
+msgid "Maintainer:"
+msgstr "Správce:"
+
+#: ard_borsel.cpp:207
+msgid "Website:"
+msgstr "Webová stránka:"
+
+#: ard_borsel.cpp:210
+msgid "Email:"
+msgstr "E-mail:"
+
+#: ard_borsel.cpp:544
+msgid "<loading programmers...>"
+msgstr "<nahrávají se programátory...>"
+
+#: ard_borsel.cpp:578
+msgid "<default>"
+msgstr "<výchozí>"
+
+#: ard_cli.cpp:2643
+msgid "Serial port is not set. Cannot upload sketch.\n"
+msgstr "Sériový port není nastaven. Nelze nahrát sketch.\n"
+
+#: ard_cliinst.cpp:64
+msgid ""
+"Unable to check installed Arduino cores (arduino-cli core list failed).\n"
+"\n"
+"Do you want Arduino Editor to run the initial setup now?\n"
+"(Update core index + install Arduino AVR core + update library index)"
+msgstr ""
+"Nepodařilo se zkontrolovat nainstalované Arduino core balíčky (selhalo "
+"`arduino-cli core list`).\n"
+"\n"
+"Chcete, aby Arduino Editor nyní provedl úvodní nastavení?\n"
+"(Aktualizace indexu core balíčků + instalace Arduino AVR core + aktualizace "
+"indexu knihoven)"
+
+#: ard_cliinst.cpp:67
+msgid "Arduino toolchain setup"
+msgstr "Instalace nástrojů Arduino"
+
+#: ard_cliinst.cpp:117
+msgid "Preparing Arduino toolchain"
+msgstr "Připravují se nástroje Arduino"
+
+#: ard_cliinst.cpp:118 ard_cliinst.cpp:386 ard_cliinst.cpp:484
+#: ard_cliinst.cpp:587 ard_ed_frm.cpp:1611
+msgid "Preparing..."
+msgstr "Připravuji..."
+
+#: ard_cliinst.cpp:146
+#, c-format
+msgid ""
+"arduino-cli command failed while %s:\n"
+"\n"
+"%s\n"
+"\n"
+"Output:\n"
+"%s"
+msgstr ""
+"Příkaz arduino-cli selhal během %s:\n"
+"\n"
+"%s\n"
+"\n"
+"Output:\n"
+"%s"
+
+#: ard_cliinst.cpp:148
+msgid "arduino-cli setup error"
+msgstr "chyba při instalaci arduino-cli"
+
+#: ard_cliinst.cpp:155
+msgid "Updating core index..."
+msgstr "Aktualizuji index jader..."
+
+#: ard_cliinst.cpp:156 ard_cliinst.cpp:163 ard_cliinst.cpp:170
+msgid "Toolchain setup was cancelled."
+msgstr "Příprava nástrojů byla přerušena."
+
+#: ard_cliinst.cpp:156 ard_cliinst.cpp:163 ard_cliinst.cpp:170
+msgid "Cancelled"
+msgstr "Stornován"
+
+#: ard_cliinst.cpp:159
+msgid "updating core index"
+msgstr "aktualizuji index jader"
+
+#: ard_cliinst.cpp:162
+msgid "Installing Arduino AVR core..."
+msgstr "Instaluji Arduino AVR Core..."
+
+#: ard_cliinst.cpp:166
+msgid "installing Arduino AVR core"
+msgstr "instalace jádra Arduino AVR"
+
+#: ard_cliinst.cpp:169
+msgid "Updating library index..."
+msgstr "Aktualizuji index knihoven..."
+
+#: ard_cliinst.cpp:173
+msgid "updating library index"
+msgstr "aktualizuji index knihoven"
+
+#: ard_cliinst.cpp:176 ard_cliinst.cpp:472 ard_cliinst.cpp:575
+#: ard_cliinst.cpp:668
+msgid "Done."
+msgstr "Hotovo."
+
+#: ard_cliinst.cpp:210
+msgid ""
+"arduino-cli was not found.\n"
+"\n"
+"Arduino Editor can automatically download the official arduino-cli binary "
+"from the Arduino servers, extract it into the same directory as this "
+"application and use it only for this editor.\n"
+"\n"
+"Alternatively, you can select an existing arduino-cli binary on disk.\n"
+"\n"
+"How do you want to proceed?"
+msgstr ""
+"arduino-cli nebyl nalezen.\n"
+"\n"
+"Arduino Editor může automaticky stáhnout oficiální instalaci arduino-cli ze "
+"serverů Arduino, nainstalovat ji do stejného adresáře jako tato aplikace a "
+"používat jej pouze pro ni.\n"
+"\n"
+"Alternativně můžete vybrat existující arduino-cli na disku.\n"
+"\n"
+"Jak chcete pokračovat?"
+
+#: ard_cliinst.cpp:217
+msgid "arduino-cli missing"
+msgstr "arduino-cli chybí"
+
+#: ard_cliinst.cpp:220 ard_coreman.cpp:476 ard_libman.cpp:604
+msgid "Install"
+msgstr "Nainstalovat"
+
+#: ard_cliinst.cpp:220
+msgid "Browse"
+msgstr "Procházet"
+
+#: ard_cliinst.cpp:220 ard_ed_frm.cpp:2340 main.cpp:339
+msgid "Exit"
+msgstr "Ukončit"
+
+#: ard_cliinst.cpp:248
+msgid ""
+"arduino-cli was downloaded, but it does not appear to be a valid arduino-cli "
+"binary.\n"
+"\n"
+"Please install arduino-cli manually or select the binary manually."
+msgstr ""
+"arduino-cli byl stažen, ale nezdá se být platnou utilitou arduino-cli.\n"
+"\n"
+"Prosím, nainstalujte arduino-cli ručně."
+
+#: ard_cliinst.cpp:251 ard_cliinst.cpp:304
+msgid "Invalid arduino-cli binary"
+msgstr "Neplatný arduino-cli soubor"
+
+#: ard_cliinst.cpp:261 ard_setdlg.cpp:679
+msgid "Select arduino-cli executable"
+msgstr "Vyberte spustitelný soubor arduino-cli"
+
+#: ard_cliinst.cpp:263
+msgid "Select arduino-cli binary"
+msgstr "Vyberte utilitu arduino-cli"
+
+#: ard_cliinst.cpp:272
+msgid "arduino-cli executable (*.exe)|*.exe|All files (*.*)|*.*"
+msgstr "arduino-cli spustitelný soubor (*.exe)|*.exe|Všechny soubory (*.*)|*.*"
+
+#: ard_cliinst.cpp:274 ard_setdlg.cpp:1973
+msgid "All files (*)|*"
+msgstr "Všechny soubory (*)|*"
+
+#: ard_cliinst.cpp:302
+msgid ""
+"The selected file does not appear to be a valid arduino-cli binary.\n"
+"\n"
+"Do you want to try selecting a different file?"
+msgstr ""
+"Vybraná aplikace se nezdá být použitelným arduino-cli.\n"
+"\n"
+"Chcete zkusit vybrat jiný soubor?"
+
+#: ard_cliinst.cpp:321
+msgid ""
+"Arduino Editor cannot run without arduino-cli.\n"
+"\n"
+"Please install arduino-cli and restart the application."
+msgstr ""
+"Arduino Editor nemůže běžet bez arduino-cli.\n"
+"\n"
+"Prosím, nainstalujte arduino-cli a restartujte aplikaci."
+
+#: ard_cliinst.cpp:323 ard_cliinst.cpp:570 ard_cliinst.cpp:656
+msgid "arduino-cli not found"
+msgstr "arduino-cli nebyl nalezen"
+
+#: ard_cliinst.cpp:336
+#, c-format
+msgid ""
+"Installed arduino-cli version is %s.\n"
+"\n"
+"This Arduino Editor requires arduino-cli version %s or newer.\n"
+"\n"
+"Please update arduino-cli and start the application again."
+msgstr ""
+"Nainstalovaná verze arduino-cli je %s.\n"
+"\n"
+"Tento Arduino Editor vyžaduje verzi arduino-cli %s nebo novější.\n"
+"\n"
+"Prosím, aktualizujte arduino-cli a znovu spusťte aplikaci."
+
+#: ard_cliinst.cpp:342
+msgid "Unsupported arduino-cli version"
+msgstr "Nepodporovaná verze arduino-cli"
+
+#: ard_cliinst.cpp:371
+msgid ""
+"Automatic arduino-cli installation is not supported on this platform.\n"
+"\n"
+"Please install arduino-cli manually and restart the application."
+msgstr ""
+"Automatická instalace arduino-cli není na této platformě podporována.\n"
+"\n"
+"Prosím, nainstalujte arduino-cli ručně a restartujte aplikaci."
+
+#: ard_cliinst.cpp:373 ard_cliinst.cpp:513
+msgid "arduino-cli install"
+msgstr "arduino-cli instalace"
+
+#: ard_cliinst.cpp:385 ard_cliinst.cpp:483 ard_cliinst.cpp:586
+msgid "Installing arduino-cli"
+msgstr "Instaluji arduino-cli"
+
+#: ard_cliinst.cpp:398 ard_cliinst.cpp:598
+msgid ""
+"Cannot determine application directory.\n"
+"Please install arduino-cli manually."
+msgstr ""
+"Nelze určit adresář aplikace.\n"
+"Prosím, nainstalujte arduino-cli ručně."
+
+#: ard_cliinst.cpp:414 ard_cliinst.cpp:612
+msgid "Downloading arduino-cli..."
+msgstr "Stahování arduino-cli..."
+
+#: ard_cliinst.cpp:424 ard_cliinst.cpp:623
+msgid ""
+"Downloading arduino-cli failed.\n"
+"\n"
+"Command was:\n"
+msgstr ""
+"Stahování arduino-cli selhalo.\n"
+"\n"
+"Příkaz byl:\n"
+
+#: ard_cliinst.cpp:425 ard_cliinst.cpp:624
+msgid "Download error"
+msgstr "Chyba stahování"
+
+#: ard_cliinst.cpp:433 ard_cliinst.cpp:631
+msgid "Extracting arduino-cli..."
+msgstr "Probíhá extrakce arduino-cli..."
+
+#: ard_cliinst.cpp:441 ard_cliinst.cpp:640
+msgid ""
+"Extracting arduino-cli failed.\n"
+"\n"
+"Command was:\n"
+msgstr ""
+"Extrahování arduino-cli selhalo.\n"
+"\n"
+"Příkaz byl:\n"
+
+#: ard_cliinst.cpp:442 ard_cliinst.cpp:641
+msgid "Extraction error"
+msgstr "Chyba rozbalování"
+
+#: ard_cliinst.cpp:450 ard_cliinst.cpp:648
+msgid "Verifying arduino-cli..."
+msgstr "Ověřuji arduino-cli..."
+
+#: ard_cliinst.cpp:456 ard_cliinst.cpp:655
+msgid "After extraction, the arduino-cli executable was not found at:\n"
+msgstr "Po extrakci nebyl nalezen spustitelný soubor arduino-cli na:\n"
+
+#: ard_cliinst.cpp:489
+msgid "Looking for Homebrew (brew)..."
+msgstr "Hledání Homebrew (brew)..."
+
+#: ard_cliinst.cpp:509
+msgid ""
+"Homebrew (brew) was not found in standard locations.\n"
+"\n"
+"Please install Homebrew first (https://brew.sh/), then run:\n"
+"\n"
+"  brew install arduino-cli\n"
+"\n"
+"and finally use the 'Browse' option to select the arduino-cli binary."
+msgstr ""
+"Homebrew (brew) nebyl nalezen na standardních místech.\n"
+"\n"
+"Nejprve prosím nainstalujte Homebrew (https://brew.sh/), poté spusťte:\n"
+"\n"
+"  brew install arduino-cli\n"
+"\n"
+"a nakonec použijte možnost 'Procházet' pro výběr binárního souboru arduino-"
+"cli."
+
+#: ard_cliinst.cpp:519
+msgid "Installing arduino-cli via Homebrew..."
+msgstr "Instalace arduino-cli přes Homebrew..."
+
+#: ard_cliinst.cpp:528
+#, c-format
+msgid ""
+"Homebrew command failed:\n"
+"\n"
+"%s\n"
+"\n"
+"Please run this command in Terminal and then use 'Browse' to select the "
+"arduino-cli binary."
+msgstr ""
+"Příkaz Homebrew selhal:\n"
+"\n"
+"%s\n"
+"\n"
+"Spusťte prosím tento příkaz v Terminálu a poté použijte 'Procházet' pro "
+"výběr utility arduino-cli."
+
+#: ard_cliinst.cpp:532
+msgid "Homebrew error"
+msgstr "Chyba Homebrew"
+
+#: ard_cliinst.cpp:538
+msgid "Locating arduino-cli binary..."
+msgstr "Vyhledávání binárního souboru arduino-cli..."
+
+#: ard_cliinst.cpp:566
+msgid ""
+"Homebrew seems to have installed arduino-cli, but the binary could not be "
+"located in standard paths.\n"
+"\n"
+"Please run 'brew --prefix' or 'brew --prefix arduino-cli' in Terminal\n"
+"to locate the installation and then use the 'Browse' option."
+msgstr ""
+"Zdá se, že Homebrew nainstaloval arduino-cli, ale binární soubor nebyl "
+"nalezen v běžných cestách.\n"
+"\n"
+"Prosím spusťte v Terminálu příkaz 'brew --prefix' nebo 'brew --prefix "
+"arduino-cli',\n"
+"pro nalezení umístění instalace, a poté použijte možnost 'Procházet'."
+
+#: ard_coreinfo.cpp:40
+msgid "Latest: "
+msgstr "Nejnovější: "
+
+#: ard_coreinfo.cpp:45
+msgid "Installed: "
+msgstr "Nainstalováno: "
+
+#: ard_coreinfo.cpp:58 ard_libinfo.cpp:101
+msgid "Maintainer: "
+msgstr "Správce: "
+
+#: ard_coreinfo.cpp:61
+msgid "Email: "
+msgstr "E-mail: "
+
+#: ard_coreinfo.cpp:73 ard_libinfo.cpp:109
+msgid "Type: "
+msgstr "Typ: "
+
+#: ard_coreinfo.cpp:79
+msgid "Indexed in package index"
+msgstr "Zaindexováno v indexu balíčků"
+
+#: ard_coreinfo.cpp:97
+msgid "Available versions:\n"
+msgstr "Dostupné verze:\n"
+
+#: ard_coreinfo.cpp:108
+msgid "installed"
+msgstr "nainstalováno"
+
+#: ard_coreinfo.cpp:110
+msgid ", latest"
+msgstr ", nejnovější"
+
+#: ard_coreinfo.cpp:112
+msgid "latest"
+msgstr "nejnovější"
+
+#: ard_coreinfo.cpp:124
+msgid "Boards:\n"
+msgstr "Desky:\n"
+
+#: ard_coreinfo.cpp:128
+msgid "Version "
+msgstr "Verze "
+
+#: ard_coreinfo.cpp:156 ard_examples.cpp:418 ard_libinfo.cpp:279
+msgid "Install..."
+msgstr "Nainstalovat..."
+
+#: ard_coreinfo.cpp:167 ard_coreman.cpp:465 ard_libinfo.cpp:290
+#: ard_libman.cpp:593
+msgid "Latest"
+msgstr "Nejnovější"
+
+#: ard_coreinfo.cpp:202 ard_coreman.cpp:481 ard_libinfo.cpp:325
+#: ard_libman.cpp:617
+msgid "Uninstall"
+msgstr "Odinstalovat"
+
+#: ard_coreinfo.cpp:219 ard_coreman.cpp:135 ard_ed_frm.cpp:827
+#: ard_libinfo.cpp:342 ard_libman.cpp:170
+msgid "Close"
+msgstr "Zavřít"
+
+#: ard_coreman.cpp:35
+msgid "Arduino Cores"
+msgstr "Arduino desky"
+
+#: ard_coreman.cpp:84 ard_libman.cpp:119
+msgid "Type:"
+msgstr "Typ:"
+
+#: ard_coreman.cpp:87 ard_coreman.cpp:170 ard_coreman.cpp:326
+#: ard_coreman.cpp:422 ard_ed_frm.cpp:1560 ard_ed_frm.cpp:1962
+#: ard_ed_frm.cpp:2007 ard_libman.cpp:122 ard_libman.cpp:230 ard_libman.cpp:397
+#: ard_libman.cpp:541
+msgid "All"
+msgstr "Všechny"
+
+#: ard_coreman.cpp:88 ard_coreman.cpp:334 ard_libman.cpp:123 ard_libman.cpp:417
+msgid "Updatable"
+msgstr "Aktualizovatelné"
+
+#: ard_coreman.cpp:89 ard_coreman.cpp:331 ard_libman.cpp:124 ard_libman.cpp:412
+msgid "Installed"
+msgstr "Nainstalováno"
+
+#: ard_coreman.cpp:95 ard_libman.cpp:130
+msgid "Search:"
+msgstr "Hledat:"
+
+#: ard_coreman.cpp:98
+msgid "id / maintainer / board / website"
+msgstr "id / maintainer / board / webová stránka"
+
+#: ard_coreman.cpp:113
+msgid "Core"
+msgstr "Jádro"
+
+#: ard_coreman.cpp:114 ard_examples.cpp:55 ard_libman.cpp:150
+msgid "Version"
+msgstr "Verze"
+
+#: ard_coreman.cpp:115 ard_examples.cpp:56 ard_libman.cpp:151
+msgid "Maintainer"
+msgstr "Správce"
+
+#: ard_coreman.cpp:116
+msgid "Boards"
+msgstr "Desky"
+
+#: ard_coreman.cpp:130
+msgid "Update index"
+msgstr "Aktualizovat index"
+
+#: ard_coreman.cpp:155
+msgid "No cores (boards) available"
+msgstr "Žádné dostupné core (desky)"
+
+#: ard_coreman.cpp:620
+msgid "Do you really want to uninstall core:\n"
+msgstr "Opravdu chcete odinstalovat core:\n"
+
+#: ard_coreman.cpp:623
+msgid "installed "
+msgstr "nainstalováno "
+
+#: ard_coreman.cpp:627
+msgid "Uninstall core"
+msgstr "Odinstalovat desku"
+
+#: ard_diff.cpp:22
+msgid "Review AI Changes"
+msgstr "Kontrola změn AI"
+
+#: ard_diff.cpp:74 ard_pop.cpp:11
+msgid "AI explanation"
+msgstr "AI vysvětlení"
+
+#: ard_diff.cpp:107
+msgid "Apply"
+msgstr "Použít"
+
+#: ard_diff.cpp:170
+msgid "No changes to review."
+msgstr "Žádné změny ke kontrole."
+
+#: ard_diff.cpp:172
+msgid "Empty"
+msgstr "Prázdné"
+
+#: ard_diff.cpp:185
+#, c-format
+msgid "Existing file: %s"
+msgstr "Existující soubor: %s"
+
+#: ard_diff.cpp:200
+msgid "Original"
+msgstr "Originál"
+
+#: ard_diff.cpp:201
+msgid "Patched"
+msgstr "Záplatováno"
+
+#: ard_diff.cpp:241
+msgid "Show full file"
+msgstr "Zobrazit celý soubor"
+
+#: ard_diff.cpp:275
+#, c-format
+msgid "New file: %s"
+msgstr "Nový soubor: %s"
+
+#: ard_diff.cpp:411
+msgid ""
+"\n"
+"\n"
+"/* --- next hunk --- */\n"
+"\n"
+msgstr ""
+"\n"
+"\n"
+"/* --- další část --- */\n"
+"\n"
+
+#: ard_diff.cpp:510
+#, c-format
+msgid "-------- hunk #%zu (lines %d-%d) --------"
+msgstr "-------- část #%zu (řádky %d-%d) --------"
+
+#: ard_ed_frm.cpp:218
+msgid "The specified arduino-cli is invalid. It may be missing or outdated."
+msgstr "Zadaný arduino-cli není použitelný. Může chybět nebo být zastaralý."
+
+#: ard_ed_frm.cpp:219
+msgid "Warning"
+msgstr "Varování"
+
+#: ard_ed_frm.cpp:242
+msgid "Initializing..."
+msgstr "Inicializuji..."
+
+#: ard_ed_frm.cpp:274 ard_ed_frm.cpp:3409 ard_ed_frm.cpp:3604
+#, c-format
+msgid "Directory '%s' does not exist."
+msgstr "Adresář '%s' neexistuje."
+
+#: ard_ed_frm.cpp:286
+#, c-format
+msgid "Directory '%s' could not be opened."
+msgstr "Adresář '%s' nelze otevřít."
+
+#: ard_ed_frm.cpp:306
+msgid "Opening sketch..."
+msgstr "Otevírání sketche..."
+
+#: ard_ed_frm.cpp:349
+#, c-format
+msgid "Can't create file '%s'."
+msgstr "Nelze vytvořit soubor '%s'."
+
+#: ard_ed_frm.cpp:365
+msgid "Updating board..."
+msgstr "Aktualizuji desku..."
+
+#: ard_ed_frm.cpp:373
+msgid ""
+"No development board is configured for this sketch.\n"
+"\n"
+"Do you want to select a board now?"
+msgstr ""
+"Pro tento sketch není určena žádná vývojová deska.\n"
+"\n"
+"Chcete ji vybrat nyní?"
+
+#: ard_ed_frm.cpp:375
+msgid "Select development board"
+msgstr "Vyberte vývojovou desku"
+
+#: ard_ed_frm.cpp:378
+msgid "Continue without board"
+msgstr "Pokračovat bez výběru"
+
+#: ard_ed_frm.cpp:396
+msgid "Creating completion engine..."
+msgstr "Vytvářím dokončovací prostředí..."
+
+#: ard_ed_frm.cpp:427
+msgid "Initiating background processes..."
+msgstr "Inicializuji procesy na pozadí..."
+
+#: ard_ed_frm.cpp:428
+msgid "Loading installed libraries..."
+msgstr "Načítání instalovaných knihoven..."
+
+#: ard_ed_frm.cpp:553
+msgid "Arduino Clang completion initialized for "
+msgstr "Dokončování kódu Arduino Clang inicializováno pro "
+
+#: ard_ed_frm.cpp:562
+msgid "Failed create Arduino Clang completion!"
+msgstr "Nepodařilo se vytvořit prostředí pro dokončování kódu Arduino Clang!"
+
+#: ard_ed_frm.cpp:598 ard_ed_frm.cpp:1213
+msgid "Initializing Arduino Clang completion..."
+msgstr "Inicializuji Arduino Clang..."
+
+#: ard_ed_frm.cpp:602 ard_ed_frm.cpp:1217
+msgid "Loading board parameters..."
+msgstr "Načítání parametrů desky..."
+
+#: ard_ed_frm.cpp:610 ard_ed_frm.cpp:1221
+msgid "Loading compile parameters..."
+msgstr "Načítání parametrů pro překlad..."
+
+#: ard_ed_frm.cpp:646
+msgid "Error loading default board options."
+msgstr "Chyba při čtení výchozích parametrů desky."
+
+#: ard_ed_frm.cpp:651
+msgid "Board has no options."
+msgstr "Deska nemá žádné volby."
+
+#: ard_ed_frm.cpp:651
+msgid "Information"
+msgstr "Informace"
+
+#: ard_ed_frm.cpp:658
+msgid "Error loading board options."
+msgstr "Chyba při čtení parametrů vývojové desky."
+
+#: ard_ed_frm.cpp:666
+msgid "Board settings"
+msgstr "Nastavení desky"
+
+#: ard_ed_frm.cpp:734 ard_ed_frm.cpp:787
+msgid "The file in the editor is modified. Do you want to save the file?"
+msgstr "Soubor v editoru je modifikován. Chcete jej uložit?"
+
+#: ard_ed_frm.cpp:735 ard_ed_frm.cpp:788
+msgid "Close tab"
+msgstr "Zavřít kartu"
+
+#: ard_ed_frm.cpp:739 ard_ed_frm.cpp:792 ard_ed_frm.cpp:1106
+#: ard_ed_frm.cpp:1131
+msgid "Save error!"
+msgstr "Chyba při ukládání!"
+
+#: ard_ed_frm.cpp:828
+msgid "Close Others"
+msgstr "Zavřít ostatní"
+
+#: ard_ed_frm.cpp:829
+msgid "Close All"
+msgstr "Zavřít vše"
+
+#: ard_ed_frm.cpp:891
+#, c-format
+msgid "File %s not found."
+msgstr "Soubor %s nebyl nalezen."
+
+#: ard_ed_frm.cpp:896
+msgid "Cannot delete .ino file of the sketch."
+msgstr "Nelze smazat .ino soubor sketche."
+
+#: ard_ed_frm.cpp:908
+msgid ""
+"The file has unsaved changes.\n"
+"Do you really want to delete it?"
+msgstr ""
+"Soubor obsahuje neuložené změny.\n"
+"Opravdu jej chcete smazat?"
+
+#: ard_ed_frm.cpp:910 ard_filestree.cpp:392
+msgid "Delete file"
+msgstr "Smazat soubor"
+
+#: ard_ed_frm.cpp:922
+#, c-format
+msgid "Failed to delete %s."
+msgstr "Nepodařilo se smazat %s."
+
+#: ard_ed_frm.cpp:961
+msgid "File with this name already exists in the filesystem."
+msgstr "Soubor s tímto názvem již v souborovém systému existuje."
+
+#: ard_ed_frm.cpp:966
+msgid "Cannot create file outside of project."
+msgstr "Nelze vytvořit soubor mimo projekt."
+
+#: ard_ed_frm.cpp:973
+#, c-format
+msgid "Cannot create file '%s'."
+msgstr "Nelze vytvořit soubor '%s'."
+
+#: ard_ed_frm.cpp:1019 ard_examples.cpp:461
+msgid "Sketch name cannot be empty."
+msgstr "Název sketche nesmí být prázdný."
+
+#: ard_ed_frm.cpp:1032
+#, c-format
+msgid "Error creating directory '%s'."
+msgstr "Chyba při vytváření adresáře '%s'."
+
+#: ard_ed_frm.cpp:1072 nsketch.cpp:93
+msgid "Select sketch directory"
+msgstr "Vyberte adresář sketche"
+
+#: ard_ed_frm.cpp:1104
+msgid "Saved..."
+msgstr "Uloženo..."
+
+#: ard_ed_frm.cpp:1129
+msgid "All saved..."
+msgstr "Vše uloženo..."
+
+#: ard_ed_frm.cpp:1150
+msgid "Serial port changed to "
+msgstr "Sériový port změněn na "
+
+#: ard_ed_frm.cpp:1158
+msgid "Serial ports refreshed."
+msgstr "Sériové porty obnoveny."
+
+#: ard_ed_frm.cpp:1171
+msgid "No symbols found."
+msgstr "Nebyly nalezeny žádné symboly."
+
+#: ard_ed_frm.cpp:1171 ard_finsymdlg.cpp:11
+msgid "Find symbol"
+msgstr "Najít symbol"
+
+#: ard_ed_frm.cpp:1211
+msgid "Rebuilding project..."
+msgstr "Projekt se znovu kompiluje..."
+
+#: ard_ed_frm.cpp:1237
+msgid "Compilation"
+msgstr "Kompilace"
+
+#: ard_ed_frm.cpp:1240
+msgid "Upload"
+msgstr "Nahrát"
+
+#: ard_ed_frm.cpp:1243
+msgid "Library installation"
+msgstr "Instalace knihovny"
+
+#: ard_ed_frm.cpp:1246
+msgid "Library uninstalation"
+msgstr "Odinstalace knihovny"
+
+#: ard_ed_frm.cpp:1249 ard_libman.cpp:686
+msgid "Update library index"
+msgstr "Aktualizovat index knihoven"
+
+#: ard_ed_frm.cpp:1253
+msgid "Action"
+msgstr "Akce"
+
+#: ard_ed_frm.cpp:1261
+#, c-format
+msgid "Other action \"%s\" running. Please try again later."
+msgstr "Jiná akce \"%s\" právě probíhá. Prosím, zkuste to později."
+
+#: ard_ed_frm.cpp:1275
+#, c-format
+msgid "%s started..."
+msgstr "%s spuštěna..."
+
+#: ard_ed_frm.cpp:1287
+msgid "finished."
+msgstr "dokončena."
+
+#: ard_ed_frm.cpp:1287
+msgid "failed."
+msgstr "selhala."
+
+#: ard_ed_frm.cpp:1295
+#, c-format
+msgid "%s failed. See the CLI output for more information."
+msgstr "%s selhala. Pro více informací si prosím prohlédněte výstup CLI."
+
+#: ard_ed_frm.cpp:1301 ard_ed_frm.cpp:1955 ard_libman.cpp:192
+msgid "Loading libraries..."
+msgstr "Načítání knihoven..."
+
+#: ard_ed_frm.cpp:1312 ard_ed_frm.cpp:1985
+msgid "Enumerating available boards..."
+msgstr "Zjišťování dostupných desek..."
+
+#: ard_ed_frm.cpp:1314
+msgid "Loading core list..."
+msgstr "Načítání seznamu jader..."
+
+#: ard_ed_frm.cpp:1338
+msgid "Building project..."
+msgstr "Sestavování projektu..."
+
+#: ard_ed_frm.cpp:1357
+msgid "Uploading project..."
+msgstr "Upload projektu na desku..."
+
+#: ard_ed_frm.cpp:1502
+msgid ""
+"The following missing headers are claimed to be provided by Arduino "
+"libraries:\n"
+"\n"
+msgstr ""
+"Následující chybějící hlavičky se zdají být poskytovány Arduino knihovnami:\n"
+"\n"
+
+#: ard_ed_frm.cpp:1522
+msgid ""
+"\n"
+"Note: Arduino library metadata can be wrong. The Library Manager will be "
+"opened so you can choose what to install.\n"
+"\n"
+msgstr ""
+"\n"
+"Poznámka: Metadata Arduino knihoven nemusí být správná. Bude otevřen Správce "
+"knihoven, kde můžete vybrat knihovnu k instalaci.\n"
+"\n"
+
+#: ard_ed_frm.cpp:1527
+msgid "Missing headers"
+msgstr "Chybějící hlavičky"
+
+#: ard_ed_frm.cpp:1530
+msgid "Open Library Manager"
+msgstr "Otevřít správce knihoven"
+
+#: ard_ed_frm.cpp:1530
+msgid "Ignore"
+msgstr "Ignorovat"
+
+#: ard_ed_frm.cpp:1620
+msgid "Translation unit not prepared."
+msgstr "Překladová jednotka není připravena."
+
+#: ard_ed_frm.cpp:1634 ard_ed_frm.cpp:1883
+msgid "Diagnostics turned off."
+msgstr "Diagnostika vypnuta."
+
+#: ard_ed_frm.cpp:1650
+msgid "No problems found."
+msgstr "Nebyly nalezeny žádné problémy."
+
+#: ard_ed_frm.cpp:1862
+msgid "Project diagnostics evaluation..."
+msgstr "Vyhodnocování diagnostiky projektu..."
+
+#: ard_ed_frm.cpp:1877
+msgid "Diagnostic evaluation..."
+msgstr "Vyhodnocování diagnostiky..."
+
+#: ard_ed_frm.cpp:1893
+msgid "Failed to load Arduino libraries from arduino-cli."
+msgstr "Nepodařilo se načíst Arduino knihovny z arduino-cli."
+
+#: ard_ed_frm.cpp:1915
+msgid "Failed to load installed Arduino libraries from arduino-cli."
+msgstr "Nepodařilo se načíst nainstalované Arduino knihovny z arduino-cli."
+
+#: ard_ed_frm.cpp:1973
+msgid "Failed to load installed Arduino cores from arduino-cli."
+msgstr "Nepodařilo se načíst nainstalované Arduino desky z arduino-cli."
+
+#: ard_ed_frm.cpp:1994
+msgid "Failed to load Arduino cores from arduino-cli."
+msgstr "Nepodařilo se načíst Arduino desky z arduino-cli."
+
+#: ard_ed_frm.cpp:2019
+msgid "Failed to load available boards from arduino-cli."
+msgstr "Nepodařilo se načíst dostupné desky z arduino-cli."
+
+#: ard_ed_frm.cpp:2033
+msgid "Resolving libraries..."
+msgstr "Určování použitých knihoven..."
+
+#: ard_ed_frm.cpp:2122
+msgid ""
+"Some files have unsaved changes.\n"
+"Do you want to save them before exiting?"
+msgstr ""
+"Některé soubory obsahují neuložené změny.\n"
+"Přejete si je před ukončením uložit?"
+
+#: ard_ed_frm.cpp:2123
+msgid "Confirm exit"
+msgstr "Potvrdit ukončení"
+
+#: ard_ed_frm.cpp:2126
+msgid "Save"
+msgstr "Uložit"
+
+#: ard_ed_frm.cpp:2126
+msgid "Discard"
+msgstr "Zahodit"
+
+#: ard_ed_frm.cpp:2137
+msgid "Some files couldn't be saved."
+msgstr "Některé soubory nebylo možné uložit."
+
+#: ard_ed_frm.cpp:2137
+msgid "Save error"
+msgstr "Chyba při ukládání"
+
+#: ard_ed_frm.cpp:2284
+msgid "New Sketch...\tCtrl+N"
+msgstr "Nový sketch...\tCtrl+N"
+
+#: ard_ed_frm.cpp:2285
+msgid "Create new sketch"
+msgstr "Vytvořit nový sketch"
+
+#: ard_ed_frm.cpp:2290
+msgid "Open Sketch...\tCtrl+O"
+msgstr "Otevřít sketch...\tCtrl+O"
+
+#: ard_ed_frm.cpp:2291
+msgid "Open an existing Arduino sketch directory"
+msgstr "Otevřít existující adresář Arduino sketche"
+
+#: ard_ed_frm.cpp:2296
+msgid "Open recent"
+msgstr "Otevřít nedávné"
+
+#: ard_ed_frm.cpp:2301
+msgid "Sketches"
+msgstr "Sketche"
+
+#: ard_ed_frm.cpp:2306
+msgid "Examples...\tCtrl+E"
+msgstr "Příklady...\tCtrl+E"
+
+#: ard_ed_frm.cpp:2307
+msgid "Browse and preview Arduino library examples"
+msgstr "Prohlížet příklady Arduino knihoven"
+
+#: ard_ed_frm.cpp:2312
+msgid "Save\tCtrl+S"
+msgstr "Uložit\tCtrl+S"
+
+#: ard_ed_frm.cpp:2313
+msgid "Save the current file"
+msgstr "Uložit aktuální soubor"
+
+#: ard_ed_frm.cpp:2318
+msgid "Save All\tCtrl+Shift+S"
+msgstr "Uložit vše\tCtrl+Shift+S"
+
+#: ard_ed_frm.cpp:2319
+msgid "Save all opened files"
+msgstr "Uložit všechny otevřené soubory"
+
+#: ard_ed_frm.cpp:2326
+msgid "Settings..."
+msgstr "Nastavení..."
+
+#: ard_ed_frm.cpp:2327
+msgid "Open configuration (cli, fonts, colors and behavior)"
+msgstr "Otevřít konfiguraci (cli, písma, barvy a chování)"
+
+#: ard_ed_frm.cpp:2341
+msgid "Exit the application"
+msgstr "Ukončit aplikaci"
+
+#: ard_ed_frm.cpp:2348
+msgid "Back\tAlt-Left"
+msgstr "Zpět\tAlt-Left"
+
+#: ard_ed_frm.cpp:2349
+msgid "Jump back to the previous cursor navigation location"
+msgstr "Přejít zpět na předchozí umístění kurzoru"
+
+#: ard_ed_frm.cpp:2354
+msgid "Forward\tAlt-Right"
+msgstr "Vpřed\tAlt-Right"
+
+#: ard_ed_frm.cpp:2355
+msgid "Go forward in navigation history"
+msgstr "Jít vpřed v historii navigace"
+
+#: ard_ed_frm.cpp:2360
+msgid "Find symbol...\tCtrl-Shift-O"
+msgstr "Najít symbol...\tCtrl-Shift-O"
+
+#: ard_ed_frm.cpp:2361
+msgid "Find and navigate to any symbol in the current sketch"
+msgstr "Najděte a přejděte na libovolný symbol v aktuálním sketchi"
+
+#: ard_ed_frm.cpp:2368
+msgid "Library manager...\tCtrl+L"
+msgstr "Správce knihoven...\tCtrl+L"
+
+#: ard_ed_frm.cpp:2369
+msgid "Manage Arduino libraries"
+msgstr "Spravovat Arduino knihovny"
+
+#: ard_ed_frm.cpp:2374
+msgid "Core manager..."
+msgstr "Správce desek..."
+
+#: ard_ed_frm.cpp:2375
+msgid "Manage Arduino boards (cores)"
+msgstr "Spravujte Arduino desky (cores)"
+
+#: ard_ed_frm.cpp:2381 ard_ed_frm.cpp:3268
+msgid "Serial monitor"
+msgstr "Serial monitor"
+
+#: ard_ed_frm.cpp:2382
+msgid "Shows serial monitor of connected board"
+msgstr "Zobrazí monitor sériového portu připojené desky"
+
+#: ard_ed_frm.cpp:2389
+msgid "Build\tCtrl+R"
+msgstr "Sestavit\tCtrl+R"
+
+#: ard_ed_frm.cpp:2390
+msgid "Build sketch using arduino-cli"
+msgstr "Sestavit sketch pomocí arduino-cli"
+
+#: ard_ed_frm.cpp:2395
+msgid "Upload\tCtrl+U"
+msgstr "Nahrát\tCtrl+U"
+
+#: ard_ed_frm.cpp:2396
+msgid "Upload sketch using arduino-cli"
+msgstr "Nahrát sketch pomocí arduino-cli"
+
+#: ard_ed_frm.cpp:2403
+msgid "Clean\tShift+Ctrl+K"
+msgstr "Vyčistit\tShift+Ctrl+K"
+
+#: ard_ed_frm.cpp:2404
+msgid "Remove build cache and regenerate clang properties"
+msgstr "Odstranit build cache a znovu vygenerovat prostředí Clang"
+
+#: ard_ed_frm.cpp:2413 ard_ed_frm.cpp:2697
+msgid "Output"
+msgstr "Výstup"
+
+#: ard_ed_frm.cpp:2414
+msgid "Output window problems / build"
+msgstr "Okno seznamu problémů a výstupu CLI"
+
+#: ard_ed_frm.cpp:2424
+msgid "Sketch browser"
+msgstr "Prohlížeč souborů"
+
+#: ard_ed_frm.cpp:2425
+msgid "Show browser for Sketch directory"
+msgstr "Zobrazit prohlížeč pro adresář sketche"
+
+#: ard_ed_frm.cpp:2435 ard_ed_frm.cpp:2711 ard_setdlg.cpp:1406
+msgid "AI assistant"
+msgstr "AI asistent"
+
+#: ard_ed_frm.cpp:2436
+msgid "Show AI chat panel"
+msgstr "Zobrazit AI chat panel"
+
+#: ard_ed_frm.cpp:2448
+msgid "&About Arduino Editor...\tShift-F1"
+msgstr "&O Arduino Editoru...\tShift-F1"
+
+#: ard_ed_frm.cpp:2459
+msgid "&File"
+msgstr "&Soubor"
+
+#: ard_ed_frm.cpp:2460
+msgid "&Project"
+msgstr "&Projekt"
+
+#: ard_ed_frm.cpp:2461
+msgid "&Tools"
+msgstr "&Nástroje"
+
+#: ard_ed_frm.cpp:2462
+msgid "&View"
+msgstr "&Zobrazit"
+
+#: ard_ed_frm.cpp:2463
+msgid "&Help"
+msgstr "&Nápověda"
+
+#: ard_ed_frm.cpp:2520
+msgid "Loading available boards..."
+msgstr "Načítání dostupných desek..."
+
+#: ard_ed_frm.cpp:2523
+msgid "Loading available cores..."
+msgstr "Načítání dostupných jader..."
+
+#: ard_ed_frm.cpp:2576
+msgid "Development board options"
+msgstr "Možnosti vývojové desky"
+
+#: ard_ed_frm.cpp:2578
+msgid "Build sketch (Ctrl+R)"
+msgstr "Kompilovat sketch (Ctrl+R)"
+
+#: ard_ed_frm.cpp:2579
+msgid "Upload sketch (Ctrl+U)"
+msgstr "Nahrát sketch (Ctrl+U)"
+
+#: ard_ed_frm.cpp:2585
+msgid "Refresh port list"
+msgstr "Obnovit seznam portů"
+
+#: ard_ed_frm.cpp:2586
+msgid "Open Serial Monitor"
+msgstr "Otevřít sériový monitor"
+
+#: ard_ed_frm.cpp:2624 ard_finsymdlg.cpp:27 ard_renamedlg.cpp:128
+msgid "File"
+msgstr "Soubor"
+
+#: ard_ed_frm.cpp:2625 ard_finsymdlg.cpp:28 ard_orginc.cpp:39
+#: ard_renamedlg.cpp:129
+msgid "Line"
+msgstr "Řádek"
+
+#: ard_ed_frm.cpp:2626 ard_renamedlg.cpp:130
+msgid "Column"
+msgstr "Sloupec"
+
+#: ard_ed_frm.cpp:2627 ard_mdwidget.cpp:380
+msgid "Message"
+msgstr "Zpráva"
+
+#: ard_ed_frm.cpp:2650
+msgid "Problems"
+msgstr "Problémy"
+
+#: ard_ed_frm.cpp:2651 ard_setdlg.cpp:742
+msgid "CLI"
+msgstr "CLI"
+
+#: ard_ed_frm.cpp:2684
+msgid "Sketch files"
+msgstr "Soubory sketche"
+
+#: ard_ed_frm.cpp:2976 sf.cpp:50
+msgid "Arduino Editor"
+msgstr "Arduino Editor"
+
+#: ard_ed_frm.cpp:2983
+msgid "Application initializing..."
+msgstr "Inicializace aplikace..."
+
+#: ard_ed_frm.cpp:3152
+msgid "Copy problem"
+msgstr "Kopírovat problém"
+
+#: ard_ed_frm.cpp:3153
+msgid "Copy all problems"
+msgstr "Zkopírovat všechny problémy"
+
+#: ard_ed_frm.cpp:3161
+msgid "Solve error with AI"
+msgstr "Vyřešit chybu pomocí AI"
+
+#: ard_ed_frm.cpp:3266
+msgid ""
+"Serial monitor is available only for local serial ports.\n"
+"\n"
+"Select a serial port in the toolbar."
+msgstr ""
+"Serial monitor je dostupný pouze pro lokální sériové porty.\n"
+"\n"
+"Vyberte sériový port na panelu nástrojů."
+
+#: ard_ed_frm.cpp:3367
+msgid "(Empty)"
+msgstr "(Prázdné)"
+
+#: ard_ed_frm.cpp:3370 ard_ed_frm.cpp:3396 ard_ed_frm.cpp:3426
+msgid "Clear history"
+msgstr "Vymazat historii"
+
+#: ard_ed_frm.cpp:3426
+msgid "Do you really want to clear the recent sketches history?"
+msgstr "Opravdu chcete vymazat historii nedávných sketchů?"
+
+#: ard_ed_frm.cpp:3491
+msgid "(SketchesDir does not exist)"
+msgstr "(SketchesDir neexistuje)"
+
+#: ard_ed_frm.cpp:3498
+msgid "(Cannot open SketchesDir)"
+msgstr "(Nelze otevřít SketchesDir)"
+
+#: ard_ed_frm.cpp:3562
+msgid "(No sketches found)"
+msgstr "(Nebyly nalezeny žádné sketche)"
+
+#: ard_ed_frm.cpp:3710 ard_ed_frm.cpp:3861
+#, c-format
+msgid "Cannot open '%s' in associated application."
+msgstr "Nelze otevřít '%s' v přidružené aplikaci."
+
+#: ard_ed_frm.cpp:3710 ard_ed_frm.cpp:3861
+msgid "Open file"
+msgstr "Otevřít soubor"
+
+#: ard_ed_frm.cpp:3721
+msgid "Enter new file name:"
+msgstr "Zadejte nový název souboru:"
+
+#: ard_ed_frm.cpp:3721 ard_filestree.cpp:375
+msgid "New file"
+msgstr "Nový soubor"
+
+#: ard_ed_frm.cpp:3721
+msgid "new_file.cpp"
+msgstr "new_file.cpp"
+
+#: ard_ed_frm.cpp:3730
+msgid "File name must not contain path separators."
+msgstr "Název souboru nesmí obsahovat oddělovače cest."
+
+#: ard_ed_frm.cpp:3746
+msgid "Folder name:"
+msgstr "Název složky:"
+
+#: ard_ed_frm.cpp:3747 ard_filestree.cpp:376
+msgid "New folder"
+msgstr "Nová složka"
+
+#: ard_ed_frm.cpp:3748
+msgid "new_folder"
+msgstr "nová_slozka"
+
+#: ard_ed_frm.cpp:3757
+msgid "Invalid folder name."
+msgstr "Neplatný název složky."
+
+#: ard_ed_frm.cpp:3763
+msgid "Cannot create folder."
+msgstr "Nelze vytvořit složku."
+
+#: ard_ed_frm.cpp:3779
+msgid "Cannot delete .ino file of sketch."
+msgstr "Nelze smazat .ino soubor sketche."
+
+#: ard_ed_frm.cpp:3784
+#, c-format
+msgid "Do you want to delete folder %s and all its contents?"
+msgstr "Chcete smazat složku %s a veškerý její obsah?"
+
+#: ard_ed_frm.cpp:3785
+#, c-format
+msgid "Do you want to delete file %s?"
+msgstr "Opravdu chcete smazat soubor %s?"
+
+#: ard_ed_frm.cpp:3796
+msgid "Failed to delete: "
+msgstr "Nepodařilo se odstranit: "
+
+#: ard_ed_frm.cpp:3813 ard_renamedlg.cpp:103
+msgid "New name:"
+msgstr "Nový název:"
+
+#: ard_ed_frm.cpp:3813
+msgid "Rename"
+msgstr "Přejmenovat"
+
+#: ard_ed_frm.cpp:3847
+msgid "Rename failed."
+msgstr "Přejmenování se nezdařilo."
+
+#: ard_ed_frm.cpp:3868
+msgid "No board selected"
+msgstr "Není vybrána žádná deska"
+
+#: ard_ed_frm.cpp:3916 ard_ed_frm.cpp:4004
+msgid "--- Select board ---"
+msgstr "--- Vyberte desku ---"
+
+#: ard_ed_frm.cpp:4116
+msgid "Code completion engine is not available."
+msgstr "Prostředí pro dokončování není inicializováno."
+
+#: ard_ed_frm.cpp:4126
+msgid "Translation unit is not valid."
+msgstr "Překladová jednotka není připravena."
+
+#: ard_ed_frm.cpp:4126 ard_ed_frm.cpp:4147 ard_ed_frm.cpp:4160
+#: ard_ed_frm.cpp:4169 ard_ed_frm.cpp:4190 ard_ed_frm.cpp:4200
+#: ard_ed_frm.cpp:4207 ard_ed_frm.cpp:4221 ard_ed_frm.cpp:4249
+#: ard_refactor.cpp:466 ard_refactor.cpp:476 ard_renamedlg.cpp:53
+msgid "Rename symbol"
+msgstr "Přejmenovat symbol"
+
+#: ard_ed_frm.cpp:4147
+msgid "Sources contains compilation errors."
+msgstr "Zdrojové soubory obsahují chyby překladu."
+
+#: ard_ed_frm.cpp:4160
+msgid "No usages of this symbol were found."
+msgstr "Nebyly nalezeny žádné výskyty symbolu."
+
+#: ard_ed_frm.cpp:4169
+msgid "Symbol is declared outside of sketch directory."
+msgstr "Symbol je deklarován mimo sketch."
+
+#: ard_ed_frm.cpp:4190
+msgid "New name cannot be empty."
+msgstr "Název nesmí být prázdný."
+
+#: ard_ed_frm.cpp:4200
+msgid "New name is not a valid identifier."
+msgstr "Zadaný název není platným identifikátorem."
+
+#: ard_ed_frm.cpp:4207
+msgid "No occurrences selected."
+msgstr "Nebyly vybrány žádné výskyty."
+
+#: ard_ed_frm.cpp:4221
+msgid "No usages of this symbol were found inside the current sketch."
+msgstr "Nebyly nalezeny žádné výskyty symbolu v aktuálním sketchi."
+
+#: ard_ed_frm.cpp:4249
+msgid "No matching occurrences to rename were found."
+msgstr "Žádné odpovídající výskyty pro přejmenování nebyly nalezeny."
+
+#: ard_ed_frm.cpp:4253
+#, c-format
+msgid "Renamed %d occurrences."
+msgstr "Přejmenováno %d výskytů."
+
+#: ard_edit.cpp:180
+#, c-format
+msgid "Unable to load file %s."
+msgstr "Nelze načíst soubor %s."
+
+#: ard_edit.cpp:278
+msgid "Find and Replace"
+msgstr "Najít a nahradit"
+
+#: ard_edit.cpp:278
+msgid "Find"
+msgstr "Najít"
+
+#: ard_edit.cpp:930
+msgid "&Undo\tCtrl+Z"
+msgstr "&Zpět\tCtrl+Z"
+
+#: ard_edit.cpp:931
+msgid "&Redo\tCtrl+Y"
+msgstr "&Znovu\tCtrl+Y"
+
+#: ard_edit.cpp:934
+msgid "Cu&t\tCtrl+X"
+msgstr "Vyjmout\tCtrl+X"
+
+#: ard_edit.cpp:935
+msgid "&Copy\tCtrl+C"
+msgstr "&Kopírovat\tCtrl+C"
+
+#: ard_edit.cpp:936
+msgid "&Paste\tCtrl+V"
+msgstr "&Vložit\tCtrl+V"
+
+#: ard_edit.cpp:937
+msgid "&Delete\tDel"
+msgstr "&Odstranit\tDel"
+
+#: ard_edit.cpp:940
+msgid "Select &All\tCtrl+A"
+msgstr "Vybrat &vše\tCtrl+A"
+
+#: ard_edit.cpp:945
+msgid "&Find...\tCtrl+F"
+msgstr "&Najít...\tCtrl+F"
+
+#: ard_edit.cpp:946
+msgid "R&eplace...\tCtrl+Alt+F"
+msgstr "Nahradit...\tCtrl+Alt+F"
+
+#: ard_edit.cpp:952
+msgid "Rename symbol..."
+msgstr "Přejmenovat symbol..."
+
+#: ard_edit.cpp:953
+msgid "Rename the selected symbol across the project."
+msgstr "Přejmenovat vybraný symbol v celém projektu."
+
+#: ard_edit.cpp:958
+msgid "Introduce variable..."
+msgstr "Vytvořit proměnnou..."
+
+#: ard_edit.cpp:959
+msgid "Extract the selected expression into a new local variable."
+msgstr "Extrahuje vybraný výraz do nové lokální proměnné."
+
+#: ard_edit.cpp:964 ard_refactor.cpp:633 ard_refactor.cpp:650
+#: ard_refactor.cpp:658 ard_refactor.cpp:665 ard_refactor.cpp:676
+#: ard_refactor.cpp:683 ard_refactor.cpp:694 ard_refactor.cpp:745
+#: ard_refactor.cpp:759 ard_refactor.cpp:774 ard_refactor.cpp:784
+#: ard_refactor.cpp:807
+msgid "Inline variable"
+msgstr "Nahradit proměnnou jejím výrazem"
+
+#: ard_edit.cpp:965
+msgid "Replace all usages of the variable with its initializer."
+msgstr "Nahradit všechna použití proměnné jejím inicializačním výrazem."
+
+#: ard_edit.cpp:970
+msgid "Generate function implementation..."
+msgstr "Vygenerovat implementaci funkce..."
+
+#: ard_edit.cpp:971
+msgid "Insert an implementation stub for the selected function."
+msgstr "Vložit prázdnou implementaci pro vybranou funkci."
+
+#: ard_edit.cpp:976
+msgid "Create declaration in header..."
+msgstr "Vytvořit deklaraci v hlavičce..."
+
+#: ard_edit.cpp:977
+msgid "Add a missing function declaration to the appropriate header file."
+msgstr ""
+"Přidat chybějící deklaraci funkce do odpovídajícího hlavičkového souboru."
+
+#: ard_edit.cpp:982
+msgid "Organize includes..."
+msgstr "Uspořádat direktivy #include..."
+
+#: ard_edit.cpp:983
+msgid "Detect and clean up unused or duplicate #include directives."
+msgstr "Vyhledá a odstraní nepoužívané nebo duplicitní direktivy #include."
+
+#: ard_edit.cpp:988
+msgid "Extract function..."
+msgstr "Vytvořit funkci..."
+
+#: ard_edit.cpp:989
+msgid "Create a new function from the selected block of code."
+msgstr "Vytvoří novou funkci z vybraného bloku kódu."
+
+#: ard_edit.cpp:996
+msgid "Format Selection"
+msgstr "Naformátovat výběr"
+
+#: ard_edit.cpp:997
+msgid "Format the selected text using clang-format."
+msgstr "Naformátuje vybraný blok pomocí clang-format."
+
+#: ard_edit.cpp:1002
+msgid "Format File"
+msgstr "Naformátovat soubor"
+
+#: ard_edit.cpp:1003
+msgid "Format the current file using clang-format."
+msgstr "Naformátuje aktuální soubor pomocí clang-format."
+
+#: ard_edit.cpp:1006 ard_refactor.cpp:1636
+msgid "Refactor"
+msgstr "Refaktoring"
+
+#: ard_edit.cpp:1015
+msgid "Explain selection"
+msgstr "Vysvětlit výběr"
+
+#: ard_edit.cpp:1016
+msgid "AI explains the meaning and behavior of the selected code."
+msgstr "AI vysvětlí význam a chování vybraného kódu."
+
+#: ard_edit.cpp:1021
+msgid "Generate documentation for Symbol"
+msgstr "Vygenerovat dokumentaci k symbolu"
+
+#: ard_edit.cpp:1022
+msgid "AI generates a documentation comment for the symbol under the cursor."
+msgstr "AI vygeneruje dokumentační komentář pro symbol pod kurzorem."
+
+#: ard_edit.cpp:1027
+msgid "Auto-Document All Functions in File"
+msgstr "Automaticky dokumentovat všechny funkce v souboru"
+
+#: ard_edit.cpp:1028
+msgid "AI generates documentation comments for all functions in this file."
+msgstr ""
+"AI vygeneruje dokumentační komentáře pro všechny funkce v tomto souboru."
+
+#: ard_edit.cpp:1033
+msgid "Document All Methods in Class"
+msgstr "Automaticky dokumentovat všechny metody třídy"
+
+#: ard_edit.cpp:1034
+msgid "AI generates documentation for all methods of the selected class."
+msgstr "AI vygeneruje dokumentaci pro všechny metody vybrané třídy."
+
+#: ard_edit.cpp:1039
+msgid "Optimize function or method"
+msgstr "Optimalizace funkce nebo metody"
+
+#: ard_edit.cpp:1040
+msgid "AI optimizes function or method."
+msgstr "AI optimalizuje funkci nebo metodu."
+
+#: ard_edit.cpp:1043 ard_setdlg.cpp:1659
+msgid "AI"
+msgstr "AI"
+
+#: ard_edit.cpp:1394
+msgid ""
+"File is opened as read-only. Enable editing first if you want to save "
+"changes."
+msgstr ""
+"Soubor je otevřen pouze pro čtení. Nejprve povolte úpravy, pokud chcete "
+"změny uložit."
+
+#: ard_edit.cpp:1395
+msgid "Read-only file"
+msgstr "Soubor pouze pro čtení"
+
+#: ard_edit.cpp:1401
+#, c-format
+msgid "Unable to save file %s."
+msgstr "Nelze uložit soubor %s."
+
+#: ard_examples.cpp:22
+msgid "Arduino Library Examples"
+msgstr "Příklady Arduino knihoven"
+
+#: ard_examples.cpp:46
+msgid "Filter libraries..."
+msgstr "Filtrovat knihovny..."
+
+#: ard_examples.cpp:54
+msgid "Library"
+msgstr "Knihovna"
+
+#: ard_examples.cpp:57
+msgid "URL"
+msgstr "URL"
+
+#: ard_examples.cpp:75
+msgid "Example"
+msgstr "Příklad"
+
+#: ard_examples.cpp:76 ard_finsymdlg.cpp:29
+msgid "Path"
+msgstr "Cesta"
+
+#: ard_examples.cpp:265
+msgid ""
+"// Example not found:\n"
+"// "
+msgstr ""
+"// Příklad nenalezen:\n"
+"// "
+
+#: ard_examples.cpp:273 ard_examples.cpp:318
+msgid ""
+"// Cannot open file:\n"
+"// "
+msgstr ""
+"// Nelze otevřít soubor: \n"
+"//"
+
+#: ard_examples.cpp:293
+msgid ""
+"// Cannot open directory:\n"
+"// "
+msgstr ""
+"// Nelze otevřít adresář: \n"
+"//"
+
+#: ard_examples.cpp:307
+msgid ""
+"// No .ino (or .cpp) file found in:\n"
+"// "
+msgstr "// Nebyl nalezen žádný soubor .ino (ani .cpp) v: //"
+
+#: ard_examples.cpp:434
+msgid "Example directory does not exist:\n"
+msgstr "Adresář příkladu neexistuje:\n"
+
+#: ard_examples.cpp:434 ard_examples.cpp:451
+msgid "Install example"
+msgstr "Nainstalovat příklad"
+
+#: ard_examples.cpp:446
+msgid "example"
+msgstr "příklad"
+
+#: ard_examples.cpp:450
+msgid "Enter sketch name:"
+msgstr "Zadejte název sketche:"
+
+#: ard_examples.cpp:467
+msgid "Sketch name must not contain path separators."
+msgstr "Název sketche nesmí obsahovat oddělovače cest."
+
+#: ard_examples.cpp:473
+msgid "Sketches directory is not known."
+msgstr "Adresář sketchů není znám."
+
+#: ard_examples.cpp:481
+msgid "Target sketch directory already exists:\n"
+msgstr "Cílový adresář sketche již existuje:\n"
+
+#: ard_examples.cpp:486
+msgid "Failed to copy example to:\n"
+msgstr "Nepodařilo se zkopírovat příklad do:\n"
+
+#: ard_filestree.cpp:156 ard_filestree.cpp:280
+msgid "Libraries"
+msgstr "Knihovny"
+
+#: ard_filestree.cpp:252
+msgid "No sketch opened"
+msgstr "Žádný sketch není otevřený"
+
+#: ard_filestree.cpp:274
+msgid "Files"
+msgstr "Soubory"
+
+#: ard_filestree.cpp:378
+msgid "Open in file browser"
+msgstr "Otevřít ve správci souborů"
+
+#: ard_filestree.cpp:382
+msgid "Rename folder"
+msgstr "Přejmenovat složku"
+
+#: ard_filestree.cpp:383
+msgid "Delete folder"
+msgstr "Smazat složku"
+
+#: ard_filestree.cpp:387
+msgid "Open externally"
+msgstr "Otevřít externě"
+
+#: ard_filestree.cpp:391
+msgid "Rename file"
+msgstr "Přejmenovat soubor"
+
+#: ard_fmtdlg.cpp:128
+msgid "Clang-format options"
+msgstr "Clang-format parametry"
+
+#: ard_fmtdlg.cpp:145
+msgid ""
+"These options are used only when the sketch does NOT contain .clang-format "
+"or _clang-format."
+msgstr ""
+"Tyto volby se použijí jen tehdy, pokud sketch neobsahuje .clang-format ani "
+"_clang-format."
+
+#: ard_fmtdlg.cpp:157
+msgid "Open clang-format style options documentation"
+msgstr "Otevřít dokumentaci k nastavení stylu clang-format"
+
+#: ard_fmtdlg.cpp:164
+msgid "Reset to defaults"
+msgstr "Výchozí hodnoty"
+
+#: ard_indic.cpp:234
+msgid "No background activity"
+msgstr "Žádná aktivita na pozadí"
+
+#: ard_indic.cpp:237
+msgid "Background activity in progress (e.g. AI, parsing)"
+msgstr "Probíhá aktivita na pozadí (např. AI, parsování kódu apod.)"
+
+#: ard_indic.cpp:240
+msgid "Busy: heavy operation running"
+msgstr "Zaneprázdněn: náročná operace běží."
+
+#: ard_indic.cpp:246
+msgid "Running tasks:"
+msgstr "Bežící procesy:"
+
+#: ard_indic.cpp:253
+msgid "Idle"
+msgstr "V klidu"
+
+#: ard_indic.cpp:256
+msgid "Background"
+msgstr "Pozadí"
+
+#: ard_indic.cpp:259
+msgid "Busy"
+msgstr "Zaneprázdněn"
+
+#: ard_indic.cpp:334
+msgid "Background activity"
+msgstr "Aktivita na pozadí"
+
+#: ard_libinfo.cpp:89
+msgid "Version: "
+msgstr "Verze: "
+
+#: ard_libinfo.cpp:100
+msgid "Category: "
+msgstr "Kategorie: "
+
+#: ard_libinfo.cpp:117
+msgid "Installed version: "
+msgstr "Nainstalovaná verze: "
+
+#: ard_libinfo.cpp:119
+msgid "Installed: yes"
+msgstr "Nainstalováno: ano"
+
+#: ard_libinfo.cpp:127
+msgid "Legacy library (old layout)"
+msgstr "Knihovna Legacy (staré rozložení)"
+
+#: ard_libinfo.cpp:167
+msgid "Architectures:"
+msgstr "Architektury:"
+
+#: ard_libinfo.cpp:182
+msgid "Provides includes:"
+msgstr "Poskytuje includes:"
+
+#: ard_libinfo.cpp:197
+msgid "Available versions:"
+msgstr "Dostupné verze:"
+
+#: ard_libinfo.cpp:214 nsketch.cpp:42
+msgid "Location:"
+msgstr "Umístění:"
+
+#: ard_libinfo.cpp:225
+msgid "Dependencies:"
+msgstr "Závislosti:"
+
+#: ard_libinfo.cpp:236
+msgid "(none)"
+msgstr "(none)"
+
+#: ard_libinfo.cpp:247
+msgid "Install dir:"
+msgstr "Instalační adresář:"
+
+#: ard_libman.cpp:56
+msgid "Arduino Libraries"
+msgstr "Arduino knihovny"
+
+#: ard_libman.cpp:114
+msgid "Topic:"
+msgstr "Téma:"
+
+#: ard_libman.cpp:133
+msgid "author / maintainer / text / website"
+msgstr "autor / správce / text / webová stránka"
+
+#: ard_libman.cpp:149
+msgid "Category"
+msgstr "Kategorie"
+
+#: ard_libman.cpp:165
+msgid "Other..."
+msgstr "Jiné..."
+
+#: ard_libman.cpp:215 ard_libman.cpp:229 ard_libman.cpp:387
+msgid "All topics"
+msgstr "Všechny témata"
+
+#: ard_libman.cpp:683
+msgid "Git repository..."
+msgstr "Git repozitář..."
+
+#: ard_libman.cpp:684
+msgid "Zip file..."
+msgstr "Zip soubor..."
+
+#: ard_libman.cpp:701
+msgid ""
+"Enter Git repository URL (e.g. https://github.com/arduino-libraries/WiFi101."
+"git or with #version):"
+msgstr ""
+"Zadejte URL Git repozitáře (např. https://github.com/arduino-libraries/"
+"WiFi101.git nebo s #version):"
+
+#: ard_libman.cpp:702
+msgid "Install library from Git"
+msgstr "Nainstalovat knihovnu z Git"
+
+#: ard_libman.cpp:727
+msgid "Select library ZIP file"
+msgstr "Vyberte ZIP soubor knihovny"
+
+#: ard_libman.cpp:730
+msgid "ZIP archives (*.zip)|*.zip|All files (*.*)|*.*"
+msgstr "ZIP archivy (*.zip)|*.zip|Všechny soubory (*.*)|*.*"
+
+#: ard_libman.cpp:941
+msgid "Library '"
+msgstr "Knihovna '"
+
+#: ard_libman.cpp:942
+msgid ""
+"' has missing dependencies:\n"
+"\n"
+msgstr ""
+"' má chybějící závislosti:\n"
+"\n"
+
+#: ard_libman.cpp:948 ard_libman.cpp:1088
+msgid ""
+"\n"
+"Do you want to install these dependencies as well?"
+msgstr ""
+"\n"
+"Chcete také nainstalovat tyto závislosti?"
+
+#: ard_libman.cpp:952 ard_libman.cpp:1092
+msgid "Install dependencies"
+msgstr "Nainstalovat závislosti"
+
+#: ard_libman.cpp:1082
+msgid ""
+"The selected libraries have missing dependencies:\n"
+"\n"
+msgstr ""
+"Vybrané knihovny mají chybějící závislosti:\n"
+"\n"
+
+#: ard_libman.cpp:1209
+msgid ""
+"Other installed libraries depend on:\n"
+"  '"
+msgstr ""
+"Na ostatních nainstalovaných knihovnách závisejí:\n"
+"  '"
+
+#: ard_libman.cpp:1216
+msgid ""
+"\n"
+"Uninstalling this library may break those libraries.\n"
+msgstr ""
+"\n"
+"Odinstalování této knihovny může poškodit tyto knihovny.\n"
+
+#: ard_libman.cpp:1217
+msgid ""
+"\n"
+"Do you really want to uninstall it?"
+msgstr ""
+"\n"
+"Opravdu jej chcete odinstalovat?"
+
+#: ard_libman.cpp:1219
+msgid "Do you really want to uninstall library:\n"
+msgstr "Opravdu chcete odinstalovat knihovnu:\n"
+
+#: ard_libman.cpp:1223
+msgid "Uninstall library"
+msgstr "Odinstalovat knihovnu"
+
+#: ard_mdwidget.cpp:370
+msgid "You"
+msgstr "Vy"
+
+#: ard_mdwidget.cpp:372
+msgid "Assistant"
+msgstr "Asistent"
+
+#: ard_mdwidget.cpp:374
+msgid "System"
+msgstr "Systém"
+
+#: ard_mdwidget.cpp:376
+msgid "Info"
+msgstr "Informace"
+
+#: ard_mdwidget.cpp:378
+msgid "Error"
+msgstr "Chyba"
+
+#: ard_orginc.cpp:13 ard_refactor.cpp:1940 ard_refactor.cpp:1952
+#: ard_refactor.cpp:1959
+msgid "Organize includes"
+msgstr "Uspořádat #include"
+
+#: ard_orginc.cpp:25
+msgid ""
+"The following #include directives are considered unused and are selected for "
+"removal.\n"
+"Uncheck any includes you want to KEEP. Includes that remain unchecked will "
+"stay unchanged."
+msgstr ""
+"Následující #include direktivy byly vyhodnoceny jako nepoužívané a jsou "
+"vybrány pro výmaz.\n"
+"Zrušte zaškrtnutí u direktiv, které chcete ponechat.\n"
+"Direktivy, které nejsou zaškrtnuté, zůstanou nedotčeny."
+
+#: ard_orginc.cpp:37
+msgid "Remove"
+msgstr "Odstranit"
+
+#: ard_orginc.cpp:38
+msgid "Include"
+msgstr "Hlavička"
+
+#: ard_orginc.cpp:40
+msgid "Header file"
+msgstr "Soubor hlavičky"
+
+#: ard_orginc.cpp:51
+msgid "(used)"
+msgstr "(použito)"
+
+#: ard_orginc.cpp:51
+msgid "(unused)"
+msgstr "(nepoužito)"
+
+#: ard_orginc.cpp:65
+msgid "Sort #include directives"
+msgstr "Setřídit #include direktivy"
+
+#: ard_orginc.cpp:68
+msgid ""
+"Sorts includes so that system headers come first, followed by user headers.\n"
+"Within each group, items are ordered alphabetically."
+msgstr ""
+"Setřídění předřadí systémové direktivy #include před uživatelské.\n"
+"V rámci skupin jsou direktivy setříděny abecedně."
+
+#: ard_refactor.cpp:465
+msgid "No identifier under the cursor."
+msgstr "Pod kurzorem není identifikátor."
+
+#: ard_refactor.cpp:475
+msgid "The text under the cursor is not a valid identifier."
+msgstr "Text pod kurzorem není platný identifikátor."
+
+#: ard_refactor.cpp:500 ard_refactor.cpp:512
+msgid "Please select an expression to extract into a variable."
+msgstr "Vyberte prosím výraz pro vytvoření proměnné."
+
+#: ard_refactor.cpp:501 ard_refactor.cpp:513 ard_refactor.cpp:531
+#: ard_refactor.cpp:544 ard_refactor.cpp:556 ard_refactor.cpp:564
+msgid "Introduce variable"
+msgstr "Vytvořit proměnnou"
+
+#: ard_refactor.cpp:530
+msgid ""
+"The selection contains only whitespace. Please select a valid expression."
+msgstr "Výběr obsahuje pouze mezery. Vyberte prosím platný výraz."
+
+#: ard_refactor.cpp:543
+msgid "Variable name:"
+msgstr "Název proměnné:"
+
+#: ard_refactor.cpp:545
+msgid "tmp"
+msgstr "tmp"
+
+#: ard_refactor.cpp:555
+msgid "Variable name cannot be empty."
+msgstr "Název proměnné nesmí být prázdný."
+
+#: ard_refactor.cpp:563
+msgid "Variable name is not a valid identifier."
+msgstr "Zadaný název proměnné není platným identifikátorem."
+
+#: ard_refactor.cpp:632 ard_refactor.cpp:890 ard_refactor.cpp:1075
+#: ard_refactor.cpp:1939 ard_refactor.cpp:2047
+msgid "Code completion is not initialized yet."
+msgstr "Prostředí pro dokončování není inicializováno."
+
+#: ard_refactor.cpp:657
+msgid ""
+"This refactoring currently supports only local variables declared inside a "
+"function."
+msgstr ""
+"Tento refaktoring aktuálně podporuje pouze lokální proměnné deklarované "
+"uvnitř funkce."
+
+#: ard_refactor.cpp:664
+msgid "The symbol under the cursor is not a valid variable."
+msgstr "Symbol pod kurzorem není proměnná."
+
+#: ard_refactor.cpp:675
+msgid "Unable to collect variable occurrences from the code model."
+msgstr "Nepodařilo se vyhodnotit výskyty proměnné v kódu."
+
+#: ard_refactor.cpp:682
+msgid "No usages of this variable were found."
+msgstr "Nebyly nalezeny žádné použití této proměnné."
+
+#: ard_refactor.cpp:692
+msgid ""
+"This variable is used in another file.\n"
+"Inline variable currently supports only variables used in a single file."
+msgstr ""
+"Tato proměnná je použita v jiném souboru.\n"
+"Vložení proměnné do výrazu aktuálně podporuje pouze proměnné použité v "
+"jednom souboru."
+
+#: ard_refactor.cpp:743
+msgid ""
+"Multiple assignments or initializations of this variable were found.\n"
+"Inline variable currently supports only a single initialized declaration."
+msgstr ""
+"Bylo nalezeno více přiřazení nebo inicializací této proměnné.\n"
+"Funkce Nahradit proměnnou jejím výrazem podporuje pouze jeden inicializační "
+"výraz."
+
+#: ard_refactor.cpp:757
+msgid ""
+"Unable to locate a simple initialized declaration for this variable.\n"
+"Expected something like \"auto name = expr;\"."
+msgstr ""
+"Nepodařilo se najít jednoduchou inicializaci proměnné.\n"
+"Očekává se deklarace typu \"auto name = expr;\"."
+
+#: ard_refactor.cpp:773 ard_refactor.cpp:783
+msgid "The variable does not have an initializer."
+msgstr "Proměnná nemá inicializační výraz."
+
+#: ard_refactor.cpp:805
+msgid ""
+"No usages of this variable were found outside its declaration.\n"
+"Do you still want to remove the declaration?"
+msgstr ""
+"Proměnná se nikde mimo deklaraci nepoužívá.\n"
+"Chcete deklaraci odstranit?"
+
+#: ard_refactor.cpp:891 ard_refactor.cpp:909 ard_refactor.cpp:919
+#: ard_refactor.cpp:955 ard_refactor.cpp:983 ard_refactor.cpp:1001
+#: ard_refactor.cpp:1012
+msgid "Generate function"
+msgstr "Generovat funkci"
+
+#: ard_refactor.cpp:918 ard_refactor.cpp:1129
+msgid "The symbol under the cursor does not look like a function."
+msgstr "Text pod kurzorem nevypadá jako funkce."
+
+#: ard_refactor.cpp:954 ard_refactor.cpp:1153
+msgid "Unable to build function signature."
+msgstr "Nelze vytvořit signaturu funkce."
+
+#: ard_refactor.cpp:980
+#, c-format
+msgid ""
+"An implementation of this function already exists in %s.\n"
+"Do you want to open it?"
+msgstr ""
+"Implementace této funkce již existuje v %s\n"
+"Chcete ji zobrazit?"
+
+#: ard_refactor.cpp:1000
+#, c-format
+msgid "Function signature (in %s):"
+msgstr "Signatura funkce (v %s):"
+
+#: ard_refactor.cpp:1011
+msgid "Function signature cannot be empty."
+msgstr "Signatura funkce nesmí být prázdná."
+
+#: ard_refactor.cpp:1076 ard_refactor.cpp:1083 ard_refactor.cpp:1104
+#: ard_refactor.cpp:1121 ard_refactor.cpp:1130 ard_refactor.cpp:1154
+#: ard_refactor.cpp:1168 ard_refactor.cpp:1191 ard_refactor.cpp:1202
+msgid "Create declaration in header"
+msgstr "Vytvořit deklaraci v hlavičce"
+
+#: ard_refactor.cpp:1082
+msgid ""
+"This refactoring can only be used in a C/C++ source file (.cpp, .c, ...)."
+msgstr ""
+"Tento refaktoring může být použit pouze v C/C++ zdrojovém souboru (.cpp, ."
+"c, ...)."
+
+#: ard_refactor.cpp:1103
+msgid "Unable to locate or create a header file for this source file."
+msgstr "Nelze nalézt ani vytvořit hlavičku pro zdrojový soubor."
+
+#: ard_refactor.cpp:1165
+#, c-format
+msgid ""
+"An declaration of this function already exists in %s.\n"
+"Do you want to open it?"
+msgstr ""
+"Deklarace této funkce již existuje v %s.\n"
+"Chcete ji zobrazit?"
+
+#: ard_refactor.cpp:1190
+#, c-format
+msgid "Function declaration (in %s):"
+msgstr "Deklarace funkce (v %s):"
+
+#: ard_refactor.cpp:1201
+msgid "Function declaration cannot be empty."
+msgstr "Deklarace funkce nesmí být prázdná."
+
+#: ard_refactor.cpp:1427
+msgid "Document is read-only."
+msgstr "Dokument je pouze pro čtení."
+
+#: ard_refactor.cpp:1572
+msgid "Format selection"
+msgstr "Naformátovat výběr"
+
+#: ard_refactor.cpp:1579
+msgid "Format file"
+msgstr "Naformátovat soubor"
+
+#: ard_refactor.cpp:1628
+msgid "implementation"
+msgstr "implementace"
+
+#: ard_refactor.cpp:1630
+msgid "declaration"
+msgstr "deklarace"
+
+#: ard_refactor.cpp:1634
+#, c-format
+msgid ""
+"The %s file %s does not exist.\n"
+"Do you want to create it?"
+msgstr ""
+"%s soubor %s neexistuje.\n"
+"Chcete jej vytvořit?"
+
+#: ard_refactor.cpp:1951
+msgid "Unable to analyze includes for this file."
+msgstr "Nelze analyzovat direktivy #include v tomto souboru."
+
+#: ard_refactor.cpp:1958
+msgid "No #include directives found in this file."
+msgstr "Nebyly nalezeny žádné direktivy #include v tomto souboru."
+
+#: ard_refactor.cpp:2048 ard_refactor.cpp:2059 ard_refactor.cpp:2069
+#: ard_refactor.cpp:2097 ard_refactor.cpp:2109 ard_refactor.cpp:2117
+#: ard_refactor.cpp:2144
+msgid "Extract function"
+msgstr "Vytvořit funkci"
+
+#: ard_refactor.cpp:2058
+msgid "Please select a block of code to extract."
+msgstr "Vyberte prosím blok kódu pro vytvoření funkce."
+
+#: ard_refactor.cpp:2068
+msgid ""
+"The selection contains only whitespace. Please select a valid block of code."
+msgstr "Výběr obsahuje pouze mezery. Vyberte prosím platný blok kódu."
+
+#: ard_refactor.cpp:2096
+msgid "Function name:"
+msgstr "Název funkce:"
+
+#: ard_refactor.cpp:2098
+msgid "extractedFunction"
+msgstr "extractedFunction"
+
+#: ard_refactor.cpp:2108
+msgid "Function name cannot be empty."
+msgstr "Název funkce nesmí být prázdný."
+
+#: ard_refactor.cpp:2116
+msgid "Function name is not a valid identifier."
+msgstr "Název funkce není platným identifikátorem."
+
+#: ard_refactor.cpp:2143
+msgid "Unable to analyze the selected block."
+msgstr "Nelze analyzovat vybraný blok kódu."
+
+#: ard_renamedlg.cpp:131
+msgid "Preview"
+msgstr "Náhled"
+
+#: ard_sermon.cpp:247
+msgid "Failed to open serial port"
+msgstr "Nepodařilo se otevřít sériový port"
+
+#: ard_sermon.cpp:273
+msgid "Serial port closed"
+msgstr "Sériový port uzavřen"
+
+#: ard_sermon.cpp:286
+#, c-format
+msgid "Serial read error: %d"
+msgstr "Chyba čtení ze sériového portu: %d"
+
+#: ard_sermon.cpp:294
+msgid "Serial port handle invalid"
+msgstr "Neplatný ovladač sériového portu"
+
+#: ard_sermon.cpp:313
+#, c-format
+msgid "Serial read error (Win): %lu"
+msgstr "Chyba čtení ze sériového portu (Win): %lu"
+
+#: ard_sermon.cpp:333
+#, c-format
+msgid "Serial Monitor [%s]"
+msgstr "Sériový monitor [%s]"
+
+#: ard_sermon.cpp:379
+#, c-format
+msgid "Port: %s"
+msgstr "Port: %s"
+
+#: ard_sermon.cpp:405
+msgid "Baud:"
+msgstr "Rychlost přenosu:"
+
+#: ard_sermon.cpp:411 ard_sermon.cpp:569
+msgid "None"
+msgstr "Žádný"
+
+#: ard_sermon.cpp:412 ard_sermon.cpp:418 ard_sermon.cpp:571
+msgid "<LF>"
+msgstr "<LF>"
+
+#: ard_sermon.cpp:413 ard_sermon.cpp:573
+msgid "<CR>"
+msgstr "<CR>"
+
+#: ard_sermon.cpp:414 ard_sermon.cpp:575
+msgid "<CR><LF>"
+msgstr "<CR><LF>"
+
+#: ard_sermon.cpp:423
+msgid "Line ending:"
+msgstr "Zakončení řádků:"
+
+#: ard_sermon.cpp:428
+msgid "Autoscroll"
+msgstr "Automatické posouvání"
+
+#: ard_sermon.cpp:431
+msgid "Show timestamps"
+msgstr "Zobrazit časová razítka"
+
+#: ard_sermon.cpp:439 ard_sermon.cpp:597 ard_sermon.cpp:696
+msgid "Pause"
+msgstr "Pozastavit"
+
+#: ard_sermon.cpp:442
+msgid "Clear"
+msgstr "Vymazat"
+
+#: ard_sermon.cpp:493
+msgid "Failed to start serial monitor thread"
+msgstr "Nepodařilo se spustit vlákno sériového monitoru"
+
+#: ard_sermon.cpp:560
+msgid "Failed to write to serial port"
+msgstr "Nepodařilo se zapsat do sériového portu"
+
+#: ard_sermon.cpp:589
+msgid "Resume"
+msgstr "Pokračovat"
+
+#: ard_sermon.cpp:683
+#, c-format
+msgid "Serial monitor error: %s"
+msgstr "Chyba sériového monitoru: %s"
+
+#: ard_sermon.cpp:684
+#, c-format
+msgid ""
+"\n"
+"[ERROR] %s\n"
+msgstr ""
+"\n"
+"[CHYBA] %s\n"
+
+#: ard_sermon.cpp:714
+msgid ""
+"\n"
+"[INFO] Serial monitor blocked - port released.\n"
+msgstr ""
+"\n"
+"[INFO] Sériový monitor zablokován – port uvolněn.\n"
+
+#: ard_sermon.cpp:739
+msgid ""
+"\n"
+"[INFO] Serial monitor unblocked - port re-opened.\n"
+msgstr ""
+"\n"
+"[INFO] Sériový monitor odblokován – port znovu otevřen.\n"
+
+#: ard_setdlg.cpp:583
+msgid "Settings"
+msgstr "Nastavení"
+
+#: ard_setdlg.cpp:596
+msgid "Default"
+msgstr "Výchozí"
+
+#: ard_setdlg.cpp:627
+msgid "Sketches directory:"
+msgstr "Adresář sketchů:"
+
+#: ard_setdlg.cpp:633 ard_setdlg.cpp:661 ard_setdlg.cpp:1369
+msgid "Browse..."
+msgstr "Procházet..."
+
+#: ard_setdlg.cpp:654
+msgid "arduino-cli executable:"
+msgstr "Spustitelný soubor arduino-cli:"
+
+#: ard_setdlg.cpp:672
+msgid ""
+"arduino-cli.exe|arduino-cli.exe|Executable files (*.exe)|*.exe|All files (*."
+"*)|*.*"
+msgstr ""
+"arduino-cli.exe|arduino-cli.exe|Spustitelné soubory (*.exe)|*.exe|Všechny "
+"soubory (*.*)|*.*"
+
+#: ard_setdlg.cpp:674
+msgid "arduino-cli|arduino-cli|All files (*)|*"
+msgstr "arduino-cli|arduino-cli|Všechny soubory (*)|*"
+
+#: ard_setdlg.cpp:694
+msgid "Additional Boards Manager URLs (one per line):"
+msgstr "Další URL pro správce desek (jedno na řádek):"
+
+#: ard_setdlg.cpp:713
+msgid "Allow unsafe install"
+msgstr "Povolit nezabezpečenou instalaci"
+
+#: ard_setdlg.cpp:718
+msgid "Network proxy:"
+msgstr "Síťový proxy:"
+
+#: ard_setdlg.cpp:723
+msgid "user:pass@host:port OR host:port"
+msgstr "uživatel:heslo@počítač:port NEBO počítač:port"
+
+#: ard_setdlg.cpp:728
+msgid "Network connection timeout (seconds, 0 = no limit):"
+msgstr "Časový limit síťové transakce (v sekundách, 0 = bez omezení):"
+
+#: ard_setdlg.cpp:767
+msgid "Font"
+msgstr "Písmo"
+
+#: ard_setdlg.cpp:769
+msgid "Editor font:"
+msgstr "Font editoru:"
+
+#: ard_setdlg.cpp:775
+msgid "Colors"
+msgstr "Barvy"
+
+#: ard_setdlg.cpp:794
+msgid "Light theme"
+msgstr "Světlé téma"
+
+#: ard_setdlg.cpp:795
+msgid "Dark theme"
+msgstr "Tmavé téma"
+
+#: ard_setdlg.cpp:798
+msgid "Text:"
+msgstr "Text:"
+
+#: ard_setdlg.cpp:805
+msgid "Background:"
+msgstr "Pozadí:"
+
+#: ard_setdlg.cpp:812
+msgid "Installed list color:"
+msgstr "Barva seznamu (nainstalovano):"
+
+#: ard_setdlg.cpp:819
+msgid "Updatable list color:"
+msgstr "Barva seznamu (aktualizovatelné):"
+
+#: ard_setdlg.cpp:826
+msgid "Deprecated list color:"
+msgstr "Barva seznamu (zastaralé):"
+
+#: ard_setdlg.cpp:833
+msgid "Line numbers (text):"
+msgstr "Čísla řádků (text):"
+
+#: ard_setdlg.cpp:840
+msgid "Line numbers (background):"
+msgstr "Čísla řádků (pozadí):"
+
+#: ard_setdlg.cpp:847
+msgid "Selection:"
+msgstr "Výběr:"
+
+#: ard_setdlg.cpp:854
+msgid "Right edge:"
+msgstr "Pravý okraj:"
+
+#: ard_setdlg.cpp:861
+msgid "Whitespace:"
+msgstr "Mezery:"
+
+#: ard_setdlg.cpp:868
+msgid "Brace match:"
+msgstr "Závorky OK:"
+
+#: ard_setdlg.cpp:875
+msgid "Brace mismatch:"
+msgstr "Nesoulad závorek:"
+
+#: ard_setdlg.cpp:882
+msgid "Comments:"
+msgstr "Komentáře:"
+
+#: ard_setdlg.cpp:889
+msgid "Strings:"
+msgstr "Řetězce:"
+
+#: ard_setdlg.cpp:896
+msgid "Numbers:"
+msgstr "Čísla:"
+
+#: ard_setdlg.cpp:903
+msgid "Keywords #1:"
+msgstr "Klíčová slova #1:"
+
+#: ard_setdlg.cpp:910
+msgid "Keywords #2:"
+msgstr "Klíčová slova #2:"
+
+#: ard_setdlg.cpp:917
+msgid "Preprocessor:"
+msgstr "Preprocesor:"
+
+#: ard_setdlg.cpp:924
+msgid "Current line background:"
+msgstr "Pozadí aktuálního řádku:"
+
+#: ard_setdlg.cpp:931
+msgid "Error:"
+msgstr "Chyba:"
+
+#: ard_setdlg.cpp:938
+msgid "Warning:"
+msgstr "Varování:"
+
+#: ard_setdlg.cpp:945
+msgid "Symbol highlight:"
+msgstr "Zvýraznění symbolu:"
+
+#: ard_setdlg.cpp:952
+msgid "AI chat - user messages:"
+msgstr "AI chat - uživatelské zprávy:"
+
+#: ard_setdlg.cpp:959
+msgid "AI chat - assistant messages:"
+msgstr "AI chat - zprávy asistenta:"
+
+#: ard_setdlg.cpp:966
+msgid "AI chat - system messages:"
+msgstr "AI chat - zprávy systému:"
+
+#: ard_setdlg.cpp:973
+msgid "AI chat - info messages:"
+msgstr "AI chat - informační zprávy:"
+
+#: ard_setdlg.cpp:980
+msgid "AI chat - error messages:"
+msgstr "AI chat - chybové zprávy:"
+
+#: ard_setdlg.cpp:1004
+msgid "Editor behavior"
+msgstr "Chování editoru"
+
+#: ard_setdlg.cpp:1010
+msgid "Tab width:"
+msgstr "Šířka tabulátoru:"
+
+#: ard_setdlg.cpp:1018
+msgid "Use tabs (instead of spaces):"
+msgstr "Používat tabulátory (místo mezer):"
+
+#: ard_setdlg.cpp:1025
+msgid "Show whitespace:"
+msgstr "Zobrazit bílé znaky:"
+
+#: ard_setdlg.cpp:1032
+msgid "Auto indent:"
+msgstr "Automatické odsazení:"
+
+#: ard_setdlg.cpp:1039
+msgid "Clang format:"
+msgstr "Clang format:"
+
+#: ard_setdlg.cpp:1042
+msgid "Setup..."
+msgstr "Nastavení..."
+
+#: ard_setdlg.cpp:1043
+msgid ""
+"Configure advanced clang-format overrides (used when there is no .clang-"
+"format in the sketch)."
+msgstr ""
+"Nastavit pokročilá přepsání clang-format (použije se, pokud ve sketchi není "
+"soubor .clang-format)."
+
+#: ard_setdlg.cpp:1051
+msgid "View && layout"
+msgstr "Zobrazení && rozvržení"
+
+#: ard_setdlg.cpp:1057
+msgid "Show line numbers:"
+msgstr "Zobrazit čísla řádků:"
+
+#: ard_setdlg.cpp:1064
+msgid "Word wrap:"
+msgstr "Zalomit slova:"
+
+#: ard_setdlg.cpp:1071
+msgid "Show right edge:"
+msgstr "Zobrazit pravý okraj:"
+
+#: ard_setdlg.cpp:1078
+msgid "Edge column:"
+msgstr "Hraniční sloupec:"
+
+#: ard_setdlg.cpp:1086
+msgid "Highlight current line:"
+msgstr "Zvýraznit aktuální řádek:"
+
+#: ard_setdlg.cpp:1093
+msgid "Highlight symbols:"
+msgstr "Zvýraznit symboly:"
+
+#: ard_setdlg.cpp:1100
+msgid "Highlight matching braces:"
+msgstr "Zvýraznit párové závorky:"
+
+#: ard_setdlg.cpp:1107
+msgid "Display hover info:"
+msgstr "Zobrazovat informační bubliny:"
+
+#: ard_setdlg.cpp:1132
+msgid "Editor"
+msgstr "Editor"
+
+#: ard_setdlg.cpp:1140
+msgid "Language"
+msgstr "Jazyk"
+
+#: ard_setdlg.cpp:1143
+msgid "User interface language:"
+msgstr "Jazyk uživatelského rozhraní:"
+
+#: ard_setdlg.cpp:1150
+msgid "System language"
+msgstr "Systémový jazyk"
+
+#: ard_setdlg.cpp:1151
+msgid "English"
+msgstr "Anglicky"
+
+#: ard_setdlg.cpp:1209
+msgid "Language change will take effect after restarting the application."
+msgstr "Změna jazyka se projeví po restartování aplikace."
+
+#: ard_setdlg.cpp:1215
+msgid "Clang/LLVM"
+msgstr "Clang/LLVM"
+
+#: ard_setdlg.cpp:1224
+msgid ""
+"Diagnostics mode:\n"
+"- Off - diagnostics will not be generated.\n"
+"- Translation unit - only the source files reachable from the .ino file.\n"
+"- Whole project - all source files belonging to the sketch."
+msgstr ""
+"Režim diagnostiky:\n"
+"- Vypnuto - diagnostika nebude generována.\n"
+"- Překladová jednotka - pouze zdrojové soubory dostupné z .ino souboru.\n"
+"- Celý projekt - všechny zdrojové soubory patřící ke sketchi."
+
+#: ard_setdlg.cpp:1231 ard_setdlg.cpp:1265
+msgid "Off"
+msgstr "Vypnuto"
+
+#: ard_setdlg.cpp:1232
+msgid "Translation unit"
+msgstr "Překladová jednotka"
+
+#: ard_setdlg.cpp:1233
+msgid "Whole project"
+msgstr "Celý projekt"
+
+#: ard_setdlg.cpp:1249
+msgid "Resolve after save"
+msgstr "Kontrolovat po uložení"
+
+#: ard_setdlg.cpp:1251
+msgid "Errors are resolved only after saving the file."
+msgstr "Chyby jsou kontrolovány až po uložení souboru."
+
+#: ard_setdlg.cpp:1258
+msgid ""
+"Completion mode:\n"
+"- Off - code completion is disabled.\n"
+"- Only on request - completion is triggered only with Ctrl+Space.\n"
+"- While writing - dynamic code completion while typing."
+msgstr ""
+"Režim dokončování kódu:\n"
+"- Vypnuto - dokončování kódu je zakázáno.\n"
+"- Pouze na vyžádání - dokončování je spuštěno pouze stiskem Ctrl+Space.\n"
+"- Během psaní - dynamické dokončování kódu během psaní."
+
+#: ard_setdlg.cpp:1266
+msgid "Only on request"
+msgstr "Pouze na vyžádání"
+
+#: ard_setdlg.cpp:1267
+msgid "While writing"
+msgstr "Během psaní"
+
+#: ard_setdlg.cpp:1288
+msgid ""
+"Library && include resolution mode:\n"
+"- Internal resolver - fast, but may miss some include paths.\n"
+"- Compile-commands resolver - slower, but the most accurate."
+msgstr ""
+"Režim řešení knihoven:\n"
+"- Interní algoritmus - rychlý, ale může interpretovat některé cesty chybně.\n"
+"- arduino-cli / compile-commands - pomalejší, ale nejpřesnější."
+
+#: ard_setdlg.cpp:1295
+msgid "Internal resolver"
+msgstr "Interní algoritmus"
+
+#: ard_setdlg.cpp:1296
+msgid "Compile-commands resolver"
+msgstr "Překladač kompilátorových příkazů"
+
+#: ard_setdlg.cpp:1317
+msgid "Autocompletion delay (ms):"
+msgstr "Prodleva automatického doplňování (ms):"
+
+#: ard_setdlg.cpp:1326
+msgid "Resolve diagnostics delay (ms):"
+msgstr "Prodleva kontroly (ms):"
+
+#: ard_setdlg.cpp:1338
+msgid "External links"
+msgstr "Externí odkazy"
+
+#: ard_setdlg.cpp:1344
+msgid "Open external C/C++ source files inside the IDE (when possible)"
+msgstr ""
+"Otevřít externí zdrojové soubory C/C++ přímo v aplikaci (pokud je to možné)"
+
+#: ard_setdlg.cpp:1350
+msgid ""
+"When this option is disabled, the following command is used to open C/C++ "
+"source files that are outside the current sketch/project.\n"
+"Use %s as a placeholder for the file path, and %l for the line number.\n"
+"All other file types will be opened with the system's default application."
+msgstr ""
+"Když je tato možnost zakázána, k otevření C/C++ zdrojových souborů mimo "
+"aktuální sketch/projekt se použije následující příkaz.\n"
+"Použijte %s jako zástupný symbol pro cestu k souboru a %l pro číslo řádku.\n"
+"Všechny ostatní typy souborů budou otevřeny výchozí aplikací systému."
+
+#: ard_setdlg.cpp:1399
+msgid "IDE"
+msgstr "Aplikace"
+
+#: ard_setdlg.cpp:1411
+msgid "Enable AI-powered features (code fixes, explanations, ...)"
+msgstr "Povolit funkce využívající AI (opravy kódu, vysvětlení, ...)"
+
+#: ard_setdlg.cpp:1423
+msgid ""
+"AI integration uses an HTTP(S) API endpoint.\n"
+"You can connect either to a cloud provider (e.g. OpenAI-compatible API)\n"
+"or to a local server exposing a compatible endpoint."
+msgstr ""
+"Integrace AI používá HTTP(S) API endpoint.\n"
+"Můžete se připojit buď ke cloudovému poskytovateli (např. API kompatibilní s "
+"OpenAI),\n"
+"nebo k místnímu serveru, který poskytuje kompatibilní endpoint."
+
+#: ard_setdlg.cpp:1431
+msgid "Model"
+msgstr "Název modelu"
+
+#: ard_setdlg.cpp:1435
+msgid "Active model:"
+msgstr "Aktivní model:"
+
+#: ard_setdlg.cpp:1452
+msgid "(unnamed)"
+msgstr "(nepojmenováno)"
+
+#: ard_setdlg.cpp:1532
+msgid "Add..."
+msgstr "Přidat..."
+
+#: ard_setdlg.cpp:1533
+msgid "Import..."
+msgstr "Importovat..."
+
+#: ard_setdlg.cpp:1539
+msgid "New model"
+msgstr "Nová definice modelu"
+
+#: ard_setdlg.cpp:1552
+msgid "Import model from JSON"
+msgstr "Importovat model z JSON"
+
+#: ard_setdlg.cpp:1560
+msgid "Failed to read file."
+msgstr "Nepodařilo se načíst soubor."
+
+#: ard_setdlg.cpp:1560 ard_setdlg.cpp:1591
+msgid "Import"
+msgstr "Import"
+
+#: ard_setdlg.cpp:1591
+msgid "Invalid JSON file."
+msgstr "Chybný JSON soubor."
+
+#: ard_setdlg.cpp:1600
+msgid "Chat history"
+msgstr "Historie konverzací"
+
+#: ard_setdlg.cpp:1605
+msgid "Store AI chat sessions inside the sketch folder"
+msgstr "Ukládat sezení AI chatu do složky sketch"
+
+#: ard_setdlg.cpp:1620
+msgid ""
+"When enabled, the IDE may save the AI conversation transcript (including "
+"code snippets)\n"
+"into a hidden subfolder inside the current sketch. This helps you continue "
+"where you\n"
+"left off, but may store sensitive data (API keys, passwords, proprietary "
+"code, ...).\n"
+"Enable only if you understand the risks."
+msgstr ""
+"Pokud je tato volba zapnutá, IDE může ukládat přepis AI konverzace (včetně "
+"úryvků kódu)\n"
+"do skryté podsložky v aktuálním sketchi. To vám umožní pokračovat tam, kde "
+"jste\n"
+"skončili, ale může dojít k uložení citlivých dat (API klíče, hesla, "
+"proprietární kód, ...).\n"
+"Zapínejte pouze tehdy, pokud rozumíte souvisejícím rizikům."
+
+#: ard_setdlg.cpp:1630
+msgid "Session title:"
+msgstr "Název sezení:"
+
+#: ard_setdlg.cpp:1634
+msgid "Use date only (no summarization)"
+msgstr "Použít datum (žádná sumarizace)"
+
+#: ard_setdlg.cpp:1635
+msgid "Generate from first message (no extra tokens)"
+msgstr "Generovat z první zprávy (žádné tokeny navíc)"
+
+#: ard_setdlg.cpp:1636
+msgid "Generate with AI from first message (uses tokens)"
+msgstr "Vygenerovat pomocí AI z první zprávy (spotřebuje tokeny)"
+
+#: ard_setdlg.cpp:1647
+msgid ""
+"Controls how saved chat sessions are labeled in the session list.\n"
+"The title is generated only once, when the session starts."
+msgstr ""
+"Určuje, jak jsou uložená chatová sezení označena v seznamu sezení.\n"
+"Název je vygenerován pouze jednou, při zahájení sezení."
+
+#: ard_setdlg.cpp:1926
+msgid "Select sketches directory"
+msgstr "Vyberte adresář sketchů"
+
+#: ard_setdlg.cpp:1971
+msgid "Executable files (*.exe)|*.exe|All files (*.*)|*.*"
+msgstr "Spustitelné soubory (*.exe)|*.exe|Všechny soubory (*.*)|*.*"
+
+#: ard_setdlg.cpp:1978
+msgid "Select external program"
+msgstr "Vyberte externí program"
+
+#: main.cpp:281
+msgid "Initializing UI..."
+msgstr "Inicializuji uživatelské rozhraní..."
+
+#: main.cpp:330
+msgid ""
+"Thank you for trying Arduino Editor!\n"
+"\n"
+"It looks like this is your first time running the application.\n"
+"\n"
+"You can now either:\n"
+" - Open an existing Arduino sketch directory, or\n"
+" - Create a new sketch in your sketchbook folder.\n"
+"\n"
+"What would you like to do?"
+msgstr ""
+"Děkujeme, že používáte Arduino Editor!\n"
+"\n"
+"Zdá se, že aplikaci spouštíte poprvé.\n"
+"\n"
+"Nyní můžete:\n"
+" - Otevřít existující adresář s Arduino sketchem, nebo\n"
+" - Vytvořit nový sketch ve složce vašeho sketchbooku.\n"
+"\n"
+"Co chcete udělat?"
+
+#: main.cpp:336
+msgid "Welcome to Arduino Editor"
+msgstr "Vítejte v Arduino Editoru"
+
+#: main.cpp:339
+msgid "Open sketch"
+msgstr "Otevřít sketch"
+
+#: main.cpp:339 nsketch.cpp:8
+msgid "New sketch"
+msgstr "Nový sketch"
+
+#: main.cpp:362
+#, c-format
+msgid ""
+"Failed to create the default sketchbook folder:\n"
+"\n"
+"%s\n"
+"\n"
+"Please create a sketch folder manually and use 'Open sketch'."
+msgstr ""
+"Nepodařilo se vytvořit výchozí složku sketchbooku:\n"
+"\n"
+"%s\n"
+"\n"
+"Vytvořte prosím složku pro sketch ručně a použijte 'Otevřít sketch'."
+
+#: main.cpp:365
+msgid "Error creating sketchbook"
+msgstr "Chyba při vytváření sketchbooku"
+
+#: nsketch.cpp:19
+msgid "Sketch name:"
+msgstr "Název sketche:"
+
+#: nsketch.cpp:48
+msgid "Change"
+msgstr "Změnit"
+
+#: nsketch.cpp:129
+#, c-format
+msgid "Directory '%s' already exists."
+msgstr "Adresář '%s' již existuje."
+
+#: sf.cpp:54
+#, c-format
+msgid "Version %s"
+msgstr "Verze %s"
+
+#~ msgid "Refresh session list"
+#~ msgstr "Obnovit seznam sezení"
+
+#~ msgid "Reset chat"
+#~ msgstr "Inicializace chatu"
+
+#~ msgid ""
+#~ "\n"
+#~ "Do you want to install these libraries now?"
+#~ msgstr ""
+#~ "\n"
+#~ "Chcete nyní nainstalovat tyto knihovny?"
+
+#~ msgid "Missing Arduino libraries"
+#~ msgstr "Chybějící Arduino knihovny"
+
+#~ msgid "Skip"
+#~ msgstr "Přeskočit"
+
+#~ msgid "Select"
+#~ msgstr "Vybrat"
+
+#~ msgid "Options"
+#~ msgstr "Možnosti"
+
+#~ msgid " on "
+#~ msgstr " na "
+
+#, c-format
+#~ msgid "Extra request JSON (%s)"
+#~ msgstr "Dodatečné JSON parametry požadavku (%s)"
+
+#~ msgid "e.g. https://api.openai.com/v1/responses"
+#~ msgstr "např.: https://api.openai.com/v1/responses"
+
+#~ msgid "Edit extra JSON parameters for this endpoint"
+#~ msgstr "Upravte dodatečné JSON parametry pro tento endpoint"
+
+#~ msgid "e.g. gpt-4.1, gpt-5.1-codex, deepseek-coder, ..."
+#~ msgstr "např.: gpt-4.1, gpt-5.1-codex, deepseek-coder, ..."
+
+#~ msgid "Please enter or select an Endpoint URL first."
+#~ msgstr "Prosím vyberte nejprve URL endpointu."
+
+#~ msgid ""
+#~ "How many times the AI model may request additional information "
+#~ "(INFO_REQUEST) during a single action."
+#~ msgstr ""
+#~ "Kolikrát si může AI model během jedné akce vyžádat další informace "
+#~ "(INFO_REQUEST)."
+
+#~ msgid ""
+#~ "Maximum time to wait for a response from the AI endpoint before the "
+#~ "request is considered failed."
+#~ msgstr ""
+#~ "Maximální doba, po kterou editor čeká na odpověď od AI endpointu, než je "
+#~ "požadavek považován za neúspěšný."
+
+#~ msgid "Credentials"
+#~ msgstr "Přihlašovací údaje"
+
+#, c-format
+#~ msgid "Secure password storage is not available on this system (%s)."
+#~ msgstr "Bezpečné ukládání hesel není na tomto systému dostupné (%s)."
+
+#~ msgid "Context (advanced)"
+#~ msgstr "Kontext (pokročilé)"
+
+#~ msgid ""
+#~ "When enabled, all information requested by the AI (file ranges, search "
+#~ "results, symbol info)\n"
+#~ "is permanently added to the conversation context.\n"
+#~ "\n"
+#~ "This improves refactoring quality and multi-step reasoning, but "
+#~ "significantly increases\n"
+#~ "context size and token usage.\n"
+#~ "\n"
+#~ "Disable if you experience API errors or context overflows."
+#~ msgstr ""
+#~ "Pokud je tato volba zapnutá, veškeré informace vyžádané AI (rozsahy "
+#~ "souborů, výsledky vyhledávání, informace o symbolech)\n"
+#~ "jsou trvale přidávány do kontextu konverzace.\n"
+#~ "\n"
+#~ "To zlepšuje kvalitu refaktoringu a vícekrokové uvažování, ale výrazně "
+#~ "zvyšuje\n"
+#~ "velikost kontextu a spotřebu tokenů.\n"
+#~ "\n"
+#~ "Vypněte, pokud dochází k chybám API nebo přetečení kontextu."
+
+#~ msgid ""
+#~ "When enabled, the AI conversation context is aggressively trimmed after "
+#~ "each successfully\n"
+#~ "applied patch.\n"
+#~ "\n"
+#~ "Only the most recent user request and the steps that led to the last "
+#~ "change are kept in memory.\n"
+#~ "Older context is discarded.\n"
+#~ "\n"
+#~ "This greatly reduces context size and improves API reliability, but the "
+#~ "AI will not remember\n"
+#~ "earlier discussion beyond what is already reflected in the code."
+#~ msgstr ""
+#~ "Pokud je tato volba zapnutá, kontext AI konverzace je po každém úspěšně "
+#~ "aplikovaném patchi agresivně zkrácen.\n"
+#~ "\n"
+#~ "V paměti zůstane pouze poslední požadavek uživatele a kroky, které vedly "
+#~ "k poslední změně. Starší kontext je zahozen.\n"
+#~ "\n"
+#~ "To výrazně snižuje velikost kontextu a zvyšuje spolehlivost API, ale AI "
+#~ "si nebude pamatovat dřívější diskusi nad rámec toho, co je již obsaženo v "
+#~ "kódu."
+
+#~ msgid "API key will be removed when you confirm the settings."
+#~ msgstr "API klíč bude odstraněn po potvrzení nastavení."
+
+#~ msgid "No API key available."
+#~ msgstr "API klíč není dostupný."

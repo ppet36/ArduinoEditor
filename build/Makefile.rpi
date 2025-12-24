@@ -1,0 +1,252 @@
+# --------------------------------------------------------------------------------
+# RaspberryPI deb/AppImage makefile
+#
+# Tested on RaspberryPI 5 with stock OS.
+# --------------------------------------------------------------------------------
+
+APP_NAME        := ArduinoEditor
+APP_VERSION     := 1.0.0
+
+UNAME_S       := $(shell uname -s)
+ARCH          := $(shell uname -m)
+PLATFORM      := $(UNAME_S)-$(ARCH)
+
+APP_BINARY    := $(APP_NAME)
+
+RESOURCE_DIR    := ../resources
+LOCALE_SRC      := $(PLATFORM)/localization
+
+WX_PREFIX       := /opt/wx-3.3
+WX_CONFIG       ?= $(WX_PREFIX)/bin/wx-config
+LLVM_CONFIG     ?= llvm-config-19
+
+BUILD_DIR       := build_rpi
+APPDIR          := $(BUILD_DIR)/AppDir
+APPDIR_USR      := $(APPDIR)/usr
+APPDIR_BIN      := $(APPDIR_USR)/bin
+APPDIR_LIB      := $(APPDIR_USR)/lib
+APPDIR_SHARE    := $(APPDIR_USR)/share
+
+LOCALE_DEST     := $(APPDIR_SHARE)/locale
+
+DESKTOP_FILE    := $(APPDIR)/ArduinoEditor.desktop
+ICON_256        := $(APPDIR)/ArduinoEditor.png
+
+APPIMAGE        := $(APP_NAME)-$(APP_VERSION)-$(ARCH).AppImage
+APPIMAGETOOL    ?= appimagetool
+
+CXX             ?= g++
+
+# Debian-friendly package name (lowercase, no spaces)
+PKG_NAME        ?= arduino-editor
+
+DEB_ARCH        ?= $(if $(filter aarch64,$(ARCH)),arm64,$(ARCH))
+
+DEB_DIR         ?= $(BUILD_DIR)/deb
+DEBROOT         ?= $(DEB_DIR)/root
+DEBIAN_DIR      ?= $(DEBROOT)/DEBIAN
+
+# Install layout (keep everything self-contained under /opt)
+DEB_PREFIX      ?= $(DEBROOT)/opt/$(PKG_NAME)
+DEB_BIN_DIR     ?= $(DEB_PREFIX)/bin
+DEB_LIB_DIR     ?= $(DEB_PREFIX)/lib
+
+DEB_DESKTOP_DIR ?= $(DEBROOT)/usr/share/applications
+DEB_ICON_DIR    ?= $(DEBROOT)/usr/share/icons/hicolor/256x256/apps
+DEB_LOCALE_DIR  ?= $(DEBROOT)/usr/share/locale
+
+DEB_PACKAGE     ?= $(PKG_NAME)_$(APP_VERSION)_$(DEB_ARCH).deb
+DEB_DEBIAN_SRC  ?= $(DEB_DIR)/debian
+
+# Optional tool dependencies (we don't bundle these by default)
+DEB_SUGGESTS_TOOLS ?=
+
+# Build helper
+FAKEROOT        ?= fakeroot
+
+# Icon from the AppImage packaging, if defined
+DEB_ICON_256    ?= $(RESOURCE_DIR)/$(APP_NAME).png
+
+
+.PHONY: all
+all: appimage deb
+
+$(BUILD_DIR)/$(APP_BINARY):
+	$(MAKE) WX_CONFIG=$(WX_CONFIG) LLVM_CONFIG=$(LLVM_CONFIG) $(APP_NAME)
+	mkdir -p $(BUILD_DIR)
+	cp $(PLATFORM)/$(APP_BINARY) $(BUILD_DIR)/$(APP_NAME)
+
+$(LOCALE_SRC):
+	$(MAKE) WX_CONFIG=$(WX_CONFIG) LLVM_CONFIG=$(LLVM_CONFIG) locales
+
+.PHONY: appdir
+appdir: $(BUILD_DIR)/$(APP_BINARY) $(LOCALE_SRC)
+	@echo "==> Creating AppDir structure"
+	rm -rf $(APPDIR)
+	mkdir -p $(APPDIR_BIN) $(APPDIR_LIB) $(LOCALE_DEST)
+
+	cp $(BUILD_DIR)/$(APP_BINARY) $(APPDIR_BIN)/$(APP_BINARY)
+
+	printf "[Desktop Entry]\n"                         > $(DESKTOP_FILE)
+	printf "Type=Application\n"                        >> $(DESKTOP_FILE)
+	printf "Name=Arduino Editor\n"                     >> $(DESKTOP_FILE)
+	printf "Exec=ArduinoEditor %%F\n"                  >> $(DESKTOP_FILE)
+	printf "Icon=ArduinoEditor\n"                      >> $(DESKTOP_FILE)
+	printf "Categories=Development;IDE;Electronics;\n" >> $(DESKTOP_FILE)
+	printf "Terminal=false\n"                          >> $(DESKTOP_FILE)
+
+	cp $(RESOURCE_DIR)/$(APP_NAME).png  $(ICON_256)
+	cp /usr/local/bin/arduino-cli       $(APPDIR_BIN)
+
+	cp -R $(LOCALE_SRC)/*               $(LOCALE_DEST)
+
+	printf '#!/bin/sh\n'                               >  $(APPDIR)/AppRun
+	printf 'HERE="$$(dirname "$$0")"\n'               >> $(APPDIR)/AppRun
+	printf 'export PATH="$$HERE/usr/bin:$$PATH"\n'    >> $(APPDIR)/AppRun
+	printf 'export LD_LIBRARY_PATH="$$HERE/usr/lib:$$LD_LIBRARY_PATH"\n' >> $(APPDIR)/AppRun
+	printf 'exec "$$HERE/usr/bin/ArduinoEditor" "$$@"\n' >> $(APPDIR)/AppRun
+	chmod +x $(APPDIR)/AppRun
+
+.PHONY: bundle-wx
+bundle-wx:
+	@echo "==> Bundling wxWidgets from $(WX_PREFIX)"
+	mkdir -p $(APPDIR_LIB)
+	cp -a $(WX_PREFIX)/lib/libwx_baseu-*.so*           $(APPDIR_LIB)
+	cp -a $(WX_PREFIX)/lib/libwx_baseu_net-*.so*       $(APPDIR_LIB)
+	cp -a $(WX_PREFIX)/lib/libwx_gtk3u_core-*.so*      $(APPDIR_LIB)
+	cp -a $(WX_PREFIX)/lib/libwx_gtk3u_adv-*.so*       $(APPDIR_LIB)
+	cp -a $(WX_PREFIX)/lib/libwx_gtk3u_html-*.so*      $(APPDIR_LIB)
+	cp -a $(WX_PREFIX)/lib/libwx_gtk3u_stc-*.so*       $(APPDIR_LIB)
+	cp -a $(WX_PREFIX)/lib/libwx_gtk3u_aui-*.so*       $(APPDIR_LIB)
+	cp -a $(WX_PREFIX)/lib/libwx_gtk3u_propgrid-*.so*  $(APPDIR_LIB)
+	cp -a $(WX_PREFIX)/lib/libwx_gtk3u_xrc-*.so*       $(APPDIR_LIB)
+
+.PHONY: bundle-utils
+bundle-utils:
+	cp -aL /lib/aarch64-linux-gnu/libclang-19.so.19 $(APPDIR_LIB)
+	cp -aL /lib/aarch64-linux-gnu/libLLVM.so.19.1   $(APPDIR_LIB)
+	cp -aL /lib/aarch64-linux-gnu/libz3.so.4        $(APPDIR_LIB)
+	cp -aL /usr/bin/clang-format-19                 $(APPDIR_BIN)/clang-format
+	cp -aL /usr/local/bin/arduino-cli               $(APPDIR_BIN)
+
+.PHONY: appimage
+appimage: appdir bundle-wx bundle-utils
+	$(APPIMAGETOOL) $(APPDIR) $(APPIMAGE)
+	@echo "==> Created $(APPIMAGE)"
+
+.PHONY: debroot
+debroot:
+	rm -rf $(DEBROOT)
+	mkdir -p $(DEBIAN_DIR)
+	mkdir -p $(DEB_BIN_DIR) $(DEB_LIB_DIR)
+	mkdir -p $(DEBROOT)/usr/bin
+	mkdir -p $(DEB_DESKTOP_DIR)
+	mkdir -p $(DEB_ICON_DIR)
+	mkdir -p $(DEB_LOCALE_DIR)/cs_CZ/LC_MESSAGES
+
+.PHONY: deb-stage
+deb-stage: debroot $(BUILD_DIR)/$(APP_BINARY) $(LOCALE_SRC)
+	# App binary
+	cp -f $(BUILD_DIR)/$(APP_BINARY) $(DEB_BIN_DIR)/$(APP_BINARY)
+	# CLI
+	cp -f /usr/local/bin/arduino-cli $(DEB_BIN_DIR)/
+	# Clang format
+	cp -f /usr/bin/clang-format-19 $(DEB_BIN_DIR)/clang-format
+	chmod 755 $(DEB_BIN_DIR)/$(APP_BINARY)
+	chmod 755 $(DEB_BIN_DIR)/arduino-cli
+	chmod 755 $(DEB_BIN_DIR)/clang-format
+
+	# Icon (reuse from AppImage if available)
+	@if [ -f "$(DEB_ICON_256)" ]; then \
+		cp -f "$(DEB_ICON_256)" $(DEB_ICON_DIR)/arduino-editor.png; \
+	fi
+
+	# Localization
+	cp -R $(LOCALE_SRC)/* $(DEB_LOCALE_DIR)
+  
+	# Bundle wx 3.3.x from custom prefix (so users don't need wx 3.3 system-wide)
+	# These match AppImage selection: std, aui, html, stc, net, propgrid
+	cp -a $(WX_PREFIX)/lib/libwx_baseu-*.so*           $(DEB_LIB_DIR)
+	cp -a $(WX_PREFIX)/lib/libwx_baseu_net-*.so*       $(DEB_LIB_DIR)
+	cp -a $(WX_PREFIX)/lib/libwx_gtk3u_core-*.so*      $(DEB_LIB_DIR)
+	cp -a $(WX_PREFIX)/lib/libwx_gtk3u_adv-*.so*       $(DEB_LIB_DIR)
+	cp -a $(WX_PREFIX)/lib/libwx_gtk3u_html-*.so*      $(DEB_LIB_DIR)
+	cp -a $(WX_PREFIX)/lib/libwx_gtk3u_stc-*.so*       $(DEB_LIB_DIR)
+	cp -a $(WX_PREFIX)/lib/libwx_gtk3u_aui-*.so*       $(DEB_LIB_DIR)
+	cp -a $(WX_PREFIX)/lib/libwx_gtk3u_propgrid-*.so*  $(DEB_LIB_DIR)
+	cp -a $(WX_PREFIX)/lib/libwx_gtk3u_xrc-*.so*       $(DEB_LIB_DIR)
+
+.PHONY: deb-wrapper
+deb-wrapper: debroot
+	@printf '%s\n' \
+		'#!/usr/bin/env bash' \
+		'set -euo pipefail' \
+		'' \
+		'BASE="/opt/$(PKG_NAME)"' \
+		'export LD_LIBRARY_PATH="$$BASE/lib:${LD_LIBRARY_PATH:-}"' \
+		'' \
+		'exec "$$BASE/bin/$(APP_BINARY)" "$$@"' \
+		> $(DEBROOT)/usr/bin/arduino-editor
+	chmod 755 $(DEBROOT)/usr/bin/arduino-editor
+
+.PHONY: deb-desktop
+deb-desktop: debroot
+	@printf '%s\n' \
+		'[Desktop Entry]' \
+		'Type=Application' \
+		'Name=Arduino Editor' \
+		'Exec=arduino-editor %F' \
+		'Icon=arduino-editor' \
+		'Categories=Development;IDE;Electronics;' \
+		'Terminal=false' \
+		'StartupNotify=true' \
+		> $(DEB_DESKTOP_DIR)/arduino-editor.desktop
+
+# Compute runtime dependencies from ELF linkage.
+# - We point dpkg-shlibdeps at our private wx libs so it DOES NOT add system wx packages.
+# - libclang/libLLVM/z3/etc will be discovered from the system and pulled into Depends.
+.PHONY: deb-control
+deb-control: debroot deb-stage
+	@mkdir -p "$(DEB_DEBIAN_SRC)"
+	@printf '%s\n' \
+	  "Source: $(PKG_NAME)" \
+	  "Section: devel" \
+	  "Priority: optional" \
+	  "Maintainer: dummy" \
+	  "" \
+	  "Package: $(PKG_NAME)" \
+	  "Architecture: $(DEB_ARCH)" \
+	  "Description: dummy" \
+	  > "$(DEB_DEBIAN_SRC)/control"
+
+	@bash -euo pipefail -c '\
+	  cd "$(DEB_DIR)"; \
+	  DEPS=$$(dpkg-shlibdeps -O --ignore-missing-info \
+	    -l"root/opt/$(PKG_NAME)/lib" \
+	    "root/opt/$(PKG_NAME)/bin/$(APP_BINARY)" \
+	    | sed -n "s/^shlibs:Depends=//p"); \
+	  [ -n "$$DEPS" ] || { echo "ERROR: dpkg-shlibdeps produced empty Depends" >&2; exit 1; }; \
+	  printf "%s\n" \
+	    "Package: $(PKG_NAME)" \
+	    "Version: $(APP_VERSION)" \
+	    "Section: devel" \
+	    "Priority: optional" \
+	    "Architecture: $(DEB_ARCH)" \
+	    "Maintainer: Pavel Petržela (ppet36)" \
+	    "Depends: $$DEPS" \
+	    "Suggests: $(DEB_SUGGESTS_TOOLS)" \
+	    "Description: Arduino Editor for Raspberry Pi" \
+	    > "root/DEBIAN/control"; \
+	'
+
+.PHONY: deb
+deb: deb-stage deb-wrapper deb-desktop deb-control
+	$(FAKEROOT) dpkg-deb --build $(DEBROOT) $(DEB_PACKAGE)
+	@echo "==> Created $(DEB_PACKAGE)"
+
+
+.PHONY: clean
+clean:
+	$(MAKE) WX_CONFIG=$(WX_CONFIG) LLVM_CONFIG=$(LLVM_CONFIG) clean
+	rm -rf $(BUILD_DIR) $(DEB_PACKAGE) $(APPIMAGE)
+

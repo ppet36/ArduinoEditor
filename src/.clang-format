@@ -1,0 +1,9 @@
+BasedOnStyle: LLVM
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never        # převeď taby na mezery
+BreakBeforeBraces: Attach
+IndentCaseLabels: true            # <-- odsazení case proti switch
+AllowShortIfStatementsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Inline
+ColumnLimit: 0       # nezalamovat automaticky řádky

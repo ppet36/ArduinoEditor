@@ -1,0 +1,11 @@
+.DS_Store
+*.sw?
+*.zip
+*.exe
+*.dmg
+*.app/
+dist*
+build*
+Windows*/
+Linux*/
+Darwin*/

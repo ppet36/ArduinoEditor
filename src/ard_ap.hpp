@@ -1,0 +1,56 @@
+#pragma once
+
+#include <wx/artprov.h>
+#include <wx/bmpbndl.h>
+
+// Arduino Editor private art IDs (no overlap with wxART_*).
+namespace wxAEArt {
+inline const wxArtID Refresh = wxASCII_STR("wxAE_ART_REFRESH");
+inline const wxArtID Delete = wxASCII_STR("wxAE_ART_DELETE");
+inline const wxArtID New = wxASCII_STR("wxAE_ART_NEW");
+inline const wxArtID FileOpen = wxASCII_STR("wxAE_ART_FILE_OPEN");
+inline const wxArtID FileSave = wxASCII_STR("wxAE_ART_FILE_SAVE");
+inline const wxArtID FileSaveAs = wxASCII_STR("wxAE_ART_FILE_SAVE_AS");
+inline const wxArtID Quit = wxASCII_STR("wxAE_ART_QUIT");
+inline const wxArtID GoBack = wxASCII_STR("wxAE_ART_GO_BACK");
+inline const wxArtID GoForward = wxASCII_STR("wxAE_ART_GO_FORWARD");
+inline const wxArtID Find = wxASCII_STR("wxAE_ART_FIND");
+inline const wxArtID FindReplace = wxASCII_STR("wxAE_ART_FIND_AND_REPLACE");
+inline const wxArtID Undo = wxASCII_STR("wxAE_ART_UNDO");
+inline const wxArtID Redo = wxASCII_STR("wxAE_ART_REDO");
+inline const wxArtID Cut = wxASCII_STR("wxAE_ART_CUT");
+inline const wxArtID Copy = wxASCII_STR("wxAE_ART_COPY");
+inline const wxArtID Paste = wxASCII_STR("wxAE_ART_PASTE");
+inline const wxArtID Print = wxASCII_STR("wxAE_ART_PRINT");
+
+inline const wxArtID Folder = wxASCII_STR("wxAE_ART_FOLDER");
+inline const wxArtID FolderOpen = wxASCII_STR("wxAE_ART_FOLDER_OPEN");
+inline const wxArtID NormalFile = wxASCII_STR("wxAE_ART_NORMAL_FILE");
+inline const wxArtID ExecutableFile = wxASCII_STR("wxAE_ART_EXECUTABLE_FILE");
+
+inline const wxArtID SysLibrary = wxASCII_STR("wxAE_ART_SYSLIBRARY");
+inline const wxArtID UserLibrary = wxASCII_STR("wxAE_ART_USRLIBRARY");
+
+inline const wxArtID GoUp = wxASCII_STR("wxAE_ART_GO_UP");
+inline const wxArtID GoToParent = wxASCII_STR("wxAE_ART_GO_TO_PARENT");
+inline const wxArtID Plus = wxASCII_STR("wxAE_ART_PLUS");
+inline const wxArtID Minus = wxASCII_STR("wxAE_ART_MINUS");
+inline const wxArtID Edit = wxASCII_STR("wxAE_ART_EDIT");
+inline const wxArtID ListView = wxASCII_STR("wxAE_ART_LIST_VIEW");
+inline const wxArtID ReportView = wxASCII_STR("wxAE_ART_REPORT_VIEW");
+inline const wxArtID Tip = wxASCII_STR("wxAE_ART_TIP");
+inline const wxArtID Information = wxASCII_STR("wxAE_ART_INFORMATION");
+inline const wxArtID Question = wxASCII_STR("wxAE_ART_QUESTION");
+inline const wxArtID DevBoard = wxASCII_STR("wxAE_ART_DEVBOARD");
+inline const wxArtID Play = wxASCII_STR("wxAE_ART_PLAY");
+inline const wxArtID Check = wxASCII_STR("wxAE_ART_CHECK");
+inline const wxArtID SerMon = wxASCII_STR("wxAE_ART_SERMON");
+inline const wxArtID SourceFormat = wxASCII_STR("wxAE_ART_SOURCE_FORMAT");
+inline const wxArtID Settings = wxASCII_STR("wxAE_ART_SETTINGS");
+inline const wxArtID SelectAll = wxASCII_STR("wxAE_ART_SELECT_ALL");
+} // namespace wxAEArt
+
+class ArduinoArtProvider : public wxArtProvider {
+protected:
+  wxBitmapBundle CreateBitmapBundle(const wxArtID &id, const wxArtClient &client, const wxSize &size) override;
+};

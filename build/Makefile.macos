@@ -1,0 +1,263 @@
+# -------------------------------------------------------------------------------
+# MacOS Makefile for both platforms x86 + arm64
+#
+# Both platforms are needed for the build.
+# On both, run:
+#
+#   make -f Makefile.macos bundle
+#
+# which creates the directory ArduinoEditor-<arch>.app. The directories are then
+# placed in build/ next to the makefile, where they are signed, notarized, and
+# packaged into either a dmg or pkg.
+#
+# For pkg builds, the target is release-pkg-dual and for dmg,
+# the target is release-dmg-dual.
+# -------------------------------------------------------------------------------
+
+include Makefile
+
+ARCH := $(shell uname -m)
+ifeq ($(ARCH),arm64)
+ARCH_TAG := arm64
+else ifeq ($(ARCH),x86_64)
+ARCH_TAG := x86_64
+else
+ARCH_TAG := $(ARCH)
+endif
+
+APP_BUNDLE ?= $(APP_NAME)-$(ARCH_TAG).app
+
+STAGE_DIR ?= dist_dmg/$(ARCH_TAG)
+
+DMG_NAME    ?= $(APP_NAME)
+DMG_FILE    ?= $(DMG_NAME).dmg
+DMG_VOLNAME ?= $(APP_NAME)
+DMG_TMPBASE ?= $(DMG_NAME).tmp
+DMG_TMPDMG  ?= $(DMG_TMPBASE).dmg
+
+# ---- Dual-arch DMG (contains both arm64 + x86_64 apps) ----
+APP_BUNDLE_ARM ?= $(APP_NAME)-arm64.app
+APP_BUNDLE_X86 ?= $(APP_NAME)-x86_64.app
+
+STAGE_DIR_DUAL ?= dist_dmg/dual
+
+DMG_DUAL_NAME    ?= $(DMG_NAME)-macos
+DMG_DUAL_FILE    ?= $(DMG_DUAL_NAME).dmg
+DMG_DUAL_VOLNAME ?= $(DMG_VOLNAME)
+DMG_DUAL_TMPBASE ?= $(DMG_DUAL_NAME).tmp
+DMG_DUAL_TMPDMG  ?= $(DMG_DUAL_TMPBASE).dmg
+
+# ---- Dual-arch PKG (installs correct arch into /Applications/ArduinoEditor.app) ----
+
+PKG_STAGE_DUAL ?= dist_pkg/dual
+PKG_ROOT_ARM ?= $(PKG_STAGE_DUAL)/root_arm
+PKG_ROOT_X86 ?= $(PKG_STAGE_DUAL)/root_x86
+
+# Version for PKG (try read from Info.plist of arm64 app, fallback)
+PKG_VERSION ?= $(shell /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$(APP_BUNDLE_ARM)/Contents/Info.plist" 2>/dev/null || echo "1.0.0")
+
+PKG_DUAL_NAME ?= $(DMG_NAME)-macos
+PKG_DUAL_FILE ?= $(PKG_DUAL_NAME).pkg
+
+PKG_COMP_ARM  ?= $(PKG_STAGE_DUAL)/$(APP_NAME)-arm64.pkg
+PKG_COMP_X86  ?= $(PKG_STAGE_DUAL)/$(APP_NAME)-x86_64.pkg
+
+PKG_DIST_XML  ?= $(PKG_STAGE_DUAL)/Distribution.xml
+
+# ---- Signing ----
+SIGN_ID_APP   ?= Developer ID Application: Pavel Petrzela (GZCR36V87J)
+SIGN_ID_PKG   ?= Developer ID Installer: Pavel Petrzela (GZCR36V87J)
+TEAM_ID       ?= GZCR36V87J
+
+# notarytool keychain profile name (you create it once via make notary-setup)
+NOTARY_PROFILE ?= arduinoeditor-notary
+APPLE_ID       ?= r17c@seznam.cz
+
+
+bundle: $(TARGET)
+	rm -rf $(APP_BUNDLE)
+	mkdir -p $(APP_BUNDLE)/Contents/MacOS
+	mkdir -p $(APP_BUNDLE)/Contents/Resources
+
+	cp $(TARGET) $(APP_BUNDLE)/Contents/MacOS/$(APP_NAME)
+	cp Info.plist $(APP_BUNDLE)/Contents/Info.plist
+	cp $(RESOURCE_DIR)/ArduinoEditor.icns $(APP_BUNDLE)/Contents/Resources/ArduinoEditor.icns
+	cp -R $(BUILD_DIR)/localization $(APP_BUNDLE)/Contents/MacOS
+
+	./vendorize_libs.sh $(APP_BUNDLE)
+
+check-dual: bundle
+	@test -d "$(APP_BUNDLE_ARM)" || (echo "Missing: $(APP_BUNDLE_ARM)"; exit 1)
+	@test -d "$(APP_BUNDLE_X86)" || (echo "Missing: $(APP_BUNDLE_X86)"; exit 1)
+
+sign-dual: check-dual
+	codesign --deep --force --options runtime --timestamp --sign "$(SIGN_ID_APP)" "$(APP_BUNDLE_ARM)"
+	codesign --deep --force --options runtime --timestamp --sign "$(SIGN_ID_APP)" "$(APP_BUNDLE_X86)"
+
+dmg-stage-dual: sign-dual
+	rm -rf "$(STAGE_DIR_DUAL)"
+	mkdir -p "$(STAGE_DIR_DUAL)/Apple Silicon"
+	mkdir -p "$(STAGE_DIR_DUAL)/Intel"
+
+	# ARM -> Apple Silicon/ArduinoEditor.app
+	cp -R "$(APP_BUNDLE_ARM)" "$(STAGE_DIR_DUAL)/Apple Silicon/$(APP_NAME).app"
+
+	# x86 -> Intel/ArduinoEditor.app
+	cp -R "$(APP_BUNDLE_X86)" "$(STAGE_DIR_DUAL)/Intel/$(APP_NAME).app"
+
+	ln -s /Applications "$(STAGE_DIR_DUAL)/Applications"
+
+dmg-build-dual: dmg-stage-dual
+	rm -f "$(DMG_DUAL_FILE)" "$(DMG_DUAL_TMPDMG)"
+	hdiutil create -ov -format UDRW -volname "$(DMG_DUAL_VOLNAME)" \
+		-srcfolder "$(STAGE_DIR_DUAL)" \
+		"$(DMG_DUAL_TMPBASE)"
+	hdiutil convert "$(DMG_DUAL_TMPDMG)" -format UDZO -o "$(DMG_DUAL_FILE)"
+	rm -f "$(DMG_DUAL_TMPDMG)"
+
+dmg-sign-dual: dmg-build-dual
+	codesign --force --timestamp --sign "$(SIGN_ID_APP)" "$(DMG_DUAL_FILE)"
+
+dmg-notarize-dual: dmg-sign-dual
+	xcrun notarytool submit "$(DMG_DUAL_FILE)" \
+		--keychain-profile "$(NOTARY_PROFILE)" \
+		--wait
+
+dmg-staple-dual: dmg-notarize-dual
+	xcrun stapler staple "$(DMG_DUAL_FILE)"
+
+verify-dmg-dual: dmg-staple-dual
+	@echo "== hdiutil verify dmg (dual) =="
+	hdiutil verify "$(DMG_DUAL_FILE)"
+
+	@echo "== codesign info dmg (dual) =="
+	codesign -dv --verbose=4 "$(DMG_DUAL_FILE)" || true
+
+	@echo "== codesign verify dmg (dual) =="
+	codesign --verify --verbose=2 "$(DMG_DUAL_FILE)"
+
+	@echo "== stapler validate dmg (dual) =="
+	xcrun stapler validate "$(DMG_DUAL_FILE)"
+
+	@echo "== spctl install (dual) =="
+	spctl -a -vv -t install "$(DMG_DUAL_FILE)" || true
+
+	@echo "== spctl apps inside dmg (dual) =="
+	MNT=$$(hdiutil attach -nobrowse -readonly "$(DMG_DUAL_FILE)" | awk 'END{print $$3}'); \
+	spctl -a -vv "$$MNT/Apple Silicon/$(APP_NAME).app" || true; \
+	spctl -a -vv "$$MNT/Intel/$(APP_NAME).app" || true; \
+	hdiutil detach "$$MNT" >/dev/null
+
+clean-dmg:
+	rm -rf "$(STAGE_DIR)" "$(DMG_FILE)" "$(DMG_FILE).tmp"
+
+release-dmg-dual: verify-dmg-dual
+	@echo "OK: Dual DMG built + notarized + stapled: $(DMG_DUAL_FILE)"
+
+clean-dmg-dual:
+	rm -rf "$(STAGE_DIR_DUAL)" "$(DMG_DUAL_FILE)" "$(DMG_DUAL_FILE).tmp"
+
+
+
+# PKG
+pkg-stage-dual: sign-dual
+	rm -rf "$(PKG_STAGE_DUAL)"
+	mkdir -p "$(PKG_STAGE_DUAL)"
+	rm -rf "$(PKG_ROOT_ARM)" "$(PKG_ROOT_X86)"
+	mkdir -p "$(PKG_ROOT_ARM)" "$(PKG_ROOT_X86)"
+
+	# Zkopíruj app bundle už jako ArduinoEditor.app (bez suffixu)
+	ditto "$(APP_BUNDLE_ARM)" "$(PKG_ROOT_ARM)/$(APP_NAME).app"
+	ditto "$(APP_BUNDLE_X86)" "$(PKG_ROOT_X86)/$(APP_NAME).app"
+
+	# Distribution.xml
+	@printf '%s\n' \
+		'<?xml version="1.0" encoding="utf-8"?>' \
+		'<installer-gui-script minSpecVersion="2">' \
+		'  <title>$(APP_NAME)</title>' \
+		'  <options customize="never" require-scripts="false" rootVolumeOnly="true" hostArchitectures="arm64,x86_64"/>' \
+		'  <domains enable_currentUserHome="true" enable_localSystem="true" enable_anywhere="true"/>' \
+		'' \
+		'  <script><![CDATA[' \
+		'    function is_arm64_host() {' \
+		'      try { return system.sysctl("hw.optional.arm64") == 1; } catch (e) { return false; }' \
+		'    }' \
+		'  ]]></script>' \
+		'' \
+		'  <choices-outline>' \
+		'    <line choice="arm"/>' \
+		'    <line choice="x86"/>' \
+		'  </choices-outline>' \
+		'' \
+		'  <choice id="arm" visible="false" enabled="is_arm64_host()" selected="is_arm64_host()">' \
+		'    <pkg-ref id="cz.ppet36.$(APP_NAME).arm64">$(APP_NAME)-arm64.pkg</pkg-ref>' \
+		'  </choice>' \
+		'  <choice id="x86" visible="false" enabled="!is_arm64_host()" selected="!is_arm64_host()">' \
+		'    <pkg-ref id="cz.ppet36.$(APP_NAME).x86_64">$(APP_NAME)-x86_64.pkg</pkg-ref>' \
+		'  </choice>' \
+		'' \
+		'  <pkg-ref id="cz.ppet36.$(APP_NAME).arm64"/>' \
+		'  <pkg-ref id="cz.ppet36.$(APP_NAME).x86_64"/>' \
+		'</installer-gui-script>' \
+	> "$(PKG_DIST_XML)"
+
+
+
+pkg-build-dual: pkg-stage-dual
+	pkgbuild \
+		--root "$(PKG_ROOT_ARM)" \
+		--install-location "/Applications" \
+		--identifier "cz.ppet36.$(APP_NAME).arm64" \
+		--version "$(PKG_VERSION)" \
+		--sign "$(SIGN_ID_PKG)" \
+		"$(PKG_COMP_ARM)"
+
+	pkgbuild \
+		--root "$(PKG_ROOT_X86)" \
+		--install-location "/Applications" \
+		--identifier "cz.ppet36.$(APP_NAME).x86_64" \
+		--version "$(PKG_VERSION)" \
+		--sign "$(SIGN_ID_PKG)" \
+		"$(PKG_COMP_X86)"
+
+	# Build final signed product pkg
+	rm -f "$(PKG_DUAL_FILE)"
+	productbuild --distribution "$(PKG_DIST_XML)" --package-path "$(PKG_STAGE_DUAL)" --sign "$(SIGN_ID_PKG)" "$(PKG_DUAL_FILE)"
+
+
+pkg-notarize-dual: pkg-build-dual
+	xcrun notarytool submit "$(PKG_DUAL_FILE)" \
+		--keychain-profile "$(NOTARY_PROFILE)" \
+		--wait
+
+pkg-staple-dual: pkg-notarize-dual
+	xcrun stapler staple "$(PKG_DUAL_FILE)"
+
+verify-pkg-dual: pkg-staple-dual
+	@echo "== pkgutil check-signature (dual pkg) =="
+	pkgutil --check-signature "$(PKG_DUAL_FILE)" || true
+	@echo "== stapler validate (dual pkg) =="
+	xcrun stapler validate "$(PKG_DUAL_FILE)"
+	@echo "== spctl install (dual pkg) =="
+	spctl -a -vv -t install "$(PKG_DUAL_FILE)" || true
+
+release-pkg-dual: verify-pkg-dual
+	@echo "OK: Dual PKG built + notarized + stapled: $(PKG_DUAL_FILE)"
+
+clean-pkg-dual:
+	rm -rf "$(PKG_STAGE_DUAL)" "$(PKG_DUAL_FILE)"
+
+
+
+
+# One-time setup: stores credentials in your Keychain (will prompt for app-specific password)
+notary-setup:
+	xcrun notarytool store-credentials "$(NOTARY_PROFILE)" \
+		--apple-id "$(APPLE_ID)" \
+		--team-id "$(TEAM_ID)"
+
+# Remove stored notary profile
+clean-notary:
+	security delete-generic-password -s "notarytool" -a "$(NOTARY_PROFILE)" 2>/dev/null || true
+
+.PHONY: notary-setup clean-notary check-dual sign-dual dmg-stage-dual dmg-build-dual dmg-sign-dual dmg-notarize-dual dmg-staple-dual verify-dmg-dual release-dmg-dual clean-dmg-dual pkg-stage-dual pkg-build-dual pkg-notarize-dual pkg-staple-dual verify-pkg-dual release-pkg-dual clean-pkg-dual

@@ -1,0 +1,277 @@
+# ---------------------------------------------------------
+# ArduinoEditor – Windows (cross) build from macOS/Linux
+# ---------------------------------------------------------
+
+VERSION ?= "1.0.0"
+
+# Pull in the common POSIX build rules, sources, etc.
+APP_NAME := ArduinoEditor
+
+# Source files
+SOURCE_DIR    := ../src
+RESOURCE_DIR  := ../resources
+
+UNAME_S       := Windows
+ARCH          := x86
+PLATFORM      := $(UNAME_S)-$(ARCH)
+
+BUILD_DIR     := $(PLATFORM)
+
+# --- Windows cross toolchain roots ---
+LLVM_MSVC_ROOT  ?= /opt/clang+llvm-msvc-x86_64
+WX_WIN64_ROOT   ?= /opt/wxwidgets-win64
+CURL_WIN64_ROOT ?= /opt/curl-win64
+
+# Curl linked statically
+CURL_CFLAGS     := -I$(CURL_WIN64_ROOT)/include -DCURL_STATICLIB
+CURL_LDLIBS     := -L$(CURL_WIN64_ROOT)/lib -lcurl -lws2_32 -lcrypt32 -lbcrypt -lsecur32 -liphlpapi
+
+# Prefix pro MinGW cross compiler (brew toolchain)
+WIN64_PREFIX    ?= x86_64-w64-mingw32
+WIN64_CXX       ?= $(WIN64_PREFIX)-g++
+WIN64_WX_CONFIG ?= $(WX_WIN64_ROOT)/bin/wx-config
+
+ZIP_NAME := $(APP_NAME)-$(PLATFORM).zip
+ZIP_PATH := $(ZIP_NAME)
+ZIP_ROOT := ArduinoEditor
+
+# ---------------------------------------------------------
+# Windows
+# ---------------------------------------------------------
+
+# Only headers needed
+JSON_PREFIX ?= $(shell brew --prefix nlohmann-json 2>/dev/null)
+
+SRCS := $(wildcard $(SOURCE_DIR)/*.cpp)
+
+WIN64_OBJS := $(patsubst $(SOURCE_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
+WIN64_DEPS := $(WIN64_OBJS:.o=.d)
+
+WIN64_TARGET := $(BUILD_DIR)/$(APP_NAME).exe
+
+# CXXFLAGS pro Windows build – vezmeme wxWidgets z /opt/wxwidgets-win64
+WIN64_CXXFLAGS := -std=c++17 -Wall -Wextra -Wformat -Wformat-security -DwxNO_IMPLICIT_WXSTRING_ENCODING -g3 -MMD -MP \
+	$(shell $(WIN64_WX_CONFIG) --cxxflags) \
+	-I$(LLVM_MSVC_ROOT)/include \
+	-I$(JSON_PREFIX)/include
+
+# LDFLAGS/LDLIBS – wxWidgets + libclang z /opt/clang+llvm-msvc-x86_64
+WIN64_LDFLAGS := $(shell $(WIN64_WX_CONFIG) --libs std,aui,html,stc,net,propgrid) \
+	-L$(LLVM_MSVC_ROOT)/lib -L$(LLVM_MSVC_ROOT)/bin
+
+WIN64_LDLIBS := -lclang
+
+# Curl
+WIN64_CXXFLAGS += $(CURL_CFLAGS)
+WIN64_LDLIBS += $(CURL_LDLIBS)
+
+# --- Windows distribution ---
+DIST_WIN64_DIR := $(CURDIR)/dist_win64
+
+# --- Windows self-signing (osslsigncode) ---
+WIN_SIGN_CERT ?= $(CURDIR)/winsign/cert.pem
+WIN_SIGN_KEY  ?= $(CURDIR)/winsign/key.pem
+WIN_SIGN_NAME ?= $(APP_NAME)
+WIN_SIGN_URL  ?= https://github.com/ppet36
+WIN_SIGN_TS   ?= http://timestamp.digicert.com
+
+WIN64_RC := $(shell $(WIN64_WX_CONFIG) --rescomp)
+
+WIN64_RES_OBJ := ArduinoEditor_res.win64.o
+
+# libclang z LLVM
+LLVM_WIN64_DLL := $(LLVM_MSVC_ROOT)/bin/libclang.dll
+
+# libstdc++ a libgcc si vezmeme přes -print-file-name (vrací i cestu)
+MINGW_DLL_LIBSTDCPP  := $(shell $(WIN64_PREFIX)-g++ -print-file-name=libstdc++-6.dll)
+MINGW_DLL_GCC        := $(shell $(WIN64_PREFIX)-g++ -print-file-name=libgcc_s_seh-1.dll)
+
+# základní adresář, kde leží libstdc++-6.dll
+MINGW_DLL_DIR        := $(dir $(MINGW_DLL_LIBSTDCPP))
+
+# zkusíme najít libwinpthread-1.dll vedle libstdc++ nebo v ../bin
+MINGW_DLL_PTHREAD := $(firstword \
+  $(wildcard $(MINGW_DLL_DIR)/libwinpthread-1.dll) \
+  $(wildcard $(MINGW_DLL_DIR)/../bin/libwinpthread-1.dll))
+
+MINGW_RUNTIME_DLLS := $(MINGW_DLL_LIBSTDCPP) $(MINGW_DLL_GCC) $(MINGW_DLL_PTHREAD)
+
+# -----------------------
+# Localization / gettext
+# -----------------------
+
+DOMAIN      := $(APP_NAME)
+
+LOCDIR_SRC  := $(RESOURCE_DIR)/localization
+LOCDIR_OUT  := $(BUILD_DIR)/localization
+
+LOCALES     := cs_CZ
+
+POTFILE     := $(LOCDIR_SRC)/$(DOMAIN).pot
+
+# wx locale info (use the cross wx-config)
+WX_PREFIX   := $(shell $(WIN64_WX_CONFIG) --prefix 2>/dev/null)
+WX_DATADIR  := $(shell $(WIN64_WX_CONFIG) --datadir 2>/dev/null)
+WX_VER      := $(shell $(WIN64_WX_CONFIG) --version 2>/dev/null)
+WX_VER_MM   := $(shell echo "$(WX_VER)" | cut -d. -f1-2)
+
+WX_LOCALE_ROOTS := \
+  $(WX_PREFIX)/locale \
+  $(WX_PREFIX)/share/locale \
+  $(WX_DATADIR)/locale
+
+# ---------------------------------------------------------
+# Windows targets
+# ---------------------------------------------------------
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
+# Main target for cross-compiling. Creates ArduinoEditor.exe
+win64: $(WIN64_TARGET)
+
+$(BUILD_DIR)/$(WIN64_RES_OBJ): ArduinoEditor.rc | $(BUILD_DIR)
+	$(WIN64_RC) -i $< -o $@
+
+$(WIN64_TARGET): $(WIN64_OBJS) $(BUILD_DIR)/$(WIN64_RES_OBJ) | $(BUILD_DIR)
+	$(WIN64_CXX) $(WIN64_CXXFLAGS) -o $@ $^ $(WIN64_LDFLAGS) $(WIN64_LDLIBS)
+
+$(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.cpp | $(BUILD_DIR)
+	$(WIN64_CXX) $(WIN64_CXXFLAGS) -c -o $@ $<
+
+clean:
+	rm -rf "$(BUILD_DIR)" "ArduinoEditorSetup-x64-$(VERSION).exe" "$(ZIP_PATH)"
+
+
+# ---------------------------------------------------------
+# Windows distribution (dist_win64 directory)
+# ---------------------------------------------------------
+
+package_win64: win64 locales
+	rm -rf "$(DIST_WIN64_DIR)"
+	mkdir -p "$(DIST_WIN64_DIR)"
+	cp "$(WIN64_TARGET)" "$(DIST_WIN64_DIR)/"
+	cp -R "$(BUILD_DIR)/localization" "$(DIST_WIN64_DIR)/"
+	find $(DIST_WIN64_DIR) -name ".DS_Store" -exec rm -f {} \;
+	cp "$(LLVM_MSVC_ROOT)/bin/clang-format.exe" "$(DIST_WIN64_DIR)"
+	cp third_party/arduino-cli.exe "$(DIST_WIN64_DIR)"
+
+	# LLVM libclang.dll
+	cp "$(LLVM_WIN64_DLL)" "$(DIST_WIN64_DIR)/"
+
+	# MinGW runtime DLL
+	cp $(MINGW_RUNTIME_DLLS) "$(DIST_WIN64_DIR)/"
+
+# It will sign all .exe/.dll in dist_win64 (including arduino-cli.exe, clang-format.exe, etc.)
+sign_win64: package_win64
+	@set -e; \
+	CERT="$(WIN_SIGN_CERT)"; \
+	KEY="$(WIN_SIGN_KEY)"; \
+	if [ ! -f "$$CERT" ]; then echo "Missing cert: $$CERT" >&2; exit 1; fi; \
+	if [ ! -f "$$KEY"  ]; then echo "Missing key:  $$KEY"  >&2; exit 1; fi; \
+	TS_OPT=""; \
+	if [ -n "$(WIN_SIGN_TS)" ]; then TS_OPT="-t $(WIN_SIGN_TS)"; fi; \
+	for f in "$(DIST_WIN64_DIR)"/*.exe "$(DIST_WIN64_DIR)"/*.dll; do \
+	  [ -e "$$f" ] || continue; \
+	  echo "Signing: $$f"; \
+	  rm -f "$$f.tmp"; \
+	  osslsigncode sign -certs "$$CERT" -key "$$KEY" \
+	    -n "$(WIN_SIGN_NAME)" -i "$(WIN_SIGN_URL)" $$TS_OPT \
+	    -in "$$f" -out "$$f.tmp"; \
+	  mv "$$f.tmp" "$$f"; \
+	  osslsigncode verify -CAfile "$$CERT" -in "$$f" >/dev/null; \
+	done; \
+	echo "Signed OK."
+
+
+installer_win64: sign_win64
+	@set -e; \
+	TS_OPT=""; \
+	if [ -n "$(WIN_SIGN_TS)" ]; then TS_OPT="-t $(WIN_SIGN_TS)"; fi; \
+	OUT=$$(makensis -DAPP_VERSION=$(VERSION) ArduinoEditor_x86.nsi | tee /dev/stderr | awk '/^Output: /{sub(/^Output: /,""); gsub(/^"|"$$/,""); print}' | tail -n 1); \
+	if [ -z "$$OUT" ]; then \
+	  echo "ERROR: Can't detect NSIS output file (missing 'Output:' line)."; \
+	  exit 1; \
+	fi; \
+	if [ ! -f "$$OUT" ]; then \
+	  echo "ERROR: NSIS output not found: $$OUT"; \
+	  exit 1; \
+	fi; \
+	echo "Signing installer: $$OUT"; \
+	rm -f "$$OUT.tmp"; \
+	osslsigncode sign -certs "$(WIN_SIGN_CERT)" -key "$(WIN_SIGN_KEY)" \
+	  -n "$(WIN_SIGN_NAME)" -i "$(WIN_SIGN_URL)" $$TS_OPT \
+	  -in "$$OUT" -out "$$OUT.tmp"; \
+	mv "$$OUT.tmp" "$$OUT"; \
+	osslsigncode verify -CAfile "$(WIN_SIGN_CERT)" -in "$$OUT" >/dev/null; \
+	echo "Installer signed OK."
+
+zip_win64: package_win64
+	@rm -f "$(ZIP_PATH)"
+	@mkdir -p "$(BUILD_DIR)"
+	@tmp="$$(mktemp -d 2>/dev/null || mktemp -d -t arduinoeditor_zip)"; \
+	rm -rf "$$tmp/$(ZIP_ROOT)"; \
+	mkdir -p "$$tmp/$(ZIP_ROOT)"; \
+	cp -R "$(DIST_WIN64_DIR)/." "$$tmp/$(ZIP_ROOT)/"; \
+	( cd "$$tmp" && zip -r -9 "$(abspath $(ZIP_PATH))" "$(ZIP_ROOT)" ); \
+	rm -rf "$$tmp"; \
+	echo "Created $(ZIP_PATH)"
+
+release_win64: installer_win64 zip_win64
+
+$(POTFILE): $(SRCS)
+	mkdir -p $(LOCDIR_SRC)
+	xgettext --language=C++ --keyword=_ \
+	         --from-code=UTF-8 \
+	         -o $@ $(SRCS)
+
+# Build our app catalog into output dir:
+#   $(BUILD_DIR)/localization/cs_CZ/LC_MESSAGES/ArduinoEditor.mo
+$(LOCDIR_OUT)/%/LC_MESSAGES/$(DOMAIN).mo: $(LOCDIR_SRC)/%.po | $(BUILD_DIR)
+	mkdir -p $(dir $@)
+	msgfmt --statistics -o $@ $<
+
+# Copy wxWidgets standard catalog into output dir as wxstd.mo
+# Supports cs_CZ -> cs fallback and wxstd.mo / wxstd-<major.minor>.mo.
+$(LOCDIR_OUT)/%/LC_MESSAGES/wxstd.mo: | $(BUILD_DIR)
+	@loc="$*"; lang="$${loc%%_*}"; \
+	names="wxstd.mo wxstd-$(WX_VER_MM).mo"; \
+	roots="$(WX_LOCALE_ROOTS)"; \
+	found=""; \
+	for r in $$roots; do \
+	  [ -z "$$r" ] && continue; \
+	  for d in "$$loc" "$$lang"; do \
+	    for n in $$names; do \
+	      p="$$r/$$d/LC_MESSAGES/$$n"; \
+	      if [ -f "$$p" ]; then found="$$p"; break 3; fi; \
+	    done; \
+	  done; \
+	done; \
+	if [ -n "$$found" ]; then \
+	  mkdir -p "$(dir $@)"; \
+	  cp "$$found" "$@"; \
+	  echo "WX: copied $$found -> $@"; \
+	else \
+	  echo "WARN: wx std catalog not found for '$$loc' (tried roots: $$roots)"; \
+	fi
+
+locales: \
+  $(LOCALES:%=$(LOCDIR_OUT)/%/LC_MESSAGES/$(DOMAIN).mo) \
+  $(LOCALES:%=$(LOCDIR_OUT)/%/LC_MESSAGES/wxstd.mo)
+
+update-po: $(LOCALES:%=$(LOCDIR_SRC)/%.po)
+
+$(LOCDIR_SRC)/%.po: $(POTFILE)
+	@if [ ! -f "$@" ]; then \
+	  echo "Creating new PO file $@"; \
+	  cp $(POTFILE) $@; \
+	else \
+	  echo "Merging $@ with $(POTFILE)"; \
+	  msgmerge --update --backup=none $@ $(POTFILE); \
+	fi
+
+
+.PHONY: win64 clean release_win64 package_win64 installer_win64 sign_win64 zip_win64 locales update-po
+
+# Include generated dependency files
+-include $(WIN64_DEPS)
+
