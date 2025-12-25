@@ -12,7 +12,7 @@ SOURCE_DIR    := ../src
 RESOURCE_DIR  := ../resources
 
 UNAME_S       := Windows
-ARCH          := x86
+ARCH          := x86_64
 PLATFORM      := $(UNAME_S)-$(ARCH)
 
 BUILD_DIR     := $(PLATFORM)
@@ -31,7 +31,7 @@ WIN64_PREFIX    ?= x86_64-w64-mingw32
 WIN64_CXX       ?= $(WIN64_PREFIX)-g++
 WIN64_WX_CONFIG ?= $(WX_WIN64_ROOT)/bin/wx-config
 
-ZIP_NAME := $(APP_NAME)-$(PLATFORM).zip
+ZIP_NAME := $(APP_NAME)-$(PLATFORM)-$(VERSION).zip
 ZIP_PATH := $(ZIP_NAME)
 ZIP_ROOT := ArduinoEditor
 
@@ -145,7 +145,7 @@ $(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.cpp | $(BUILD_DIR)
 	$(WIN64_CXX) $(WIN64_CXXFLAGS) -c -o $@ $<
 
 clean:
-	rm -rf "$(BUILD_DIR)" "ArduinoEditorSetup-x64-$(VERSION).exe" "$(ZIP_PATH)"
+	rm -rf "$(BUILD_DIR)" "ArduinoEditorSetup-$(PLATFORM)-$(VERSION).exe" "$(ZIP_PATH)"
 
 
 # ---------------------------------------------------------
