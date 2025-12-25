@@ -9,3 +9,6 @@ build*
 Windows*/
 Linux*/
 Darwin*/
+ArduinoEditor*
+squashfs_root/
+

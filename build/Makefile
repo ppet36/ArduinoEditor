@@ -111,26 +111,19 @@ else ifeq ($(UNAME_S),Linux)
     # Linux
     # -----------------------------------------------------
 
+    ifneq ($(LLVM_CONFIG),)
+      LLVM_INCLUDEDIR := $(shell $(LLVM_CONFIG) --includedir 2>/dev/null)
+      LLVM_LDFLAGS    := $(shell $(LLVM_CONFIG) --ldflags    2>/dev/null)
+      CLANG_CFLAGS    := -I$(LLVM_INCLUDEDIR)
+      CLANG_LDFLAGS   := $(LLVM_LDFLAGS) -lclang
+    endif
+
+    $(info llvm-config (= $(LLVM_CONFIG)) CLANG_CFLAGS is $(CLANG_CFLAGS))
+
     ifeq ($(CLANG_CFLAGS),)
       CLANG_CFLAGS  := $(shell pkg-config --cflags libclang 2>/dev/null)
       CLANG_LDFLAGS := $(shell pkg-config --libs   libclang 2>/dev/null)
       $(info pkg-config CLANG_CFLAGS is $(CLANG_CFLAGS))
-    endif
-
-    ifeq ($(CLANG_CFLAGS),)
-      LLVM_CONFIG := $(or \
-        $(firstword $(wildcard /usr/bin/llvm-config)), \
-        $(firstword $(wildcard /usr/bin/llvm-config-*)) \
-      )
-
-      ifneq ($(LLVM_CONFIG),)
-        LLVM_INCLUDEDIR := $(shell $(LLVM_CONFIG) --includedir 2>/dev/null)
-        LLVM_LDFLAGS    := $(shell $(LLVM_CONFIG) --ldflags    2>/dev/null)
-        CLANG_CFLAGS    := -I$(LLVM_INCLUDEDIR)
-        CLANG_LDFLAGS   := $(LLVM_LDFLAGS) -lclang
-      endif
-
-      $(info llvm-config (= $(LLVM_CONFIG)) CLANG_CFLAGS is $(CLANG_CFLAGS))
     endif
 
     ifeq ($(CLANG_CFLAGS),)

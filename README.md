@@ -50,7 +50,6 @@ control, transparency, or performance.
 src/        Application source code
 build/      Makefiles and platform-specific build logic
 resources/  Icons and bundled assets
-doc/        Documentation and design notes
 ```
 
 ## Building from source

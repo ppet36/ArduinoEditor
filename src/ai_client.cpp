@@ -1,3 +1,21 @@
+/*
+ * Arduino Editor
+ * Copyright (c) 2025 Pavel Petržela
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "ai_client.hpp"
 #include "ard_ev.hpp"
 #include "utils.hpp"
@@ -573,7 +591,7 @@ bool AiClient::ExtractAssistantText(const wxString &responseJson,
       // ignore
     }
 
-    // --- 2) token usage: native Ollama (/api/chat, /api/generate) používá jiné názvy
+    // --- 2) token usage: native Ollama (/api/chat, /api/generate)
     // prompt_eval_count ~ input tokens, eval_count ~ output tokens
     try {
       int inTok = -1, outTok = -1;
@@ -588,7 +606,7 @@ bool AiClient::ExtractAssistantText(const wxString &responseJson,
       // ignore
     }
 
-    // --- 3) OpenAI Responses API: output[] -> type=="message" -> content[].text (může být víc částí)
+    // --- 3) OpenAI Responses API: output[] -> type=="message" -> content[].text (maybe more parts)
     try {
       if (j.contains("output") && j["output"].is_array()) {
         wxString acc;
@@ -630,7 +648,7 @@ bool AiClient::ExtractAssistantText(const wxString &responseJson,
       // ignore
     }
 
-    // --- 4) OpenAI chat/completions: choices[0].message.content (string) nebo array parts
+    // --- 4) OpenAI chat/completions: choices[0].message.content (string) or array parts
     try {
       if (j.contains("choices") && j["choices"].is_array() && !j["choices"].empty()) {
         const auto &choice = j["choices"][0];
@@ -660,7 +678,7 @@ bool AiClient::ExtractAssistantText(const wxString &responseJson,
           }
         }
 
-        // stream delta (když někdo pošle stream=true přes OpenAI kompat endpoint)
+        // stream delta
         if (choice.contains("delta") && choice["delta"].is_object() &&
             choice["delta"].contains("content") && choice["delta"]["content"].is_string()) {
           out = wxString::FromUTF8(choice["delta"]["content"].get<std::string>().c_str());
@@ -724,7 +742,7 @@ bool AiClient::ExtractAssistantText(const wxString &responseJson,
     // fallthrough: maybe JSONL/NDJSON stream
   }
 
-  // ===== B) Fallback: NDJSON/JSONL (streaming) – poskládáme text z řádků
+  // ===== B) Fallback: NDJSON/JSONL (streaming)
   try {
     std::string raw = std::string(responseJson.utf8_str());
     wxString acc;
@@ -754,7 +772,7 @@ bool AiClient::ExtractAssistantText(const wxString &responseJson,
       try {
         jline = json::parse(line);
       } catch (...) {
-        continue; // ignoruje non-JSON lines
+        continue;
       }
 
       wxString piece;

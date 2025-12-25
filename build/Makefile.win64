@@ -68,6 +68,12 @@ WIN64_LDLIBS += $(CURL_LDLIBS)
 # --- Windows distribution ---
 DIST_WIN64_DIR := $(CURDIR)/dist_win64
 
+THIRD_PARTY_DIR := $(CURDIR)/third_party
+# Arduino CLI (downloaded automatically if missing)
+ARDUINO_CLI_VERSION ?= 1.3.1
+ARDUINO_CLI_EXE := $(THIRD_PARTY_DIR)/arduino-cli.exe
+ARDUINO_CLI_URL := https://downloads.arduino.cc/arduino-cli/arduino-cli_$(ARDUINO_CLI_VERSION)_Windows_64bit.zip
+
 # --- Windows self-signing (osslsigncode) ---
 WIN_SIGN_CERT ?= $(CURDIR)/winsign/cert.pem
 WIN_SIGN_KEY  ?= $(CURDIR)/winsign/key.pem
@@ -146,20 +152,51 @@ clean:
 # Windows distribution (dist_win64 directory)
 # ---------------------------------------------------------
 
-package_win64: win64 locales
+package_win64: win64 locales $(ARDUINO_CLI_EXE)
 	rm -rf "$(DIST_WIN64_DIR)"
 	mkdir -p "$(DIST_WIN64_DIR)"
 	cp "$(WIN64_TARGET)" "$(DIST_WIN64_DIR)/"
 	cp -R "$(BUILD_DIR)/localization" "$(DIST_WIN64_DIR)/"
 	find $(DIST_WIN64_DIR) -name ".DS_Store" -exec rm -f {} \;
 	cp "$(LLVM_MSVC_ROOT)/bin/clang-format.exe" "$(DIST_WIN64_DIR)"
-	cp third_party/arduino-cli.exe "$(DIST_WIN64_DIR)"
+	cp "$(ARDUINO_CLI_EXE)" "$(DIST_WIN64_DIR)"
 
 	# LLVM libclang.dll
 	cp "$(LLVM_WIN64_DLL)" "$(DIST_WIN64_DIR)/"
 
 	# MinGW runtime DLL
 	cp $(MINGW_RUNTIME_DLLS) "$(DIST_WIN64_DIR)/"
+
+
+# Ensure Arduino CLI is available in third_party (download if missing)
+.PHONY: fetch_arduino_cli
+fetch_arduino_cli: $(ARDUINO_CLI_EXE)
+
+$(ARDUINO_CLI_EXE):
+	@set -e; \
+	mkdir -p "$(THIRD_PARTY_DIR)"; \
+	TMP="$$(mktemp -d 2>/dev/null || mktemp -d -t arduino_cli)"; \
+	ARCHIVE="$$TMP/arduino-cli.zip"; \
+	echo "Downloading Arduino CLI $(ARDUINO_CLI_VERSION) ..."; \
+	curl -fL --retry 3 --retry-delay 2 -o "$$ARCHIVE" "$(ARDUINO_CLI_URL)"; \
+	if command -v unzip >/dev/null 2>&1; then \
+		unzip -q "$$ARCHIVE" -d "$$TMP"; \
+	else \
+		bsdtar -xf "$$ARCHIVE" -C "$$TMP"; \
+	fi; \
+	F="$$TMP/arduino-cli.exe"; \
+	if [ ! -f "$$F" ]; then \
+		F=$$(find "$$TMP" -maxdepth 4 -name arduino-cli.exe -print -quit); \
+	fi; \
+	if [ -z "$$F" ] || [ ! -f "$$F" ]; then \
+		echo "arduino-cli.exe not found in downloaded archive" >&2; \
+		rm -rf "$$TMP"; \
+		exit 1; \
+	fi; \
+	cp "$$F" "$@"; \
+	chmod +x "$@"; \
+	rm -rf "$$TMP"
+
 
 # It will sign all .exe/.dll in dist_win64 (including arduino-cli.exe, clang-format.exe, etc.)
 sign_win64: package_win64

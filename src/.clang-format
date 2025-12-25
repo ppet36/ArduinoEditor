@@ -1,9 +1,10 @@
 BasedOnStyle: LLVM
 IndentWidth: 2
 TabWidth: 2
-UseTab: Never        # převeď taby na mezery
+UseTab: Never        # spaces no tabs
 BreakBeforeBraces: Attach
-IndentCaseLabels: true            # <-- odsazení case proti switch
+IndentCaseLabels: true            # cases indented
 AllowShortIfStatementsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Inline
-ColumnLimit: 0       # nezalamovat automaticky řádky
+ColumnLimit: 0       # do not break lines
+
