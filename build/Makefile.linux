@@ -1,0 +1,176 @@
+# ---------------------------------------------------------
+# Makefile.linux – build + AppImage packaging wrapper
+# ---------------------------------------------------------
+
+APP_NAME        ?= ArduinoEditor
+VERSION         ?= 1.0.0
+
+# We call the existing Makefile in the same directory
+BASE_MAKEFILE   ?= Makefile
+
+UNAME_S         := $(shell uname -s)
+ARCH            := $(shell uname -m)
+
+# Must match your existing Makefile's BUILD_DIR logic (Linux-x86_64, Linux-aarch64, ...)
+BUILD_DIR       := $(UNAME_S)-$(ARCH)
+
+# Where the base Makefile puts the binary
+TARGET          := $(BUILD_DIR)/$(APP_NAME)
+
+# AppImage staging
+APPDIR          := $(BUILD_DIR)/AppDir
+APPDIR_USR      := $(APPDIR)/usr
+APPDIR_BIN      := $(APPDIR_USR)/bin
+
+# Resources (adjust if your tree differs)
+SOURCE_DIR      ?= ../src
+RESOURCE_DIR    ?= ../resources
+
+# Your base Makefile builds localization here:
+LOCDIR_OUT      := $(BUILD_DIR)/localization
+
+# AppImage metadata files expected by appimagetool (at AppDir root)
+DESKTOP_FILE    := $(APPDIR)/$(APP_NAME).desktop
+ICON_FILE       := $(APPDIR)/$(APP_NAME).png
+
+ICON_SRC        ?= $(RESOURCE_DIR)/$(APP_NAME).png
+
+ARDUINO_CLI_SRC ?= /opt/arduino-cli/bin/arduino-cli
+
+# AppImage tool
+APPIMAGETOOL    ?= appimagetool
+
+# Output filename
+APPIMAGE_OUT    := $(APP_NAME)-$(VERSION)-$(ARCH).AppImage
+
+# ---- Clang/LLVM bundling (libclang + resource headers) ----
+LLVM_CONFIG   ?= llvm-config
+CLANG_BIN     ?= clang
+
+LLVM_PREFIX    := $(shell $(LLVM_CONFIG) --prefix 2>/dev/null)
+LLVM_LIBDIR    := $(shell $(LLVM_CONFIG) --libdir 2>/dev/null)
+CLANG_RES_DIR  := $(shell $(CLANG_BIN) -print-resource-dir 2>/dev/null)
+
+APPDIR_LIB     := $(APPDIR_USR)/lib
+BUNDLED_CLANG_DIR := $(APPDIR_LIB)/arduinoeditor-clang
+BUNDLED_CLANG_RES := $(BUNDLED_CLANG_DIR)/resource
+
+.PHONY: all build locales appdir appimage clean clean_appimage
+
+all: appimage
+
+build:
+	@echo "==> Building with $(BASE_MAKEFILE) into $(BUILD_DIR)"
+	$(MAKE) -f $(BASE_MAKEFILE) all
+
+locales:
+	@echo "==> Building locales with $(BASE_MAKEFILE)"
+	$(MAKE) -f $(BASE_MAKEFILE) locales
+
+# Prepare AppDir
+appdir: build locales
+	@echo "==> Preparing AppDir: $(APPDIR)"
+	rm -rf "$(APPDIR)"
+	mkdir -p "$(APPDIR_BIN)"
+	mkdir -p "$(APPDIR_USR)/share/applications"
+
+	# Binary
+	cp "$(TARGET)" "$(APPDIR_BIN)/$(APP_NAME)"
+	chmod +x "$(APPDIR_BIN)/$(APP_NAME)"
+
+	# Localization next to executable (matches your GetLocalizationBaseDir style)
+	if [ -d "$(LOCDIR_OUT)" ]; then \
+	  cp -R "$(LOCDIR_OUT)" "$(APPDIR_BIN)/localization"; \
+	fi
+
+	printf '%s\n' \
+	'#!/bin/sh' \
+	'HERE="$$(dirname "$$(readlink -f "$$0")")"' \
+	'export PATH="$$HERE/usr/bin:$$PATH"' \
+	'export LD_LIBRARY_PATH="$$HERE/usr/lib/arduinoeditor-clang:$$LD_LIBRARY_PATH"' \
+	'exec "$$HERE/usr/bin/$(APP_NAME)" "$$@"' \
+		> "$(APPDIR)/AppRun"
+
+	chmod 755 $(APPDIR)/AppRun
+
+	# Desktop file (root + /usr/share/applications)
+	printf '%s\n' \
+	'[Desktop Entry]' \
+	'Type=Application' \
+	'Name=$(APP_NAME)' \
+	'Exec=$(APP_NAME)' \
+	'Icon=$(APP_NAME)' \
+	'Categories=Development;IDE;' \
+	'Terminal=false' \
+	> "$(DESKTOP_FILE)"
+	cp "$(DESKTOP_FILE)" "$(APPDIR_USR)/share/applications/$(APP_NAME).desktop"
+
+	# Icon (must be at AppDir root as PNG)
+	if [ -f "$(ICON_SRC)" ]; then \
+	  cp "$(ICON_SRC)" "$(ICON_FILE)"; \
+	else \
+	  echo "WARN: icon not found at ICON_SRC=$(ICON_SRC)"; \
+	  echo "      Set ICON_SRC to a valid 256x256+ PNG for best results."; \
+	fi
+
+
+.PHONY: bundle_clang
+
+bundle_clang:
+	@echo "==> Bundling libclang + resources"
+	@if [ -z "$(LLVM_LIBDIR)" ]; then \
+	  echo "ERROR: llvm-config not found or LLVM_LIBDIR empty"; exit 1; \
+	fi
+	@if [ -z "$(CLANG_RES_DIR)" ]; then \
+	  echo "ERROR: clang not found or CLANG_RES_DIR empty"; exit 1; \
+	fi
+	mkdir -p "$(BUNDLED_CLANG_DIR)"
+	mkdir -p "$(BUNDLED_CLANG_RES)"
+
+  # Clang format
+	cp $(LLVM_PREFIX)/bin/clang-format $(APPDIR_BIN)
+
+	# Copy libclang
+	@if [ -f "$(LLVM_LIBDIR)/libclang.so" ]; then \
+	  cp -av "$(LLVM_LIBDIR)/libclang.so"* "$(BUNDLED_CLANG_DIR)/"; \
+	else \
+	  echo "ERROR: libclang.so not found in $(LLVM_LIBDIR)"; exit 1; \
+	fi
+
+	# Copy LLVM shared libs if present (common on distros)
+	@if ls "$(LLVM_LIBDIR)/libLLVM"*.so* >/dev/null 2>&1; then \
+	  cp -av "$(LLVM_LIBDIR)/libLLVM"*.so* "$(BUNDLED_CLANG_DIR)/"; \
+	fi
+
+	# Copy Clang resource headers (builtin headers)
+	cp -a "$(CLANG_RES_DIR)/include" "$(BUNDLED_CLANG_RES)/"
+
+	# Print what we bundled
+	@ls -lah "$(BUNDLED_CLANG_DIR)" || true
+
+bundle_arduino_cli:
+	# Bundle arduino-cli
+	if [ -x "$(ARDUINO_CLI_SRC)" ]; then \
+	  cp -av "$(ARDUINO_CLI_SRC)" "$(APPDIR_USR)/bin/arduino-cli"; \
+	else \
+	  echo "WARN: arduino-cli not found at $(ARDUINO_CLI_SRC)"; \
+	fi
+
+
+# Build AppImage
+appimage: appdir bundle_clang bundle_arduino_cli
+	@command -v "$(APPIMAGETOOL)" >/dev/null 2>&1 || { \
+	  echo "ERROR: '$(APPIMAGETOOL)' not found in PATH."; \
+	  echo "       Install it (e.g. appimagetool from AppImageKit) and retry."; \
+	  exit 1; \
+	}
+	@echo "==> Creating AppImage: $(APPIMAGE_OUT)"
+	"$(APPIMAGETOOL)"  --appimage-extract-and-run "$(APPDIR)" "$(APPIMAGE_OUT)"
+	@echo "==> Done: $(APPIMAGE_OUT)"
+
+clean:
+	$(MAKE) -f $(BASE_MAKEFILE) clean
+
+clean_appimage:
+	rm -rf "$(APPDIR)" "$(BUILD_DIR)/$(APPIMAGE_OUT)"
+
