@@ -32,7 +32,7 @@ LOCALE_DEST     := $(APPDIR_SHARE)/locale
 DESKTOP_FILE    := $(APPDIR)/ArduinoEditor.desktop
 ICON_256        := $(APPDIR)/ArduinoEditor.png
 
-APPIMAGE        := $(APP_NAME)-$(ARCH)-$(APP_VERSION).AppImage
+APPIMAGE        := $(APP_NAME)-rpi-$(ARCH)-$(APP_VERSION).AppImage
 APPIMAGETOOL    ?= appimagetool
 
 CXX             ?= g++
@@ -55,7 +55,7 @@ DEB_DESKTOP_DIR ?= $(DEBROOT)/usr/share/applications
 DEB_ICON_DIR    ?= $(DEBROOT)/usr/share/icons/hicolor/256x256/apps
 DEB_LOCALE_DIR  ?= $(DEBROOT)/usr/share/locale
 
-DEB_PACKAGE     ?= $(PKG_NAME)_$(DEB_ARCH)_$(APP_VERSION).deb
+DEB_PACKAGE     ?= $(PKG_NAME)_rpi_$(DEB_ARCH)_$(APP_VERSION).deb
 DEB_DEBIAN_SRC  ?= $(DEB_DIR)/debian
 
 # Optional tool dependencies (we don't bundle these by default)
@@ -72,7 +72,7 @@ DEB_ICON_256    ?= $(RESOURCE_DIR)/$(APP_NAME).png
 all: appimage deb
 
 $(BUILD_DIR)/$(APP_BINARY):
-	$(MAKE) WX_CONFIG=$(WX_CONFIG) LLVM_CONFIG=$(LLVM_CONFIG) $(APP_NAME)
+	$(MAKE) WX_CONFIG=$(WX_CONFIG) LLVM_CONFIG=$(LLVM_CONFIG) $(PLATFORM)/$(APP_NAME)
 	mkdir -p $(BUILD_DIR)
 	cp $(PLATFORM)/$(APP_BINARY) $(BUILD_DIR)/$(APP_NAME)
 

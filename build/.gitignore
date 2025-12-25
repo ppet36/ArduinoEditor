@@ -3,6 +3,7 @@
 *.zip
 *.exe
 *.dmg
+*.deb
 *.app/
 dist*
 build*
