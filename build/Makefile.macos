@@ -74,7 +74,7 @@ NOTARY_PROFILE ?= arduinoeditor-notary
 APPLE_ID       ?= r17c@seznam.cz
 
 
-bundle: $(TARGET)
+bundle: $(TARGET) locales
 	rm -rf $(APP_BUNDLE)
 	mkdir -p $(APP_BUNDLE)/Contents/MacOS
 	mkdir -p $(APP_BUNDLE)/Contents/Resources
