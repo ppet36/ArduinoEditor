@@ -20,6 +20,7 @@
 
 #include <wx/panel.h>
 #include <wx/string.h>
+#include <wx/html/htmlwin.h>
 
 class wxHtmlWindow;
 
@@ -67,4 +68,6 @@ private:
   wxString BuildFullHtmlFromMessages() const;
   wxString WrapMessage(const wxString &msgHtml, AiMarkdownRole role, const wxString &info, const wxString &time) const;
   wxString GetRoleLabel(AiMarkdownRole role) const;
+  void OnHtmlLinkClicked(wxHtmlLinkEvent &event);
 };
+

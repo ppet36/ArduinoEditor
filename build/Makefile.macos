@@ -35,6 +35,9 @@ DMG_VOLNAME ?= $(APP_NAME)
 DMG_TMPBASE ?= $(DMG_NAME).tmp
 DMG_TMPDMG  ?= $(DMG_TMPBASE).dmg
 
+LLVM_PREFIX ?= $(shell brew --prefix llvm 2>/dev/null)
+ARDUINO_CLI ?= $(shell brew --prefix arduino-cli 2>/dev/null)
+
 # ---- Dual-arch DMG (contains both arm64 + x86_64 apps) ----
 APP_BUNDLE_ARM ?= $(APP_NAME)-arm64.app
 APP_BUNDLE_X86 ?= $(APP_NAME)-x86_64.app
@@ -83,6 +86,8 @@ bundle: $(TARGET) locales
 	cp Info.plist $(APP_BUNDLE)/Contents/Info.plist
 	cp $(RESOURCE_DIR)/ArduinoEditor.icns $(APP_BUNDLE)/Contents/Resources/ArduinoEditor.icns
 	cp -R $(BUILD_DIR)/localization $(APP_BUNDLE)/Contents/MacOS
+	cp -L $(LLVM_PREFIX)/bin/clang-format $(APP_BUNDLE)/Contents/MacOS
+	cp -L $(ARDUINO_CLI) $(APP_BUNDLE)/Contents/MacOS
 
 	./vendorize_libs.sh $(APP_BUNDLE)
 

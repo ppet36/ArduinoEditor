@@ -3291,9 +3291,11 @@ std::string ArduinoCli::DetectCliExecutable(const std::string &configValue, std:
 
   // OS-specific paths
 #if defined(__APPLE__)
+  candidates.push_back("arduino-cli");
   candidates.push_back("/opt/homebrew/bin/arduino-cli");
   candidates.push_back("/usr/local/bin/arduino-cli");
 #elif defined(__linux__)
+  candidates.push_back("arduino-cli");
   if (const char *home = std::getenv("HOME")) {
     std::string cand = std::string(home) + "/bin/arduino-cli";
     candidates.push_back(cand);

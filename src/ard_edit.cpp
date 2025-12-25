@@ -1554,7 +1554,7 @@ void ArduinoEditor::ShowAutoCompletion() {
 }
 
 void ArduinoEditor::InitCodeCompletionIcons() {
-  const int size = 14; // or 16, whichever you prefer
+  const int size = 14;
 
   // Icon IDs - must match what is then "?<id>" in the completion list
   enum {

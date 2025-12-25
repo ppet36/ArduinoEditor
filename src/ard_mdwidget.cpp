@@ -113,6 +113,29 @@ wxString ArduinoMarkdown_MarkdownToHtmlFragment(const wxString &input) {
       continue;
     }
 
+    // [label](url) links (ignore inside code)
+    if (mode == CODE_NONE && ch == '[') {
+      // find closing ']'
+      size_t closeBracket = text.find(']', i + 1);
+      if (closeBracket != wxString::npos && closeBracket + 1 < len && text[closeBracket + 1] == '(') {
+        size_t closeParen = text.find(')', closeBracket + 2);
+        if (closeParen != wxString::npos) {
+          wxString label = text.Mid(i + 1, closeBracket - (i + 1));
+          wxString url = text.Mid(closeBracket + 2, closeParen - (closeBracket + 2));
+
+          label.Trim(true).Trim(false);
+          url.Trim(true).Trim(false);
+
+          if (!label.IsEmpty() && !url.IsEmpty()) {
+            escaped << wxT("<a href=\"") << ArduinoMarkdown_HtmlEscape(url) << wxT("\">")
+                    << ArduinoMarkdown_HtmlEscape(label) << wxT("</a>");
+            i = closeParen; // consume whole link
+            continue;
+          }
+        }
+      }
+    }
+
     switch (ch) {
       case '&':
         escaped << wxT("&amp;");
@@ -368,6 +391,8 @@ void ArduinoMarkdownPanel::InitHtmlCtrl() {
 
   static const int sizes[] = {pointSize, pointSize + 1, pointSize + 2, pointSize + 3, pointSize + 4, pointSize + 5, pointSize + 6};
   m_html->SetFonts(wxEmptyString, wxEmptyString, sizes);
+
+  m_html->Bind(wxEVT_HTML_LINK_CLICKED, &ArduinoMarkdownPanel::OnHtmlLinkClicked, this);
 }
 
 void ArduinoMarkdownPanel::SetBaseFonts(const wxString &normalFace,
@@ -523,3 +548,18 @@ void ArduinoMarkdownPanel::AppendMarkdown(const wxString &markdown,
   m_msgs.push_back({markdown, role, info, time});
   Render(true);
 }
+
+void ArduinoMarkdownPanel::OnHtmlLinkClicked(wxHtmlLinkEvent &event) {
+  wxString href = event.GetLinkInfo().GetHref();
+  href.Trim(true).Trim(false);
+
+  // Basic safety: only allow common external schemes
+  wxString lower = href.Lower();
+  if (lower.StartsWith(wxT("http://")) || lower.StartsWith(wxT("https://")) || lower.StartsWith(wxT("mailto:"))) {
+    wxLaunchDefaultBrowser(href);
+    return;
+  }
+}
+
+
+

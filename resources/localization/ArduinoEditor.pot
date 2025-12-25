@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-25 19:42+0100\n"
+"POT-Creation-Date: 2025-12-25 22:51+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1882,7 +1882,7 @@ msgstr ""
 msgid "Column"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2645 ../src/ard_mdwidget.cpp:398
+#: ../src/ard_ed_frm.cpp:2645 ../src/ard_mdwidget.cpp:423
 msgid "Message"
 msgstr ""
 
@@ -2590,23 +2590,23 @@ msgstr ""
 msgid "Uninstall library"
 msgstr ""
 
-#: ../src/ard_mdwidget.cpp:388
+#: ../src/ard_mdwidget.cpp:413
 msgid "You"
 msgstr ""
 
-#: ../src/ard_mdwidget.cpp:390
+#: ../src/ard_mdwidget.cpp:415
 msgid "Assistant"
 msgstr ""
 
-#: ../src/ard_mdwidget.cpp:392
+#: ../src/ard_mdwidget.cpp:417
 msgid "System"
 msgstr ""
 
-#: ../src/ard_mdwidget.cpp:394
+#: ../src/ard_mdwidget.cpp:419
 msgid "Info"
 msgstr ""
 
-#: ../src/ard_mdwidget.cpp:396
+#: ../src/ard_mdwidget.cpp:421
 msgid "Error"
 msgstr ""
 

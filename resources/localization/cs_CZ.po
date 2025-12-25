@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ArduinoEditor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-25 19:06+0100\n"
+"POT-Creation-Date: 2025-12-25 22:51+0100\n"
 "PO-Revision-Date: 2025-12-09 22:52:00+0100\n"
 "Last-Translator: Pavel Petržela <r17c@seznam.cz>\n"
 "Language-Team: -\n"
@@ -2267,7 +2267,7 @@ msgstr "Řádek"
 msgid "Column"
 msgstr "Sloupec"
 
-#: ../src/ard_ed_frm.cpp:2645 ../src/ard_mdwidget.cpp:398
+#: ../src/ard_ed_frm.cpp:2645 ../src/ard_mdwidget.cpp:423
 msgid "Message"
 msgstr "Zpráva"
 
@@ -3004,23 +3004,23 @@ msgstr "Opravdu chcete odinstalovat knihovnu:\n"
 msgid "Uninstall library"
 msgstr "Odinstalovat knihovnu"
 
-#: ../src/ard_mdwidget.cpp:388
+#: ../src/ard_mdwidget.cpp:413
 msgid "You"
 msgstr "Vy"
 
-#: ../src/ard_mdwidget.cpp:390
+#: ../src/ard_mdwidget.cpp:415
 msgid "Assistant"
 msgstr "Asistent"
 
-#: ../src/ard_mdwidget.cpp:392
+#: ../src/ard_mdwidget.cpp:417
 msgid "System"
 msgstr "Systém"
 
-#: ../src/ard_mdwidget.cpp:394
+#: ../src/ard_mdwidget.cpp:419
 msgid "Info"
 msgstr "Informace"
 
-#: ../src/ard_mdwidget.cpp:396
+#: ../src/ard_mdwidget.cpp:421
 msgid "Error"
 msgstr "Chyba"
 
