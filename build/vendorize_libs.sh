@@ -171,7 +171,7 @@ while [ $qi -lt ${#QUEUE[@]} ]; do
 
   [ -f "$macho" ] || continue
 
-  otool -L "$macho" | tail -n +2 | awk '{print $1}' | while IFS= read -r dep; do
+  while IFS= read -r dep; do
     [ -n "$dep" ] || continue
     is_system_lib "$dep" && continue
 
@@ -192,9 +192,9 @@ while [ $qi -lt ${#QUEUE[@]} ]; do
       chmod 755 "$dest"
     fi
 
-    # enqueue the resolved dylib itself so we also scan ITS deps
+    # IMPORTANT: this now mutates QUEUE in the parent shell (real recursion)
     enqueue_if_new "$resolved"
-  done
+  done < <(otool -L "$macho" | tail -n +2 | awk '{print $1}')
 done
 
 
