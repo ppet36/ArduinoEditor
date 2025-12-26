@@ -18,9 +18,9 @@
 
 #pragma once
 
+#include <wx/html/htmlwin.h>
 #include <wx/panel.h>
 #include <wx/string.h>
-#include <wx/html/htmlwin.h>
 
 class wxHtmlWindow;
 
@@ -70,4 +70,3 @@ private:
   wxString GetRoleLabel(AiMarkdownRole role) const;
   void OnHtmlLinkClicked(wxHtmlLinkEvent &event);
 };
-

@@ -19,6 +19,11 @@
 #include "ard_mdwidget.hpp"
 #include "ard_setdlg.hpp"
 #include "utils.hpp"
+#include <memory>
+#include <sstream>
+#include <string>
+
+#include "maddy/parser.h"
 
 #include <wx/html/htmlwin.h>
 #include <wx/platform.h>
@@ -51,300 +56,18 @@ static wxString ArduinoMarkdown_HtmlEscape(const wxString &s) {
 }
 
 wxString ArduinoMarkdown_MarkdownToHtmlFragment(const wxString &input) {
-  wxString text = input;
-  text.Replace(wxT("\r\n"), wxT("\n"));
-  text.Replace(wxT("\r"), wxT("\n"));
+  std::stringstream markdownInput("");
 
-  wxString escaped;
-  escaped.reserve(text.length() * 12 / 10);
+  std::shared_ptr<maddy::ParserConfig> config = std::make_shared<maddy::ParserConfig>();
+  config->enabledParsers &= ~maddy::types::EMPHASIZED_PARSER; // disable emphasized parser
 
-  enum CodeMode { CODE_NONE,
-                  CODE_INLINE,
-                  CODE_BLOCK };
-  CodeMode mode = CODE_NONE;
+  std::shared_ptr<maddy::Parser> parser = std::make_shared<maddy::Parser>(config);
 
-  bool bold = false; // **bold**
+  std::string md = wxToStd(ArduinoMarkdown_HtmlEscape(input));
+  std::istringstream iss(md);
+  std::string htmlOutput = parser->Parse(iss);
 
-  const size_t len = text.length();
-  for (size_t i = 0; i < len; ++i) {
-    wxChar ch = text[i];
-
-    // block: ```code```
-    if (ch == '`' && i + 2 < len && text[i + 1] == '`' && text[i + 2] == '`') {
-      if (mode == CODE_BLOCK) {
-        escaped << wxT("</code></pre>");
-        mode = CODE_NONE;
-      } else if (mode == CODE_NONE) {
-        mode = CODE_BLOCK;
-        escaped << wxT("<pre><code>");
-        // skip "```"
-        i += 2;
-        // skip optional language id (until EOL)
-        while (i + 1 < len && text[i + 1] != '\n' && text[i + 1] != '\r') {
-          ++i;
-        }
-      } else {
-        escaped << wxT("```");
-        i += 2;
-      }
-      continue;
-    }
-
-    // inline: `code`
-    if (ch == '`' && mode != CODE_BLOCK) {
-      if (mode == CODE_INLINE) {
-        escaped << wxT("</code>");
-        mode = CODE_NONE;
-      } else {
-        escaped << wxT("<code>");
-        mode = CODE_INLINE;
-      }
-      continue;
-    }
-
-    // **bold** (ignore inside code)
-    if (mode == CODE_NONE && ch == '*' && i + 1 < len && text[i + 1] == '*') {
-      if (bold)
-        escaped << wxT("</b>");
-      else
-        escaped << wxT("<b>");
-      bold = !bold;
-      ++i; // skip second '*'
-      continue;
-    }
-
-    // [label](url) links (ignore inside code)
-    if (mode == CODE_NONE && ch == '[') {
-      // find closing ']'
-      size_t closeBracket = text.find(']', i + 1);
-      if (closeBracket != wxString::npos && closeBracket + 1 < len && text[closeBracket + 1] == '(') {
-        size_t closeParen = text.find(')', closeBracket + 2);
-        if (closeParen != wxString::npos) {
-          wxString label = text.Mid(i + 1, closeBracket - (i + 1));
-          wxString url = text.Mid(closeBracket + 2, closeParen - (closeBracket + 2));
-
-          label.Trim(true).Trim(false);
-          url.Trim(true).Trim(false);
-
-          if (!label.IsEmpty() && !url.IsEmpty()) {
-            escaped << wxT("<a href=\"") << ArduinoMarkdown_HtmlEscape(url) << wxT("\">")
-                    << ArduinoMarkdown_HtmlEscape(label) << wxT("</a>");
-            i = closeParen; // consume whole link
-            continue;
-          }
-        }
-      }
-    }
-
-    switch (ch) {
-      case '&':
-        escaped << wxT("&amp;");
-        break;
-      case '<':
-        escaped << wxT("&lt;");
-        break;
-      case '>':
-        escaped << wxT("&gt;");
-        break;
-      case '"':
-        escaped << wxT("&quot;");
-        break;
-      default:
-        escaped << ch;
-        break;
-    }
-  }
-
-  if (mode == CODE_INLINE) {
-    escaped << wxT("</code>");
-  } else if (mode == CODE_BLOCK) {
-    escaped << wxT("</code></pre>");
-  }
-
-  // close unbalanced **
-  if (bold) {
-    escaped << wxT("</b>");
-  }
-
-  std::vector<wxString> paragraphs;
-  wxString current;
-  wxString line;
-
-  auto flushLine = [&](bool endOfText) {
-    wxString trimmed = line;
-    trimmed.Trim(true).Trim(false);
-
-    if (trimmed.IsEmpty()) {
-      if (!current.IsEmpty()) {
-        paragraphs.push_back(current);
-        current.clear();
-      }
-    } else {
-      if (!current.IsEmpty()) {
-        current << wxT("\n") << line;
-      } else {
-        current = line;
-      }
-    }
-    line.clear();
-
-    if (endOfText && !current.IsEmpty()) {
-      paragraphs.push_back(current);
-      current.clear();
-    }
-  };
-
-  for (size_t i = 0; i < escaped.length(); ++i) {
-    wxChar ch = escaped[i];
-    if (ch == '\n') {
-      flushLine(false);
-    } else {
-      line << ch;
-    }
-  }
-  if (!line.IsEmpty() || !current.IsEmpty()) {
-    wxString trimmedLine = line;
-    trimmedLine.Trim(true).Trim(false);
-    if (!trimmedLine.IsEmpty()) {
-      if (!current.IsEmpty()) {
-        current << wxT("\n") << line;
-      } else {
-        current = line;
-      }
-    }
-    if (!current.IsEmpty()) {
-      paragraphs.push_back(current);
-      current.clear();
-    }
-  }
-
-  // Heuristic: models sometimes glue headings like "...sentence.### Step 1".
-  // Insert a newline before '#... ' if it doesn't start a line.
-  auto normalizeGluedHeadings = [&](const wxString &in) -> wxString {
-    wxString out;
-    out.reserve(in.length() + 8);
-
-    const size_t n = in.length();
-    for (size_t i = 0; i < n; ++i) {
-      wxChar c = in[i];
-
-      if (c == '#' && i + 1 < n) {
-        // count 1..6 hashes
-        size_t j = i;
-        int level = 0;
-        while (j < n && in[j] == '#' && level < 6) {
-          ++level;
-          ++j;
-        }
-        // heading needs at least one space after hashes
-        if (level >= 1 && level <= 6 && j < n && in[j] == ' ') {
-          // if not at start of line, force newline
-          if (i > 0 && in[i - 1] != '\n') {
-            out << wxT("\n");
-          }
-          out << in.Mid(i, j - i + 1); // "### "
-          i = j;                       // continue after the space
-          continue;
-        }
-      }
-
-      out << c;
-    }
-    return out;
-  };
-
-  auto isHeadingLine = [&](const wxString &ln, int &levelOut, wxString &contentOut) -> bool {
-    // allow up to 3 leading spaces
-    size_t pos = 0;
-    while (pos < ln.length() && pos < 3 && ln[pos] == ' ')
-      ++pos;
-
-    size_t j = pos;
-    int level = 0;
-    while (j < ln.length() && ln[j] == '#' && level < 6) {
-      ++level;
-      ++j;
-    }
-    if (level < 1 || level > 6)
-      return false;
-    if (j >= ln.length() || ln[j] != ' ')
-      return false;
-
-    wxString content = ln.Mid(j + 1);
-    content.Trim(true).Trim(false);
-    if (content.IsEmpty())
-      return false;
-
-    levelOut = level;
-    contentOut = content;
-    return true;
-  };
-
-  wxString body;
-  for (size_t i = 0; i < paragraphs.size(); ++i) {
-    if (!body.IsEmpty())
-      body << wxT("\n\n");
-
-    wxString p = paragraphs[i];
-
-    if (p.Contains(wxT("<pre>"))) {
-      body << p;
-      continue;
-    }
-
-    p = normalizeGluedHeadings(p);
-
-    // Split paragraph into lines, emit headings as <hN>, rest as <p> with <br>.
-    wxString paraText;
-    auto flushParaText = [&]() {
-      if (paraText.IsEmpty())
-        return;
-      wxString t = paraText;
-      t.Replace(wxT("\n"), wxT("<br>\n"));
-      body << wxT("<p>") << t << wxT("</p>");
-      paraText.clear();
-    };
-
-    wxString curLine;
-    for (size_t k = 0; k < p.length(); ++k) {
-      wxChar ch = p[k];
-      if (ch == '\n') {
-        int level = 0;
-        wxString htxt;
-        if (isHeadingLine(curLine, level, htxt)) {
-          flushParaText();
-          body << wxString::Format(wxT("<h%d>"), level) << htxt
-               << wxString::Format(wxT("</h%d>"), level);
-        } else {
-          if (!paraText.IsEmpty())
-            paraText << wxT("\n");
-          paraText << curLine;
-        }
-        curLine.clear();
-      } else {
-        curLine << ch;
-      }
-    }
-
-    // last line
-    if (!curLine.IsEmpty()) {
-      int level = 0;
-      wxString htxt;
-      if (isHeadingLine(curLine, level, htxt)) {
-        flushParaText();
-        body << wxString::Format(wxT("<h%d>"), level) << htxt
-             << wxString::Format(wxT("</h%d>"), level);
-      } else {
-        if (!paraText.IsEmpty())
-          paraText << wxT("\n");
-        paraText << curLine;
-      }
-    }
-
-    flushParaText();
-  }
-
-  return body;
+  return wxString::FromUTF8(htmlOutput);
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -514,6 +237,8 @@ wxString ArduinoMarkdownPanel::BuildFullHtmlFromMessages() const {
        << wxT("\">")
        << body
        << wxT("</body></html>");
+
+  APP_DEBUG_LOG("MDW: HTML=\n%s", wxToStd(html).c_str());
   return html;
 }
 
@@ -560,6 +285,3 @@ void ArduinoMarkdownPanel::OnHtmlLinkClicked(wxHtmlLinkEvent &event) {
     return;
   }
 }
-
-
-

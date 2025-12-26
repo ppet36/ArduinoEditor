@@ -46,8 +46,7 @@ POTFILE := $(LOCDIR)/$(DOMAIN).pot
 
 
 # Base compiler flags
-#CXXFLAGS += -std=c++17 -Wall -Wextra -Wformat -Wformat-security -g3 -MMD -MP
-CXXFLAGS += -std=c++17 -Wall -Wextra -Wformat -Wformat-security -DwxNO_IMPLICIT_WXSTRING_ENCODING -g3 -MMD -MP
+CXXFLAGS += -std=c++17 -Wall -Wextra -Wformat -Wformat-security -DwxNO_IMPLICIT_WXSTRING_ENCODING -g3 -MMD -MP -I$(SOURCE_DIR)
 LDFLAGS  +=
 LDLIBS   +=
 
