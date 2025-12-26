@@ -69,7 +69,7 @@ SplashFrame::SplashFrame()
   auto *version = new wxStaticText(
       centerPanel,
       wxID_ANY,
-      wxString::Format(_("Version %s"), wxString::FromUTF8(VERSION)));
+      wxString::Format(_("Version %s"), wxString::FromUTF8(AE_VERSION)));
 
   wxFont titleFont = title->GetFont();
   titleFont.SetPointSize(24);

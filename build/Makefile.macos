@@ -55,11 +55,7 @@ DMG_DUAL_TMPDMG  ?= $(DMG_DUAL_TMPBASE).dmg
 PKG_STAGE_DUAL ?= dist_pkg/dual
 PKG_ROOT_ARM ?= $(PKG_STAGE_DUAL)/root_arm
 PKG_ROOT_X86 ?= $(PKG_STAGE_DUAL)/root_x86
-
-# Version for PKG (try read from Info.plist of arm64 app, fallback)
-PKG_VERSION ?= $(shell /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$(APP_BUNDLE_ARM)/Contents/Info.plist" 2>/dev/null || echo "1.0.0")
-
-PKG_DUAL_NAME ?= $(DMG_NAME)-$(VERSION)-macos
+PKG_DUAL_NAME ?= $(DMG_NAME)-$(AE_VERSION)-macos
 PKG_DUAL_FILE ?= $(PKG_DUAL_NAME).pkg
 
 PKG_COMP_ARM  ?= $(PKG_STAGE_DUAL)/$(APP_NAME)-arm64.pkg
@@ -173,7 +169,7 @@ pkg-stage-dual: sign-dual
 	rm -rf "$(PKG_ROOT_ARM)" "$(PKG_ROOT_X86)"
 	mkdir -p "$(PKG_ROOT_ARM)" "$(PKG_ROOT_X86)"
 
-	# Zkopíruj app bundle už jako ArduinoEditor.app (bez suffixu)
+	# Copy the app bundle as ArduinoEditor.app (without suffix)
 	ditto "$(APP_BUNDLE_ARM)" "$(PKG_ROOT_ARM)/$(APP_NAME).app"
 	ditto "$(APP_BUNDLE_X86)" "$(PKG_ROOT_X86)/$(APP_NAME).app"
 
@@ -215,7 +211,7 @@ pkg-build-dual: pkg-stage-dual
 		--root "$(PKG_ROOT_ARM)" \
 		--install-location "/Applications" \
 		--identifier "cz.ppet36.$(APP_NAME).arm64" \
-		--version "$(PKG_VERSION)" \
+		--version "$(AE_VERSION)" \
 		--sign "$(SIGN_ID_PKG)" \
 		"$(PKG_COMP_ARM)"
 
@@ -223,7 +219,7 @@ pkg-build-dual: pkg-stage-dual
 		--root "$(PKG_ROOT_X86)" \
 		--install-location "/Applications" \
 		--identifier "cz.ppet36.$(APP_NAME).x86_64" \
-		--version "$(PKG_VERSION)" \
+		--version "$(AE_VERSION)" \
 		--sign "$(SIGN_ID_PKG)" \
 		"$(PKG_COMP_X86)"
 
@@ -255,7 +251,7 @@ clean-pkg-dual:
 	rm -rf "$(PKG_STAGE_DUAL)" "$(PKG_DUAL_FILE)"
 
 
-
+clean:: clean-pkg-dual clean-dmg-dual
 
 # One-time setup: stores credentials in your Keychain (will prompt for app-specific password)
 notary-setup:

@@ -21,10 +21,6 @@
 #include <wx/timer.h>
 #include <wx/wx.h>
 
-#ifndef VERSION
-#define VERSION "1.0.0"
-#endif
-
 class SplashFrame : public wxFrame {
 public:
   SplashFrame();

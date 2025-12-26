@@ -2,8 +2,9 @@
 # Makefile.linux – build + AppImage packaging wrapper
 # ---------------------------------------------------------
 
+include version.mk
+
 APP_NAME        ?= ArduinoEditor
-VERSION         ?= 1.0.0
 
 # We call the existing Makefile in the same directory
 BASE_MAKEFILE   ?= Makefile
@@ -41,7 +42,7 @@ ARDUINO_CLI_SRC ?= /opt/arduino-cli/bin/arduino-cli
 APPIMAGETOOL    ?= appimagetool
 
 # Output filename
-APPIMAGE_OUT    := $(APP_NAME)-Linux-$(ARCH)-$(VERSION).AppImage
+APPIMAGE_OUT    := $(APP_NAME)-Linux-$(ARCH)-$(AE_VERSION).AppImage
 
 # ---- Clang/LLVM bundling (libclang + resource headers) ----
 LLVM_CONFIG   ?= llvm-config
@@ -168,7 +169,7 @@ appimage: appdir bundle_clang bundle_arduino_cli
 	"$(APPIMAGETOOL)"  --appimage-extract-and-run "$(APPDIR)" "$(APPIMAGE_OUT)"
 	@echo "==> Done: $(APPIMAGE_OUT)"
 
-clean:
+clean: clean_appimage
 	$(MAKE) -f $(BASE_MAKEFILE) clean
 
 clean_appimage:

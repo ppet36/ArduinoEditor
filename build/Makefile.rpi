@@ -4,8 +4,9 @@
 # Tested on RaspberryPI 5 with stock OS.
 # --------------------------------------------------------------------------------
 
+include version.mk
+
 APP_NAME        := ArduinoEditor
-APP_VERSION     := 1.0.0
 
 UNAME_S       := $(shell uname -s)
 ARCH          := $(shell uname -m)
@@ -32,7 +33,7 @@ LOCALE_DEST     := $(APPDIR_SHARE)/locale
 DESKTOP_FILE    := $(APPDIR)/ArduinoEditor.desktop
 ICON_256        := $(APPDIR)/ArduinoEditor.png
 
-APPIMAGE        := $(APP_NAME)-rpi-$(ARCH)-$(APP_VERSION).AppImage
+APPIMAGE        := $(APP_NAME)-rpi-$(ARCH)-$(AE_VERSION).AppImage
 APPIMAGETOOL    ?= appimagetool
 
 CXX             ?= g++
@@ -55,7 +56,7 @@ DEB_DESKTOP_DIR ?= $(DEBROOT)/usr/share/applications
 DEB_ICON_DIR    ?= $(DEBROOT)/usr/share/icons/hicolor/256x256/apps
 DEB_LOCALE_DIR  ?= $(DEBROOT)/usr/share/locale
 
-DEB_PACKAGE     ?= $(PKG_NAME)_rpi_$(DEB_ARCH)_$(APP_VERSION).deb
+DEB_PACKAGE     ?= $(PKG_NAME)_rpi_$(DEB_ARCH)_$(AE_VERSION).deb
 DEB_DEBIAN_SRC  ?= $(DEB_DIR)/debian
 
 # Optional tool dependencies (we don't bundle these by default)
@@ -228,7 +229,7 @@ deb-control: debroot deb-stage
 	  [ -n "$$DEPS" ] || { echo "ERROR: dpkg-shlibdeps produced empty Depends" >&2; exit 1; }; \
 	  printf "%s\n" \
 	    "Package: $(PKG_NAME)" \
-	    "Version: $(APP_VERSION)" \
+	    "Version: $(AE_VERSION)" \
 	    "Section: devel" \
 	    "Priority: optional" \
 	    "Architecture: $(DEB_ARCH)" \

@@ -984,6 +984,15 @@ std::vector<std::string> ArduinoCli::BuildClangArgsFromBoardDetails(const nlohma
   auto itPlat = props.find("build.board.platform.path");
   if (itPlat != props.end()) {
     m_platformPath = itPlat->second;
+  } else {
+    m_platformPath.clear();
+  }
+
+  auto itCorePlat = props.find("build.core.platform.path");
+  if (itCorePlat != props.end()) {
+    m_corePlatformPath = itCorePlat->second;
+  } else {
+    m_corePlatformPath.clear();
   }
 
   // ---- compilerPath: from recipe.cpp.o.pattern ----
@@ -1033,6 +1042,10 @@ std::vector<std::string> ArduinoCli::BuildClangArgsFromBoardDetails(const nlohma
     result.push_back("-I" + itBuildCorePath->second);
   }
 
+  // Errors that are outside the sketch are ignored.
+  // However, because the includes and generally the clang parameters are not 100% correct,
+  // it could happen that errors in the sketch would not be in the list at all due to the number
+  // of errors in the toolchain. Therefore, we do not limit errors.
   result.push_back("-ferror-limit=0");
 
   std::vector<std::string> rawFlags;
@@ -1872,12 +1885,67 @@ std::vector<std::string> ArduinoCli::ResolveLibraries(const std::vector<std::str
     return s;
   };
 
+  auto normalizeArch = [&](std::string s) -> std::string {
+    TrimInPlace(s);
+    std::transform(s.begin(), s.end(), s.begin(),
+                   [](unsigned char c) { return (char)std::tolower(c); });
+    return s;
+  };
+
+  auto getTargetArchFromFqbn = [&]() -> std::string {
+    // FQBN format: vendor:arch:board[:options...]
+    std::string f = fqbn;
+    TrimInPlace(f);
+    size_t p1 = f.find(':');
+    if (p1 == std::string::npos) {
+      return "";
+    }
+    size_t p2 = f.find(':', p1 + 1);
+    if (p2 == std::string::npos) {
+      // vendor:arch
+      return normalizeArch(f.substr(p1 + 1));
+    }
+    return normalizeArch(f.substr(p1 + 1, p2 - (p1 + 1)));
+  };
+
+  const std::string targetArch = getTargetArchFromFqbn();
+
+  auto isArchCompatible = [&](const std::string &architecturesRaw) -> bool {
+    // Missing/empty => compatible (Arduino-style)
+    if (targetArch.empty()) {
+      return true;
+    }
+
+    std::string raw = architecturesRaw;
+    TrimInPlace(raw);
+    if (raw.empty()) {
+      return true;
+    }
+
+    // CSV list, "*" means any
+    std::stringstream ss(raw);
+    std::string item;
+    while (std::getline(ss, item, ',')) {
+      TrimInPlace(item);
+      item = normalizeArch(item);
+      if (item.empty()) {
+        continue;
+      }
+      if (item == "*" || item == targetArch) {
+        return true;
+      }
+    }
+    return false;
+  };
+
   auto parseLibraryProperties = [&](const fs::path &libRoot,
                                     const std::string &defaultName,
                                     std::string &outName,
-                                    std::vector<std::string> &outDepends) {
+                                    std::vector<std::string> &outDepends,
+                                    std::string &outArchitectures) {
     outName = defaultName;
     outDepends.clear();
+    outArchitectures.clear();
 
     fs::path propsPath = libRoot / "library.properties";
     std::ifstream in(propsPath);
@@ -1917,6 +1985,8 @@ std::vector<std::string> ArduinoCli::ResolveLibraries(const std::vector<std::str
             outDepends.push_back(dep);
           }
         }
+      } else if (key == "architectures") {
+        outArchitectures = val; // keep raw CSV
       }
     }
   };
@@ -1962,13 +2032,33 @@ std::vector<std::string> ArduinoCli::ResolveLibraries(const std::vector<std::str
       addKey(dirName);
     };
 
-    // core libs (m_platformPath/libraries)
-    fs::path platformRoot = fs::path(m_platformPath);
-    fs::path coreLibsRoot = platformRoot / "libraries";
+    // core libs:
+    //  - build.core.platform.path/libraries (referenced core platform; e.g. Arduino AVR)
+    //  - build.board.platform.path/libraries (board platform; e.g. attiny)
+    //
+    // Order matters: scan core platform first, then board platform so board can override.
+    std::vector<fs::path> corePlatformRoots;
+    if (!m_corePlatformPath.empty()) {
+      corePlatformRoots.push_back(fs::path(m_corePlatformPath));
+    }
+    if (!m_platformPath.empty()) {
+      fs::path bp(m_platformPath);
+      if (m_corePlatformPath.empty() || bp.string() != m_corePlatformPath) {
+        corePlatformRoots.push_back(bp);
+      }
+    }
 
     std::error_code ec;
-    if (fs::exists(coreLibsRoot, ec) && fs::is_directory(coreLibsRoot, ec)) {
-      for (const auto &dirEntry : fs::directory_iterator(coreLibsRoot, ec)) {
+    for (const auto &platformRoot : corePlatformRoots) {
+      fs::path libsRoot = platformRoot / "libraries";
+      if (!fs::exists(libsRoot, ec) || !fs::is_directory(libsRoot, ec)) {
+        continue;
+      }
+
+      APP_DEBUG_LOG("CLI: ResolveLibraries: scanning core libraries in %s",
+                    libsRoot.string().c_str());
+
+      for (const auto &dirEntry : fs::directory_iterator(libsRoot, ec)) {
         if (ec)
           break;
         if (!dirEntry.is_directory())
@@ -1977,12 +2067,13 @@ std::vector<std::string> ArduinoCli::ResolveLibraries(const std::vector<std::str
         fs::path libDir = dirEntry.path();
         fs::path libRoot = libDir;
 
-        fs::path srcRoot = libRoot / "src";
-        if (!fs::exists(srcRoot, ec) || !fs::is_directory(srcRoot, ec)) {
-          srcRoot = libRoot;
-          if (!fs::exists(srcRoot, ec) || !fs::is_directory(srcRoot, ec)) {
-            continue;
-          }
+        // Find src root
+        std::error_code ec2;
+        fs::path srcRoot = libRoot;
+        if (fs::exists(libRoot / "src", ec2) && fs::is_directory(libRoot / "src", ec2)) {
+          srcRoot = libRoot / "src";
+        } else if (!fs::exists(srcRoot, ec2) || !fs::is_directory(srcRoot, ec2)) {
+          continue;
         }
 
         ResolveLibInfo info;
@@ -1991,7 +2082,15 @@ std::vector<std::string> ArduinoCli::ResolveLibraries(const std::vector<std::str
         info.isCore = true;
 
         std::string defaultName = libRoot.filename().string();
-        parseLibraryProperties(libRoot, defaultName, info.name, info.depends);
+
+        std::string architecturesRaw;
+        parseLibraryProperties(libRoot, defaultName, info.name, info.depends, architecturesRaw);
+        if (!isArchCompatible(architecturesRaw)) {
+          APP_DEBUG_LOG("CLI: ResolveLibraries: skip core lib '%s' (architectures='%s', target='%s')",
+                        info.name.c_str(), architecturesRaw.c_str(), targetArch.c_str());
+          continue;
+        }
+
         info.normalizedName = normalizeLibName(info.name);
 
         size_t idx = m_resolveLibs.size();
@@ -2000,7 +2099,7 @@ std::vector<std::string> ArduinoCli::ResolveLibraries(const std::vector<std::str
         m_resolveSrcRootToLibIndex[srcRoot.string()] = idx;
         registerLibNameKeys(idx);
 
-        // core libs can overwrite user libs
+        // core libraries can overwrite user libs
         CollectHeadersFromSrcRoot(srcRoot, srcRoot.string(), m_resolveHeaderToLibSrc, /*allowOverride=*/true);
       }
     }
@@ -2014,6 +2113,8 @@ std::vector<std::string> ArduinoCli::ResolveLibraries(const std::vector<std::str
       fs::path libRoot = fs::path(srcDirStr);
 
       std::error_code ec2;
+
+      // Determine srcRoot (where headers are)
       fs::path srcRoot = libRoot;
       if (fs::exists(libRoot / "src", ec2) && fs::is_directory(libRoot / "src", ec2)) {
         srcRoot = libRoot / "src";
@@ -2021,15 +2122,35 @@ std::vector<std::string> ArduinoCli::ResolveLibraries(const std::vector<std::str
         continue;
       }
 
+      // Determine propsRoot (where library.properties lives)
+      // Some libraries come from CLI JSON with sourceDir pointing to ".../Lib/src".
+      fs::path propsRoot = libRoot;
+      if (!fs::exists(propsRoot / "library.properties", ec2)) {
+        if (propsRoot.filename() == "src") {
+          fs::path parent = propsRoot.parent_path();
+          if (!parent.empty() && fs::exists(parent / "library.properties", ec2)) {
+            propsRoot = parent;
+          }
+        }
+      }
+
       ResolveLibInfo info;
-      info.libRoot = libRoot;
+      // IMPORTANT: libRoot in ResolveLibInfo should be the library root (properties root), not ".../src"
+      info.libRoot = propsRoot;
       info.srcRoot = srcRoot;
       info.isCore = false;
 
       std::string defaultName =
-          !libInfo.name.empty() ? libInfo.name : libRoot.filename().string();
+          !libInfo.name.empty() ? libInfo.name : propsRoot.filename().string();
 
-      parseLibraryProperties(libRoot, defaultName, info.name, info.depends);
+      std::string architecturesRaw;
+      parseLibraryProperties(propsRoot, defaultName, info.name, info.depends, architecturesRaw);
+
+      if (!isArchCompatible(architecturesRaw)) {
+        APP_DEBUG_LOG("CLI: ResolveLibraries: skip user lib '%s' (architectures='%s', target='%s')",
+                      info.name.c_str(), architecturesRaw.c_str(), targetArch.c_str());
+        continue;
+      }
 
       if (!libInfo.latest.dependencies.empty()) {
         for (const auto &d : libInfo.latest.dependencies) {
@@ -2039,6 +2160,8 @@ std::vector<std::string> ArduinoCli::ResolveLibraries(const std::vector<std::str
       }
 
       info.normalizedName = normalizeLibName(info.name);
+
+      APP_TRACE_LOG("CLI: ResolveLibraries: adding user library %s to cache...", info.normalizedName.c_str());
 
       size_t idx = m_resolveLibs.size();
       m_resolveLibs.push_back(std::move(info));
@@ -2224,8 +2347,7 @@ bool ArduinoCli::GetResolvedLibraries(const std::vector<SketchFileBuffer> &files
       }
     }
 
-    isCoreLibrary = !m_platformPath.empty() &&
-                    includePath.rfind(m_platformPath, 0) == 0;
+    isCoreLibrary = (!m_platformPath.empty() && includePath.rfind(m_platformPath, 0) == 0) || (!m_corePlatformPath.empty() && includePath.rfind(m_corePlatformPath, 0) == 0);
 
     if (in) {
       std::string line;
@@ -2909,6 +3031,9 @@ void ArduinoCli::SetFQBN(const std::string &newFqbn) {
     return;
   }
 
+  // Library cache needs to be cleared because architecture maybe changed.
+  InvalidateLibraryCache();
+
   // arduino-cli board attach -b "<fqbn>" [-p "<port>"] "<sketchPath>"
   std::ostringstream args;
   args << " board attach"
@@ -3571,7 +3696,7 @@ void ArduinoCli::InitAttachedBoard() {
 }
 
 ArduinoCli::ArduinoCli(const std::string &sketchPath_, const std::string &cliPath_)
-    : fqbn(""), sketchPath(sketchPath_), m_cli(cliPath_), serialPort(), m_hasResolveLibrariesCache(false) {
+    : m_hasResolveLibrariesCache(false), fqbn(""), sketchPath(sketchPath_), m_cli(cliPath_), serialPort() {
 
   InitAttachedBoard();
 }

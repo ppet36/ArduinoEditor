@@ -2,7 +2,7 @@
 # ArduinoEditor – Windows (cross) build from macOS/Linux
 # ---------------------------------------------------------
 
-VERSION ?= "1.0.0"
+include version.mk
 
 # Pull in the common POSIX build rules, sources, etc.
 APP_NAME := ArduinoEditor
@@ -31,7 +31,7 @@ WIN64_PREFIX    ?= x86_64-w64-mingw32
 WIN64_CXX       ?= $(WIN64_PREFIX)-g++
 WIN64_WX_CONFIG ?= $(WX_WIN64_ROOT)/bin/wx-config
 
-ZIP_NAME := $(APP_NAME)-$(PLATFORM)-$(VERSION).zip
+ZIP_NAME := $(APP_NAME)-$(PLATFORM)-$(AE_VERSION).zip
 ZIP_PATH := $(ZIP_NAME)
 ZIP_ROOT := ArduinoEditor
 
@@ -54,7 +54,8 @@ WIN64_CXXFLAGS := -std=c++17 -Wall -Wextra -Wformat -Wformat-security -DwxNO_IMP
 	$(shell $(WIN64_WX_CONFIG) --cxxflags) \
 	-I$(LLVM_MSVC_ROOT)/include \
 	-I$(JSON_PREFIX)/include \
-	-I$(SOURCE_DIR)
+	-I$(SOURCE_DIR) \
+	-DAE_VERSION=\"$(AE_VERSION)\"
 
 # LDFLAGS/LDLIBS – wxWidgets + libclang z /opt/clang+llvm-msvc-x86_64
 WIN64_LDFLAGS := $(shell $(WIN64_WX_CONFIG) --libs std,aui,html,stc,net,propgrid) \
@@ -146,7 +147,7 @@ $(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.cpp | $(BUILD_DIR)
 	$(WIN64_CXX) $(WIN64_CXXFLAGS) -c -o $@ $<
 
 clean:
-	rm -rf "$(BUILD_DIR)" "ArduinoEditorSetup-$(PLATFORM)-$(VERSION).exe" "$(ZIP_PATH)"
+	rm -rf "$(BUILD_DIR)" "ArduinoEditorSetup-$(PLATFORM)-$(AE_VERSION).exe" "$(ZIP_PATH)"
 
 
 # ---------------------------------------------------------
@@ -225,7 +226,7 @@ installer_win64: sign_win64
 	@set -e; \
 	TS_OPT=""; \
 	if [ -n "$(WIN_SIGN_TS)" ]; then TS_OPT="-t $(WIN_SIGN_TS)"; fi; \
-	OUT=$$(makensis -DAPP_VERSION=$(VERSION) ArduinoEditor_x86.nsi | tee /dev/stderr | awk '/^Output: /{sub(/^Output: /,""); gsub(/^"|"$$/,""); print}' | tail -n 1); \
+	OUT=$$(makensis -DAPP_VERSION=$(AE_VERSION) ArduinoEditor_x86.nsi | tee /dev/stderr | awk '/^Output: /{sub(/^Output: /,""); gsub(/^"|"$$/,""); print}' | tail -n 1); \
 	if [ -z "$$OUT" ]; then \
 	  echo "ERROR: Can't detect NSIS output file (missing 'Output:' line)."; \
 	  exit 1; \

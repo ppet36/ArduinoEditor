@@ -171,6 +171,7 @@ private:
 
   // Cache for ResolveLibraries
   mutable std::mutex m_resolveCacheMutex;
+  bool m_hasResolveLibrariesCache = false;
   std::vector<ResolveLibInfo> m_resolveLibs;
   std::unordered_map<std::string, std::string> m_resolveHeaderToLibSrc; // header -> srcRoot
   std::unordered_map<std::string, size_t> m_resolveSrcRootToLibIndex;   // srcRoot.string() -> index in m_resolveLibs
@@ -183,13 +184,12 @@ private:
   std::string serialPort;
   std::string programmer;
   std::string m_platformPath;
+  std::string m_corePlatformPath;
   std::vector<ArduinoLibraryInfo> libraries;
   std::vector<ArduinoLibraryInfo> installedLibraries;
   std::vector<ArduinoCoreInfo> cores;
 
   std::atomic<bool> m_cancelAsync{false};
-
-  bool m_hasResolveLibrariesCache = false;
 
   int RunCliStreaming(const std::string &args, const wxWeakRef<wxEvtHandler> &weak, const char *finishedLabel);
 

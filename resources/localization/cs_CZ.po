@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ArduinoEditor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-26 10:33+0100\n"
+"POT-Creation-Date: 2025-12-26 19:18+0100\n"
 "PO-Revision-Date: 2025-12-09 22:52:00+0100\n"
 "Last-Translator: Pavel Petržela <r17c@seznam.cz>\n"
 "Language-Team: -\n"
@@ -94,7 +94,7 @@ msgstr ""
 msgid "Failed to parse AI response: %s"
 msgstr "Nelze rozparsovat AI odpověď: %s"
 
-#: ../src/ard_aboutdlg.cpp:35
+#: ../src/ard_aboutdlg.cpp:33
 #, c-format
 msgid ""
 "<html>\n"
@@ -438,7 +438,7 @@ msgstr ""
 "</body>\n"
 "</html>\n"
 
-#: ../src/ard_aboutdlg.cpp:188
+#: ../src/ard_aboutdlg.cpp:186
 #, c-format
 msgid ""
 "\n"
@@ -562,15 +562,15 @@ msgstr ""
 "</body>\n"
 "</html>\n"
 
-#: ../src/ard_aboutdlg.cpp:252 ../src/ard_ed_frm.cpp:2467
+#: ../src/ard_aboutdlg.cpp:250 ../src/ard_ed_frm.cpp:2467
 msgid "About Arduino Editor"
 msgstr "O aplikaci Arduino Editor"
 
-#: ../src/ard_aboutdlg.cpp:299
+#: ../src/ard_aboutdlg.cpp:297
 msgid "About"
 msgstr "O aplikaci"
 
-#: ../src/ard_aboutdlg.cpp:318
+#: ../src/ard_aboutdlg.cpp:316
 msgid "Licenses"
 msgstr "Licence"
 
@@ -1119,7 +1119,7 @@ msgstr "<nahrávají se programátory...>"
 msgid "<default>"
 msgstr "<výchozí>"
 
-#: ../src/ard_cli.cpp:2661
+#: ../src/ard_cli.cpp:2783
 msgid "Serial port is not set. Cannot upload sketch.\n"
 msgstr "Sériový port není nastaven. Nelze nahrát sketch.\n"
 

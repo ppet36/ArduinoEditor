@@ -2,9 +2,9 @@
 # ArduinoEditor – portable build system (macOS + Linux)
 # ---------------------------------------------------------
 
-APP_NAME := ArduinoEditor
+include version.mk
 
-VERSION ?= 1.0.0
+APP_NAME := ArduinoEditor
 
 # Source files
 SOURCE_DIR    := ../src
@@ -48,7 +48,7 @@ POTFILE := $(LOCDIR)/$(DOMAIN).pot
 
 
 # Base compiler flags
-CXXFLAGS += -std=c++17 -Wall -Wextra -Wformat -Wformat-security -DwxNO_IMPLICIT_WXSTRING_ENCODING -g3 -MMD -MP -I$(SOURCE_DIR)
+CXXFLAGS += -std=c++17 -Wall -Wextra -Wformat -Wformat-security -DwxNO_IMPLICIT_WXSTRING_ENCODING -g3 -MMD -MP -I$(SOURCE_DIR) -DAE_VERSION=\"$(AE_VERSION)\"
 LDFLAGS  +=
 LDLIBS   +=
 
@@ -176,7 +176,7 @@ $(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.cpp | $(BUILD_DIR)
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-clean:
+clean::
 	rm -rf $(BUILD_DIR)
 
 # -----------------------

@@ -26,8 +26,6 @@
 #include <wx/sizer.h>
 #include <wx/utils.h>
 
-#define VERSION "1.0.0"
-
 static wxString GetAboutHtml() {
   wxColour bg = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE);
   wxString bgHex = ColorToHex(bg);
@@ -178,7 +176,7 @@ static wxString GetAboutHtml() {
                    "</body>\n"
                    "</html>\n");
 
-  return wxString::Format(tpl, bgHex, wxString::FromUTF8(VERSION));
+  return wxString::Format(tpl, bgHex, wxString::FromUTF8(AE_VERSION));
 }
 
 static wxString GetLicensesHtml() {

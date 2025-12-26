@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-26 10:59+0100\n"
+"POT-Creation-Date: 2025-12-26 19:18+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -85,7 +85,7 @@ msgstr ""
 msgid "Failed to parse AI response: %s"
 msgstr ""
 
-#: ../src/ard_aboutdlg.cpp:35
+#: ../src/ard_aboutdlg.cpp:33
 #, c-format
 msgid ""
 "<html>\n"
@@ -258,7 +258,7 @@ msgid ""
 "</html>\n"
 msgstr ""
 
-#: ../src/ard_aboutdlg.cpp:188
+#: ../src/ard_aboutdlg.cpp:186
 #, c-format
 msgid ""
 "\n"
@@ -323,15 +323,15 @@ msgid ""
 "</html>\n"
 msgstr ""
 
-#: ../src/ard_aboutdlg.cpp:252 ../src/ard_ed_frm.cpp:2467
+#: ../src/ard_aboutdlg.cpp:250 ../src/ard_ed_frm.cpp:2467
 msgid "About Arduino Editor"
 msgstr ""
 
-#: ../src/ard_aboutdlg.cpp:299
+#: ../src/ard_aboutdlg.cpp:297
 msgid "About"
 msgstr ""
 
-#: ../src/ard_aboutdlg.cpp:318
+#: ../src/ard_aboutdlg.cpp:316
 msgid "Licenses"
 msgstr ""
 
@@ -817,7 +817,7 @@ msgstr ""
 msgid "<default>"
 msgstr ""
 
-#: ../src/ard_cli.cpp:2661
+#: ../src/ard_cli.cpp:2783
 msgid "Serial port is not set. Cannot upload sketch.\n"
 msgstr ""
 
