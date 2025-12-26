@@ -4,6 +4,8 @@
 
 APP_NAME := ArduinoEditor
 
+VERSION ?= 1.0.0
+
 # Source files
 SOURCE_DIR    := ../src
 RESOURCE_DIR  := ../resources

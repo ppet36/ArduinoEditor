@@ -59,7 +59,7 @@ PKG_ROOT_X86 ?= $(PKG_STAGE_DUAL)/root_x86
 # Version for PKG (try read from Info.plist of arm64 app, fallback)
 PKG_VERSION ?= $(shell /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$(APP_BUNDLE_ARM)/Contents/Info.plist" 2>/dev/null || echo "1.0.0")
 
-PKG_DUAL_NAME ?= $(DMG_NAME)-macos
+PKG_DUAL_NAME ?= $(DMG_NAME)-$(VERSION)-macos
 PKG_DUAL_FILE ?= $(PKG_DUAL_NAME).pkg
 
 PKG_COMP_ARM  ?= $(PKG_STAGE_DUAL)/$(APP_NAME)-arm64.pkg

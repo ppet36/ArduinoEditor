@@ -7,8 +7,15 @@ if [ $# -lt 1 ]; then
 fi
 
 APP="$1"
-BIN="$APP/Contents/MacOS/ArduinoEditor"
+BIN_DIR="$APP/Contents/MacOS"
+BIN="$BIN_DIR/ArduinoEditor"
 FW="$APP/Contents/Frameworks"
+
+# Add any other binaries you ship next to ArduinoEditor here:
+EXTRA_BINS=(
+  "$BIN_DIR/clang-format"
+  "$BIN_DIR/arduino-cli"
+)
 
 if [ ! -f "$BIN" ]; then
   echo "ERROR: binary not found: $BIN"
@@ -72,12 +79,30 @@ resolve_dep_path() {
       done < <(get_rpaths "$from")
 
       # 2) fallbacky (Homebrew/klasika)
-      for d in \
-        "/opt/homebrew/lib" \
-        "/usr/local/lib" \
-        "/opt/homebrew/opt/brotli/lib" \
+      # 2) fallbacky (Homebrew/klasika + LLVM)
+      #    - pokud máš LLVM z Homebrew, knihovny bývají tady
+      #    - pokud máš LLVM jinde, nastav env LLVM_PREFIX=/cesta/k/llvm
+      EXTRA_SEARCH_DIRS=(
+        "/opt/homebrew/lib"
+        "/usr/local/lib"
+        "/opt/homebrew/opt/brotli/lib"
         "/opt/homebrew/opt/curl/lib"
-      do
+        "/opt/homebrew/opt/llvm/lib"
+        "/usr/local/opt/llvm/lib"
+      )
+
+      if [ -n "${LLVM_PREFIX:-}" ]; then
+        EXTRA_SEARCH_DIRS+=("$LLVM_PREFIX/lib")
+      fi
+
+      # pokud je v PATH systémový clang-format, přidej jeho ../lib (typicky Homebrew layout)
+      if command -v clang-format >/dev/null 2>&1; then
+        cf="$(command -v clang-format)"
+        cf_dir="$(cd "$(dirname "$cf")" && pwd)"
+        EXTRA_SEARCH_DIRS+=("$cf_dir/../lib")
+      fi
+
+      for d in "${EXTRA_SEARCH_DIRS[@]}"; do
         if [ -f "$d/$base" ]; then
           echo "$d/$base"
           return 0
@@ -110,43 +135,48 @@ is_system_lib() {
 # ---------- PASS 1: copy closure (NO install_name_tool) ----------
 
 TMPDIR="$(mktemp -d)"
-QUEUE_FILE="$TMPDIR/queue.txt"
 SEEN_FILE="$TMPDIR/seen.txt"
 
 cleanup() { rm -rf "$TMPDIR"; }
 trap cleanup EXIT
 
-echo "$(abs_path "$BIN")" > "$QUEUE_FILE"
 : > "$SEEN_FILE"
+
+QUEUE=()
 
 enqueue_if_new() {
   local p="$1"
   p="$(abs_path "$p")"
   if ! grep -Fxq "$p" "$SEEN_FILE" 2>/dev/null; then
     echo "$p" >> "$SEEN_FILE"
-    echo "$p" >> "$QUEUE_FILE"
+    QUEUE+=("$p")
   fi
 }
 
-# initial mark
-echo "$(abs_path "$BIN")" >> "$SEEN_FILE"
+# Seed queue with main binary + extra binaries
+enqueue_if_new "$BIN"
+for b in "${EXTRA_BINS[@]}"; do
+  if [ -f "$b" ]; then
+    enqueue_if_new "$b"
+  else
+    echo "WARNING: extra binary not found (skipping): $b" >&2
+  fi
+done
 
 echo "PASS 1: collecting & copying dependency closure..."
-while IFS= read -r macho || [ -n "$macho" ]; do
-  [ -z "$macho" ] && continue
+qi=0
+while [ $qi -lt ${#QUEUE[@]} ]; do
+  macho="${QUEUE[$qi]}"
+  qi=$((qi + 1))
+
   [ -f "$macho" ] || continue
 
-  # iterate deps
   otool -L "$macho" | tail -n +2 | awk '{print $1}' | while IFS= read -r dep; do
-    [ -z "$dep" ] && continue
-    if is_system_lib "$dep"; then
-      continue
-    fi
+    [ -n "$dep" ] || continue
+    is_system_lib "$dep" && continue
 
     resolved="$(resolve_dep_path "$dep" "$macho")"
-    if is_system_lib "$resolved"; then
-      continue
-    fi
+    is_system_lib "$resolved" && continue
 
     if [ ! -f "$resolved" ]; then
       echo "  WARNING: can't resolve $dep (resolved to '$resolved') from '$macho'" >&2
@@ -160,24 +190,29 @@ while IFS= read -r macho || [ -n "$macho" ]; do
       echo "  copy: $resolved -> $dest"
       cp -L "$resolved" "$dest"
       chmod 755 "$dest"
-      enqueue_if_new "$resolved"
-    else
-      # collision sanity check (same basename from different path)
-      if ! cmp -s "$resolved" "$dest"; then
-        echo "  WARNING: basename collision for $base" >&2
-        echo "           existing: $dest" >&2
-        echo "           new src : $resolved" >&2
-      fi
     fi
+
+    # enqueue the resolved dylib itself so we also scan ITS deps
+    enqueue_if_new "$resolved"
   done
-done < "$QUEUE_FILE"
+done
+
 
 # ---------- PASS 2: rewrite ids + deps + rpaths ----------
 
 echo "PASS 2: rewriting install names and dependency paths..."
 
-# 1) Ensure main binary can find Frameworks
-install_name_tool -add_rpath "@executable_path/../Frameworks" "$BIN" 2>/dev/null || true
+ensure_bin_rpath() {
+  local macho="$1"
+  # Ensure binary can find Frameworks
+  install_name_tool -add_rpath "@executable_path/../Frameworks" "$macho" 2>/dev/null || true
+}
+
+# 1) Ensure all shipped executables can find Frameworks
+ensure_bin_rpath "$BIN"
+for b in "${EXTRA_BINS[@]}"; do
+  [ -f "$b" ] && ensure_bin_rpath "$b"
+done
 
 # 2) For each bundled dylib: set id + add @loader_path rpath (so dylibs can resolve @rpath deps too)
 shopt -s nullglob
@@ -188,7 +223,7 @@ for lib in "$FW"/*.dylib; do
 done
 shopt -u nullglob
 
-# 3) Rewrite dependencies in BIN + all bundled dylibs to @rpath/<basename> if that basename exists in Frameworks
+# 3) Rewrite dependencies in BIN + extra bins + all bundled dylibs to @rpath/<basename> if that basename exists in Frameworks
 rewrite_macho() {
   local macho="$1"
   otool -L "$macho" | tail -n +2 | awk '{print $1}' | while IFS= read -r dep; do
@@ -205,6 +240,10 @@ rewrite_macho() {
 }
 
 rewrite_macho "$BIN"
+for b in "${EXTRA_BINS[@]}"; do
+  [ -f "$b" ] && rewrite_macho "$b"
+done
+
 shopt -s nullglob
 for lib in "$FW"/*.dylib; do
   rewrite_macho "$lib"
