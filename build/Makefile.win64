@@ -53,7 +53,8 @@ WIN64_TARGET := $(BUILD_DIR)/$(APP_NAME).exe
 WIN64_CXXFLAGS := -std=c++17 -Wall -Wextra -Wformat -Wformat-security -DwxNO_IMPLICIT_WXSTRING_ENCODING -g3 -MMD -MP \
 	$(shell $(WIN64_WX_CONFIG) --cxxflags) \
 	-I$(LLVM_MSVC_ROOT)/include \
-	-I$(JSON_PREFIX)/include
+	-I$(JSON_PREFIX)/include \
+	-I$(SOURCE_DIR)
 
 # LDFLAGS/LDLIBS – wxWidgets + libclang z /opt/clang+llvm-msvc-x86_64
 WIN64_LDFLAGS := $(shell $(WIN64_WX_CONFIG) --libs std,aui,html,stc,net,propgrid) \
