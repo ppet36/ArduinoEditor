@@ -87,7 +87,9 @@ bundle: $(TARGET) locales
 	cp $(RESOURCE_DIR)/ArduinoEditor.icns $(APP_BUNDLE)/Contents/Resources/ArduinoEditor.icns
 	cp -R $(BUILD_DIR)/localization $(APP_BUNDLE)/Contents/MacOS
 	cp -L $(LLVM_PREFIX)/bin/clang-format $(APP_BUNDLE)/Contents/MacOS
+	chmod 755 $(APP_BUNDLE)/Contents/MacOS/clang-format
 	cp -L $(ARDUINO_CLI)/bin/arduino-cli $(APP_BUNDLE)/Contents/MacOS
+	chmod 755 $(APP_BUNDLE)/Contents/MacOS/arduino-cli
 
 	./vendorize_libs.sh $(APP_BUNDLE)
 

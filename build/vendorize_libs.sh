@@ -204,8 +204,8 @@ echo "PASS 2: rewriting install names and dependency paths..."
 
 ensure_bin_rpath() {
   local macho="$1"
-  # Ensure binary can find Frameworks
-  install_name_tool -add_rpath "@executable_path/../Frameworks" "$macho" 2>/dev/null || true
+  # Ensure each executable can find Frameworks relative to itself
+  install_name_tool -add_rpath "@loader_path/../Frameworks" "$macho"
 }
 
 # 1) Ensure all shipped executables can find Frameworks
