@@ -15,7 +15,9 @@
   </defs>
 
   <!-- background -->
-  <rect x="48" y="48" width="928" height="928" rx="180" fill="url(#bgGrad)" filter="url(#shadow)"/>
+  <rect x="90" y="90" width="844" height="844" rx="163" fill="url(#bgGrad)" filter="url(#shadow)"/>
+
+    <g transform="translate(512 512) scale(0.89) translate(-512 -512)">
 
   <!-- A / E -->
   <g font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif"
@@ -61,6 +63,5 @@
       <rect x="650" y="480" width="20" height="120" rx="12"/>
     </g>
   </g>
+  </g>
 </svg>
-
-

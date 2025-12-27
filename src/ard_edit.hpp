@@ -143,6 +143,7 @@ private:
   void OnChanged(wxStyledTextEvent &event);
 
   void OnAutoCompCompleted(wxStyledTextEvent &evt);
+  void OnAutoCompCancelled(wxStyledTextEvent &evt);
   void OnCompletionReady(wxThreadEvent &event);
 
   void HandleGoToLocation(const JumpTarget &tgt);

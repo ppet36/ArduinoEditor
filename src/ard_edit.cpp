@@ -136,6 +136,7 @@ ArduinoEditor::ArduinoEditor(wxWindow *parent,
   m_editor->Bind(wxEVT_STC_CHARADDED, &ArduinoEditor::OnCharAdded, this);
   m_editor->Bind(wxEVT_STC_AUTOCOMP_COMPLETED, &ArduinoEditor::OnAutoCompCompleted, this);
   m_editor->Bind(wxEVT_STC_AUTOCOMP_SELECTION, &ArduinoEditor::OnAutoCompSelection, this);
+  m_editor->Bind(wxEVT_STC_AUTOCOMP_CANCELLED, &ArduinoEditor::OnAutoCompCancelled, this);
   // - symbol highlight
   m_editor->Bind(wxEVT_STC_UPDATEUI, &ArduinoEditor::OnEditorUpdateUI, this);
   Bind(EVT_SYMBOL_OCCURRENCES_READY, &ArduinoEditor::OnSymbolOccurrencesReady, this);
@@ -712,6 +713,12 @@ void ArduinoEditor::OnAutoCompSelection(wxStyledTextEvent &evt) {
     const JumpTarget &tgt = m_lastUsages[currentIndex];
     frame->HandleGoToLocation(tgt);
   }
+}
+
+void ArduinoEditor::OnAutoCompCancelled(wxStyledTextEvent &evt) {
+  APP_DEBUG_LOG("EDIT: AUTOCOMP_CANCELLED (popupMode was %d)", (int)m_popupMode);
+  m_popupMode = PopupMode::None;
+  evt.Skip();
 }
 
 bool ArduinoEditor::DoFind(const wxString &what, int flags, bool fromStart) {
@@ -2104,7 +2111,12 @@ void ArduinoEditor::OnDwellStart(wxStyledTextEvent &event) {
   // When any popup (completion/usages) is visible or in progress, do not show hover tooltips.
   // CallTipShow tends to interfere with AutoComp popup lifetime.
   if (m_popupMode != PopupMode::None) {
-    return;
+    if (!m_editor->AutoCompActive()) {
+      APP_DEBUG_LOG("EDIT: popupMode stale (%d) but AutoComp not active -> reset", (int)m_popupMode);
+      m_popupMode = PopupMode::None;
+    } else {
+      return;
+    }
   }
 
   int pos = event.GetPosition();

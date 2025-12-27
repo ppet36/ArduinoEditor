@@ -1183,6 +1183,8 @@ std::vector<std::string> ArduinoCli::BuildClangArgsFromBoardDetails(const nlohma
     }
   }
 
+  // I couldn't find this define anywhere, but the toolchain needs it,
+  // so we'll add it synthetically.
   bool foundCoreBuild = false;
   for (const auto &f : result) {
     if (f == "-DARDUINO_CORE_BUILD") {
@@ -1860,7 +1862,6 @@ void ArduinoCli::LoadBoardParametersAsync(wxEvtHandler *handler) {
     wxThreadEvent evt(EVT_CLANG_ARGS_READY);
     evt.SetInt(ok ? 1 : 0);
 
-    // sends event to the GUI thread
     QueueUiEvent(weak, evt.Clone());
   }).detach();
 }

@@ -16,6 +16,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// NOTE:
+// Arduino Editor bundles a full copy of arduino-cli with all official releases
+// on all supported platforms (macOS, Windows, Linux, Raspberry Pi).
+// The arduino-cli binary is therefore always expected to be located next to
+// the Arduino Editor executable.
+//
+// As a result, most of the installation / discovery logic in this file is
+// currently not used in normal release builds and exists mainly for:
+//
+//  - historical reasons (early development before bundling was introduced),
+//  - fallback or development scenarios,
+//  - potential future changes in distribution strategy.
+//
+// Before removing this code, consider that it may still be useful for
+// non-bundled builds, custom distributions, or debugging setups.
+// If bundling remains a permanent design decision, this code can likely
+// be simplified or removed.
+
+
 #include "ard_cliinst.hpp"
 #include "utils.hpp"
 #include <memory>
