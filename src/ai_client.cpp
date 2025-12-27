@@ -299,6 +299,18 @@ bool AiClient::IsEnabled() const {
 bool AiClient::LoadApiKey(wxString &keyOut, wxString *errorOut) const {
   keyOut.clear();
 
+  // NOTE:
+  // Reading OPENAI_API_KEY from the environment is intended primarily for
+  // local development and debugging.
+  //
+  // On macOS, any change to the application binary invalidates the existing
+  // code signature, which in turn causes macOS to re-prompt for Keychain
+  // access (including password confirmation) when using the system keychain.
+  // This quickly becomes disruptive during active development.
+  //
+  // Using an environment variable avoids repeated Keychain permission dialogs
+  // while iterating on the binary. Production builds are expected to rely on
+  // the system keychain instead.
   wxString envKey;
   if (wxGetEnv(wxT("OPENAI_API_KEY"), &envKey) && !envKey.empty()) {
     keyOut = envKey;
@@ -309,7 +321,7 @@ bool AiClient::LoadApiKey(wxString &keyOut, wxString *errorOut) const {
   if (store.IsOk()) {
     wxString serviceName = wxString::Format(wxT("ArduinoEditor/AI/%s"), m_settings.id);
     APP_DEBUG_LOG("AICLI: Loading secret API key for %s", wxToStd(serviceName).c_str());
-    wxString username;
+    wxString username = wxT("api_key");
     wxSecretValue secret;
     if (store.Load(serviceName, username, secret)) {
       keyOut = secret.GetAsString();

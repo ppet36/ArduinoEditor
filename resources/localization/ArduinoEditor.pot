@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-27 11:54+0100\n"
+"POT-Creation-Date: 2025-12-27 13:24+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -48,39 +48,39 @@ msgid ""
 "%s"
 msgstr ""
 
-#: ../src/ai_client.cpp:325
+#: ../src/ai_client.cpp:337
 msgid "No API key found in the system secret store or OPENAI_API_KEY."
 msgstr ""
 
-#: ../src/ai_client.cpp:333 ../src/ai_client.cpp:353 ../src/ai_client.cpp:427
+#: ../src/ai_client.cpp:345 ../src/ai_client.cpp:365 ../src/ai_client.cpp:439
 msgid "AI is not enabled or not configured."
 msgstr ""
 
-#: ../src/ai_client.cpp:404
+#: ../src/ai_client.cpp:416
 msgid "Could not extract assistant text."
 msgstr ""
 
-#: ../src/ai_client.cpp:479
+#: ../src/ai_client.cpp:491
 msgid "HTTP request failed."
 msgstr ""
 
-#: ../src/ai_client.cpp:497
+#: ../src/ai_client.cpp:509
 msgid "Could not extract assistant text from AI response."
 msgstr ""
 
-#: ../src/ai_client.cpp:724
+#: ../src/ai_client.cpp:736
 msgid ""
 "Could not extract assistant text from AI response.\n"
 "Raw JSON (truncated):\n"
 msgstr ""
 
-#: ../src/ai_client.cpp:805
+#: ../src/ai_client.cpp:817
 msgid ""
 "Could not extract assistant text from AI response.\n"
 "Raw response (truncated):\n"
 msgstr ""
 
-#: ../src/ai_client.cpp:810
+#: ../src/ai_client.cpp:822
 #, c-format
 msgid "Failed to parse AI response: %s"
 msgstr ""
@@ -577,144 +577,144 @@ msgstr ""
 msgid "AI request failed:\n"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:73
+#: ../src/ard_aimdldlg.cpp:72
 msgid "AI model"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:104
+#: ../src/ard_aimdldlg.cpp:103
 msgid "Name:"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:108
+#: ../src/ard_aimdldlg.cpp:107
 msgid "Endpoint URL:"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:112
+#: ../src/ard_aimdldlg.cpp:111
 msgid "Model:"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:116
+#: ../src/ard_aimdldlg.cpp:115
 msgid "Maximum AI iterations:"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:122
+#: ../src/ard_aimdldlg.cpp:121
 msgid "Request timeout (seconds, 0 = no limit):"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:129
+#: ../src/ard_aimdldlg.cpp:128
 msgid "Force file_range policy (AI must inspect files before PATCH)"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:133
+#: ../src/ard_aimdldlg.cpp:132
 msgid "Keep full AI context (include all requested code and info)"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:137
+#: ../src/ard_aimdldlg.cpp:136
 msgid "Limit AI context to last applied change (floating window)"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:142
+#: ../src/ard_aimdldlg.cpp:141
 msgid "Authentication"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:143
+#: ../src/ard_aimdldlg.cpp:142
 msgid "This endpoint requires an API key"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:148
+#: ../src/ard_aimdldlg.cpp:147
 msgid "API key:"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:153
+#: ../src/ard_aimdldlg.cpp:152
 msgid "Clear stored key"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:159
+#: ../src/ard_aimdldlg.cpp:158
 msgid "The API key is stored using the system's secure keychain."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:165
+#: ../src/ard_aimdldlg.cpp:164
 msgid "Extra request JSON"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:189 ../src/ard_ed_frm.cpp:3828
+#: ../src/ard_aimdldlg.cpp:188 ../src/ard_ed_frm.cpp:3828
 msgid "Delete"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:190
+#: ../src/ard_aimdldlg.cpp:189
 msgid "Export..."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:191
+#: ../src/ard_aimdldlg.cpp:190
 msgid "Test"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:199 ../src/ard_boptdlg.cpp:76
+#: ../src/ard_aimdldlg.cpp:198 ../src/ard_boptdlg.cpp:76
 #: ../src/ard_fmtdlg.cpp:187 ../src/utils.cpp:846
 msgid "OK"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:200 ../src/ard_boptdlg.cpp:77
+#: ../src/ard_aimdldlg.cpp:199 ../src/ard_boptdlg.cpp:77
 #: ../src/ard_diff.cpp:126 ../src/ard_ed_frm.cpp:2165 ../src/ard_fmtdlg.cpp:188
 #: ../src/utils.cpp:847
 msgid "Cancel"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:259
+#: ../src/ard_aimdldlg.cpp:258
 msgid "A key is already stored. Leave empty to keep it."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:261
+#: ../src/ard_aimdldlg.cpp:260
 msgid "Enter your API key (will be stored securely)."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:297
+#: ../src/ard_aimdldlg.cpp:296
 msgid "Export model to JSON"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:298 ../src/ard_setdlg.cpp:1571
+#: ../src/ard_aimdldlg.cpp:297 ../src/ard_setdlg.cpp:1571
 msgid "JSON files (*.json)|*.json|All files|*.*"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:304
+#: ../src/ard_aimdldlg.cpp:303
 msgid "Failed to write file."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:304
+#: ../src/ard_aimdldlg.cpp:303
 msgid "Export"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:317 ../src/ard_aimdldlg.cpp:433
+#: ../src/ard_aimdldlg.cpp:317 ../src/ard_aimdldlg.cpp:436
 msgid "Invalid JSON"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:341 ../src/ard_aimdldlg.cpp:441
+#: ../src/ard_aimdldlg.cpp:343 ../src/ard_aimdldlg.cpp:444
 msgid "Endpoint URL is empty."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:341 ../src/ard_aimdldlg.cpp:362
-#: ../src/ard_aimdldlg.cpp:441
+#: ../src/ard_aimdldlg.cpp:343 ../src/ard_aimdldlg.cpp:365
+#: ../src/ard_aimdldlg.cpp:444
 msgid "Validation"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:362
+#: ../src/ard_aimdldlg.cpp:365
 msgid ""
 "API key is required for this endpoint (no key provided and none stored)."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:407
+#: ../src/ard_aimdldlg.cpp:410
 msgid "Connection test succeeded."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:407 ../src/ard_aimdldlg.cpp:409
+#: ../src/ard_aimdldlg.cpp:410 ../src/ard_aimdldlg.cpp:412
 msgid "AI Test"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:409
+#: ../src/ard_aimdldlg.cpp:412
 msgid "Connection test failed."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:468
+#: ../src/ard_aimdldlg.cpp:471
 msgid ""
 "System keyring (Secret Service) is not available in this session.\n"
 "\n"
@@ -726,11 +726,11 @@ msgid ""
 "running."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:472
+#: ../src/ard_aimdldlg.cpp:475
 msgid "API key not saved"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:510
+#: ../src/ard_aimdldlg.cpp:513
 msgid "Failed to save AI API key to the system secret store."
 msgstr ""
 
@@ -817,11 +817,11 @@ msgstr ""
 msgid "<default>"
 msgstr ""
 
-#: ../src/ard_cli.cpp:2754
+#: ../src/ard_cli.cpp:2755
 msgid "Serial port is not set. Cannot upload sketch.\n"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:81
+#: ../src/ard_cliinst.cpp:99
 msgid ""
 "Unable to check installed Arduino cores (arduino-cli core list failed).\n"
 "\n"
@@ -829,21 +829,21 @@ msgid ""
 "(Update core index + install Arduino AVR core + update library index)"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:84
+#: ../src/ard_cliinst.cpp:102
 msgid "Arduino toolchain setup"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:134
+#: ../src/ard_cliinst.cpp:152
 msgid "Preparing Arduino toolchain"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:135 ../src/ard_cliinst.cpp:403
-#: ../src/ard_cliinst.cpp:501 ../src/ard_cliinst.cpp:604
+#: ../src/ard_cliinst.cpp:153 ../src/ard_cliinst.cpp:421
+#: ../src/ard_cliinst.cpp:519 ../src/ard_cliinst.cpp:622
 #: ../src/ard_ed_frm.cpp:1569
 msgid "Preparing..."
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:163
+#: ../src/ard_cliinst.cpp:181
 #, c-format
 msgid ""
 "arduino-cli command failed while %s:\n"
@@ -854,50 +854,50 @@ msgid ""
 "%s"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:165
+#: ../src/ard_cliinst.cpp:183
 msgid "arduino-cli setup error"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:172
+#: ../src/ard_cliinst.cpp:190
 msgid "Updating core index..."
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:173 ../src/ard_cliinst.cpp:180
-#: ../src/ard_cliinst.cpp:187
+#: ../src/ard_cliinst.cpp:191 ../src/ard_cliinst.cpp:198
+#: ../src/ard_cliinst.cpp:205
 msgid "Toolchain setup was cancelled."
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:173 ../src/ard_cliinst.cpp:180
-#: ../src/ard_cliinst.cpp:187
+#: ../src/ard_cliinst.cpp:191 ../src/ard_cliinst.cpp:198
+#: ../src/ard_cliinst.cpp:205
 msgid "Cancelled"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:176
+#: ../src/ard_cliinst.cpp:194
 msgid "updating core index"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:179
+#: ../src/ard_cliinst.cpp:197
 msgid "Installing Arduino AVR core..."
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:183
+#: ../src/ard_cliinst.cpp:201
 msgid "installing Arduino AVR core"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:186
+#: ../src/ard_cliinst.cpp:204
 msgid "Updating library index..."
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:190
+#: ../src/ard_cliinst.cpp:208
 msgid "updating library index"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:193 ../src/ard_cliinst.cpp:489
-#: ../src/ard_cliinst.cpp:592 ../src/ard_cliinst.cpp:685
+#: ../src/ard_cliinst.cpp:211 ../src/ard_cliinst.cpp:507
+#: ../src/ard_cliinst.cpp:610 ../src/ard_cliinst.cpp:703
 msgid "Done."
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:227
+#: ../src/ard_cliinst.cpp:245
 msgid ""
 "arduino-cli was not found.\n"
 "\n"
@@ -910,24 +910,24 @@ msgid ""
 "How do you want to proceed?"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:234
+#: ../src/ard_cliinst.cpp:252
 msgid "arduino-cli missing"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:237 ../src/ard_coreman.cpp:494
+#: ../src/ard_cliinst.cpp:255 ../src/ard_coreman.cpp:494
 #: ../src/ard_libman.cpp:661
 msgid "Install"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:237
+#: ../src/ard_cliinst.cpp:255
 msgid "Browse"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:237 ../src/ard_ed_frm.cpp:2380 ../src/main.cpp:356
+#: ../src/ard_cliinst.cpp:255 ../src/ard_ed_frm.cpp:2380 ../src/main.cpp:356
 msgid "Exit"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:265
+#: ../src/ard_cliinst.cpp:283
 msgid ""
 "arduino-cli was downloaded, but it does not appear to be a valid arduino-cli "
 "binary.\n"
@@ -935,46 +935,46 @@ msgid ""
 "Please install arduino-cli manually or select the binary manually."
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:268 ../src/ard_cliinst.cpp:321
+#: ../src/ard_cliinst.cpp:286 ../src/ard_cliinst.cpp:339
 msgid "Invalid arduino-cli binary"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:278 ../src/ard_setdlg.cpp:697
+#: ../src/ard_cliinst.cpp:296 ../src/ard_setdlg.cpp:697
 msgid "Select arduino-cli executable"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:280
+#: ../src/ard_cliinst.cpp:298
 msgid "Select arduino-cli binary"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:289
+#: ../src/ard_cliinst.cpp:307
 msgid "arduino-cli executable (*.exe)|*.exe|All files (*.*)|*.*"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:291 ../src/ard_setdlg.cpp:1991
+#: ../src/ard_cliinst.cpp:309 ../src/ard_setdlg.cpp:1991
 msgid "All files (*)|*"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:319
+#: ../src/ard_cliinst.cpp:337
 msgid ""
 "The selected file does not appear to be a valid arduino-cli binary.\n"
 "\n"
 "Do you want to try selecting a different file?"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:338
+#: ../src/ard_cliinst.cpp:356
 msgid ""
 "Arduino Editor cannot run without arduino-cli.\n"
 "\n"
 "Please install arduino-cli and restart the application."
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:340 ../src/ard_cliinst.cpp:587
-#: ../src/ard_cliinst.cpp:673
+#: ../src/ard_cliinst.cpp:358 ../src/ard_cliinst.cpp:605
+#: ../src/ard_cliinst.cpp:691
 msgid "arduino-cli not found"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:353
+#: ../src/ard_cliinst.cpp:371
 #, c-format
 msgid ""
 "Installed arduino-cli version is %s.\n"
@@ -984,75 +984,75 @@ msgid ""
 "Please update arduino-cli and start the application again."
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:359
+#: ../src/ard_cliinst.cpp:377
 msgid "Unsupported arduino-cli version"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:388
+#: ../src/ard_cliinst.cpp:406
 msgid ""
 "Automatic arduino-cli installation is not supported on this platform.\n"
 "\n"
 "Please install arduino-cli manually and restart the application."
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:390 ../src/ard_cliinst.cpp:530
+#: ../src/ard_cliinst.cpp:408 ../src/ard_cliinst.cpp:548
 msgid "arduino-cli install"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:402 ../src/ard_cliinst.cpp:500
-#: ../src/ard_cliinst.cpp:603
+#: ../src/ard_cliinst.cpp:420 ../src/ard_cliinst.cpp:518
+#: ../src/ard_cliinst.cpp:621
 msgid "Installing arduino-cli"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:415 ../src/ard_cliinst.cpp:615
+#: ../src/ard_cliinst.cpp:433 ../src/ard_cliinst.cpp:633
 msgid ""
 "Cannot determine application directory.\n"
 "Please install arduino-cli manually."
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:431 ../src/ard_cliinst.cpp:629
+#: ../src/ard_cliinst.cpp:449 ../src/ard_cliinst.cpp:647
 msgid "Downloading arduino-cli..."
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:441 ../src/ard_cliinst.cpp:640
+#: ../src/ard_cliinst.cpp:459 ../src/ard_cliinst.cpp:658
 msgid ""
 "Downloading arduino-cli failed.\n"
 "\n"
 "Command was:\n"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:442 ../src/ard_cliinst.cpp:641
+#: ../src/ard_cliinst.cpp:460 ../src/ard_cliinst.cpp:659
 msgid "Download error"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:450 ../src/ard_cliinst.cpp:648
+#: ../src/ard_cliinst.cpp:468 ../src/ard_cliinst.cpp:666
 msgid "Extracting arduino-cli..."
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:458 ../src/ard_cliinst.cpp:657
+#: ../src/ard_cliinst.cpp:476 ../src/ard_cliinst.cpp:675
 msgid ""
 "Extracting arduino-cli failed.\n"
 "\n"
 "Command was:\n"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:459 ../src/ard_cliinst.cpp:658
+#: ../src/ard_cliinst.cpp:477 ../src/ard_cliinst.cpp:676
 msgid "Extraction error"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:467 ../src/ard_cliinst.cpp:665
+#: ../src/ard_cliinst.cpp:485 ../src/ard_cliinst.cpp:683
 msgid "Verifying arduino-cli..."
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:473 ../src/ard_cliinst.cpp:672
+#: ../src/ard_cliinst.cpp:491 ../src/ard_cliinst.cpp:690
 msgid "After extraction, the arduino-cli executable was not found at:\n"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:506
+#: ../src/ard_cliinst.cpp:524
 msgid "Looking for Homebrew (brew)..."
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:526
+#: ../src/ard_cliinst.cpp:544
 msgid ""
 "Homebrew (brew) was not found in standard locations.\n"
 "\n"
@@ -1063,11 +1063,11 @@ msgid ""
 "and finally use the 'Browse' option to select the arduino-cli binary."
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:536
+#: ../src/ard_cliinst.cpp:554
 msgid "Installing arduino-cli via Homebrew..."
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:545
+#: ../src/ard_cliinst.cpp:563
 #, c-format
 msgid ""
 "Homebrew command failed:\n"
@@ -1078,15 +1078,15 @@ msgid ""
 "arduino-cli binary."
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:549
+#: ../src/ard_cliinst.cpp:567
 msgid "Homebrew error"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:555
+#: ../src/ard_cliinst.cpp:573
 msgid "Locating arduino-cli binary..."
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:583
+#: ../src/ard_cliinst.cpp:601
 msgid ""
 "Homebrew seems to have installed arduino-cli, but the binary could not be "
 "located in standard paths.\n"

@@ -34,7 +34,6 @@
 // If bundling remains a permanent design decision, this code can likely
 // be simplified or removed.
 
-
 #include "ard_cliinst.hpp"
 #include "utils.hpp"
 #include <memory>

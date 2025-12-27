@@ -34,7 +34,6 @@
 #include <wx/stattext.h>
 #include <wx/stc/stc.h>
 #include <wx/textctrl.h>
-#include <wx/utils.h> // wxBusyCursor
 #include <wx/wfstream.h>
 
 #include <nlohmann/json.hpp>
@@ -314,6 +313,7 @@ void ArduinoAiModelDialog::OnTest() {
   wxString json = m_extraJsonStc ? TrimCopy(m_extraJsonStc->GetText()) : wxString();
   wxString jsonErr;
   if (!AiClient::CheckExtraRequestJson(json, &jsonErr)) {
+    m_testInProgress.store(false);
     ModalMsgDialog(jsonErr, _("Invalid JSON"));
     return;
   }
@@ -321,6 +321,7 @@ void ArduinoAiModelDialog::OnTest() {
   // Build temporary settings from current UI state (not from m_model).
   AiSettings settings;
 
+  settings.id = m_model.id;
   settings.enabled = true;
   settings.endpointUrl = TrimCopy(m_endpointCtrl->GetValue());
   settings.model = TrimCopy(m_modelCtrl->GetValue());
@@ -338,6 +339,7 @@ void ArduinoAiModelDialog::OnTest() {
   settings.floatingWindow = m_floatingWindow->GetValue();
 
   if (settings.endpointUrl.empty()) {
+    m_testInProgress.store(false);
     ModalMsgDialog(_("Endpoint URL is empty."), _("Validation"));
     return;
   }
@@ -359,6 +361,7 @@ void ArduinoAiModelDialog::OnTest() {
     }
 
     if (key.empty()) {
+      m_testInProgress.store(false);
       ModalMsgDialog(_("API key is required for this endpoint (no key provided and none stored)."), _("Validation"));
       return;
     }
@@ -508,6 +511,8 @@ void ArduinoAiModelDialog::SaveApiKey() {
       wxString username = KeyUser();
       if (!store.Save(KeyService(), username, secret)) {
         wxLogWarning(_("Failed to save AI API key to the system secret store."));
+      } else {
+        APP_DEBUG_LOG("MDLDLG: ApiKey saved %s/%s...", wxToStd(KeyService()).c_str(), wxToStd(username).c_str());
       }
     }
   }
