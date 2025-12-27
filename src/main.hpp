@@ -22,6 +22,7 @@
 #include <wx/timer.h>
 
 class ArduinoEditorFrame;
+class AeUserActivityFilter;
 
 class ArduinoEditApp : public wxApp {
 private:
@@ -32,6 +33,15 @@ private:
   wxTimer m_stopTimer;
 
   wxString m_sketchToBeOpen;
+
+  // Updates
+  wxTimer m_updateIdleTimer;
+  AeUserActivityFilter *m_activityFilter = nullptr;
+  bool m_updateIdleTrackingStarted = false;
+  std::atomic_bool m_updateCheckInProgress{false};
+  void OnUpdateIdleTimer(wxTimerEvent &event);
+  void ArmUpdateIdleTimer();
+  void StartUpdateIdleTracking();
 
   void OnStartTimer(wxTimerEvent &event);
   void OnStopTimer(wxTimerEvent &event);

@@ -66,6 +66,7 @@ inline const wxArtID SerMon = wxASCII_STR("wxAE_ART_SERMON");
 inline const wxArtID SourceFormat = wxASCII_STR("wxAE_ART_SOURCE_FORMAT");
 inline const wxArtID Settings = wxASCII_STR("wxAE_ART_SETTINGS");
 inline const wxArtID SelectAll = wxASCII_STR("wxAE_ART_SELECT_ALL");
+inline const wxArtID CheckForUpdates = wxASCII_STR("wxAE_CHECK_FOR_UPDATES");
 } // namespace wxAEArt
 
 class ArduinoArtProvider : public wxArtProvider {

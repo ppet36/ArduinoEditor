@@ -194,6 +194,7 @@ public:
   wxString GetSketchesDir() const;
   wxString GetCliPath() const;
   wxString GetSelectedLanguage() const;
+  long GetUpdateCheckIntervalHours() const;
   AiSettings GetAiSettings() const;
 
 private:
@@ -302,6 +303,8 @@ private:
 
   // --- Clang widgets ---
   wxChoice *m_languageChoice = nullptr;
+  wxCheckBox *m_updatesEnable = nullptr;
+  wxSpinCtrl *m_updatesDays = nullptr;
   wxChoice *m_clangDiagChoice = nullptr;
   wxChoice *m_clangCompChoice = nullptr;
   wxCheckBox *m_openSourceInside = nullptr;

@@ -177,13 +177,12 @@ Notes:
 * This workflow is commonly run on macOS using a lightweight Linux VM runtime such as **Colima**.
   (The build itself happens inside the Linux container.)
 
-### Packaging targets
+### Packaging target
 
 From `build/`:
 
 ```bash
 make -f Makefile.linux appimage
-make -f Makefile.linux tarball
 ```
 ---
 

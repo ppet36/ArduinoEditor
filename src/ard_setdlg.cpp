@@ -1155,7 +1155,7 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
 
   // --- Language box ---
 
-  auto *langBox = new wxStaticBoxSizer(wxVERTICAL, clangPage, _("Language"));
+  auto *langBox = new wxStaticBoxSizer(wxVERTICAL, clangPage, _("General"));
 
   auto *langRow = new wxBoxSizer(wxHORIZONTAL);
   langRow->Add(new wxStaticText(clangPage, wxID_ANY, _("User interface language:")),
@@ -1217,15 +1217,54 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
     }
   }
   m_languageChoice->SetSelection(sel);
+  m_languageChoice->SetToolTip(_("Language change will take effect after restarting the application."));
 
   langRow->Add(m_languageChoice, 1, wxEXPAND);
   langBox->Add(langRow, 0, wxALL | wxEXPAND, 5);
 
-  auto *langInfo = new wxStaticText(
-      clangPage,
-      wxID_ANY,
-      _("Language change will take effect after restarting the application."));
-  langBox->Add(langInfo, 0, wxLEFT | wxRIGHT | wxBOTTOM, 5);
+  // --- Updates row ---
+  long updHours = 24;
+  if (m_config) {
+    m_config->Read(wxT("ArduinoEditor/Updates/check_interval_hours"), &updHours, 24L);
+  }
+
+  bool updEnabled = (updHours > 0);
+  int updDays = 1;
+  if (updHours > 0) {
+    updDays = (int)((updHours + 23) / 24); // round up
+    if (updDays < 1) {
+      updDays = 1;
+    }
+  }
+
+  auto *updRow = new wxBoxSizer(wxHORIZONTAL);
+
+  // left label
+  updRow->Add(new wxStaticText(clangPage, wxID_ANY, _("Automatically check for updates ")),
+              0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
+
+  // right side controls
+  m_updatesEnable = new wxCheckBox(clangPage, wxID_ANY, _("every"));
+  m_updatesEnable->SetValue(updEnabled);
+  updRow->Add(m_updatesEnable, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
+
+  m_updatesDays = new wxSpinCtrl(clangPage, wxID_ANY);
+  m_updatesDays->SetRange(1, 30);
+  m_updatesDays->SetValue(updDays);
+  updRow->Add(m_updatesDays, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
+
+  updRow->Add(new wxStaticText(clangPage, wxID_ANY, _("day(s)")),
+              0, wxALIGN_CENTER_VERTICAL);
+
+  langBox->Add(updRow, 0, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, 5);
+
+  // enable/disable spin based on checkbox
+  m_updatesDays->Enable(m_updatesEnable->GetValue());
+  m_updatesEnable->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent &) {
+    if (m_updatesDays && m_updatesEnable) {
+      m_updatesDays->Enable(m_updatesEnable->GetValue());
+    }
+  });
 
   clangPageSizer->Add(langBox, 0, wxALL | wxEXPAND, 10);
 
@@ -2031,4 +2070,17 @@ wxString ArduinoEditorSettingsDialog::GetSelectedLanguage() const {
   }
 
   return m_langEntries[sel].code;
+}
+
+long ArduinoEditorSettingsDialog::GetUpdateCheckIntervalHours() const {
+  if (!m_updatesEnable || !m_updatesDays) {
+    return 24;
+  }
+  if (!m_updatesEnable->GetValue()) {
+    return 0; // disabled
+  }
+  int days = m_updatesDays->GetValue();
+  if (days < 1)
+    days = 1;
+  return (long)days * 24L;
 }

@@ -27,6 +27,7 @@
 #include "ard_finsymdlg.hpp"
 #include "ard_renamedlg.hpp"
 #include "ard_setdlg.hpp"
+#include "ard_update.hpp"
 #include "main.hpp"
 #include "nsketch.hpp"
 #include "utils.hpp"
@@ -73,6 +74,7 @@ enum {
   ID_MENU_DIAG_COPY,
   ID_MENU_DIAG_COPY_ALL,
   ID_MENU_DIAG_SOLVE_AI,
+  ID_MENU_CHECK_FOR_UPDATES,
   ID_TIMER_DIAGNOSTIC,
   ID_TIMER_BOTTOM_PAGE_RETURN,
   ID_TABMENU_CLOSE,
@@ -211,6 +213,7 @@ void ArduinoEditorFrame::OnEditorSettings(wxCommandEvent &) {
     ApplySettings(m_aiSettings);
 
     config->Write(wxT("Language"), dlg.GetSelectedLanguage());
+    config->Write(wxT("ArduinoEditor/Updates/check_interval_hours"), dlg.GetUpdateCheckIntervalHours());
 
     wxString oldSketchesDir;
     config->Read(wxT("SketchesDir"), &oldSketchesDir);
@@ -2483,6 +2486,15 @@ wxMenuBar *ArduinoEditorFrame::CreateMenuBar() {
 
   // Help menu
   wxMenu *helpMenu = new wxMenu();
+
+  AddMenuItemWithArt(helpMenu,
+                     ID_MENU_CHECK_FOR_UPDATES,
+                     _("Check for Updates..."),
+                     _("Check GitHub for a newer version of Arduino Editor"),
+                     wxAEArt::CheckForUpdates);
+
+  helpMenu->AppendSeparator();
+
   AddMenuItemWithArt(helpMenu,
                      wxID_ABOUT,
                      _("&About Arduino Editor...\tShift-F1"),
@@ -2526,6 +2538,7 @@ wxMenuBar *ArduinoEditorFrame::CreateMenuBar() {
   Bind(wxEVT_MENU, &ArduinoEditorFrame::OnClearRecent, this, ID_MENU_OPEN_RECENT_CLEAR);
   Bind(wxEVT_MENU, &ArduinoEditorFrame::OnOpenSketchFromDir, this, ID_MENU_SKDIR_FIRST, ID_MENU_SKDIR_LAST);
   Bind(wxEVT_MENU, &ArduinoEditorFrame::OnShowExamples, this, ID_MENU_SKETCH_EXAMPLES);
+  Bind(wxEVT_MENU, &ArduinoEditorFrame::OnCheckForUpdates, this, ID_MENU_CHECK_FOR_UPDATES);
 
   return m_menuBar;
 }
@@ -4294,6 +4307,10 @@ void ArduinoEditorFrame::RefactorRenameSymbol(ArduinoEditor *originEditor, int l
   UpdateStatus(msg);
 
   ScheduleDiagRefresh();
+}
+
+void ArduinoEditorFrame::OnCheckForUpdates(wxCommandEvent &) {
+  ArduinoEditorUpdateDialog::CheckAndShowIfNeeded(this, *config, /*force=*/true);
 }
 
 ArduinoEditorFrame::~ArduinoEditorFrame() {

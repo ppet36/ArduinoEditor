@@ -19,6 +19,7 @@
 #include "main.hpp"
 #include "ard_ap.hpp"
 #include "ard_ed_frm.hpp"
+#include "ard_update.hpp"
 #include "utils.hpp"
 #include <wx/artprov.h>
 #include <wx/cmdline.h>
@@ -38,7 +39,8 @@ ArduinoArtProvider *g_artProvider = new ArduinoArtProvider();
 
 enum {
   TIMER_START = wxID_HIGHEST + 1,
-  TIMER_STOP
+  TIMER_STOP,
+  TIMER_UPDATE
 };
 
 #if defined(__WXMSW__)
@@ -192,7 +194,44 @@ static const wxCmdLineEntryDesc g_cmdLineDesc[] = {
 
     wxCMD_LINE_DESC_END};
 
-ArduinoEditApp::ArduinoEditApp() : wxApp(), m_startTimer(this, TIMER_START), m_stopTimer(this, TIMER_STOP) {
+class AeUserActivityFilter : public wxEventFilter {
+public:
+  explicit AeUserActivityFilter(std::function<void()> cb) : m_cb(std::move(cb)) {}
+
+  int FilterEvent(wxEvent &e) override {
+    const wxEventType t = e.GetEventType();
+
+    if (t == wxEVT_CHAR_HOOK || t == wxEVT_KEY_DOWN || t == wxEVT_KEY_UP) {
+      if (m_cb)
+        m_cb();
+      return Event_Skip;
+    }
+
+    if (t == wxEVT_LEFT_DOWN || t == wxEVT_LEFT_UP ||
+        t == wxEVT_RIGHT_DOWN || t == wxEVT_RIGHT_UP ||
+        t == wxEVT_MIDDLE_DOWN || t == wxEVT_MIDDLE_UP ||
+        t == wxEVT_MOUSEWHEEL) {
+      if (m_cb)
+        m_cb();
+      return Event_Skip;
+    }
+
+    if (t == wxEVT_SCROLLWIN_THUMBTRACK || t == wxEVT_SCROLLWIN_THUMBRELEASE ||
+        t == wxEVT_SCROLLWIN_LINEUP || t == wxEVT_SCROLLWIN_LINEDOWN ||
+        t == wxEVT_SCROLLWIN_PAGEUP || t == wxEVT_SCROLLWIN_PAGEDOWN) {
+      if (m_cb)
+        m_cb();
+      return Event_Skip;
+    }
+
+    return Event_Skip;
+  }
+
+private:
+  std::function<void()> m_cb;
+};
+
+ArduinoEditApp::ArduinoEditApp() : wxApp(), m_startTimer(this, TIMER_START), m_stopTimer(this, TIMER_STOP), m_updateIdleTimer(this, TIMER_UPDATE) {
 }
 
 bool ArduinoEditApp::OnInit() {
@@ -255,6 +294,7 @@ bool ArduinoEditApp::OnInit() {
 
   Bind(wxEVT_TIMER, &ArduinoEditApp::OnStartTimer, this, TIMER_START);
   Bind(wxEVT_TIMER, &ArduinoEditApp::OnStopTimer, this, TIMER_STOP);
+  Bind(wxEVT_TIMER, &ArduinoEditApp::OnUpdateIdleTimer, this, TIMER_UPDATE);
 
   m_startTimer.Start(100, true);
 
@@ -269,6 +309,13 @@ int ArduinoEditApp::OnExit() {
     g_singleInstanceMutex = nullptr;
   }
 #endif
+
+  if (m_activityFilter) {
+    wxEvtHandler::RemoveFilter(m_activityFilter);
+    delete m_activityFilter;
+    m_activityFilter = nullptr;
+  }
+
   return wxApp::OnExit();
 }
 
@@ -299,6 +346,10 @@ void ArduinoEditApp::OnStartTimer(wxTimerEvent &WXUNUSED(event)) {
 
   auto frame = new ArduinoEditorFrame(cfg);
   frame->Show(true);
+
+  // updates
+  SetTopWindow(frame);
+  StartUpdateIdleTracking();
 
   // 1) Open sketch requested from cmdline
   if (!m_sketchToBeOpen.IsEmpty()) {
@@ -460,6 +511,46 @@ bool ArduinoEditApp::OnCmdLineParsed(wxCmdLineParser &parser) {
   }
 
   return wxApp::OnCmdLineParsed(parser);
+}
+
+void ArduinoEditApp::StartUpdateIdleTracking() {
+  if (m_updateIdleTrackingStarted)
+    return;
+
+  m_updateIdleTrackingStarted = true;
+
+  m_activityFilter = new AeUserActivityFilter([this]() {
+    ArmUpdateIdleTimer();
+  });
+  wxEvtHandler::AddFilter(m_activityFilter);
+
+  ArmUpdateIdleTimer();
+}
+
+void ArduinoEditApp::ArmUpdateIdleTimer() {
+  m_updateIdleTimer.StartOnce(20000);
+}
+
+void ArduinoEditApp::OnUpdateIdleTimer(wxTimerEvent &) {
+  wxWindow *parent = GetTopWindow();
+  if (!parent || !parent->IsShownOnScreen())
+    return;
+
+  if (m_splash) {
+    ArmUpdateIdleTimer();
+    return;
+  }
+
+  bool expected = false;
+  if (!m_updateCheckInProgress.compare_exchange_strong(expected, true)) {
+    return;
+  }
+
+  if (cfg) {
+    ArduinoEditorUpdateDialog::CheckAndShowIfNeeded(parent, *cfg);
+  }
+
+  m_updateCheckInProgress.store(false);
 }
 
 wxIMPLEMENT_APP_NO_MAIN(ArduinoEditApp);

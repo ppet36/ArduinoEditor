@@ -81,6 +81,7 @@ MAP = {
     "wxAE_ART_SOURCE_FORMAT": ["format_align_justify"],
     "wxAE_ART_SETTINGS": ["settings"],
     "wxAE_ART_SELECT_ALL": ["select_all"],
+    "wxAE_ART_CHECK_FOR_UPDATES": ["update"],
 }
 
 def run(cmd, cwd=None):

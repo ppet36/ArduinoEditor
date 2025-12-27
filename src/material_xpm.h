@@ -1,25 +1,7 @@
-/*
- * Arduino Editor
- * Copyright (c) 2025 Pavel Petržela
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 // Auto-generated. Do not edit.
 // Source icons: google/material-design-icons (Apache-2.0)
 
-// wxART_REFRESH -> sync (light, 16px)
+// wxAE_ART_REFRESH -> sync (light, 16px)
 static const char *const mdi_sync_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -43,7 +25,7 @@ static const char *const mdi_sync_light_16[] = {
     "                ",
 };
 
-// wxART_REFRESH -> sync (light, 20px)
+// wxAE_ART_REFRESH -> sync (light, 20px)
 static const char *const mdi_sync_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -71,7 +53,7 @@ static const char *const mdi_sync_light_20[] = {
     "                    ",
 };
 
-// wxART_REFRESH -> sync (light, 24px)
+// wxAE_ART_REFRESH -> sync (light, 24px)
 static const char *const mdi_sync_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -103,7 +85,7 @@ static const char *const mdi_sync_light_24[] = {
     "                        ",
 };
 
-// wxART_REFRESH -> sync (light, 32px)
+// wxAE_ART_REFRESH -> sync (light, 32px)
 /* XPM */
 static const char *const mdi_sync_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -144,7 +126,7 @@ static const char *const mdi_sync_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_REFRESH -> sync (dark, 16px)
+// wxAE_ART_REFRESH -> sync (dark, 16px)
 static const char *const mdi_sync_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -168,7 +150,7 @@ static const char *const mdi_sync_dark_16[] = {
     "                ",
 };
 
-// wxART_REFRESH -> sync (dark, 20px)
+// wxAE_ART_REFRESH -> sync (dark, 20px)
 static const char *const mdi_sync_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -196,7 +178,7 @@ static const char *const mdi_sync_dark_20[] = {
     "                    ",
 };
 
-// wxART_REFRESH -> sync (dark, 24px)
+// wxAE_ART_REFRESH -> sync (dark, 24px)
 static const char *const mdi_sync_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -228,7 +210,7 @@ static const char *const mdi_sync_dark_24[] = {
     "                        ",
 };
 
-// wxART_REFRESH -> sync (dark, 32px)
+// wxAE_ART_REFRESH -> sync (dark, 32px)
 /* XPM */
 static const char *const mdi_sync_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -269,7 +251,7 @@ static const char *const mdi_sync_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_DELETE -> delete (light, 16px)
+// wxAE_ART_DELETE -> delete (light, 16px)
 static const char *const mdi_delete_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -293,7 +275,7 @@ static const char *const mdi_delete_light_16[] = {
     "                ",
 };
 
-// wxART_DELETE -> delete (light, 20px)
+// wxAE_ART_DELETE -> delete (light, 20px)
 static const char *const mdi_delete_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -321,7 +303,7 @@ static const char *const mdi_delete_light_20[] = {
     "                    ",
 };
 
-// wxART_DELETE -> delete (light, 24px)
+// wxAE_ART_DELETE -> delete (light, 24px)
 static const char *const mdi_delete_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -353,7 +335,7 @@ static const char *const mdi_delete_light_24[] = {
     "                        ",
 };
 
-// wxART_DELETE -> delete (light, 32px)
+// wxAE_ART_DELETE -> delete (light, 32px)
 /* XPM */
 static const char *const mdi_delete_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -394,7 +376,7 @@ static const char *const mdi_delete_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_DELETE -> delete (dark, 16px)
+// wxAE_ART_DELETE -> delete (dark, 16px)
 static const char *const mdi_delete_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -418,7 +400,7 @@ static const char *const mdi_delete_dark_16[] = {
     "                ",
 };
 
-// wxART_DELETE -> delete (dark, 20px)
+// wxAE_ART_DELETE -> delete (dark, 20px)
 static const char *const mdi_delete_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -446,7 +428,7 @@ static const char *const mdi_delete_dark_20[] = {
     "                    ",
 };
 
-// wxART_DELETE -> delete (dark, 24px)
+// wxAE_ART_DELETE -> delete (dark, 24px)
 static const char *const mdi_delete_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -478,7 +460,7 @@ static const char *const mdi_delete_dark_24[] = {
     "                        ",
 };
 
-// wxART_DELETE -> delete (dark, 32px)
+// wxAE_ART_DELETE -> delete (dark, 32px)
 /* XPM */
 static const char *const mdi_delete_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -519,7 +501,7 @@ static const char *const mdi_delete_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_NEW -> note_add (light, 16px)
+// wxAE_ART_NEW -> note_add (light, 16px)
 static const char *const mdi_note_add_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -543,7 +525,7 @@ static const char *const mdi_note_add_light_16[] = {
     "                ",
 };
 
-// wxART_NEW -> note_add (light, 20px)
+// wxAE_ART_NEW -> note_add (light, 20px)
 static const char *const mdi_note_add_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -571,7 +553,7 @@ static const char *const mdi_note_add_light_20[] = {
     "                    ",
 };
 
-// wxART_NEW -> note_add (light, 24px)
+// wxAE_ART_NEW -> note_add (light, 24px)
 static const char *const mdi_note_add_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -603,7 +585,7 @@ static const char *const mdi_note_add_light_24[] = {
     "                        ",
 };
 
-// wxART_NEW -> note_add (light, 32px)
+// wxAE_ART_NEW -> note_add (light, 32px)
 /* XPM */
 static const char *const mdi_note_add_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -644,7 +626,7 @@ static const char *const mdi_note_add_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_NEW -> note_add (dark, 16px)
+// wxAE_ART_NEW -> note_add (dark, 16px)
 static const char *const mdi_note_add_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -668,7 +650,7 @@ static const char *const mdi_note_add_dark_16[] = {
     "                ",
 };
 
-// wxART_NEW -> note_add (dark, 20px)
+// wxAE_ART_NEW -> note_add (dark, 20px)
 static const char *const mdi_note_add_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -696,7 +678,7 @@ static const char *const mdi_note_add_dark_20[] = {
     "                    ",
 };
 
-// wxART_NEW -> note_add (dark, 24px)
+// wxAE_ART_NEW -> note_add (dark, 24px)
 static const char *const mdi_note_add_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -728,7 +710,7 @@ static const char *const mdi_note_add_dark_24[] = {
     "                        ",
 };
 
-// wxART_NEW -> note_add (dark, 32px)
+// wxAE_ART_NEW -> note_add (dark, 32px)
 /* XPM */
 static const char *const mdi_note_add_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -769,7 +751,7 @@ static const char *const mdi_note_add_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_FILE_OPEN -> file_open (light, 16px)
+// wxAE_ART_FILE_OPEN -> file_open (light, 16px)
 static const char *const mdi_file_open_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -793,7 +775,7 @@ static const char *const mdi_file_open_light_16[] = {
     "                ",
 };
 
-// wxART_FILE_OPEN -> file_open (light, 20px)
+// wxAE_ART_FILE_OPEN -> file_open (light, 20px)
 static const char *const mdi_file_open_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -821,7 +803,7 @@ static const char *const mdi_file_open_light_20[] = {
     "                    ",
 };
 
-// wxART_FILE_OPEN -> file_open (light, 24px)
+// wxAE_ART_FILE_OPEN -> file_open (light, 24px)
 static const char *const mdi_file_open_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -853,7 +835,7 @@ static const char *const mdi_file_open_light_24[] = {
     "                        ",
 };
 
-// wxART_FILE_OPEN -> file_open (light, 32px)
+// wxAE_ART_FILE_OPEN -> file_open (light, 32px)
 /* XPM */
 static const char *const mdi_file_open_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -894,7 +876,7 @@ static const char *const mdi_file_open_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_FILE_OPEN -> file_open (dark, 16px)
+// wxAE_ART_FILE_OPEN -> file_open (dark, 16px)
 static const char *const mdi_file_open_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -918,7 +900,7 @@ static const char *const mdi_file_open_dark_16[] = {
     "                ",
 };
 
-// wxART_FILE_OPEN -> file_open (dark, 20px)
+// wxAE_ART_FILE_OPEN -> file_open (dark, 20px)
 static const char *const mdi_file_open_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -946,7 +928,7 @@ static const char *const mdi_file_open_dark_20[] = {
     "                    ",
 };
 
-// wxART_FILE_OPEN -> file_open (dark, 24px)
+// wxAE_ART_FILE_OPEN -> file_open (dark, 24px)
 static const char *const mdi_file_open_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -978,7 +960,7 @@ static const char *const mdi_file_open_dark_24[] = {
     "                        ",
 };
 
-// wxART_FILE_OPEN -> file_open (dark, 32px)
+// wxAE_ART_FILE_OPEN -> file_open (dark, 32px)
 /* XPM */
 static const char *const mdi_file_open_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -1019,7 +1001,7 @@ static const char *const mdi_file_open_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_FILE_SAVE -> save (light, 16px)
+// wxAE_ART_FILE_SAVE -> save (light, 16px)
 static const char *const mdi_save_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -1043,7 +1025,7 @@ static const char *const mdi_save_light_16[] = {
     "                ",
 };
 
-// wxART_FILE_SAVE -> save (light, 20px)
+// wxAE_ART_FILE_SAVE -> save (light, 20px)
 static const char *const mdi_save_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -1071,7 +1053,7 @@ static const char *const mdi_save_light_20[] = {
     "                    ",
 };
 
-// wxART_FILE_SAVE -> save (light, 24px)
+// wxAE_ART_FILE_SAVE -> save (light, 24px)
 static const char *const mdi_save_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -1103,7 +1085,7 @@ static const char *const mdi_save_light_24[] = {
     "                        ",
 };
 
-// wxART_FILE_SAVE -> save (light, 32px)
+// wxAE_ART_FILE_SAVE -> save (light, 32px)
 /* XPM */
 static const char *const mdi_save_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -1144,7 +1126,7 @@ static const char *const mdi_save_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_FILE_SAVE -> save (dark, 16px)
+// wxAE_ART_FILE_SAVE -> save (dark, 16px)
 static const char *const mdi_save_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -1168,7 +1150,7 @@ static const char *const mdi_save_dark_16[] = {
     "                ",
 };
 
-// wxART_FILE_SAVE -> save (dark, 20px)
+// wxAE_ART_FILE_SAVE -> save (dark, 20px)
 static const char *const mdi_save_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -1196,7 +1178,7 @@ static const char *const mdi_save_dark_20[] = {
     "                    ",
 };
 
-// wxART_FILE_SAVE -> save (dark, 24px)
+// wxAE_ART_FILE_SAVE -> save (dark, 24px)
 static const char *const mdi_save_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -1228,7 +1210,7 @@ static const char *const mdi_save_dark_24[] = {
     "                        ",
 };
 
-// wxART_FILE_SAVE -> save (dark, 32px)
+// wxAE_ART_FILE_SAVE -> save (dark, 32px)
 /* XPM */
 static const char *const mdi_save_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -1269,7 +1251,7 @@ static const char *const mdi_save_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_FILE_SAVE_AS -> save_as (light, 16px)
+// wxAE_ART_FILE_SAVE_AS -> save_as (light, 16px)
 static const char *const mdi_save_as_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -1293,7 +1275,7 @@ static const char *const mdi_save_as_light_16[] = {
     "          ++    ",
 };
 
-// wxART_FILE_SAVE_AS -> save_as (light, 20px)
+// wxAE_ART_FILE_SAVE_AS -> save_as (light, 20px)
 static const char *const mdi_save_as_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -1321,7 +1303,7 @@ static const char *const mdi_save_as_light_20[] = {
     "             +      ",
 };
 
-// wxART_FILE_SAVE_AS -> save_as (light, 24px)
+// wxAE_ART_FILE_SAVE_AS -> save_as (light, 24px)
 static const char *const mdi_save_as_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -1353,7 +1335,7 @@ static const char *const mdi_save_as_light_24[] = {
     "                        ",
 };
 
-// wxART_FILE_SAVE_AS -> save_as (light, 32px)
+// wxAE_ART_FILE_SAVE_AS -> save_as (light, 32px)
 /* XPM */
 static const char *const mdi_save_as_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -1394,7 +1376,7 @@ static const char *const mdi_save_as_light_32[] = {
     "                    ..          ",
     "                                "};
 
-// wxART_FILE_SAVE_AS -> save_as (dark, 16px)
+// wxAE_ART_FILE_SAVE_AS -> save_as (dark, 16px)
 static const char *const mdi_save_as_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -1418,7 +1400,7 @@ static const char *const mdi_save_as_dark_16[] = {
     "          ++    ",
 };
 
-// wxART_FILE_SAVE_AS -> save_as (dark, 20px)
+// wxAE_ART_FILE_SAVE_AS -> save_as (dark, 20px)
 static const char *const mdi_save_as_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -1446,7 +1428,7 @@ static const char *const mdi_save_as_dark_20[] = {
     "             +      ",
 };
 
-// wxART_FILE_SAVE_AS -> save_as (dark, 24px)
+// wxAE_ART_FILE_SAVE_AS -> save_as (dark, 24px)
 static const char *const mdi_save_as_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -1478,7 +1460,7 @@ static const char *const mdi_save_as_dark_24[] = {
     "                        ",
 };
 
-// wxART_FILE_SAVE_AS -> save_as (dark, 32px)
+// wxAE_ART_FILE_SAVE_AS -> save_as (dark, 32px)
 /* XPM */
 static const char *const mdi_save_as_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -1519,7 +1501,7 @@ static const char *const mdi_save_as_dark_32[] = {
     "                    ..          ",
     "                                "};
 
-// wxART_QUIT -> logout (light, 16px)
+// wxAE_ART_QUIT -> logout (light, 16px)
 static const char *const mdi_logout_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -1543,7 +1525,7 @@ static const char *const mdi_logout_light_16[] = {
     "                ",
 };
 
-// wxART_QUIT -> logout (light, 20px)
+// wxAE_ART_QUIT -> logout (light, 20px)
 static const char *const mdi_logout_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -1571,7 +1553,7 @@ static const char *const mdi_logout_light_20[] = {
     "                    ",
 };
 
-// wxART_QUIT -> logout (light, 24px)
+// wxAE_ART_QUIT -> logout (light, 24px)
 static const char *const mdi_logout_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -1603,7 +1585,7 @@ static const char *const mdi_logout_light_24[] = {
     "                        ",
 };
 
-// wxART_QUIT -> logout (light, 32px)
+// wxAE_ART_QUIT -> logout (light, 32px)
 /* XPM */
 static const char *const mdi_logout_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -1644,7 +1626,7 @@ static const char *const mdi_logout_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_QUIT -> logout (dark, 16px)
+// wxAE_ART_QUIT -> logout (dark, 16px)
 static const char *const mdi_logout_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -1668,7 +1650,7 @@ static const char *const mdi_logout_dark_16[] = {
     "                ",
 };
 
-// wxART_QUIT -> logout (dark, 20px)
+// wxAE_ART_QUIT -> logout (dark, 20px)
 static const char *const mdi_logout_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -1696,7 +1678,7 @@ static const char *const mdi_logout_dark_20[] = {
     "                    ",
 };
 
-// wxART_QUIT -> logout (dark, 24px)
+// wxAE_ART_QUIT -> logout (dark, 24px)
 static const char *const mdi_logout_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -1728,7 +1710,7 @@ static const char *const mdi_logout_dark_24[] = {
     "                        ",
 };
 
-// wxART_QUIT -> logout (dark, 32px)
+// wxAE_ART_QUIT -> logout (dark, 32px)
 /* XPM */
 static const char *const mdi_logout_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -1769,7 +1751,7 @@ static const char *const mdi_logout_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_GO_BACK -> arrow_back (light, 16px)
+// wxAE_ART_GO_BACK -> arrow_back (light, 16px)
 static const char *const mdi_arrow_back_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -1793,7 +1775,7 @@ static const char *const mdi_arrow_back_light_16[] = {
     "                ",
 };
 
-// wxART_GO_BACK -> arrow_back (light, 20px)
+// wxAE_ART_GO_BACK -> arrow_back (light, 20px)
 static const char *const mdi_arrow_back_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -1821,7 +1803,7 @@ static const char *const mdi_arrow_back_light_20[] = {
     "                    ",
 };
 
-// wxART_GO_BACK -> arrow_back (light, 24px)
+// wxAE_ART_GO_BACK -> arrow_back (light, 24px)
 static const char *const mdi_arrow_back_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -1853,7 +1835,7 @@ static const char *const mdi_arrow_back_light_24[] = {
     "                        ",
 };
 
-// wxART_GO_BACK -> arrow_back (light, 32px)
+// wxAE_ART_GO_BACK -> arrow_back (light, 32px)
 /* XPM */
 static const char *const mdi_arrow_back_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -1894,7 +1876,7 @@ static const char *const mdi_arrow_back_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_GO_BACK -> arrow_back (dark, 16px)
+// wxAE_ART_GO_BACK -> arrow_back (dark, 16px)
 static const char *const mdi_arrow_back_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -1918,7 +1900,7 @@ static const char *const mdi_arrow_back_dark_16[] = {
     "                ",
 };
 
-// wxART_GO_BACK -> arrow_back (dark, 20px)
+// wxAE_ART_GO_BACK -> arrow_back (dark, 20px)
 static const char *const mdi_arrow_back_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -1946,7 +1928,7 @@ static const char *const mdi_arrow_back_dark_20[] = {
     "                    ",
 };
 
-// wxART_GO_BACK -> arrow_back (dark, 24px)
+// wxAE_ART_GO_BACK -> arrow_back (dark, 24px)
 static const char *const mdi_arrow_back_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -1978,7 +1960,7 @@ static const char *const mdi_arrow_back_dark_24[] = {
     "                        ",
 };
 
-// wxART_GO_BACK -> arrow_back (dark, 32px)
+// wxAE_ART_GO_BACK -> arrow_back (dark, 32px)
 /* XPM */
 static const char *const mdi_arrow_back_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -2019,7 +2001,7 @@ static const char *const mdi_arrow_back_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_GO_FORWARD -> arrow_forward (light, 16px)
+// wxAE_ART_GO_FORWARD -> arrow_forward (light, 16px)
 static const char *const mdi_arrow_forward_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -2043,7 +2025,7 @@ static const char *const mdi_arrow_forward_light_16[] = {
     "                ",
 };
 
-// wxART_GO_FORWARD -> arrow_forward (light, 20px)
+// wxAE_ART_GO_FORWARD -> arrow_forward (light, 20px)
 static const char *const mdi_arrow_forward_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -2071,7 +2053,7 @@ static const char *const mdi_arrow_forward_light_20[] = {
     "                    ",
 };
 
-// wxART_GO_FORWARD -> arrow_forward (light, 24px)
+// wxAE_ART_GO_FORWARD -> arrow_forward (light, 24px)
 static const char *const mdi_arrow_forward_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -2103,7 +2085,7 @@ static const char *const mdi_arrow_forward_light_24[] = {
     "                        ",
 };
 
-// wxART_GO_FORWARD -> arrow_forward (light, 32px)
+// wxAE_ART_GO_FORWARD -> arrow_forward (light, 32px)
 /* XPM */
 static const char *const mdi_arrow_forward_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -2144,7 +2126,7 @@ static const char *const mdi_arrow_forward_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_GO_FORWARD -> arrow_forward (dark, 16px)
+// wxAE_ART_GO_FORWARD -> arrow_forward (dark, 16px)
 static const char *const mdi_arrow_forward_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -2168,7 +2150,7 @@ static const char *const mdi_arrow_forward_dark_16[] = {
     "                ",
 };
 
-// wxART_GO_FORWARD -> arrow_forward (dark, 20px)
+// wxAE_ART_GO_FORWARD -> arrow_forward (dark, 20px)
 static const char *const mdi_arrow_forward_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -2196,7 +2178,7 @@ static const char *const mdi_arrow_forward_dark_20[] = {
     "                    ",
 };
 
-// wxART_GO_FORWARD -> arrow_forward (dark, 24px)
+// wxAE_ART_GO_FORWARD -> arrow_forward (dark, 24px)
 static const char *const mdi_arrow_forward_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -2228,7 +2210,7 @@ static const char *const mdi_arrow_forward_dark_24[] = {
     "                        ",
 };
 
-// wxART_GO_FORWARD -> arrow_forward (dark, 32px)
+// wxAE_ART_GO_FORWARD -> arrow_forward (dark, 32px)
 /* XPM */
 static const char *const mdi_arrow_forward_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -2269,7 +2251,7 @@ static const char *const mdi_arrow_forward_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_FIND -> search (light, 16px)
+// wxAE_ART_FIND -> search (light, 16px)
 static const char *const mdi_search_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -2293,7 +2275,7 @@ static const char *const mdi_search_light_16[] = {
     "                ",
 };
 
-// wxART_FIND -> search (light, 20px)
+// wxAE_ART_FIND -> search (light, 20px)
 static const char *const mdi_search_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -2321,7 +2303,7 @@ static const char *const mdi_search_light_20[] = {
     "                    ",
 };
 
-// wxART_FIND -> search (light, 24px)
+// wxAE_ART_FIND -> search (light, 24px)
 static const char *const mdi_search_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -2353,7 +2335,7 @@ static const char *const mdi_search_light_24[] = {
     "                        ",
 };
 
-// wxART_FIND -> search (light, 32px)
+// wxAE_ART_FIND -> search (light, 32px)
 /* XPM */
 static const char *const mdi_search_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -2394,7 +2376,7 @@ static const char *const mdi_search_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_FIND -> search (dark, 16px)
+// wxAE_ART_FIND -> search (dark, 16px)
 static const char *const mdi_search_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -2418,7 +2400,7 @@ static const char *const mdi_search_dark_16[] = {
     "                ",
 };
 
-// wxART_FIND -> search (dark, 20px)
+// wxAE_ART_FIND -> search (dark, 20px)
 static const char *const mdi_search_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -2446,7 +2428,7 @@ static const char *const mdi_search_dark_20[] = {
     "                    ",
 };
 
-// wxART_FIND -> search (dark, 24px)
+// wxAE_ART_FIND -> search (dark, 24px)
 static const char *const mdi_search_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -2478,7 +2460,7 @@ static const char *const mdi_search_dark_24[] = {
     "                        ",
 };
 
-// wxART_FIND -> search (dark, 32px)
+// wxAE_ART_FIND -> search (dark, 32px)
 /* XPM */
 static const char *const mdi_search_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -2519,7 +2501,7 @@ static const char *const mdi_search_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_FIND_AND_REPLACE -> find_replace (light, 16px)
+// wxAE_ART_FIND_AND_REPLACE -> find_replace (light, 16px)
 static const char *const mdi_find_replace_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -2543,7 +2525,7 @@ static const char *const mdi_find_replace_light_16[] = {
     "                ",
 };
 
-// wxART_FIND_AND_REPLACE -> find_replace (light, 20px)
+// wxAE_ART_FIND_AND_REPLACE -> find_replace (light, 20px)
 static const char *const mdi_find_replace_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -2571,7 +2553,7 @@ static const char *const mdi_find_replace_light_20[] = {
     "                    ",
 };
 
-// wxART_FIND_AND_REPLACE -> find_replace (light, 24px)
+// wxAE_ART_FIND_AND_REPLACE -> find_replace (light, 24px)
 static const char *const mdi_find_replace_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -2603,7 +2585,7 @@ static const char *const mdi_find_replace_light_24[] = {
     "                        ",
 };
 
-// wxART_FIND_AND_REPLACE -> find_replace (light, 32px)
+// wxAE_ART_FIND_AND_REPLACE -> find_replace (light, 32px)
 /* XPM */
 static const char *const mdi_find_replace_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -2644,7 +2626,7 @@ static const char *const mdi_find_replace_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_FIND_AND_REPLACE -> find_replace (dark, 16px)
+// wxAE_ART_FIND_AND_REPLACE -> find_replace (dark, 16px)
 static const char *const mdi_find_replace_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -2668,7 +2650,7 @@ static const char *const mdi_find_replace_dark_16[] = {
     "                ",
 };
 
-// wxART_FIND_AND_REPLACE -> find_replace (dark, 20px)
+// wxAE_ART_FIND_AND_REPLACE -> find_replace (dark, 20px)
 static const char *const mdi_find_replace_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -2696,7 +2678,7 @@ static const char *const mdi_find_replace_dark_20[] = {
     "                    ",
 };
 
-// wxART_FIND_AND_REPLACE -> find_replace (dark, 24px)
+// wxAE_ART_FIND_AND_REPLACE -> find_replace (dark, 24px)
 static const char *const mdi_find_replace_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -2728,7 +2710,7 @@ static const char *const mdi_find_replace_dark_24[] = {
     "                        ",
 };
 
-// wxART_FIND_AND_REPLACE -> find_replace (dark, 32px)
+// wxAE_ART_FIND_AND_REPLACE -> find_replace (dark, 32px)
 /* XPM */
 static const char *const mdi_find_replace_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -2769,7 +2751,7 @@ static const char *const mdi_find_replace_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_UNDO -> undo (light, 16px)
+// wxAE_ART_UNDO -> undo (light, 16px)
 static const char *const mdi_undo_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -2793,7 +2775,7 @@ static const char *const mdi_undo_light_16[] = {
     "                ",
 };
 
-// wxART_UNDO -> undo (light, 20px)
+// wxAE_ART_UNDO -> undo (light, 20px)
 static const char *const mdi_undo_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -2821,7 +2803,7 @@ static const char *const mdi_undo_light_20[] = {
     "                    ",
 };
 
-// wxART_UNDO -> undo (light, 24px)
+// wxAE_ART_UNDO -> undo (light, 24px)
 static const char *const mdi_undo_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -2853,7 +2835,7 @@ static const char *const mdi_undo_light_24[] = {
     "                        ",
 };
 
-// wxART_UNDO -> undo (light, 32px)
+// wxAE_ART_UNDO -> undo (light, 32px)
 /* XPM */
 static const char *const mdi_undo_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -2894,7 +2876,7 @@ static const char *const mdi_undo_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_UNDO -> undo (dark, 16px)
+// wxAE_ART_UNDO -> undo (dark, 16px)
 static const char *const mdi_undo_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -2918,7 +2900,7 @@ static const char *const mdi_undo_dark_16[] = {
     "                ",
 };
 
-// wxART_UNDO -> undo (dark, 20px)
+// wxAE_ART_UNDO -> undo (dark, 20px)
 static const char *const mdi_undo_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -2946,7 +2928,7 @@ static const char *const mdi_undo_dark_20[] = {
     "                    ",
 };
 
-// wxART_UNDO -> undo (dark, 24px)
+// wxAE_ART_UNDO -> undo (dark, 24px)
 static const char *const mdi_undo_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -2978,7 +2960,7 @@ static const char *const mdi_undo_dark_24[] = {
     "                        ",
 };
 
-// wxART_UNDO -> undo (dark, 32px)
+// wxAE_ART_UNDO -> undo (dark, 32px)
 /* XPM */
 static const char *const mdi_undo_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -3019,7 +3001,7 @@ static const char *const mdi_undo_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_REDO -> redo (light, 16px)
+// wxAE_ART_REDO -> redo (light, 16px)
 static const char *const mdi_redo_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -3043,7 +3025,7 @@ static const char *const mdi_redo_light_16[] = {
     "                ",
 };
 
-// wxART_REDO -> redo (light, 20px)
+// wxAE_ART_REDO -> redo (light, 20px)
 static const char *const mdi_redo_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -3071,7 +3053,7 @@ static const char *const mdi_redo_light_20[] = {
     "                    ",
 };
 
-// wxART_REDO -> redo (light, 24px)
+// wxAE_ART_REDO -> redo (light, 24px)
 static const char *const mdi_redo_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -3103,7 +3085,7 @@ static const char *const mdi_redo_light_24[] = {
     "                        ",
 };
 
-// wxART_REDO -> redo (light, 32px)
+// wxAE_ART_REDO -> redo (light, 32px)
 /* XPM */
 static const char *const mdi_redo_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -3144,7 +3126,7 @@ static const char *const mdi_redo_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_REDO -> redo (dark, 16px)
+// wxAE_ART_REDO -> redo (dark, 16px)
 static const char *const mdi_redo_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -3168,7 +3150,7 @@ static const char *const mdi_redo_dark_16[] = {
     "                ",
 };
 
-// wxART_REDO -> redo (dark, 20px)
+// wxAE_ART_REDO -> redo (dark, 20px)
 static const char *const mdi_redo_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -3196,7 +3178,7 @@ static const char *const mdi_redo_dark_20[] = {
     "                    ",
 };
 
-// wxART_REDO -> redo (dark, 24px)
+// wxAE_ART_REDO -> redo (dark, 24px)
 static const char *const mdi_redo_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -3228,7 +3210,7 @@ static const char *const mdi_redo_dark_24[] = {
     "                        ",
 };
 
-// wxART_REDO -> redo (dark, 32px)
+// wxAE_ART_REDO -> redo (dark, 32px)
 /* XPM */
 static const char *const mdi_redo_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -3269,7 +3251,7 @@ static const char *const mdi_redo_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_CUT -> content_cut (light, 16px)
+// wxAE_ART_CUT -> content_cut (light, 16px)
 static const char *const mdi_content_cut_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -3293,7 +3275,7 @@ static const char *const mdi_content_cut_light_16[] = {
     "                ",
 };
 
-// wxART_CUT -> content_cut (light, 20px)
+// wxAE_ART_CUT -> content_cut (light, 20px)
 static const char *const mdi_content_cut_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -3321,7 +3303,7 @@ static const char *const mdi_content_cut_light_20[] = {
     "                    ",
 };
 
-// wxART_CUT -> content_cut (light, 24px)
+// wxAE_ART_CUT -> content_cut (light, 24px)
 static const char *const mdi_content_cut_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -3353,7 +3335,7 @@ static const char *const mdi_content_cut_light_24[] = {
     "                        ",
 };
 
-// wxART_CUT -> content_cut (light, 32px)
+// wxAE_ART_CUT -> content_cut (light, 32px)
 /* XPM */
 static const char *const mdi_content_cut_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -3394,7 +3376,7 @@ static const char *const mdi_content_cut_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_CUT -> content_cut (dark, 16px)
+// wxAE_ART_CUT -> content_cut (dark, 16px)
 static const char *const mdi_content_cut_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -3418,7 +3400,7 @@ static const char *const mdi_content_cut_dark_16[] = {
     "                ",
 };
 
-// wxART_CUT -> content_cut (dark, 20px)
+// wxAE_ART_CUT -> content_cut (dark, 20px)
 static const char *const mdi_content_cut_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -3446,7 +3428,7 @@ static const char *const mdi_content_cut_dark_20[] = {
     "                    ",
 };
 
-// wxART_CUT -> content_cut (dark, 24px)
+// wxAE_ART_CUT -> content_cut (dark, 24px)
 static const char *const mdi_content_cut_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -3478,7 +3460,7 @@ static const char *const mdi_content_cut_dark_24[] = {
     "                        ",
 };
 
-// wxART_CUT -> content_cut (dark, 32px)
+// wxAE_ART_CUT -> content_cut (dark, 32px)
 /* XPM */
 static const char *const mdi_content_cut_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -3519,7 +3501,7 @@ static const char *const mdi_content_cut_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_COPY -> content_copy (light, 16px)
+// wxAE_ART_COPY -> content_copy (light, 16px)
 static const char *const mdi_content_copy_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -3543,7 +3525,7 @@ static const char *const mdi_content_copy_light_16[] = {
     "     ++++++++   ",
 };
 
-// wxART_COPY -> content_copy (light, 20px)
+// wxAE_ART_COPY -> content_copy (light, 20px)
 static const char *const mdi_content_copy_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -3571,7 +3553,7 @@ static const char *const mdi_content_copy_light_20[] = {
     "      ++++++++++    ",
 };
 
-// wxART_COPY -> content_copy (light, 24px)
+// wxAE_ART_COPY -> content_copy (light, 24px)
 static const char *const mdi_content_copy_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -3603,7 +3585,7 @@ static const char *const mdi_content_copy_light_24[] = {
     "                        ",
 };
 
-// wxART_COPY -> content_copy (light, 32px)
+// wxAE_ART_COPY -> content_copy (light, 32px)
 /* XPM */
 static const char *const mdi_content_copy_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -3644,7 +3626,7 @@ static const char *const mdi_content_copy_light_32[] = {
     "          ................      ",
     "                                "};
 
-// wxART_COPY -> content_copy (dark, 16px)
+// wxAE_ART_COPY -> content_copy (dark, 16px)
 static const char *const mdi_content_copy_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -3668,7 +3650,7 @@ static const char *const mdi_content_copy_dark_16[] = {
     "     ++++++++   ",
 };
 
-// wxART_COPY -> content_copy (dark, 20px)
+// wxAE_ART_COPY -> content_copy (dark, 20px)
 static const char *const mdi_content_copy_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -3696,7 +3678,7 @@ static const char *const mdi_content_copy_dark_20[] = {
     "      ++++++++++    ",
 };
 
-// wxART_COPY -> content_copy (dark, 24px)
+// wxAE_ART_COPY -> content_copy (dark, 24px)
 static const char *const mdi_content_copy_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -3728,7 +3710,7 @@ static const char *const mdi_content_copy_dark_24[] = {
     "                        ",
 };
 
-// wxART_COPY -> content_copy (dark, 32px)
+// wxAE_ART_COPY -> content_copy (dark, 32px)
 /* XPM */
 static const char *const mdi_content_copy_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -3769,7 +3751,7 @@ static const char *const mdi_content_copy_dark_32[] = {
     "          ................      ",
     "                                "};
 
-// wxART_PASTE -> content_paste (light, 16px)
+// wxAE_ART_PASTE -> content_paste (light, 16px)
 static const char *const mdi_content_paste_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -3793,7 +3775,7 @@ static const char *const mdi_content_paste_light_16[] = {
     "                ",
 };
 
-// wxART_PASTE -> content_paste (light, 20px)
+// wxAE_ART_PASTE -> content_paste (light, 20px)
 static const char *const mdi_content_paste_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -3821,7 +3803,7 @@ static const char *const mdi_content_paste_light_20[] = {
     "                    ",
 };
 
-// wxART_PASTE -> content_paste (light, 24px)
+// wxAE_ART_PASTE -> content_paste (light, 24px)
 static const char *const mdi_content_paste_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -3853,7 +3835,7 @@ static const char *const mdi_content_paste_light_24[] = {
     "                        ",
 };
 
-// wxART_PASTE -> content_paste (light, 32px)
+// wxAE_ART_PASTE -> content_paste (light, 32px)
 /* XPM */
 static const char *const mdi_content_paste_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -3894,7 +3876,7 @@ static const char *const mdi_content_paste_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_PASTE -> content_paste (dark, 16px)
+// wxAE_ART_PASTE -> content_paste (dark, 16px)
 static const char *const mdi_content_paste_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -3918,7 +3900,7 @@ static const char *const mdi_content_paste_dark_16[] = {
     "                ",
 };
 
-// wxART_PASTE -> content_paste (dark, 20px)
+// wxAE_ART_PASTE -> content_paste (dark, 20px)
 static const char *const mdi_content_paste_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -3946,7 +3928,7 @@ static const char *const mdi_content_paste_dark_20[] = {
     "                    ",
 };
 
-// wxART_PASTE -> content_paste (dark, 24px)
+// wxAE_ART_PASTE -> content_paste (dark, 24px)
 static const char *const mdi_content_paste_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -3978,7 +3960,7 @@ static const char *const mdi_content_paste_dark_24[] = {
     "                        ",
 };
 
-// wxART_PASTE -> content_paste (dark, 32px)
+// wxAE_ART_PASTE -> content_paste (dark, 32px)
 /* XPM */
 static const char *const mdi_content_paste_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -4019,7 +4001,7 @@ static const char *const mdi_content_paste_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_PRINT -> print (light, 16px)
+// wxAE_ART_PRINT -> print (light, 16px)
 static const char *const mdi_print_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -4043,7 +4025,7 @@ static const char *const mdi_print_light_16[] = {
     "                ",
 };
 
-// wxART_PRINT -> print (light, 20px)
+// wxAE_ART_PRINT -> print (light, 20px)
 static const char *const mdi_print_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -4071,7 +4053,7 @@ static const char *const mdi_print_light_20[] = {
     "                    ",
 };
 
-// wxART_PRINT -> print (light, 24px)
+// wxAE_ART_PRINT -> print (light, 24px)
 static const char *const mdi_print_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -4103,7 +4085,7 @@ static const char *const mdi_print_light_24[] = {
     "                        ",
 };
 
-// wxART_PRINT -> print (light, 32px)
+// wxAE_ART_PRINT -> print (light, 32px)
 /* XPM */
 static const char *const mdi_print_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -4144,7 +4126,7 @@ static const char *const mdi_print_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_PRINT -> print (dark, 16px)
+// wxAE_ART_PRINT -> print (dark, 16px)
 static const char *const mdi_print_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -4168,7 +4150,7 @@ static const char *const mdi_print_dark_16[] = {
     "                ",
 };
 
-// wxART_PRINT -> print (dark, 20px)
+// wxAE_ART_PRINT -> print (dark, 20px)
 static const char *const mdi_print_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -4196,7 +4178,7 @@ static const char *const mdi_print_dark_20[] = {
     "                    ",
 };
 
-// wxART_PRINT -> print (dark, 24px)
+// wxAE_ART_PRINT -> print (dark, 24px)
 static const char *const mdi_print_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -4228,7 +4210,7 @@ static const char *const mdi_print_dark_24[] = {
     "                        ",
 };
 
-// wxART_PRINT -> print (dark, 32px)
+// wxAE_ART_PRINT -> print (dark, 32px)
 /* XPM */
 static const char *const mdi_print_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -4269,7 +4251,7 @@ static const char *const mdi_print_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_FOLDER -> folder (light, 16px)
+// wxAE_ART_FOLDER -> folder (light, 16px)
 static const char *const mdi_folder_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -4293,7 +4275,7 @@ static const char *const mdi_folder_light_16[] = {
     "                ",
 };
 
-// wxART_FOLDER -> folder (light, 20px)
+// wxAE_ART_FOLDER -> folder (light, 20px)
 static const char *const mdi_folder_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -4321,7 +4303,7 @@ static const char *const mdi_folder_light_20[] = {
     "                    ",
 };
 
-// wxART_FOLDER -> folder (light, 24px)
+// wxAE_ART_FOLDER -> folder (light, 24px)
 static const char *const mdi_folder_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -4353,7 +4335,7 @@ static const char *const mdi_folder_light_24[] = {
     "                        ",
 };
 
-// wxART_FOLDER -> folder (light, 32px)
+// wxAE_ART_FOLDER -> folder (light, 32px)
 /* XPM */
 static const char *const mdi_folder_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -4394,7 +4376,7 @@ static const char *const mdi_folder_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_FOLDER -> folder (dark, 16px)
+// wxAE_ART_FOLDER -> folder (dark, 16px)
 static const char *const mdi_folder_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -4418,7 +4400,7 @@ static const char *const mdi_folder_dark_16[] = {
     "                ",
 };
 
-// wxART_FOLDER -> folder (dark, 20px)
+// wxAE_ART_FOLDER -> folder (dark, 20px)
 static const char *const mdi_folder_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -4446,7 +4428,7 @@ static const char *const mdi_folder_dark_20[] = {
     "                    ",
 };
 
-// wxART_FOLDER -> folder (dark, 24px)
+// wxAE_ART_FOLDER -> folder (dark, 24px)
 static const char *const mdi_folder_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -4478,7 +4460,7 @@ static const char *const mdi_folder_dark_24[] = {
     "                        ",
 };
 
-// wxART_FOLDER -> folder (dark, 32px)
+// wxAE_ART_FOLDER -> folder (dark, 32px)
 /* XPM */
 static const char *const mdi_folder_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -4519,7 +4501,7 @@ static const char *const mdi_folder_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_FOLDER_OPEN -> folder_open (light, 16px)
+// wxAE_ART_FOLDER_OPEN -> folder_open (light, 16px)
 static const char *const mdi_folder_open_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -4543,7 +4525,7 @@ static const char *const mdi_folder_open_light_16[] = {
     "                ",
 };
 
-// wxART_FOLDER_OPEN -> folder_open (light, 20px)
+// wxAE_ART_FOLDER_OPEN -> folder_open (light, 20px)
 static const char *const mdi_folder_open_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -4571,7 +4553,7 @@ static const char *const mdi_folder_open_light_20[] = {
     "                    ",
 };
 
-// wxART_FOLDER_OPEN -> folder_open (light, 24px)
+// wxAE_ART_FOLDER_OPEN -> folder_open (light, 24px)
 static const char *const mdi_folder_open_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -4603,7 +4585,7 @@ static const char *const mdi_folder_open_light_24[] = {
     "                        ",
 };
 
-// wxART_FOLDER_OPEN -> folder_open (light, 32px)
+// wxAE_ART_FOLDER_OPEN -> folder_open (light, 32px)
 /* XPM */
 static const char *const mdi_folder_open_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -4644,7 +4626,7 @@ static const char *const mdi_folder_open_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_FOLDER_OPEN -> folder_open (dark, 16px)
+// wxAE_ART_FOLDER_OPEN -> folder_open (dark, 16px)
 static const char *const mdi_folder_open_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -4668,7 +4650,7 @@ static const char *const mdi_folder_open_dark_16[] = {
     "                ",
 };
 
-// wxART_FOLDER_OPEN -> folder_open (dark, 20px)
+// wxAE_ART_FOLDER_OPEN -> folder_open (dark, 20px)
 static const char *const mdi_folder_open_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -4696,7 +4678,7 @@ static const char *const mdi_folder_open_dark_20[] = {
     "                    ",
 };
 
-// wxART_FOLDER_OPEN -> folder_open (dark, 24px)
+// wxAE_ART_FOLDER_OPEN -> folder_open (dark, 24px)
 static const char *const mdi_folder_open_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -4728,7 +4710,7 @@ static const char *const mdi_folder_open_dark_24[] = {
     "                        ",
 };
 
-// wxART_FOLDER_OPEN -> folder_open (dark, 32px)
+// wxAE_ART_FOLDER_OPEN -> folder_open (dark, 32px)
 /* XPM */
 static const char *const mdi_folder_open_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -4769,7 +4751,7 @@ static const char *const mdi_folder_open_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_NORMAL_FILE -> description (light, 16px)
+// wxAE_ART_NORMAL_FILE -> description (light, 16px)
 static const char *const mdi_description_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -4793,7 +4775,7 @@ static const char *const mdi_description_light_16[] = {
     "                ",
 };
 
-// wxART_NORMAL_FILE -> description (light, 20px)
+// wxAE_ART_NORMAL_FILE -> description (light, 20px)
 static const char *const mdi_description_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -4821,7 +4803,7 @@ static const char *const mdi_description_light_20[] = {
     "                    ",
 };
 
-// wxART_NORMAL_FILE -> description (light, 24px)
+// wxAE_ART_NORMAL_FILE -> description (light, 24px)
 static const char *const mdi_description_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -4853,7 +4835,7 @@ static const char *const mdi_description_light_24[] = {
     "                        ",
 };
 
-// wxART_NORMAL_FILE -> description (light, 32px)
+// wxAE_ART_NORMAL_FILE -> description (light, 32px)
 /* XPM */
 static const char *const mdi_description_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -4894,7 +4876,7 @@ static const char *const mdi_description_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_NORMAL_FILE -> description (dark, 16px)
+// wxAE_ART_NORMAL_FILE -> description (dark, 16px)
 static const char *const mdi_description_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -4918,7 +4900,7 @@ static const char *const mdi_description_dark_16[] = {
     "                ",
 };
 
-// wxART_NORMAL_FILE -> description (dark, 20px)
+// wxAE_ART_NORMAL_FILE -> description (dark, 20px)
 static const char *const mdi_description_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -4946,7 +4928,7 @@ static const char *const mdi_description_dark_20[] = {
     "                    ",
 };
 
-// wxART_NORMAL_FILE -> description (dark, 24px)
+// wxAE_ART_NORMAL_FILE -> description (dark, 24px)
 static const char *const mdi_description_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -4978,7 +4960,7 @@ static const char *const mdi_description_dark_24[] = {
     "                        ",
 };
 
-// wxART_NORMAL_FILE -> description (dark, 32px)
+// wxAE_ART_NORMAL_FILE -> description (dark, 32px)
 /* XPM */
 static const char *const mdi_description_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -5019,7 +5001,7 @@ static const char *const mdi_description_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_EXECUTABLE_FILE -> terminal (light, 16px)
+// wxAE_ART_EXECUTABLE_FILE -> terminal (light, 16px)
 static const char *const mdi_terminal_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -5043,7 +5025,7 @@ static const char *const mdi_terminal_light_16[] = {
     "                ",
 };
 
-// wxART_EXECUTABLE_FILE -> terminal (light, 20px)
+// wxAE_ART_EXECUTABLE_FILE -> terminal (light, 20px)
 static const char *const mdi_terminal_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -5071,7 +5053,7 @@ static const char *const mdi_terminal_light_20[] = {
     "                    ",
 };
 
-// wxART_EXECUTABLE_FILE -> terminal (light, 24px)
+// wxAE_ART_EXECUTABLE_FILE -> terminal (light, 24px)
 static const char *const mdi_terminal_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -5103,7 +5085,7 @@ static const char *const mdi_terminal_light_24[] = {
     "                        ",
 };
 
-// wxART_EXECUTABLE_FILE -> terminal (light, 32px)
+// wxAE_ART_EXECUTABLE_FILE -> terminal (light, 32px)
 /* XPM */
 static const char *const mdi_terminal_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -5144,7 +5126,7 @@ static const char *const mdi_terminal_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_EXECUTABLE_FILE -> terminal (dark, 16px)
+// wxAE_ART_EXECUTABLE_FILE -> terminal (dark, 16px)
 static const char *const mdi_terminal_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -5168,7 +5150,7 @@ static const char *const mdi_terminal_dark_16[] = {
     "                ",
 };
 
-// wxART_EXECUTABLE_FILE -> terminal (dark, 20px)
+// wxAE_ART_EXECUTABLE_FILE -> terminal (dark, 20px)
 static const char *const mdi_terminal_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -5196,7 +5178,7 @@ static const char *const mdi_terminal_dark_20[] = {
     "                    ",
 };
 
-// wxART_EXECUTABLE_FILE -> terminal (dark, 24px)
+// wxAE_ART_EXECUTABLE_FILE -> terminal (dark, 24px)
 static const char *const mdi_terminal_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -5228,7 +5210,7 @@ static const char *const mdi_terminal_dark_24[] = {
     "                        ",
 };
 
-// wxART_EXECUTABLE_FILE -> terminal (dark, 32px)
+// wxAE_ART_EXECUTABLE_FILE -> terminal (dark, 32px)
 /* XPM */
 static const char *const mdi_terminal_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -5269,7 +5251,7 @@ static const char *const mdi_terminal_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_HARDDISK -> library_books (light, 16px)
+// wxAE_ART_SYSLIBRARY -> library_books (light, 16px)
 static const char *const mdi_library_books_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -5293,7 +5275,7 @@ static const char *const mdi_library_books_light_16[] = {
     "                ",
 };
 
-// wxART_HARDDISK -> library_books (light, 20px)
+// wxAE_ART_SYSLIBRARY -> library_books (light, 20px)
 static const char *const mdi_library_books_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -5321,7 +5303,7 @@ static const char *const mdi_library_books_light_20[] = {
     "                    ",
 };
 
-// wxART_HARDDISK -> library_books (light, 24px)
+// wxAE_ART_SYSLIBRARY -> library_books (light, 24px)
 static const char *const mdi_library_books_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -5353,7 +5335,7 @@ static const char *const mdi_library_books_light_24[] = {
     "                        ",
 };
 
-// wxART_HARDDISK -> library_books (light, 32px)
+// wxAE_ART_SYSLIBRARY -> library_books (light, 32px)
 /* XPM */
 static const char *const mdi_library_books_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -5394,7 +5376,7 @@ static const char *const mdi_library_books_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_HARDDISK -> library_books (dark, 16px)
+// wxAE_ART_SYSLIBRARY -> library_books (dark, 16px)
 static const char *const mdi_library_books_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -5418,7 +5400,7 @@ static const char *const mdi_library_books_dark_16[] = {
     "                ",
 };
 
-// wxART_HARDDISK -> library_books (dark, 20px)
+// wxAE_ART_SYSLIBRARY -> library_books (dark, 20px)
 static const char *const mdi_library_books_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -5446,7 +5428,7 @@ static const char *const mdi_library_books_dark_20[] = {
     "                    ",
 };
 
-// wxART_HARDDISK -> library_books (dark, 24px)
+// wxAE_ART_SYSLIBRARY -> library_books (dark, 24px)
 static const char *const mdi_library_books_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -5478,7 +5460,7 @@ static const char *const mdi_library_books_dark_24[] = {
     "                        ",
 };
 
-// wxART_HARDDISK -> library_books (dark, 32px)
+// wxAE_ART_SYSLIBRARY -> library_books (dark, 32px)
 /* XPM */
 static const char *const mdi_library_books_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -5519,7 +5501,7 @@ static const char *const mdi_library_books_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_REMOVABLE -> library_add (light, 16px)
+// wxAE_ART_USRLIBRARY -> library_add (light, 16px)
 static const char *const mdi_library_add_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -5543,7 +5525,7 @@ static const char *const mdi_library_add_light_16[] = {
     "                ",
 };
 
-// wxART_REMOVABLE -> library_add (light, 20px)
+// wxAE_ART_USRLIBRARY -> library_add (light, 20px)
 static const char *const mdi_library_add_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -5571,7 +5553,7 @@ static const char *const mdi_library_add_light_20[] = {
     "                    ",
 };
 
-// wxART_REMOVABLE -> library_add (light, 24px)
+// wxAE_ART_USRLIBRARY -> library_add (light, 24px)
 static const char *const mdi_library_add_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -5603,7 +5585,7 @@ static const char *const mdi_library_add_light_24[] = {
     "                        ",
 };
 
-// wxART_REMOVABLE -> library_add (light, 32px)
+// wxAE_ART_USRLIBRARY -> library_add (light, 32px)
 /* XPM */
 static const char *const mdi_library_add_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -5644,7 +5626,7 @@ static const char *const mdi_library_add_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_REMOVABLE -> library_add (dark, 16px)
+// wxAE_ART_USRLIBRARY -> library_add (dark, 16px)
 static const char *const mdi_library_add_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -5668,7 +5650,7 @@ static const char *const mdi_library_add_dark_16[] = {
     "                ",
 };
 
-// wxART_REMOVABLE -> library_add (dark, 20px)
+// wxAE_ART_USRLIBRARY -> library_add (dark, 20px)
 static const char *const mdi_library_add_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -5696,7 +5678,7 @@ static const char *const mdi_library_add_dark_20[] = {
     "                    ",
 };
 
-// wxART_REMOVABLE -> library_add (dark, 24px)
+// wxAE_ART_USRLIBRARY -> library_add (dark, 24px)
 static const char *const mdi_library_add_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -5728,7 +5710,7 @@ static const char *const mdi_library_add_dark_24[] = {
     "                        ",
 };
 
-// wxART_REMOVABLE -> library_add (dark, 32px)
+// wxAE_ART_USRLIBRARY -> library_add (dark, 32px)
 /* XPM */
 static const char *const mdi_library_add_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -5769,7 +5751,7 @@ static const char *const mdi_library_add_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_GO_UP -> arrow_upward (light, 16px)
+// wxAE_ART_GO_UP -> arrow_upward (light, 16px)
 static const char *const mdi_arrow_upward_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -5793,7 +5775,7 @@ static const char *const mdi_arrow_upward_light_16[] = {
     "                ",
 };
 
-// wxART_GO_UP -> arrow_upward (light, 20px)
+// wxAE_ART_GO_UP -> arrow_upward (light, 20px)
 static const char *const mdi_arrow_upward_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -5821,7 +5803,7 @@ static const char *const mdi_arrow_upward_light_20[] = {
     "                    ",
 };
 
-// wxART_GO_UP -> arrow_upward (light, 24px)
+// wxAE_ART_GO_UP -> arrow_upward (light, 24px)
 static const char *const mdi_arrow_upward_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -5853,7 +5835,7 @@ static const char *const mdi_arrow_upward_light_24[] = {
     "                        ",
 };
 
-// wxART_GO_UP -> arrow_upward (light, 32px)
+// wxAE_ART_GO_UP -> arrow_upward (light, 32px)
 /* XPM */
 static const char *const mdi_arrow_upward_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -5894,7 +5876,7 @@ static const char *const mdi_arrow_upward_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_GO_UP -> arrow_upward (dark, 16px)
+// wxAE_ART_GO_UP -> arrow_upward (dark, 16px)
 static const char *const mdi_arrow_upward_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -5918,7 +5900,7 @@ static const char *const mdi_arrow_upward_dark_16[] = {
     "                ",
 };
 
-// wxART_GO_UP -> arrow_upward (dark, 20px)
+// wxAE_ART_GO_UP -> arrow_upward (dark, 20px)
 static const char *const mdi_arrow_upward_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -5946,7 +5928,7 @@ static const char *const mdi_arrow_upward_dark_20[] = {
     "                    ",
 };
 
-// wxART_GO_UP -> arrow_upward (dark, 24px)
+// wxAE_ART_GO_UP -> arrow_upward (dark, 24px)
 static const char *const mdi_arrow_upward_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -5978,7 +5960,7 @@ static const char *const mdi_arrow_upward_dark_24[] = {
     "                        ",
 };
 
-// wxART_GO_UP -> arrow_upward (dark, 32px)
+// wxAE_ART_GO_UP -> arrow_upward (dark, 32px)
 /* XPM */
 static const char *const mdi_arrow_upward_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -6019,7 +6001,7 @@ static const char *const mdi_arrow_upward_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_GO_TO_PARENT -> drive_file_move (light, 16px)
+// wxAE_ART_GO_TO_PARENT -> drive_file_move (light, 16px)
 static const char *const mdi_drive_file_move_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -6043,7 +6025,7 @@ static const char *const mdi_drive_file_move_light_16[] = {
     "                ",
 };
 
-// wxART_GO_TO_PARENT -> drive_file_move (light, 20px)
+// wxAE_ART_GO_TO_PARENT -> drive_file_move (light, 20px)
 static const char *const mdi_drive_file_move_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -6071,7 +6053,7 @@ static const char *const mdi_drive_file_move_light_20[] = {
     "                    ",
 };
 
-// wxART_GO_TO_PARENT -> drive_file_move (light, 24px)
+// wxAE_ART_GO_TO_PARENT -> drive_file_move (light, 24px)
 static const char *const mdi_drive_file_move_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -6103,7 +6085,7 @@ static const char *const mdi_drive_file_move_light_24[] = {
     "                        ",
 };
 
-// wxART_GO_TO_PARENT -> drive_file_move (light, 32px)
+// wxAE_ART_GO_TO_PARENT -> drive_file_move (light, 32px)
 /* XPM */
 static const char *const mdi_drive_file_move_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -6144,7 +6126,7 @@ static const char *const mdi_drive_file_move_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_GO_TO_PARENT -> drive_file_move (dark, 16px)
+// wxAE_ART_GO_TO_PARENT -> drive_file_move (dark, 16px)
 static const char *const mdi_drive_file_move_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -6168,7 +6150,7 @@ static const char *const mdi_drive_file_move_dark_16[] = {
     "                ",
 };
 
-// wxART_GO_TO_PARENT -> drive_file_move (dark, 20px)
+// wxAE_ART_GO_TO_PARENT -> drive_file_move (dark, 20px)
 static const char *const mdi_drive_file_move_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -6196,7 +6178,7 @@ static const char *const mdi_drive_file_move_dark_20[] = {
     "                    ",
 };
 
-// wxART_GO_TO_PARENT -> drive_file_move (dark, 24px)
+// wxAE_ART_GO_TO_PARENT -> drive_file_move (dark, 24px)
 static const char *const mdi_drive_file_move_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -6228,7 +6210,7 @@ static const char *const mdi_drive_file_move_dark_24[] = {
     "                        ",
 };
 
-// wxART_GO_TO_PARENT -> drive_file_move (dark, 32px)
+// wxAE_ART_GO_TO_PARENT -> drive_file_move (dark, 32px)
 /* XPM */
 static const char *const mdi_drive_file_move_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -6269,7 +6251,7 @@ static const char *const mdi_drive_file_move_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_PLUS -> add (light, 16px)
+// wxAE_ART_PLUS -> add (light, 16px)
 static const char *const mdi_add_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -6293,7 +6275,7 @@ static const char *const mdi_add_light_16[] = {
     "                ",
 };
 
-// wxART_PLUS -> add (light, 20px)
+// wxAE_ART_PLUS -> add (light, 20px)
 static const char *const mdi_add_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -6321,7 +6303,7 @@ static const char *const mdi_add_light_20[] = {
     "                    ",
 };
 
-// wxART_PLUS -> add (light, 24px)
+// wxAE_ART_PLUS -> add (light, 24px)
 static const char *const mdi_add_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -6353,7 +6335,7 @@ static const char *const mdi_add_light_24[] = {
     "                        ",
 };
 
-// wxART_PLUS -> add (light, 32px)
+// wxAE_ART_PLUS -> add (light, 32px)
 /* XPM */
 static const char *const mdi_add_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -6394,7 +6376,7 @@ static const char *const mdi_add_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_PLUS -> add (dark, 16px)
+// wxAE_ART_PLUS -> add (dark, 16px)
 static const char *const mdi_add_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -6418,7 +6400,7 @@ static const char *const mdi_add_dark_16[] = {
     "                ",
 };
 
-// wxART_PLUS -> add (dark, 20px)
+// wxAE_ART_PLUS -> add (dark, 20px)
 static const char *const mdi_add_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -6446,7 +6428,7 @@ static const char *const mdi_add_dark_20[] = {
     "                    ",
 };
 
-// wxART_PLUS -> add (dark, 24px)
+// wxAE_ART_PLUS -> add (dark, 24px)
 static const char *const mdi_add_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -6478,7 +6460,7 @@ static const char *const mdi_add_dark_24[] = {
     "                        ",
 };
 
-// wxART_PLUS -> add (dark, 32px)
+// wxAE_ART_PLUS -> add (dark, 32px)
 /* XPM */
 static const char *const mdi_add_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -6519,7 +6501,7 @@ static const char *const mdi_add_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_MINUS -> remove (light, 16px)
+// wxAE_ART_MINUS -> remove (light, 16px)
 static const char *const mdi_remove_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -6543,7 +6525,7 @@ static const char *const mdi_remove_light_16[] = {
     "                ",
 };
 
-// wxART_MINUS -> remove (light, 20px)
+// wxAE_ART_MINUS -> remove (light, 20px)
 static const char *const mdi_remove_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -6571,7 +6553,7 @@ static const char *const mdi_remove_light_20[] = {
     "                    ",
 };
 
-// wxART_MINUS -> remove (light, 24px)
+// wxAE_ART_MINUS -> remove (light, 24px)
 static const char *const mdi_remove_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -6603,7 +6585,7 @@ static const char *const mdi_remove_light_24[] = {
     "                        ",
 };
 
-// wxART_MINUS -> remove (light, 32px)
+// wxAE_ART_MINUS -> remove (light, 32px)
 /* XPM */
 static const char *const mdi_remove_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -6644,7 +6626,7 @@ static const char *const mdi_remove_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_MINUS -> remove (dark, 16px)
+// wxAE_ART_MINUS -> remove (dark, 16px)
 static const char *const mdi_remove_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -6668,7 +6650,7 @@ static const char *const mdi_remove_dark_16[] = {
     "                ",
 };
 
-// wxART_MINUS -> remove (dark, 20px)
+// wxAE_ART_MINUS -> remove (dark, 20px)
 static const char *const mdi_remove_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -6696,7 +6678,7 @@ static const char *const mdi_remove_dark_20[] = {
     "                    ",
 };
 
-// wxART_MINUS -> remove (dark, 24px)
+// wxAE_ART_MINUS -> remove (dark, 24px)
 static const char *const mdi_remove_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -6728,7 +6710,7 @@ static const char *const mdi_remove_dark_24[] = {
     "                        ",
 };
 
-// wxART_MINUS -> remove (dark, 32px)
+// wxAE_ART_MINUS -> remove (dark, 32px)
 /* XPM */
 static const char *const mdi_remove_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -6769,7 +6751,7 @@ static const char *const mdi_remove_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_EDIT -> edit (light, 16px)
+// wxAE_ART_EDIT -> edit (light, 16px)
 static const char *const mdi_edit_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -6793,7 +6775,7 @@ static const char *const mdi_edit_light_16[] = {
     "                ",
 };
 
-// wxART_EDIT -> edit (light, 20px)
+// wxAE_ART_EDIT -> edit (light, 20px)
 static const char *const mdi_edit_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -6821,7 +6803,7 @@ static const char *const mdi_edit_light_20[] = {
     "                    ",
 };
 
-// wxART_EDIT -> edit (light, 24px)
+// wxAE_ART_EDIT -> edit (light, 24px)
 static const char *const mdi_edit_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -6853,7 +6835,7 @@ static const char *const mdi_edit_light_24[] = {
     "                        ",
 };
 
-// wxART_EDIT -> edit (light, 32px)
+// wxAE_ART_EDIT -> edit (light, 32px)
 /* XPM */
 static const char *const mdi_edit_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -6894,7 +6876,7 @@ static const char *const mdi_edit_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_EDIT -> edit (dark, 16px)
+// wxAE_ART_EDIT -> edit (dark, 16px)
 static const char *const mdi_edit_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -6918,7 +6900,7 @@ static const char *const mdi_edit_dark_16[] = {
     "                ",
 };
 
-// wxART_EDIT -> edit (dark, 20px)
+// wxAE_ART_EDIT -> edit (dark, 20px)
 static const char *const mdi_edit_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -6946,7 +6928,7 @@ static const char *const mdi_edit_dark_20[] = {
     "                    ",
 };
 
-// wxART_EDIT -> edit (dark, 24px)
+// wxAE_ART_EDIT -> edit (dark, 24px)
 static const char *const mdi_edit_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -6978,7 +6960,7 @@ static const char *const mdi_edit_dark_24[] = {
     "                        ",
 };
 
-// wxART_EDIT -> edit (dark, 32px)
+// wxAE_ART_EDIT -> edit (dark, 32px)
 /* XPM */
 static const char *const mdi_edit_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -7019,7 +7001,7 @@ static const char *const mdi_edit_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_LIST_VIEW -> view_list (light, 16px)
+// wxAE_ART_LIST_VIEW -> view_list (light, 16px)
 static const char *const mdi_view_list_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -7043,7 +7025,7 @@ static const char *const mdi_view_list_light_16[] = {
     "                ",
 };
 
-// wxART_LIST_VIEW -> view_list (light, 20px)
+// wxAE_ART_LIST_VIEW -> view_list (light, 20px)
 static const char *const mdi_view_list_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -7071,7 +7053,7 @@ static const char *const mdi_view_list_light_20[] = {
     "                    ",
 };
 
-// wxART_LIST_VIEW -> view_list (light, 24px)
+// wxAE_ART_LIST_VIEW -> view_list (light, 24px)
 static const char *const mdi_view_list_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -7103,7 +7085,7 @@ static const char *const mdi_view_list_light_24[] = {
     "                        ",
 };
 
-// wxART_LIST_VIEW -> view_list (light, 32px)
+// wxAE_ART_LIST_VIEW -> view_list (light, 32px)
 /* XPM */
 static const char *const mdi_view_list_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -7144,7 +7126,7 @@ static const char *const mdi_view_list_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_LIST_VIEW -> view_list (dark, 16px)
+// wxAE_ART_LIST_VIEW -> view_list (dark, 16px)
 static const char *const mdi_view_list_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -7168,7 +7150,7 @@ static const char *const mdi_view_list_dark_16[] = {
     "                ",
 };
 
-// wxART_LIST_VIEW -> view_list (dark, 20px)
+// wxAE_ART_LIST_VIEW -> view_list (dark, 20px)
 static const char *const mdi_view_list_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -7196,7 +7178,7 @@ static const char *const mdi_view_list_dark_20[] = {
     "                    ",
 };
 
-// wxART_LIST_VIEW -> view_list (dark, 24px)
+// wxAE_ART_LIST_VIEW -> view_list (dark, 24px)
 static const char *const mdi_view_list_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -7228,7 +7210,7 @@ static const char *const mdi_view_list_dark_24[] = {
     "                        ",
 };
 
-// wxART_LIST_VIEW -> view_list (dark, 32px)
+// wxAE_ART_LIST_VIEW -> view_list (dark, 32px)
 /* XPM */
 static const char *const mdi_view_list_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -7269,7 +7251,7 @@ static const char *const mdi_view_list_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_REPORT_VIEW -> table_rows (light, 16px)
+// wxAE_ART_REPORT_VIEW -> table_rows (light, 16px)
 static const char *const mdi_table_rows_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -7293,7 +7275,7 @@ static const char *const mdi_table_rows_light_16[] = {
     "                ",
 };
 
-// wxART_REPORT_VIEW -> table_rows (light, 20px)
+// wxAE_ART_REPORT_VIEW -> table_rows (light, 20px)
 static const char *const mdi_table_rows_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -7321,7 +7303,7 @@ static const char *const mdi_table_rows_light_20[] = {
     "                    ",
 };
 
-// wxART_REPORT_VIEW -> table_rows (light, 24px)
+// wxAE_ART_REPORT_VIEW -> table_rows (light, 24px)
 static const char *const mdi_table_rows_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -7353,7 +7335,7 @@ static const char *const mdi_table_rows_light_24[] = {
     "                        ",
 };
 
-// wxART_REPORT_VIEW -> table_rows (light, 32px)
+// wxAE_ART_REPORT_VIEW -> table_rows (light, 32px)
 /* XPM */
 static const char *const mdi_table_rows_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -7394,7 +7376,7 @@ static const char *const mdi_table_rows_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_REPORT_VIEW -> table_rows (dark, 16px)
+// wxAE_ART_REPORT_VIEW -> table_rows (dark, 16px)
 static const char *const mdi_table_rows_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -7418,7 +7400,7 @@ static const char *const mdi_table_rows_dark_16[] = {
     "                ",
 };
 
-// wxART_REPORT_VIEW -> table_rows (dark, 20px)
+// wxAE_ART_REPORT_VIEW -> table_rows (dark, 20px)
 static const char *const mdi_table_rows_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -7446,7 +7428,7 @@ static const char *const mdi_table_rows_dark_20[] = {
     "                    ",
 };
 
-// wxART_REPORT_VIEW -> table_rows (dark, 24px)
+// wxAE_ART_REPORT_VIEW -> table_rows (dark, 24px)
 static const char *const mdi_table_rows_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -7478,7 +7460,7 @@ static const char *const mdi_table_rows_dark_24[] = {
     "                        ",
 };
 
-// wxART_REPORT_VIEW -> table_rows (dark, 32px)
+// wxAE_ART_REPORT_VIEW -> table_rows (dark, 32px)
 /* XPM */
 static const char *const mdi_table_rows_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -7519,7 +7501,7 @@ static const char *const mdi_table_rows_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_TIP -> lightbulb (light, 16px)
+// wxAE_ART_TIP -> lightbulb (light, 16px)
 static const char *const mdi_lightbulb_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -7543,7 +7525,7 @@ static const char *const mdi_lightbulb_light_16[] = {
     "                ",
 };
 
-// wxART_TIP -> lightbulb (light, 20px)
+// wxAE_ART_TIP -> lightbulb (light, 20px)
 static const char *const mdi_lightbulb_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -7571,7 +7553,7 @@ static const char *const mdi_lightbulb_light_20[] = {
     "                    ",
 };
 
-// wxART_TIP -> lightbulb (light, 24px)
+// wxAE_ART_TIP -> lightbulb (light, 24px)
 static const char *const mdi_lightbulb_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -7603,7 +7585,7 @@ static const char *const mdi_lightbulb_light_24[] = {
     "                        ",
 };
 
-// wxART_TIP -> lightbulb (light, 32px)
+// wxAE_ART_TIP -> lightbulb (light, 32px)
 /* XPM */
 static const char *const mdi_lightbulb_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -7644,7 +7626,7 @@ static const char *const mdi_lightbulb_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_TIP -> lightbulb (dark, 16px)
+// wxAE_ART_TIP -> lightbulb (dark, 16px)
 static const char *const mdi_lightbulb_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -7668,7 +7650,7 @@ static const char *const mdi_lightbulb_dark_16[] = {
     "                ",
 };
 
-// wxART_TIP -> lightbulb (dark, 20px)
+// wxAE_ART_TIP -> lightbulb (dark, 20px)
 static const char *const mdi_lightbulb_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -7696,7 +7678,7 @@ static const char *const mdi_lightbulb_dark_20[] = {
     "                    ",
 };
 
-// wxART_TIP -> lightbulb (dark, 24px)
+// wxAE_ART_TIP -> lightbulb (dark, 24px)
 static const char *const mdi_lightbulb_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -7728,7 +7710,7 @@ static const char *const mdi_lightbulb_dark_24[] = {
     "                        ",
 };
 
-// wxART_TIP -> lightbulb (dark, 32px)
+// wxAE_ART_TIP -> lightbulb (dark, 32px)
 /* XPM */
 static const char *const mdi_lightbulb_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -7769,7 +7751,7 @@ static const char *const mdi_lightbulb_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_INFORMATION -> info (light, 16px)
+// wxAE_ART_INFORMATION -> info (light, 16px)
 static const char *const mdi_info_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -7793,7 +7775,7 @@ static const char *const mdi_info_light_16[] = {
     "                ",
 };
 
-// wxART_INFORMATION -> info (light, 20px)
+// wxAE_ART_INFORMATION -> info (light, 20px)
 static const char *const mdi_info_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -7821,7 +7803,7 @@ static const char *const mdi_info_light_20[] = {
     "                    ",
 };
 
-// wxART_INFORMATION -> info (light, 24px)
+// wxAE_ART_INFORMATION -> info (light, 24px)
 static const char *const mdi_info_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -7853,7 +7835,7 @@ static const char *const mdi_info_light_24[] = {
     "                        ",
 };
 
-// wxART_INFORMATION -> info (light, 32px)
+// wxAE_ART_INFORMATION -> info (light, 32px)
 /* XPM */
 static const char *const mdi_info_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -7894,7 +7876,7 @@ static const char *const mdi_info_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_INFORMATION -> info (dark, 16px)
+// wxAE_ART_INFORMATION -> info (dark, 16px)
 static const char *const mdi_info_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -7918,7 +7900,7 @@ static const char *const mdi_info_dark_16[] = {
     "                ",
 };
 
-// wxART_INFORMATION -> info (dark, 20px)
+// wxAE_ART_INFORMATION -> info (dark, 20px)
 static const char *const mdi_info_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -7946,7 +7928,7 @@ static const char *const mdi_info_dark_20[] = {
     "                    ",
 };
 
-// wxART_INFORMATION -> info (dark, 24px)
+// wxAE_ART_INFORMATION -> info (dark, 24px)
 static const char *const mdi_info_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -7978,7 +7960,7 @@ static const char *const mdi_info_dark_24[] = {
     "                        ",
 };
 
-// wxART_INFORMATION -> info (dark, 32px)
+// wxAE_ART_INFORMATION -> info (dark, 32px)
 /* XPM */
 static const char *const mdi_info_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -8019,7 +8001,7 @@ static const char *const mdi_info_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_QUESTION -> help (light, 16px)
+// wxAE_ART_QUESTION -> help (light, 16px)
 static const char *const mdi_help_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -8043,7 +8025,7 @@ static const char *const mdi_help_light_16[] = {
     "                ",
 };
 
-// wxART_QUESTION -> help (light, 20px)
+// wxAE_ART_QUESTION -> help (light, 20px)
 static const char *const mdi_help_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -8071,7 +8053,7 @@ static const char *const mdi_help_light_20[] = {
     "                    ",
 };
 
-// wxART_QUESTION -> help (light, 24px)
+// wxAE_ART_QUESTION -> help (light, 24px)
 static const char *const mdi_help_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -8103,7 +8085,7 @@ static const char *const mdi_help_light_24[] = {
     "                        ",
 };
 
-// wxART_QUESTION -> help (light, 32px)
+// wxAE_ART_QUESTION -> help (light, 32px)
 /* XPM */
 static const char *const mdi_help_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -8144,7 +8126,7 @@ static const char *const mdi_help_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_QUESTION -> help (dark, 16px)
+// wxAE_ART_QUESTION -> help (dark, 16px)
 static const char *const mdi_help_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -8168,7 +8150,7 @@ static const char *const mdi_help_dark_16[] = {
     "                ",
 };
 
-// wxART_QUESTION -> help (dark, 20px)
+// wxAE_ART_QUESTION -> help (dark, 20px)
 static const char *const mdi_help_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -8196,7 +8178,7 @@ static const char *const mdi_help_dark_20[] = {
     "                    ",
 };
 
-// wxART_QUESTION -> help (dark, 24px)
+// wxAE_ART_QUESTION -> help (dark, 24px)
 static const char *const mdi_help_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -8228,7 +8210,7 @@ static const char *const mdi_help_dark_24[] = {
     "                        ",
 };
 
-// wxART_QUESTION -> help (dark, 32px)
+// wxAE_ART_QUESTION -> help (dark, 32px)
 /* XPM */
 static const char *const mdi_help_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -8269,7 +8251,7 @@ static const char *const mdi_help_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_DEVBOARD -> developer_board (light, 16px)
+// wxAE_ART_DEVBOARD -> developer_board (light, 16px)
 static const char *const mdi_developer_board_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -8293,7 +8275,7 @@ static const char *const mdi_developer_board_light_16[] = {
     "                ",
 };
 
-// wxART_DEVBOARD -> developer_board (light, 20px)
+// wxAE_ART_DEVBOARD -> developer_board (light, 20px)
 static const char *const mdi_developer_board_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -8321,7 +8303,7 @@ static const char *const mdi_developer_board_light_20[] = {
     "                    ",
 };
 
-// wxART_DEVBOARD -> developer_board (light, 24px)
+// wxAE_ART_DEVBOARD -> developer_board (light, 24px)
 static const char *const mdi_developer_board_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -8353,7 +8335,7 @@ static const char *const mdi_developer_board_light_24[] = {
     "                        ",
 };
 
-// wxART_DEVBOARD -> developer_board (light, 32px)
+// wxAE_ART_DEVBOARD -> developer_board (light, 32px)
 /* XPM */
 static const char *const mdi_developer_board_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -8394,7 +8376,7 @@ static const char *const mdi_developer_board_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_DEVBOARD -> developer_board (dark, 16px)
+// wxAE_ART_DEVBOARD -> developer_board (dark, 16px)
 static const char *const mdi_developer_board_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -8418,7 +8400,7 @@ static const char *const mdi_developer_board_dark_16[] = {
     "                ",
 };
 
-// wxART_DEVBOARD -> developer_board (dark, 20px)
+// wxAE_ART_DEVBOARD -> developer_board (dark, 20px)
 static const char *const mdi_developer_board_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -8446,7 +8428,7 @@ static const char *const mdi_developer_board_dark_20[] = {
     "                    ",
 };
 
-// wxART_DEVBOARD -> developer_board (dark, 24px)
+// wxAE_ART_DEVBOARD -> developer_board (dark, 24px)
 static const char *const mdi_developer_board_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -8478,7 +8460,7 @@ static const char *const mdi_developer_board_dark_24[] = {
     "                        ",
 };
 
-// wxART_DEVBOARD -> developer_board (dark, 32px)
+// wxAE_ART_DEVBOARD -> developer_board (dark, 32px)
 /* XPM */
 static const char *const mdi_developer_board_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -8519,7 +8501,7 @@ static const char *const mdi_developer_board_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_PLAY -> play_arrow (light, 16px)
+// wxAE_ART_PLAY -> play_arrow (light, 16px)
 static const char *const mdi_play_arrow_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -8543,7 +8525,7 @@ static const char *const mdi_play_arrow_light_16[] = {
     "                ",
 };
 
-// wxART_PLAY -> play_arrow (light, 20px)
+// wxAE_ART_PLAY -> play_arrow (light, 20px)
 static const char *const mdi_play_arrow_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -8571,7 +8553,7 @@ static const char *const mdi_play_arrow_light_20[] = {
     "                    ",
 };
 
-// wxART_PLAY -> play_arrow (light, 24px)
+// wxAE_ART_PLAY -> play_arrow (light, 24px)
 static const char *const mdi_play_arrow_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -8603,7 +8585,7 @@ static const char *const mdi_play_arrow_light_24[] = {
     "                        ",
 };
 
-// wxART_PLAY -> play_arrow (light, 32px)
+// wxAE_ART_PLAY -> play_arrow (light, 32px)
 /* XPM */
 static const char *const mdi_play_arrow_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -8644,7 +8626,7 @@ static const char *const mdi_play_arrow_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_PLAY -> play_arrow (dark, 16px)
+// wxAE_ART_PLAY -> play_arrow (dark, 16px)
 static const char *const mdi_play_arrow_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -8668,7 +8650,7 @@ static const char *const mdi_play_arrow_dark_16[] = {
     "                ",
 };
 
-// wxART_PLAY -> play_arrow (dark, 20px)
+// wxAE_ART_PLAY -> play_arrow (dark, 20px)
 static const char *const mdi_play_arrow_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -8696,7 +8678,7 @@ static const char *const mdi_play_arrow_dark_20[] = {
     "                    ",
 };
 
-// wxART_PLAY -> play_arrow (dark, 24px)
+// wxAE_ART_PLAY -> play_arrow (dark, 24px)
 static const char *const mdi_play_arrow_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -8728,7 +8710,7 @@ static const char *const mdi_play_arrow_dark_24[] = {
     "                        ",
 };
 
-// wxART_PLAY -> play_arrow (dark, 32px)
+// wxAE_ART_PLAY -> play_arrow (dark, 32px)
 /* XPM */
 static const char *const mdi_play_arrow_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -8769,7 +8751,7 @@ static const char *const mdi_play_arrow_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_CHECK -> check_circle (light, 16px)
+// wxAE_ART_CHECK -> check_circle (light, 16px)
 static const char *const mdi_check_circle_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -8793,7 +8775,7 @@ static const char *const mdi_check_circle_light_16[] = {
     "                ",
 };
 
-// wxART_CHECK -> check_circle (light, 20px)
+// wxAE_ART_CHECK -> check_circle (light, 20px)
 static const char *const mdi_check_circle_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -8821,7 +8803,7 @@ static const char *const mdi_check_circle_light_20[] = {
     "                    ",
 };
 
-// wxART_CHECK -> check_circle (light, 24px)
+// wxAE_ART_CHECK -> check_circle (light, 24px)
 static const char *const mdi_check_circle_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -8853,7 +8835,7 @@ static const char *const mdi_check_circle_light_24[] = {
     "                        ",
 };
 
-// wxART_CHECK -> check_circle (light, 32px)
+// wxAE_ART_CHECK -> check_circle (light, 32px)
 /* XPM */
 static const char *const mdi_check_circle_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -8894,7 +8876,7 @@ static const char *const mdi_check_circle_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_CHECK -> check_circle (dark, 16px)
+// wxAE_ART_CHECK -> check_circle (dark, 16px)
 static const char *const mdi_check_circle_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -8918,7 +8900,7 @@ static const char *const mdi_check_circle_dark_16[] = {
     "                ",
 };
 
-// wxART_CHECK -> check_circle (dark, 20px)
+// wxAE_ART_CHECK -> check_circle (dark, 20px)
 static const char *const mdi_check_circle_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -8946,7 +8928,7 @@ static const char *const mdi_check_circle_dark_20[] = {
     "                    ",
 };
 
-// wxART_CHECK -> check_circle (dark, 24px)
+// wxAE_ART_CHECK -> check_circle (dark, 24px)
 static const char *const mdi_check_circle_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -8978,7 +8960,7 @@ static const char *const mdi_check_circle_dark_24[] = {
     "                        ",
 };
 
-// wxART_CHECK -> check_circle (dark, 32px)
+// wxAE_ART_CHECK -> check_circle (dark, 32px)
 /* XPM */
 static const char *const mdi_check_circle_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -9019,7 +9001,7 @@ static const char *const mdi_check_circle_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_SERMON -> monitor_heart (light, 16px)
+// wxAE_ART_SERMON -> monitor_heart (light, 16px)
 static const char *const mdi_monitor_heart_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -9043,7 +9025,7 @@ static const char *const mdi_monitor_heart_light_16[] = {
     "                ",
 };
 
-// wxART_SERMON -> monitor_heart (light, 20px)
+// wxAE_ART_SERMON -> monitor_heart (light, 20px)
 static const char *const mdi_monitor_heart_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -9071,7 +9053,7 @@ static const char *const mdi_monitor_heart_light_20[] = {
     "                    ",
 };
 
-// wxART_SERMON -> monitor_heart (light, 24px)
+// wxAE_ART_SERMON -> monitor_heart (light, 24px)
 static const char *const mdi_monitor_heart_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -9103,7 +9085,7 @@ static const char *const mdi_monitor_heart_light_24[] = {
     "                        ",
 };
 
-// wxART_SERMON -> monitor_heart (light, 32px)
+// wxAE_ART_SERMON -> monitor_heart (light, 32px)
 /* XPM */
 static const char *const mdi_monitor_heart_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -9144,7 +9126,7 @@ static const char *const mdi_monitor_heart_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_SERMON -> monitor_heart (dark, 16px)
+// wxAE_ART_SERMON -> monitor_heart (dark, 16px)
 static const char *const mdi_monitor_heart_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -9168,7 +9150,7 @@ static const char *const mdi_monitor_heart_dark_16[] = {
     "                ",
 };
 
-// wxART_SERMON -> monitor_heart (dark, 20px)
+// wxAE_ART_SERMON -> monitor_heart (dark, 20px)
 static const char *const mdi_monitor_heart_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -9196,7 +9178,7 @@ static const char *const mdi_monitor_heart_dark_20[] = {
     "                    ",
 };
 
-// wxART_SERMON -> monitor_heart (dark, 24px)
+// wxAE_ART_SERMON -> monitor_heart (dark, 24px)
 static const char *const mdi_monitor_heart_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -9228,7 +9210,7 @@ static const char *const mdi_monitor_heart_dark_24[] = {
     "                        ",
 };
 
-// wxART_SERMON -> monitor_heart (dark, 32px)
+// wxAE_ART_SERMON -> monitor_heart (dark, 32px)
 /* XPM */
 static const char *const mdi_monitor_heart_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -9269,7 +9251,7 @@ static const char *const mdi_monitor_heart_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_FILE_FORMAT -> format_align_justify (light, 16px)
+// wxAE_ART_SOURCE_FORMAT -> format_align_justify (light, 16px)
 static const char *const mdi_format_align_justify_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -9293,7 +9275,7 @@ static const char *const mdi_format_align_justify_light_16[] = {
     "                ",
 };
 
-// wxART_FILE_FORMAT -> format_align_justify (light, 20px)
+// wxAE_ART_SOURCE_FORMAT -> format_align_justify (light, 20px)
 static const char *const mdi_format_align_justify_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -9321,7 +9303,7 @@ static const char *const mdi_format_align_justify_light_20[] = {
     "                    ",
 };
 
-// wxART_FILE_FORMAT -> format_align_justify (light, 24px)
+// wxAE_ART_SOURCE_FORMAT -> format_align_justify (light, 24px)
 static const char *const mdi_format_align_justify_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -9353,7 +9335,7 @@ static const char *const mdi_format_align_justify_light_24[] = {
     "                        ",
 };
 
-// wxART_FILE_FORMAT -> format_align_justify (light, 32px)
+// wxAE_ART_SOURCE_FORMAT -> format_align_justify (light, 32px)
 /* XPM */
 static const char *const mdi_format_align_justify_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -9394,7 +9376,7 @@ static const char *const mdi_format_align_justify_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_FILE_FORMAT -> format_align_justify (dark, 16px)
+// wxAE_ART_SOURCE_FORMAT -> format_align_justify (dark, 16px)
 static const char *const mdi_format_align_justify_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -9418,7 +9400,7 @@ static const char *const mdi_format_align_justify_dark_16[] = {
     "                ",
 };
 
-// wxART_FILE_FORMAT -> format_align_justify (dark, 20px)
+// wxAE_ART_SOURCE_FORMAT -> format_align_justify (dark, 20px)
 static const char *const mdi_format_align_justify_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -9446,7 +9428,7 @@ static const char *const mdi_format_align_justify_dark_20[] = {
     "                    ",
 };
 
-// wxART_FILE_FORMAT -> format_align_justify (dark, 24px)
+// wxAE_ART_SOURCE_FORMAT -> format_align_justify (dark, 24px)
 static const char *const mdi_format_align_justify_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -9478,7 +9460,7 @@ static const char *const mdi_format_align_justify_dark_24[] = {
     "                        ",
 };
 
-// wxART_FILE_FORMAT -> format_align_justify (dark, 32px)
+// wxAE_ART_SOURCE_FORMAT -> format_align_justify (dark, 32px)
 /* XPM */
 static const char *const mdi_format_align_justify_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -9519,7 +9501,7 @@ static const char *const mdi_format_align_justify_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_SETTINGS -> settings (light, 16px)
+// wxAE_ART_SETTINGS -> settings (light, 16px)
 static const char *const mdi_settings_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -9543,7 +9525,7 @@ static const char *const mdi_settings_light_16[] = {
     "                ",
 };
 
-// wxART_SETTINGS -> settings (light, 20px)
+// wxAE_ART_SETTINGS -> settings (light, 20px)
 static const char *const mdi_settings_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -9571,7 +9553,7 @@ static const char *const mdi_settings_light_20[] = {
     "                    ",
 };
 
-// wxART_SETTINGS -> settings (light, 24px)
+// wxAE_ART_SETTINGS -> settings (light, 24px)
 static const char *const mdi_settings_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -9603,7 +9585,7 @@ static const char *const mdi_settings_light_24[] = {
     "                        ",
 };
 
-// wxART_SETTINGS -> settings (light, 32px)
+// wxAE_ART_SETTINGS -> settings (light, 32px)
 /* XPM */
 static const char *const mdi_settings_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -9644,7 +9626,7 @@ static const char *const mdi_settings_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_SETTINGS -> settings (dark, 16px)
+// wxAE_ART_SETTINGS -> settings (dark, 16px)
 static const char *const mdi_settings_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -9668,7 +9650,7 @@ static const char *const mdi_settings_dark_16[] = {
     "                ",
 };
 
-// wxART_SETTINGS -> settings (dark, 20px)
+// wxAE_ART_SETTINGS -> settings (dark, 20px)
 static const char *const mdi_settings_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -9696,7 +9678,7 @@ static const char *const mdi_settings_dark_20[] = {
     "                    ",
 };
 
-// wxART_SETTINGS -> settings (dark, 24px)
+// wxAE_ART_SETTINGS -> settings (dark, 24px)
 static const char *const mdi_settings_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -9728,7 +9710,7 @@ static const char *const mdi_settings_dark_24[] = {
     "                        ",
 };
 
-// wxART_SETTINGS -> settings (dark, 32px)
+// wxAE_ART_SETTINGS -> settings (dark, 32px)
 /* XPM */
 static const char *const mdi_settings_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -9769,7 +9751,7 @@ static const char *const mdi_settings_dark_32[] = {
     "                                ",
     "                                "};
 
-// wxART_SELECT_ALL -> select_all (light, 16px)
+// wxAE_ART_SELECT_ALL -> select_all (light, 16px)
 static const char *const mdi_select_all_light_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -9793,7 +9775,7 @@ static const char *const mdi_select_all_light_16[] = {
     "                ",
 };
 
-// wxART_SELECT_ALL -> select_all (light, 20px)
+// wxAE_ART_SELECT_ALL -> select_all (light, 20px)
 static const char *const mdi_select_all_light_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -9821,7 +9803,7 @@ static const char *const mdi_select_all_light_20[] = {
     "                    ",
 };
 
-// wxART_SELECT_ALL -> select_all (light, 24px)
+// wxAE_ART_SELECT_ALL -> select_all (light, 24px)
 static const char *const mdi_select_all_light_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -9853,7 +9835,7 @@ static const char *const mdi_select_all_light_24[] = {
     "                        ",
 };
 
-// wxART_SELECT_ALL -> select_all (light, 32px)
+// wxAE_ART_SELECT_ALL -> select_all (light, 32px)
 /* XPM */
 static const char *const mdi_select_all_light_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -9894,7 +9876,7 @@ static const char *const mdi_select_all_light_32[] = {
     "                                ",
     "                                "};
 
-// wxART_SELECT_ALL -> select_all (dark, 16px)
+// wxAE_ART_SELECT_ALL -> select_all (dark, 16px)
 static const char *const mdi_select_all_dark_16[] = {
     "16 16 3 1 ",
     "  c None",
@@ -9918,7 +9900,7 @@ static const char *const mdi_select_all_dark_16[] = {
     "                ",
 };
 
-// wxART_SELECT_ALL -> select_all (dark, 20px)
+// wxAE_ART_SELECT_ALL -> select_all (dark, 20px)
 static const char *const mdi_select_all_dark_20[] = {
     "20 20 3 1 ",
     "  c None",
@@ -9946,7 +9928,7 @@ static const char *const mdi_select_all_dark_20[] = {
     "                    ",
 };
 
-// wxART_SELECT_ALL -> select_all (dark, 24px)
+// wxAE_ART_SELECT_ALL -> select_all (dark, 24px)
 static const char *const mdi_select_all_dark_24[] = {
     "24 24 3 1 ",
     "  c None",
@@ -9978,7 +9960,7 @@ static const char *const mdi_select_all_dark_24[] = {
     "                        ",
 };
 
-// wxART_SELECT_ALL -> select_all (dark, 32px)
+// wxAE_ART_SELECT_ALL -> select_all (dark, 32px)
 /* XPM */
 static const char *const mdi_select_all_dark_32[] = {
     /* columns rows colors chars-per-pixel */
@@ -10014,6 +9996,256 @@ static const char *const mdi_select_all_dark_32[] = {
     "    ..    ..   ..   ..    ..    ",
     "    ...  ...   ..   ...  ...    ",
     "     ..  ...   ..   ...  ..     ",
+    "                                ",
+    "                                ",
+    "                                ",
+    "                                "};
+
+// wxAE_ART_CHECK_FOR_UPDATES -> update (light, 16px)
+static const char *const mdi_update_light_16[] = {
+    "16 16 3 1 ",
+    "  c None",
+    ". c #1f2937",
+    "+ c #686f78",
+    "                ",
+    "                ",
+    "     ++..++  +  ",
+    "    +.++++.++.  ",
+    "   +.+     ...  ",
+    "  +.   ++ +...  ",
+    "  ++   +++++++  ",
+    "  .+   ++       ",
+    "  .+   +.+  +.  ",
+    "  ++    +.+ +.  ",
+    "  +.        .+  ",
+    "   +.+     .+   ",
+    "    +.++++.+    ",
+    "     ++..++     ",
+    "                ",
+    "                ",
+};
+
+// wxAE_ART_CHECK_FOR_UPDATES -> update (light, 20px)
+static const char *const mdi_update_light_20[] = {
+    "20 20 3 1 ",
+    "  c None",
+    ". c #1f2937",
+    "+ c #686f78",
+    "                    ",
+    "                    ",
+    "        ++++     +  ",
+    "      +......+  ++  ",
+    "    +..++++++.++.+  ",
+    "    ..+      +...+  ",
+    "   +.+   ++  +...+  ",
+    "   .+    .+ +....+  ",
+    "  +.+    .+ ++++++  ",
+    "  +.+    .+         ",
+    "  +.+    +.+   +.+  ",
+    "  +.+     +.+  +.+  ",
+    "   .+      +++ +.   ",
+    "   +.+        +.+   ",
+    "    ..+      +..    ",
+    "    +..++++++..+    ",
+    "      +......+      ",
+    "        ++++        ",
+    "                    ",
+    "                    ",
+};
+
+// wxAE_ART_CHECK_FOR_UPDATES -> update (light, 24px)
+static const char *const mdi_update_light_24[] = {
+    "24 24 3 1 ",
+    "  c None",
+    ". c #1f2937",
+    "+ c #686f78",
+    "                        ",
+    "                        ",
+    "                        ",
+    "        +++..+++    +   ",
+    "      ++........++ +.   ",
+    "     +...++  ++...+..   ",
+    "    +..+        +....   ",
+    "    +.+         +....   ",
+    "   +..     .+  +.....   ",
+    "   +.+     .+ +......   ",
+    "   +.+     .+           ",
+    "   ..      .+           ",
+    "   ..      ..+     .+   ",
+    "   +.+     ++.++  +.+   ",
+    "   +.+       +.+  +.+   ",
+    "   +..        ++  ..+   ",
+    "    +.+          +.+    ",
+    "    +..+        +..+    ",
+    "     +...++  ++...+     ",
+    "      ++........++      ",
+    "        +++..+++        ",
+    "                        ",
+    "                        ",
+    "                        ",
+};
+
+// wxAE_ART_CHECK_FOR_UPDATES -> update (light, 32px)
+/* XPM */
+static const char *const mdi_update_light_32[] = {
+    /* columns rows colors chars-per-pixel */
+    "32 32 2 1 ",
+    "  c None",
+    ". c #1F2937",
+    /* pixels */
+    "                                ",
+    "                                ",
+    "                                ",
+    "                                ",
+    "             ......             ",
+    "          ............    ..    ",
+    "         ..............   ..    ",
+    "        ....        ........    ",
+    "       ...            ......    ",
+    "      ...             ......    ",
+    "     ...              ......    ",
+    "     ...       ..   ........    ",
+    "     ..        ..  .........    ",
+    "    ...        ..               ",
+    "    ...        ..               ",
+    "    ...        ..               ",
+    "    ...        ..        ...    ",
+    "    ...        ....      ...    ",
+    "    ...          ....    ...    ",
+    "     ..           ...    ..     ",
+    "     ...                ...     ",
+    "     ...                ...     ",
+    "      ...              ...      ",
+    "       ...            ...       ",
+    "        ....        ....        ",
+    "         ..............         ",
+    "          ............          ",
+    "             ......             ",
+    "                                ",
+    "                                ",
+    "                                ",
+    "                                "};
+
+// wxAE_ART_CHECK_FOR_UPDATES -> update (dark, 16px)
+static const char *const mdi_update_dark_16[] = {
+    "16 16 3 1 ",
+    "  c None",
+    ". c #e5e7eb",
+    "+ c #999ba0",
+    "                ",
+    "                ",
+    "     ++..++  +  ",
+    "    +.++++.++.  ",
+    "   +.+     ...  ",
+    "  +.   ++ +...  ",
+    "  ++   +++++++  ",
+    "  .+   ++       ",
+    "  .+   +.+  +.  ",
+    "  ++    +.+ +.  ",
+    "  +.        .+  ",
+    "   +.+     .+   ",
+    "    +.++++.+    ",
+    "     ++..++     ",
+    "                ",
+    "                ",
+};
+
+// wxAE_ART_CHECK_FOR_UPDATES -> update (dark, 20px)
+static const char *const mdi_update_dark_20[] = {
+    "20 20 3 1 ",
+    "  c None",
+    ". c #e5e7eb",
+    "+ c #999ba0",
+    "                    ",
+    "                    ",
+    "        ++++     +  ",
+    "      +......+  ++  ",
+    "    +..++++++.++.+  ",
+    "    ..+      +...+  ",
+    "   +.+   ++  +...+  ",
+    "   .+    .+ +....+  ",
+    "  +.+    .+ ++++++  ",
+    "  +.+    .+         ",
+    "  +.+    +.+   +.+  ",
+    "  +.+     +.+  +.+  ",
+    "   .+      +++ +.   ",
+    "   +.+        +.+   ",
+    "    ..+      +..    ",
+    "    +..++++++..+    ",
+    "      +......+      ",
+    "        ++++        ",
+    "                    ",
+    "                    ",
+};
+
+// wxAE_ART_CHECK_FOR_UPDATES -> update (dark, 24px)
+static const char *const mdi_update_dark_24[] = {
+    "24 24 3 1 ",
+    "  c None",
+    ". c #e5e7eb",
+    "+ c #999ba0",
+    "                        ",
+    "                        ",
+    "                        ",
+    "        +++..+++    +   ",
+    "      ++........++ +.   ",
+    "     +...++  ++...+..   ",
+    "    +..+        +....   ",
+    "    +.+         +....   ",
+    "   +..     .+  +.....   ",
+    "   +.+     .+ +......   ",
+    "   +.+     .+           ",
+    "   ..      .+           ",
+    "   ..      ..+     .+   ",
+    "   +.+     ++.++  +.+   ",
+    "   +.+       +.+  +.+   ",
+    "   +..        ++  ..+   ",
+    "    +.+          +.+    ",
+    "    +..+        +..+    ",
+    "     +...++  ++...+     ",
+    "      ++........++      ",
+    "        +++..+++        ",
+    "                        ",
+    "                        ",
+    "                        ",
+};
+
+// wxAE_ART_CHECK_FOR_UPDATES -> update (dark, 32px)
+/* XPM */
+static const char *const mdi_update_dark_32[] = {
+    /* columns rows colors chars-per-pixel */
+    "32 32 2 1 ",
+    "  c None",
+    ". c #E5E7EB",
+    /* pixels */
+    "                                ",
+    "                                ",
+    "                                ",
+    "                                ",
+    "             ......             ",
+    "          ............    ..    ",
+    "         ..............   ..    ",
+    "        ....        ........    ",
+    "       ...            ......    ",
+    "      ...             ......    ",
+    "     ...              ......    ",
+    "     ...       ..   ........    ",
+    "     ..        ..  .........    ",
+    "    ...        ..               ",
+    "    ...        ..               ",
+    "    ...        ..               ",
+    "    ...        ..        ...    ",
+    "    ...        ....      ...    ",
+    "    ...          ....    ...    ",
+    "     ..           ...    ..     ",
+    "     ...                ...     ",
+    "     ...                ...     ",
+    "      ...              ...      ",
+    "       ...            ...       ",
+    "        ....        ....        ",
+    "         ..............         ",
+    "          ............          ",
+    "             ......             ",
     "                                ",
     "                                ",
     "                                ",

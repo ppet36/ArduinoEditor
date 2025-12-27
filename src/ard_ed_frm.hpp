@@ -291,6 +291,8 @@ private:
 
   void ResolveLibrariesForSketch();
 
+  void OnCheckForUpdates(wxCommandEvent &);
+
 #ifdef __WXMSW__
   WXLRESULT MSWWindowProc(WXUINT message, WXWPARAM wParam, WXLPARAM lParam);
 #endif
