@@ -20,6 +20,7 @@
 #include <wx/app.h>
 #include <wx/config.h>
 #include <wx/timer.h>
+#include <atomic>
 
 class ArduinoEditorFrame;
 class AeUserActivityFilter;

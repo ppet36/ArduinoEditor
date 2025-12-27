@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ArduinoEditor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-27 18:28+0100\n"
+"POT-Creation-Date: 2025-12-27 20:49+0100\n"
 "PO-Revision-Date: 2025-12-09 22:52:00+0100\n"
 "Last-Translator: Pavel Petržela <r17c@seznam.cz>\n"
 "Language-Team: -\n"
@@ -3975,37 +3975,37 @@ msgstr "Spustitelné soubory (*.exe)|*.exe|Všechny soubory (*.*)|*.*"
 msgid "Select external program"
 msgstr "Vyberte externí program"
 
-#: ../src/ard_update.cpp:353
+#: ../src/ard_update.cpp:354
 msgid "Update available"
 msgstr "Aktualizace je k dispozici"
 
-#: ../src/ard_update.cpp:361
+#: ../src/ard_update.cpp:362
 #, c-format
 msgid "A new version is available: %s (you have %s)"
 msgstr "Nová verze je k dispozici: %s (máte verzi %s)"
 
-#: ../src/ard_update.cpp:376
+#: ../src/ard_update.cpp:377
 msgid "Open on GitHub"
 msgstr "Otevřít verzi na GitHubu"
 
-#: ../src/ard_update.cpp:377
+#: ../src/ard_update.cpp:378
 msgid "Ignore this version"
 msgstr "Ignorovat verzi"
 
-#: ../src/ard_update.cpp:378
+#: ../src/ard_update.cpp:379
 msgid "Remind me later"
 msgstr "Připomenout později"
 
-#: ../src/ard_update.cpp:437 ../src/ard_update.cpp:453
-#: ../src/ard_update.cpp:535
+#: ../src/ard_update.cpp:438 ../src/ard_update.cpp:454
+#: ../src/ard_update.cpp:536
 msgid "Check for updates"
 msgstr "Kontrola aktualizace"
 
-#: ../src/ard_update.cpp:453
+#: ../src/ard_update.cpp:454
 msgid "An update check is already in progress."
 msgstr "Kontrola aktualizací již běží."
 
-#: ../src/ard_update.cpp:496
+#: ../src/ard_update.cpp:497
 #, c-format
 msgid ""
 "Update check failed:\n"
@@ -4016,16 +4016,16 @@ msgstr ""
 "\n"
 "%s"
 
-#: ../src/ard_update.cpp:515
+#: ../src/ard_update.cpp:516
 #, c-format
 msgid "Update check failed (HTTP %ld)."
 msgstr "Chyba při kontrole aktualizací (HTTP %ld)."
 
-#: ../src/ard_update.cpp:527
+#: ../src/ard_update.cpp:528
 msgid "Update check failed: unexpected response format."
 msgstr "Data vrácená GitHubem nejsou v očekávaném formátu."
 
-#: ../src/ard_update.cpp:535
+#: ../src/ard_update.cpp:536
 #, c-format
 msgid "You are running the latest version (%s)."
 msgstr "Vaše verze je aktuální (%s)."
@@ -4104,4 +4104,3 @@ msgstr "Adresář '%s' již existuje."
 #, c-format
 msgid "Version %s"
 msgstr "Verze %s"
-

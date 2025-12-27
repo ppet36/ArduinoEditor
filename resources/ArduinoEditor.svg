@@ -22,8 +22,8 @@
   <!-- A / E -->
   <g font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif"
      font-weight="800" fill="#FFFFFF" opacity="0.95">
-    <text x="150" y="280" font-size="200" letter-spacing="1">A</text>
-    <text x="874" y="872" font-size="200" text-anchor="end" letter-spacing="1">E</text>
+    <!--<text x="150" y="335" font-size="200" letter-spacing="1">Ard</text>-->
+    <text x="874" y="872" font-size="250" text-anchor="end" letter-spacing="1">Ed</text>
   </g>
 
   <!-- Infinity mark: bigger + aligned -->

@@ -135,10 +135,12 @@ def shutil_which(name):
 
 # --- Dithered “AA” for XPM (binary alpha via ordered dithering) ---
 
-DITHER_MAX_PX = 24        # dither only for small ones (16/24); leave 32 “clean”
 SUPERSAMPLE   = 8         # render SVG in larger, then downscale
 ALPHA_LOW     = 8         # below = always transparent
 ALPHA_HIGH    = 247       # above = always opaque
+QUANTIZE_COLORS_SMALL = 8 # zkus 4..6 podle oka
+QUANTIZE_MAX_PX = 40      # jen pro malé (16/20/24); 32 nech klidně bez kvantizace
+
 
 BG_LIGHT = "#f0f0f0"   # btnface-ish
 BG_WHITE = "#ffffff"   # for white areas / dialogs
@@ -197,23 +199,147 @@ def _render_svg_to_png_bytes(svg_path, render_px):
     ]
     return run_bytes(cmd)
 
+def xpm_make_corner_color_none(xpm_text: str) -> str:
+    lines = xpm_text.splitlines()
+
+    def is_xpm_string_line(ln: str) -> bool:
+        s = ln.strip()
+        return s.startswith('"') and (s.endswith('"') or s.endswith('",'))
+
+    def strip_xpm_quotes(ln: str) -> str:
+        s = ln.strip()
+        if s.endswith('",'):
+            s = s[:-1]  # zahodí jen čárku, zůstane koncová uvozovka
+        return s.strip().strip('"')
+
+    def wrap_xpm_line(body: str, original_line: str) -> str:
+        # zachovej čárku, pokud tam byla
+        s = original_line.rstrip()
+        comma = "," if s.endswith(",") else ""
+        return f"\"{body}\"{comma}"
+
+    # najdi hlavičku "W H N CPP"
+    hdr_i = None
+    w = h = ncolors = cpp = None
+    for i, ln in enumerate(lines):
+        if not is_xpm_string_line(ln):
+            continue
+        body = strip_xpm_quotes(ln)
+        parts = body.split()
+        if len(parts) >= 4 and all(p.isdigit() for p in parts[:4]):
+            w, h, ncolors, cpp = map(int, parts[:4])
+            hdr_i = i
+            break
+    if hdr_i is None:
+        return xpm_text
+
+    color_start = hdr_i + 1
+    color_end = color_start + ncolors
+    pixel_start = color_end
+
+    if pixel_start + h > len(lines):
+        return xpm_text
+
+    sym_to_idx = {}
+    for i in range(color_start, min(color_end, len(lines))):
+        ln = lines[i]
+        if not is_xpm_string_line(ln):
+            continue
+        body = strip_xpm_quotes(ln)
+        sym = body[:cpp]
+        sym_to_idx[sym] = i
+
+    def get_sym_at(x: int, y: int) -> str:
+        row = strip_xpm_quotes(lines[pixel_start + y])
+        return row[x*cpp:(x+1)*cpp]
+
+    corners = [
+        get_sym_at(0, 0),
+        get_sym_at(w-1, 0),
+        get_sym_at(0, h-1),
+        get_sym_at(w-1, h-1),
+    ]
+    bg_sym = max(set(corners), key=corners.count)
+
+    idx = sym_to_idx.get(bg_sym)
+    if idx is None:
+        return xpm_text
+
+    orig = lines[idx]
+    body = strip_xpm_quotes(orig)
+
+    # Přepiš " c <barva>" na " c None"
+    # typicky: "<sym> c #RRGGBB"
+    if " c " not in body:
+        return xpm_text
+
+    before, after = body.split(" c ", 1)
+    rest = after.split()
+    tail = ""
+    if len(rest) > 1:
+        tail = " " + " ".join(rest[1:])
+    new_body = f"{before} c None{tail}"
+
+    lines[idx] = wrap_xpm_line(new_body, orig)
+    return "\n".join(lines)
+
+
+def svg_to_xpm_quantized(svg_path, size_px, color_hex, bg_hex, var_name, colors):
+    magick = "magick" if shutil_which("magick") else "convert"
+
+    # Render ve větším rozlišení, přebarvit FG, zmenšit, zploštit na BG,
+    # kvantizovat na pár barev => pěkné "mezistupně" anti-aliasu.
+    cmd = [
+        magick,
+        "-background", "none",
+        "-density", "384",
+        str(svg_path),
+
+        # přebarvení (vezme jen RGB kanál; alfa zůstane na hranách)
+        "-alpha", "on",
+        "-channel", "RGB",
+        "-fill", color_hex,
+        "-colorize", "100",
+        "+channel",
+
+        # supersampling -> downscale
+        "-resize", f"{size_px * SUPERSAMPLE}x{size_px * SUPERSAMPLE}",
+        "-filter", "Lanczos",
+        "-resize", f"{size_px}x{size_px}",
+
+        # 1) vytvoř masku z původní alfy (ještě před zploštěním)
+        "(",
+            "+clone",
+            "-alpha", "extract",
+            "-threshold", "50%",
+        ")",
+
+        # 2) vyrob “hezky” vyhlazené barvy zploštěním na BG + kvantizací
+        "-background", bg_hex,
+        "-alpha", "remove",
+        "-alpha", "off",
+        "-colors", str(colors),
+
+        # 3) aplikuj masku jako opacity -> skutečné pozadí bude transparentní,
+        #    i když má stejnou barvu jako část ikonky
+        "-compose", "CopyOpacity",
+        "-composite",
+
+        "xpm:-"
+    ]
+    xpm = run(cmd)
+    xpm = xpm_make_corner_color_none(xpm)
+    return normalize_xpm(xpm, var_name)
+
 def svg_to_xpm(svg_path, size_px, color_hex, bg_hex, var_name):
-    # For small icons: supersampling + downscale + dither from alpha => nicer edges in XPM.
-    # For larger ones (e.g. 32): keep the original IM conversion (without dithering “graininess”).
-    if Image is not None and size_px <= DITHER_MAX_PX:
-        png = _render_svg_to_png_bytes(svg_path, size_px * SUPERSAMPLE)
-        img = Image.open(io.BytesIO(png)).convert("RGBA")
+    # Pro malé ikony použij IM kvantizaci (lepší AA než náš alpha-dither).
+    if size_px <= QUANTIZE_MAX_PX:
+        return svg_to_xpm_quantized(
+            svg_path, size_px, color_hex, bg_hex, var_name, QUANTIZE_COLORS_SMALL
+        )
 
-        try:
-            resample = Image.Resampling.LANCZOS
-        except AttributeError:
-            resample = Image.LANCZOS
-
-        img = img.resize((size_px, size_px), resample=resample)
-        alpha = img.getchannel("A")
-        return _xpm_from_alpha_3(alpha, color_hex, bg_hex, var_name)
-
-    # Fallback: original IM pipeline (without “AA” in XPM)
+    # Pro větší (32) klidně nech “čistý” převod bez kvantizace,
+    # ať to není zbytečně “posterizované”.
     magick = "magick" if shutil_which("magick") else "convert"
     cmd = [
         magick,
@@ -225,9 +351,14 @@ def svg_to_xpm(svg_path, size_px, color_hex, bg_hex, var_name):
         "-channel", "RGB",
         "-fill", color_hex,
         "-colorize", "100",
+        "+channel",
+        "-background", bg_hex,
+        "-alpha", "remove",
+        "-alpha", "off",
         "xpm:-"
     ]
     xpm = run(cmd)
+    xpm = xpm_make_corner_color_none(xpm)
     return normalize_xpm(xpm, var_name)
 
 

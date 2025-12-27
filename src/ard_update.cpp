@@ -36,6 +36,7 @@
 #include <ctime>
 #include <nlohmann/json.hpp>
 #include <thread>
+#include <mutex>
 
 #include <curl/curl.h>
 

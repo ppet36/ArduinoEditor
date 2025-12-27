@@ -3746,7 +3746,7 @@ void ArduinoEditorFrame::OnSketchTreeOpenItem(wxCommandEvent &evt) {
     return;
   }
 
-  ArduinoEditor *ed = FindEditorWithFile(fullPathStd);
+  ArduinoEditor *ed = FindEditorWithFile(fullPathStd, /*allowCreate=*/false);
   if (ed) {
     ActivateEditor(ed, 1, 1);
     return;
@@ -4314,7 +4314,6 @@ void ArduinoEditorFrame::OnCheckForUpdates(wxCommandEvent &) {
 }
 
 ArduinoEditorFrame::~ArduinoEditorFrame() {
-  Freeze();
   m_auiManager.UnInit();
 }
 

@@ -330,11 +330,15 @@ ArduinoAboutDialog::ArduinoAboutDialog(wxWindow *parent)
 
 void ArduinoAboutDialog::OnHtmlLink(wxHtmlLinkEvent &event) {
   const wxString href = event.GetLinkInfo().GetHref();
-  if (href.IsEmpty())
+  if (href.IsEmpty()) {
+    event.Skip();
     return;
+  }
 
   if (!href.StartsWith(wxT("#"))) {
     wxLaunchDefaultBrowser(href);
+  } else {
+    event.Skip();
   }
-  event.Skip();
 }
+
