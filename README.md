@@ -1,4 +1,10 @@
+<p align="left">
+  <img src="resources/ArduinoEditor.iconset/icon_64.png" align="middle">
+</p>
+
 # Arduino Editor
+
+
 
 **Modern Arduino IDE powered by Clang**
 
