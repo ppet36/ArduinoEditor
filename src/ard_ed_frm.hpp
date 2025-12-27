@@ -65,6 +65,11 @@ class ArduinoEditorFrame : public wxFrame {
 private:
   static constexpr int MAX_RECENT_SKETCHES = 10;
 
+  struct CandidateGroup {
+    std::string header;
+    std::vector<ArduinoLibraryInfo> libs;
+  };
+
   wxConfigBase *config;
   ArduinoCli *arduinoCli = nullptr;
   ArduinoCodeCompletion *completion = nullptr;
@@ -138,8 +143,6 @@ private:
   ArduinoExamplesFrame *m_examplesFrame = nullptr;
   ArduinoCoreManagerFrame *m_coreManager = nullptr;
   ArduinoSerialMonitorFrame *m_serialMonitor = nullptr;
-
-  std::vector<std::string> m_queriedMissingHeaders;
 
   int ModalMsgDialog(const wxString &message, const wxString &caption = _("Error"), int styles = wxOK | wxICON_ERROR);
   static bool IsSupportedExtension(const wxString &ext);
@@ -215,7 +218,6 @@ private:
   void OnCoresLoaded(wxThreadEvent &evt);
   void OnInstalledCoresUpdated(wxThreadEvent &evt);
   void OnShowCoreManager(wxCommandEvent &evt);
-
   void OnAvailableBoardsUpdated(wxThreadEvent &event);
 
   void OnOpenRecent(wxCommandEvent &event);
@@ -256,11 +258,17 @@ private:
   void OnSketchTreeRename(wxCommandEvent &evt);
   void OnSketchTreeOpenExternally(wxCommandEvent &evt);
 
+  // Search of missing libraries
   static std::string ExtractMissingHeaderFromMessage(const std::string &msg);
   void MaybeOfferToInstallLibrariesForHeaders(const std::vector<std::string> &headers);
   void RequestShowLibraries(const std::vector<ArduinoLibraryInfo> &libs);
   void CheckMissingHeadersInDiagnostics(const std::vector<ArduinoParseError> &errors);
+  std::vector<std::string> m_queriedMissingHeaders;
+  std::unordered_set<std::string> m_wantedHeaders;
+  std::vector<CandidateGroup> m_foundLibraryGroups;
+  void OnLibrariesFound(wxThreadEvent &evt);
 
+  // Recent sketches management
   void LoadRecentSketches();
   void SaveRecentSketches();
   void AddRecentSketch(const wxString &path);

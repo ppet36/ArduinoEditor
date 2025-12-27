@@ -35,6 +35,7 @@ wxDECLARE_EVENT(EVT_COMMANDLINE_OUTPUT_MSG, wxCommandEvent);
 // Event for updating libraries
 wxDECLARE_EVENT(EVT_LIBRARIES_UPDATED, wxThreadEvent);
 wxDECLARE_EVENT(EVT_INSTALLED_LIBRARIES_UPDATED, wxThreadEvent);
+wxDECLARE_EVENT(EVT_LIBRARIES_FOUND, wxThreadEvent);
 
 // Event for updating CORE
 wxDECLARE_EVENT(EVT_CORES_UPDATED, wxThreadEvent);

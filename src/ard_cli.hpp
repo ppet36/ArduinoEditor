@@ -266,12 +266,20 @@ public:
 
   std::string GetFQBN();
   std::string GetBoardName() const;
+  std::string GetTargetFromFQBN() const;
+
+  bool IsLibraryArchitectureCompatible(const std::string &architectureRaw) const;
+  bool IsLibraryArchitectureCompatible(const std::vector<std::string> &architectures) const;
 
   std::string GetSketchPath() const;
   std::string GetCliPath() const;
 
   std::vector<ArduinoCoreBoard> GetAvailableBoards();
   void GetAvailableBoardsAsync(wxEvtHandler *handler);
+
+  // library searching
+  bool SearchLibraryProvidingHeader(const std::string &header, std::vector<ArduinoLibraryInfo> &out);
+  void SearchLibraryProvidingHeaderAsync(const std::string &header, wxEvtHandler *handler);
 
   // arduino libs management
   void InvalidateLibraryCache();

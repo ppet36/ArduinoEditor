@@ -82,6 +82,12 @@ static std::string LocalToUtf8(const std::string &s) {
 }
 #endif // __WXMSW__
 
+static std::string NormalizeArchTarget(const std::string &s) {
+  std::string resl = s;
+  std::transform(resl.begin(), resl.end(), resl.begin(), [](unsigned char c) { return (char)std::tolower(c); });
+  return resl;
+}
+
 static bool IsInterestingFlag(const std::string &a) {
   if (a.rfind("-D", 0) == 0)
     return true; // starts with "-D"
@@ -173,6 +179,50 @@ static void ParseLibraryRelease(const json &jr, const std::string &versionKey, A
       }
     }
   }
+}
+
+static bool ParseLibrary(const json &jl, ArduinoLibraryInfo &out) {
+  if (!jl.is_object()) {
+    return false;
+  }
+
+  out.name = jl.value("name", "");
+  if (out.name.empty()) {
+    return false;
+  }
+
+  out.availableVersions.clear();
+  out.releases.clear();
+  out.latest = ArduinoLibraryRelease{};
+
+  // available_versions []
+  if (jl.contains("available_versions") && jl["available_versions"].is_array()) {
+    for (const auto &v : jl["available_versions"]) {
+      if (v.is_string()) {
+        out.availableVersions.push_back(v.get<std::string>());
+      }
+    }
+  }
+
+  // latest {}
+  if (jl.contains("latest") && jl["latest"].is_object()) {
+    ParseLibraryRelease(jl["latest"], "", out.latest);
+  }
+
+  // releases { "1.0.0": {...}, "1.1.0": {...} }
+  if (jl.contains("releases") && jl["releases"].is_object()) {
+    const auto &releasesJson = jl["releases"];
+    for (auto it = releasesJson.begin(); it != releasesJson.end(); ++it) {
+      if (!it.value().is_object()) {
+        continue;
+      }
+      ArduinoLibraryRelease rel;
+      ParseLibraryRelease(it.value(), it.key(), rel);
+      out.releases.push_back(std::move(rel));
+    }
+  }
+
+  return true;
 }
 
 static void ParseCoreRelease(const json &jr, const std::string &versionKey, ArduinoCoreRelease &out) {
@@ -372,7 +422,12 @@ static void CollectHeadersFromSrcRoot(const fs::path &srcRoot,
       cache[key] = libSrcPath;
     };
 
-    insertKey(fileName);
+    const bool isTopLevel = (!recurse) || (path.parent_path() == srcRoot);
+
+    // Only "public" headers (top-level in src/) should match bare includes like <Foo.h>
+    if (isTopLevel) {
+      insertKey(fileName);
+    }
 
     std::error_code ecRel;
     fs::path rel = fs::relative(path, srcRoot, ecRel);
@@ -1319,108 +1374,22 @@ void ArduinoCli::InvalidateLibraryCache() {
 
 bool ArduinoCli::LoadLibraries() {
   ScopeTimer t("CLI: LoadLibraries()");
+  APP_DEBUG_LOG("CLI: LoadLibraries()");
+
   std::string output;
-
-  // ---- Path to the cache file ----
-  fs::path cacheFile;
-  std::string sketchPath = GetSketchPath();
-  if (!sketchPath.empty()) {
-    cacheFile = fs::path(sketchPath) / ".ardedit" / "libraries.json";
+  std::string cmd = GetCliBaseCommand() + " lib search --format json --omit-releases-details";
+  int rc = ExecuteCommand(cmd, output);
+  if ((rc != 0) || output.empty()) {
+    return false;
   }
 
-  // ---- Try to load from cache (if it exists and is not older than 1 day) ----
-  bool triedCache = false;
-  if (!sketchPath.empty()) {
-    std::error_code ec;
-
-    if (fs::exists(cacheFile, ec)) {
-      triedCache = true;
-
-      auto fileTime = fs::last_write_time(cacheFile, ec);
-      if (!ec) {
-        using namespace std::chrono;
-        auto now = fs::file_time_type::clock::now();
-        auto age = now - fileTime;
-        auto ageHours = duration_cast<hours>(age).count();
-
-        if (ageHours < 24) { // younger than 1 day -> use cache
-          APP_DEBUG_LOG("CLI: LoadLibraries(); using cached libraries.json...");
-          std::ifstream in(cacheFile);
-          if (in) {
-            output.assign((std::istreambuf_iterator<char>(in)),
-                          std::istreambuf_iterator<char>());
-          } else {
-            wxLogWarning(wxT("Failed to open libraries cache file '%s' for reading."), wxString::FromUTF8(cacheFile.string()));
-          }
-        }
-      }
-    }
-  }
-
-  // ---- If we haven't read anything from the cache, call arduino-cli ----
-  if (output.empty()) {
-    std::string cmd = GetCliBaseCommand() + " lib search --format json";
-    int rc = ExecuteCommand(cmd, output);
-    if ((rc != 0) || (output.empty())) {
-      return false;
-    }
-
-    // save to cache (if we have somewhere to)
-    if (!sketchPath.empty()) {
-      std::error_code ec;
-      fs::create_directories(cacheFile.parent_path(), ec);
-      if (ec) {
-        wxLogWarning(wxT("Failed to create cache directory '%s': %s"), wxString::FromUTF8(cacheFile.parent_path().string()), wxString::FromUTF8(ec.message()));
-      } else {
-        std::ofstream out(cacheFile);
-        if (!out) {
-          wxLogWarning(wxT("Failed to open libraries cache file '%s' for writing."), wxString::FromUTF8(cacheFile.string()));
-        } else {
-          out << output;
-        }
-      }
-    }
-  }
-
-  // ---- Parsing JSON (and possible fallback if the cache was corrupted) ----
   json j;
   try {
     j = json::parse(output);
   } catch (const std::exception &e) {
-    wxLogWarning(wxT("Failed to parse arduino-cli lib search JSON: %s"), wxString::FromUTF8(e.what()));
-
-    // If we originally tried to read from the cache, we can try
-    // ignore cache and forcibly call arduino-cli again:
-    if (triedCache) {
-      std::string cmd = GetCliBaseCommand() + " lib search --format json";
-      std::string freshOutput;
-      int rc = ExecuteCommand(cmd, freshOutput);
-      if ((rc == 0) && !freshOutput.empty()) {
-        try {
-          j = json::parse(freshOutput);
-
-          if (!sketchPath.empty()) {
-            std::error_code ec;
-            fs::create_directories(cacheFile.parent_path(), ec);
-            if (!ec) {
-              std::ofstream out(cacheFile);
-              if (out) {
-                out << freshOutput;
-              }
-            }
-          }
-
-          output.swap(freshOutput);
-        } catch (const std::exception &e2) {
-          wxLogWarning(wxT("Failed to parse fresh arduino-cli lib search JSON: %s"), wxString::FromUTF8(e2.what()));
-          return false;
-        }
-      } else {
-        return false;
-      }
-    } else {
-      return false;
-    }
+    wxLogWarning(wxT("Failed to parse arduino-cli lib search JSON: %s"),
+                 wxString::FromUTF8(e.what()));
+    return false;
   }
 
   if (!j.contains("libraries") || !j["libraries"].is_array()) {
@@ -1428,8 +1397,9 @@ bool ArduinoCli::LoadLibraries() {
     return false;
   }
 
-  std::vector<ArduinoLibraryInfo> tmp;
   const auto &libsJson = j["libraries"];
+
+  std::vector<ArduinoLibraryInfo> tmp;
   tmp.reserve(libsJson.size());
 
   for (const auto &jl : libsJson) {
@@ -1438,43 +1408,77 @@ bool ArduinoCli::LoadLibraries() {
     }
 
     ArduinoLibraryInfo info;
-    info.name = jl.value("name", "");
-    if (info.name.empty()) {
-      continue; // without a name it makes no sense
+    if (!ParseLibrary(jl, info)) {
+      continue;
     }
-
-    // available_versions []
-    if (jl.contains("available_versions") && jl["available_versions"].is_array()) {
-      for (const auto &v : jl["available_versions"]) {
-        if (v.is_string()) {
-          info.availableVersions.push_back(v.get<std::string>());
-        }
-      }
-    }
-
-    // latest {}
-    if (jl.contains("latest") && jl["latest"].is_object()) {
-      ParseLibraryRelease(jl["latest"], "", info.latest);
-    }
-
-    // releases { "1.0.0": {...}, "1.1.0": {...} }
-    if (jl.contains("releases") && jl["releases"].is_object()) {
-      const auto &releasesJson = jl["releases"];
-      for (auto it = releasesJson.begin(); it != releasesJson.end(); ++it) {
-        if (!it.value().is_object()) {
-          continue;
-        }
-        ArduinoLibraryRelease rel;
-        ParseLibraryRelease(it.value(), it.key(), rel);
-        info.releases.push_back(std::move(rel));
-      }
-    }
-
     tmp.push_back(std::move(info));
   }
 
   libraries.swap(tmp);
-  return !libraries.empty();
+
+  APP_DEBUG_LOG("CLI: LoadLibraries() -> %zu libraries found...", libraries.size());
+  return true;
+}
+
+bool ArduinoCli::SearchLibraryProvidingHeader(const std::string &header,
+                                              std::vector<ArduinoLibraryInfo> &out) {
+  ScopeTimer t("CLI: SearchLibraryProvidingHeader()");
+  out.clear();
+
+  APP_DEBUG_LOG("CLI: SearchLibraryProvidingHeader(%s)", header.c_str());
+
+  if (header.empty()) {
+    return false;
+  }
+
+  // arduino-cli lib search "MCP3421.h" --format json
+  std::ostringstream args;
+  args << " lib search " << ShellQuote(header)
+       << " --format json --omit-releases-details";
+
+  std::string cmd = GetCliBaseCommand() + " " + args.str();
+
+  std::string output;
+  int rc = ExecuteCommand(cmd, output);
+  if (rc != 0 || output.empty()) {
+    return false;
+  }
+
+  json j;
+  try {
+    j = json::parse(output);
+  } catch (const std::exception &e) {
+    wxLogWarning(wxT("Failed to parse arduino-cli lib search JSON: %s"),
+                 wxString::FromUTF8(e.what()));
+    return false;
+  }
+
+  const json *libsJson = nullptr;
+
+  // typical structure: { "libraries": [ ... ] }
+  if (j.contains("libraries") && j["libraries"].is_array()) {
+    libsJson = &j["libraries"];
+  } else if (j.is_array()) {
+    // just in case some cli version returns an array directly
+    libsJson = &j;
+  }
+
+  if (!libsJson) {
+    wxLogWarning(wxT("arduino-cli lib search JSON has unexpected structure."));
+    return false;
+  }
+
+  out.reserve(libsJson->size());
+  for (const auto &jl : *libsJson) {
+    ArduinoLibraryInfo info;
+    if (!ParseLibrary(jl, info)) {
+      continue;
+    }
+    out.push_back(std::move(info));
+  }
+
+  // IMPORTANT: success == "command+parse ok", even if out is empty
+  return true;
 }
 
 bool ArduinoCli::LoadInstalledLibraries() {
@@ -1885,59 +1889,6 @@ std::vector<std::string> ArduinoCli::ResolveLibraries(const std::vector<std::str
     return s;
   };
 
-  auto normalizeArch = [&](std::string s) -> std::string {
-    TrimInPlace(s);
-    std::transform(s.begin(), s.end(), s.begin(),
-                   [](unsigned char c) { return (char)std::tolower(c); });
-    return s;
-  };
-
-  auto getTargetArchFromFqbn = [&]() -> std::string {
-    // FQBN format: vendor:arch:board[:options...]
-    std::string f = fqbn;
-    TrimInPlace(f);
-    size_t p1 = f.find(':');
-    if (p1 == std::string::npos) {
-      return "";
-    }
-    size_t p2 = f.find(':', p1 + 1);
-    if (p2 == std::string::npos) {
-      // vendor:arch
-      return normalizeArch(f.substr(p1 + 1));
-    }
-    return normalizeArch(f.substr(p1 + 1, p2 - (p1 + 1)));
-  };
-
-  const std::string targetArch = getTargetArchFromFqbn();
-
-  auto isArchCompatible = [&](const std::string &architecturesRaw) -> bool {
-    // Missing/empty => compatible (Arduino-style)
-    if (targetArch.empty()) {
-      return true;
-    }
-
-    std::string raw = architecturesRaw;
-    TrimInPlace(raw);
-    if (raw.empty()) {
-      return true;
-    }
-
-    // CSV list, "*" means any
-    std::stringstream ss(raw);
-    std::string item;
-    while (std::getline(ss, item, ',')) {
-      TrimInPlace(item);
-      item = normalizeArch(item);
-      if (item.empty()) {
-        continue;
-      }
-      if (item == "*" || item == targetArch) {
-        return true;
-      }
-    }
-    return false;
-  };
-
   auto parseLibraryProperties = [&](const fs::path &libRoot,
                                     const std::string &defaultName,
                                     std::string &outName,
@@ -2085,9 +2036,9 @@ std::vector<std::string> ArduinoCli::ResolveLibraries(const std::vector<std::str
 
         std::string architecturesRaw;
         parseLibraryProperties(libRoot, defaultName, info.name, info.depends, architecturesRaw);
-        if (!isArchCompatible(architecturesRaw)) {
+        if (!IsLibraryArchitectureCompatible(architecturesRaw)) {
           APP_DEBUG_LOG("CLI: ResolveLibraries: skip core lib '%s' (architectures='%s', target='%s')",
-                        info.name.c_str(), architecturesRaw.c_str(), targetArch.c_str());
+                        info.name.c_str(), architecturesRaw.c_str(), GetTargetFromFQBN().c_str());
           continue;
         }
 
@@ -2146,9 +2097,9 @@ std::vector<std::string> ArduinoCli::ResolveLibraries(const std::vector<std::str
       std::string architecturesRaw;
       parseLibraryProperties(propsRoot, defaultName, info.name, info.depends, architecturesRaw);
 
-      if (!isArchCompatible(architecturesRaw)) {
+      if (!IsLibraryArchitectureCompatible(architecturesRaw)) {
         APP_DEBUG_LOG("CLI: ResolveLibraries: skip user lib '%s' (architectures='%s', target='%s')",
-                      info.name.c_str(), architecturesRaw.c_str(), targetArch.c_str());
+                      info.name.c_str(), architecturesRaw.c_str(), GetTargetFromFQBN().c_str());
         continue;
       }
 
@@ -2550,6 +2501,26 @@ void ArduinoCli::LoadLibrariesAsync(wxEvtHandler *handler) {
 
     wxThreadEvent evt(EVT_LIBRARIES_UPDATED);
     evt.SetInt(ok ? 1 : 0);
+    QueueUiEvent(weak, evt.Clone());
+  }).detach();
+}
+
+void ArduinoCli::SearchLibraryProvidingHeaderAsync(const std::string &header, wxEvtHandler *handler) {
+  if (!handler) {
+    return;
+  }
+
+  wxWeakRef<wxEvtHandler> weak(handler);
+
+  std::thread([this, weak, header]() {
+    std::vector<ArduinoLibraryInfo> libs;
+    bool ok = this->SearchLibraryProvidingHeader(header, libs);
+
+    wxThreadEvent evt(EVT_LIBRARIES_FOUND);
+    evt.SetInt(ok ? 1 : 0);
+    evt.SetString(wxString::FromUTF8(header));
+    evt.SetPayload(libs);
+
     QueueUiEvent(weak, evt.Clone());
   }).detach();
 }
@@ -3084,6 +3055,73 @@ std::string ArduinoCli::GetBoardName() const {
 
   // If there are not even three parts, we return what we have
   return base;
+}
+
+std::string ArduinoCli::GetTargetFromFQBN() const {
+  // FQBN format: vendor:arch:board
+  std::string f = GetBoardName();
+  TrimInPlace(f);
+  size_t p1 = f.find(':');
+  if (p1 == std::string::npos) {
+    return "";
+  }
+  size_t p2 = f.find(':', p1 + 1);
+  if (p2 == std::string::npos) {
+    // vendor:arch
+    return NormalizeArchTarget(f.substr(p1 + 1));
+  }
+  return NormalizeArchTarget(f.substr(p1 + 1, p2 - (p1 + 1)));
+}
+
+template <typename It>
+static bool IsArchCompatibleTokens(It begin, It end, const std::string &targetArchNorm) {
+  if (targetArchNorm.empty()) {
+    return true; // unknown target => don't filter
+  }
+  if (begin == end) {
+    return true; // missing/empty => compatible
+  }
+
+  for (auto it = begin; it != end; ++it) {
+    std::string a = *it;
+    TrimInPlace(a);
+    a = NormalizeArchTarget(a);
+
+    if (a.empty()) {
+      continue;
+    }
+    if (a == "*" || a == "all" || a == targetArchNorm) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool ArduinoCli::IsLibraryArchitectureCompatible(const std::string &architecturesRaw) const {
+  const std::string target = NormalizeArchTarget(GetTargetFromFQBN());
+
+  std::string raw = architecturesRaw;
+  TrimInPlace(raw);
+  if (raw.empty()) {
+    return true; // missing/empty => compatible
+  }
+
+  std::vector<std::string> tokens;
+  tokens.reserve(8);
+
+  std::stringstream ss(raw);
+  std::string item;
+  while (std::getline(ss, item, ',')) {
+    tokens.push_back(item);
+  }
+
+  return IsArchCompatibleTokens(tokens.begin(), tokens.end(), target);
+}
+
+bool ArduinoCli::IsLibraryArchitectureCompatible(const std::vector<std::string> &architectures) const {
+  const std::string target = NormalizeArchTarget(GetTargetFromFQBN());
+  return IsArchCompatibleTokens(architectures.begin(), architectures.end(), target);
 }
 
 std::string ArduinoCli::GetSketchPath() const {

@@ -80,6 +80,7 @@ enum {
   ID_TABMENU_CLOSE_ALL,
 
   ID_PROCESS_LOAD_LIBRARIES,
+  ID_PROCESS_SEARCH_LIBRARIES,
   ID_PROCESS_LOAD_INSTALLED_LIBRARIES,
   ID_PROCESS_LOAD_CORES,
   ID_PROCESS_LOAD_INSTALLED_CORES,
@@ -1479,17 +1480,9 @@ void ArduinoEditorFrame::MaybeOfferToInstallLibrariesForHeaders(const std::vecto
     return;
   }
 
-  const auto &libs = arduinoCli->GetLibraries();
-  if (libs.empty()) {
-    return;
-  }
-
-  struct CandidateGroup {
-    std::string header;
-    std::vector<const ArduinoLibraryInfo *> libs;
-  };
-
-  std::vector<CandidateGroup> candidates;
+  m_wantedHeaders.clear();
+  m_wantedHeaders.reserve(headers.size());
+  m_foundLibraryGroups.clear();
 
   for (const auto &header : headers) {
     bool alreadyAsked =
@@ -1498,83 +1491,30 @@ void ArduinoEditorFrame::MaybeOfferToInstallLibrariesForHeaders(const std::vecto
       continue;
     }
 
-    CandidateGroup g;
-    g.header = header;
-
-    for (const auto &lib : libs) {
-      if (std::find(lib.latest.providesIncludes.begin(), lib.latest.providesIncludes.end(), header) != lib.latest.providesIncludes.end()) {
-        g.libs.push_back(&lib);
-      }
-    }
-
-    if (!g.libs.empty()) {
-      candidates.push_back(std::move(g));
-    }
+    m_wantedHeaders.insert(header);
   }
 
-  if (candidates.empty()) {
+  if (m_wantedHeaders.empty()) {
     return;
   }
 
-  wxString msg;
-  msg << _("The following missing headers are claimed to be provided by Arduino libraries:\n\n");
+  StartProcess(_("Resolving missing libraries..."), ID_PROCESS_SEARCH_LIBRARIES, ArduinoActivityState::Background);
 
-  for (const auto &g : candidates) {
-    wxString headerWx = wxString::FromUTF8(g.header.c_str());
-    msg << wxT("- <") << headerWx << wxT(">\n");
-
-    for (const auto *lib : g.libs) {
-      wxString nameWx = wxString::FromUTF8(lib->name.c_str());
-      wxString sentWx = wxString::FromUTF8(lib->latest.sentence.c_str());
-
-      msg << wxT("    \u2022 \"") << nameWx << wxT("\"");
-      if (!sentWx.IsEmpty()) {
-        msg << wxT(" \u2014 ") << sentWx;
-      }
-      msg << wxT("\n");
-    }
-
-    msg << wxT("\n");
+  // all parallel
+  for (const auto &wh : m_wantedHeaders) {
+    arduinoCli->SearchLibraryProvidingHeaderAsync(wh, this);
   }
-
-  msg << _("\nNote: Arduino library metadata can be wrong. The Library Manager will be opened so you can choose what to install.\n\n");
-
-  wxRichMessageDialog dlg(
-      this,
-      msg,
-      _("Missing headers"),
-      wxYES_NO | wxICON_INFORMATION);
-
-  dlg.SetYesNoLabels(_("Open Library Manager"), _("Ignore"));
-
-  int res = dlg.ShowModal();
-
-  for (const auto &g : candidates) {
-    m_queriedMissingHeaders.push_back(g.header);
-  }
-
-  if (res != wxID_YES) {
-    return;
-  }
-
-  std::vector<ArduinoLibraryInfo> uniqueToShow;
-  std::unordered_set<std::string> seen;
-
-  for (const auto &g : candidates) {
-    for (const auto *lib : g.libs) {
-      if (!lib)
-        continue;
-      if (seen.insert(lib->name).second) {
-        uniqueToShow.push_back(*lib);
-      }
-    }
-  }
-
-  RequestShowLibraries(uniqueToShow);
 }
 
 void ArduinoEditorFrame::RequestShowLibraries(const std::vector<ArduinoLibraryInfo> &libs) {
   if (!m_libManager) {
+    StartProcess(_("Loading libraries..."), ID_PROCESS_LOAD_LIBRARIES, ArduinoActivityState::Background);
+
+    if (!m_librariesUpdated) {
+      m_librariesUpdated = true;
+      arduinoCli->LoadLibrariesAsync(this);
+    }
+
     m_libManager = new ArduinoLibraryManagerFrame(this, arduinoCli, m_availableBoards, config, _("All"));
   }
 
@@ -1735,10 +1675,7 @@ void ArduinoEditorFrame::OnDiagnosticsUpdated(wxThreadEvent &WXUNUSED(evt)) {
 
   m_currentDiagErrors = errors;
 
-  if (!m_librariesUpdated) {
-    m_librariesUpdated = true;
-    arduinoCli->LoadLibrariesAsync(this);
-  }
+  CheckMissingHeadersInDiagnostics(errors);
 }
 
 void ArduinoEditorFrame::CheckMissingHeadersInDiagnostics(const std::vector<ArduinoParseError> &errors) {
@@ -1919,10 +1856,94 @@ void ArduinoEditorFrame::OnLibrariesUpdated(wxThreadEvent &evt) {
   if (m_libManager) {
     m_libManager->RefreshLibraries();
   }
+}
 
-  if (!m_currentDiagErrors.empty()) {
-    CheckMissingHeadersInDiagnostics(m_currentDiagErrors);
+void ArduinoEditorFrame::OnLibrariesFound(wxThreadEvent &evt) {
+  std::string header = wxToStd(evt.GetString());
+
+  // remove from queue
+  m_wantedHeaders.erase(header);
+
+  bool ok = (evt.GetInt() == 1);
+
+  if (ok) {
+    auto libs = evt.GetPayload<std::vector<ArduinoLibraryInfo>>();
+
+    libs.erase(
+        std::remove_if(libs.begin(), libs.end(),
+                       [&](const ArduinoLibraryInfo &lib) {
+                         return !arduinoCli->IsLibraryArchitectureCompatible(lib.latest.architectures);
+                       }),
+        libs.end());
+
+    if (!libs.empty()) {
+      m_foundLibraryGroups.push_back({header, std::move(libs)});
+    }
   }
+
+  if (m_wantedHeaders.empty()) {
+    // all candidates collected
+    StopProcess(ID_PROCESS_SEARCH_LIBRARIES);
+
+    if (m_foundLibraryGroups.empty()) {
+      return;
+    }
+
+    wxString msg;
+    msg << _("The following missing headers are claimed to be provided by Arduino libraries:\n\n");
+
+    for (const auto &g : m_foundLibraryGroups) {
+      wxString headerWx = wxString::FromUTF8(g.header.c_str());
+      msg << wxT("- <") << headerWx << wxT(">\n");
+
+      for (const auto &lib : g.libs) {
+        wxString nameWx = wxString::FromUTF8(lib.name.c_str());
+        wxString sentWx = wxString::FromUTF8(lib.latest.sentence.c_str());
+
+        msg << wxT("    \u2022 \"") << nameWx << wxT("\"");
+        if (!sentWx.IsEmpty()) {
+          msg << wxT(" \u2014 ") << sentWx;
+        }
+        msg << wxT("\n");
+      }
+
+      msg << wxT("\n");
+    }
+
+    msg << _("\nNote: Arduino library metadata can be wrong. The Library Manager will be opened so you can choose what to install.\n\n");
+
+    wxRichMessageDialog dlg(
+        this,
+        msg,
+        _("Missing headers"),
+        wxYES_NO | wxICON_INFORMATION);
+
+    dlg.SetYesNoLabels(_("Open Library Manager"), _("Ignore"));
+
+    int res = dlg.ShowModal();
+
+    for (const auto &g : m_foundLibraryGroups) {
+      m_queriedMissingHeaders.push_back(g.header);
+    }
+
+    if (res != wxID_YES) {
+      return;
+    }
+
+    std::vector<ArduinoLibraryInfo> uniqueToShow;
+    std::unordered_set<std::string> seen;
+
+    for (const auto &g : m_foundLibraryGroups) {
+      for (const auto &lib : g.libs) {
+        if (seen.insert(lib.name).second) {
+          uniqueToShow.push_back(lib);
+        }
+      }
+    }
+
+    RequestShowLibraries(uniqueToShow);
+  }
+  // wait for next event
 }
 
 void ArduinoEditorFrame::OnInstalledLibrariesUpdated(wxThreadEvent &evt) {
@@ -2231,6 +2252,7 @@ void ArduinoEditorFrame::BindEvents() {
 
   Bind(EVT_LIBRARIES_UPDATED, &ArduinoEditorFrame::OnLibrariesUpdated, this);
   Bind(EVT_INSTALLED_LIBRARIES_UPDATED, &ArduinoEditorFrame::OnInstalledLibrariesUpdated, this);
+  Bind(EVT_LIBRARIES_FOUND, &ArduinoEditorFrame::OnLibrariesFound, this);
 
   Bind(EVT_RESOLVED_LIBRARIES_READY, &ArduinoEditorFrame::OnResolvedLibrariesReady, this);
 

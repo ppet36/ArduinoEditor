@@ -24,6 +24,7 @@
 #include <vector>
 
 #include <wx/button.h>
+#include <wx/checkbox.h>
 #include <wx/choice.h>
 #include <wx/config.h>
 #include <wx/frame.h>
@@ -76,6 +77,7 @@ private:
 
   wxChoice *m_topicChoice = nullptr;
   wxChoice *m_typeChoice = nullptr;
+  wxCheckBox *m_onlyCompatibleCheck = nullptr;
   wxTextCtrl *m_searchCtrl = nullptr;
   wxListCtrl *m_listCtrl = nullptr;
   wxButton *m_bottomInstallBtn = nullptr;
@@ -90,6 +92,7 @@ private:
   void BuildUi();
   void InitData();
   void RebuildTopicChoices();
+  void DisplayLibsLoading();
   void ApplyFilter();
   void UpdateColumnHeaders();
   void UpdateStateColors(const ArduinoLibraryInfo &lib, long item, const EditorColorScheme &colors);
@@ -107,6 +110,7 @@ private:
   void OnTopicChanged(wxCommandEvent &evt);
   void OnTypeChanged(wxCommandEvent &evt);
   void OnSearchText(wxCommandEvent &evt);
+  void OnCompatibleChanged(wxCommandEvent &evt);
   void OnSearchTimer(wxTimerEvent &evt);
   void OnItemActivated(wxListEvent &evt);
   void OnColClick(wxListEvent &evt);

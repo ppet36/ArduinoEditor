@@ -81,8 +81,12 @@ ArduinoLibraryManagerFrame::ArduinoLibraryManagerFrame(wxWindow *parent, Arduino
   BuildUi();
 
   Bind(wxEVT_CLOSE_WINDOW, &ArduinoLibraryManagerFrame::OnClose, this);
+  Bind(wxEVT_SHOW, &ArduinoLibraryManagerFrame::OnShow, this);
+
   m_topicChoice->Bind(wxEVT_CHOICE, &ArduinoLibraryManagerFrame::OnTopicChanged, this);
   m_typeChoice->Bind(wxEVT_CHOICE, &ArduinoLibraryManagerFrame::OnTypeChanged, this);
+  m_onlyCompatibleCheck->Bind(wxEVT_CHECKBOX, &ArduinoLibraryManagerFrame::OnCompatibleChanged, this);
+
   m_searchCtrl->Bind(wxEVT_TEXT, &ArduinoLibraryManagerFrame::OnSearchText, this);
   Bind(wxEVT_TIMER, &ArduinoLibraryManagerFrame::OnSearchTimer, this, ID_LIB_SEARCH_TIMER);
   m_listCtrl->Bind(wxEVT_LIST_ITEM_ACTIVATED, &ArduinoLibraryManagerFrame::OnItemActivated, this);
@@ -132,6 +136,7 @@ void ArduinoLibraryManagerFrame::BuildUi() {
     row->Add(new wxStaticText(this, wxID_ANY, _("Topic:")),
              0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 4);
     m_topicChoice = new wxChoice(this, ID_LIB_TOPIC_CHOICE);
+    m_topicChoice->SetMinSize(wxSize(FromDIP(200), -1));
     row->Add(m_topicChoice, 0, wxRIGHT, 10);
 
     row->Add(new wxStaticText(this, wxID_ANY, _("Type:")),
@@ -143,11 +148,17 @@ void ArduinoLibraryManagerFrame::BuildUi() {
     m_typeChoice->SetSelection(0);
     row->Add(m_typeChoice, 0, wxRIGHT, 10);
 
+    m_onlyCompatibleCheck = new wxCheckBox(this, wxID_ANY, _("Only compatible"));
+    m_onlyCompatibleCheck->SetToolTip(_("Show only libraries compatible with the currently selected board (FQBN)."));
+    m_onlyCompatibleCheck->SetValue(false);
+    row->Add(m_onlyCompatibleCheck, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, 10);
+
     row->AddStretchSpacer(1);
 
     row->Add(new wxStaticText(this, wxID_ANY, _("Search:")),
              0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 4);
     m_searchCtrl = new wxTextCtrl(this, ID_LIB_SEARCH_CTRL);
+    m_searchCtrl->SetMinSize(wxSize(FromDIP(320), -1));
     m_searchCtrl->SetHint(_("author / maintainer / text / website"));
     row->Add(m_searchCtrl, 2, wxEXPAND);
 
@@ -203,13 +214,7 @@ void ArduinoLibraryManagerFrame::InitData() {
   m_installedLibraries = m_cli->GetInstalledLibraries();
 
   if (m_allLibraries.empty()) {
-    // nothing has been loaded yet -> display "Loading..."
-    if (m_listCtrl) {
-      m_listCtrl->Freeze();
-      m_listCtrl->DeleteAllItems();
-      m_listCtrl->InsertItem(0, _("Loading libraries..."));
-      m_listCtrl->Thaw();
-    }
+    DisplayLibsLoading();
     return;
   }
 
@@ -237,12 +242,21 @@ void ArduinoLibraryManagerFrame::RebuildTopicChoices() {
   m_topicChoice->SetSelection(0);
 }
 
+void ArduinoLibraryManagerFrame::DisplayLibsLoading() {
+  if (m_listCtrl) {
+    m_listCtrl->Freeze();
+    m_listCtrl->DeleteAllItems();
+    m_listCtrl->InsertItem(0, _("Loading libraries..."));
+    m_listCtrl->Thaw();
+  }
+}
+
 void ArduinoLibraryManagerFrame::ApplyFilter() {
   if (!m_listCtrl)
     return;
 
-  APP_DEBUG_LOG("m_allLibraries.size=%d", m_allLibraries.size());
-  APP_DEBUG_LOG("m_installedLibraries.size=%d", m_installedLibraries.size());
+  APP_DEBUG_LOG("LIBMAN: m_allLibraries.size=%d", m_allLibraries.size());
+  APP_DEBUG_LOG("LIBMAN: m_installedLibraries.size=%d", m_installedLibraries.size());
 
   wxString topicSel = m_topicChoice ? m_topicChoice->GetStringSelection() : _("All topics");
   wxString typeSel = m_typeChoice ? m_typeChoice->GetStringSelection() : _("All");
@@ -377,13 +391,17 @@ void ArduinoLibraryManagerFrame::UpdateColumnHeaders() {
     m_listCtrl->SetColumn(col, item);
   }
 }
+
 bool ArduinoLibraryManagerFrame::MatchesArchitecture(const ArduinoLibraryInfo &lib) const {
   const auto &archs = lib.latest.architectures;
 
   if (archs.empty())
-    return true; // better not to limit if nothing is specified
+    return true;
 
-  // library for all architectures
+  if (m_onlyCompatibleCheck && m_onlyCompatibleCheck->GetValue()) {
+    return m_cli->IsLibraryArchitectureCompatible(archs);
+  }
+
   for (const auto &a : archs) {
     if (a == "*" || a == "all" || a == "any")
       return true;
@@ -486,8 +504,9 @@ bool ArduinoLibraryManagerFrame::MatchesSearch(const ArduinoLibraryInfo &lib,
 }
 
 bool ArduinoLibraryManagerFrame::MatchesExplicitLib(const ArduinoLibraryInfo &lib) const {
-  if (m_explicitShowLibs.empty())
+  if (m_explicitShowLibs.empty()) {
     return true;
+  }
 
   return std::any_of(m_explicitShowLibs.begin(), m_explicitShowLibs.end(),
                      [&](const ArduinoLibraryInfo &x) { return x.name == lib.name; });
@@ -497,6 +516,8 @@ bool ArduinoLibraryManagerFrame::MatchesExplicitLib(const ArduinoLibraryInfo &li
 
 void ArduinoLibraryManagerFrame::OnShow(wxShowEvent &evt) {
   evt.Skip();
+
+  APP_DEBUG_LOG("LIBMAN: OnShow()");
 
   if (!evt.IsShown())
     return;
@@ -522,20 +543,38 @@ void ArduinoLibraryManagerFrame::OnClose(wxCloseEvent &evt) {
   evt.Veto();
 }
 
-void ArduinoLibraryManagerFrame::OnTopicChanged(wxCommandEvent &evt) {
-  (void)evt;
+void ArduinoLibraryManagerFrame::OnTopicChanged(wxCommandEvent &WXUNUSED(evt)) {
+  if (m_allLibraries.empty()) {
+    DisplayLibsLoading();
+    return;
+  }
+
   ApplyFilter();
 }
 
-void ArduinoLibraryManagerFrame::OnTypeChanged(wxCommandEvent &evt) {
-  (void)evt;
+void ArduinoLibraryManagerFrame::OnTypeChanged(wxCommandEvent &WXUNUSED(evt)) {
+  if (m_allLibraries.empty()) {
+    DisplayLibsLoading();
+    return;
+  }
   ApplyFilter();
 }
 
-void ArduinoLibraryManagerFrame::OnSearchText(wxCommandEvent &evt) {
-  (void)evt;
+void ArduinoLibraryManagerFrame::OnCompatibleChanged(wxCommandEvent &WXUNUSED(evt)) {
+  if (m_allLibraries.empty()) {
+    DisplayLibsLoading();
+    return;
+  }
+  ApplyFilter();
+}
+
+void ArduinoLibraryManagerFrame::OnSearchText(wxCommandEvent &WXUNUSED(evt)) {
+  if (m_allLibraries.empty()) {
+    DisplayLibsLoading();
+    return;
+  }
   // debounce - restart the timer
-  m_searchTimer.Start(300, true); // 300 ms since the last press
+  m_searchTimer.Start(500, true); // 300 ms since the last press
 }
 
 void ArduinoLibraryManagerFrame::OnSearchTimer(wxTimerEvent &evt) {
@@ -876,6 +915,11 @@ void ArduinoLibraryManagerFrame::ShowLibraries(const std::vector<ArduinoLibraryI
 
   if (m_searchCtrl)
     m_searchCtrl->SetValue(wxEmptyString);
+
+  if (m_allLibraries.empty()) {
+    DisplayLibsLoading();
+    return;
+  }
 
   ApplyFilter();
 }
