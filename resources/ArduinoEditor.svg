@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#63C4FF"/>
+      <stop offset="100%" stop-color="#1B63E8"/>
+    </linearGradient>
+
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#000000" flood-opacity="0.20"/>
+    </filter>
+
+    <filter id="markShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#000000" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <!-- background -->
+  <rect x="48" y="48" width="928" height="928" rx="180" fill="url(#bgGrad)" filter="url(#shadow)"/>
+
+  <!-- A / E -->
+  <g font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif"
+     font-weight="800" fill="#FFFFFF" opacity="0.95">
+    <text x="150" y="280" font-size="200" letter-spacing="1">A</text>
+    <text x="874" y="872" font-size="200" text-anchor="end" letter-spacing="1">E</text>
+  </g>
+
+  <!-- Infinity mark: bigger + aligned -->
+  <g transform="translate(512 540) rotate(-35) scale(1.45) translate(-512 -540)" filter="url(#markShadow)">
+
+  <path
+    d="
+     M 240 540
+
+      C 240 445 310 385 392 410
+      C 450 428 488 482 512 540
+  
+      C 536 598 574 652 632 670
+      C 714 695 784 635 784 540
+
+      C 784 445 714 385 632 410
+      C 574 428 536 482 512 540
+
+      C 488 598 450 652 392 670
+      C 310 695 240 635 240 540
+    "
+    fill="none"
+    stroke="#FFFFFF"
+    stroke-width="40"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    opacity="0.98"
+    />
+
+
+    <!-- minus (left loop) -->
+    <rect x="300" y="535" width="120" height="20" rx="12" fill="#FFFFFF" opacity="0.98"/>
+
+    <!-- plus (right loop) -->
+    <g fill="#FFFFFF" opacity="0.98">
+      <rect x="602" y="530" width="120" height="20" rx="12"/>
+      <rect x="650" y="480" width="20" height="120" rx="12"/>
+    </g>
+  </g>
+</svg>
+
+
