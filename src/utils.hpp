@@ -19,7 +19,9 @@
 #pragma once
 
 #include <chrono>
+#include <cstdint>
 #include <string>
+#include <string_view>
 #include <unordered_set>
 #include <vector>
 #include <wx/artprov.h>
@@ -165,3 +167,9 @@ std::string StripFilename(const std::string &sketchPath, const std::string &file
 bool IsInSketchDir(const std::string &sketchPath, const std::string &file);
 
 wxString ColorToHex(const wxColour &color);
+
+// Fast methods for sums
+uint64_t CcSumCode(const std::vector<SketchFileBuffer> &files);
+uint64_t CcSumIncludes(const std::vector<SketchFileBuffer> &files);
+uint64_t CcSumDecls(std::string_view filename, std::string_view code);
+

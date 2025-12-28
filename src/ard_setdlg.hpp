@@ -56,6 +56,13 @@ enum ClangResolveMode {
   compileCommandsResolver
 };
 
+enum ClangWarningMode {
+  warningOff = 0,
+  warningDefault,
+  warningArduinoLike,
+  warningStrict
+};
+
 struct EditorColorScheme {
   wxColour text;
   wxColour background;
@@ -119,6 +126,7 @@ struct ClangSettings {
   ClangDiagnosticMode diagnosticMode = translationUnit;
   ClangCompletionMode completionMode = always;
   ClangResolveMode resolveMode = internalResolver;
+  ClangWarningMode warningMode = warningDefault;
   int autocompletionDelay = 1500;     // minimum 250ms, maximum unlimited
   int resolveDiagnosticsDelay = 5000; // minimum 1000ms, maximum unlimited
   bool resolveDiagOnlyAfterSave = true;
@@ -130,6 +138,8 @@ struct ClangSettings {
   void Save(wxConfigBase *cfg) const;
 
   void OpenExternalSourceFile(const wxString &file, int line);
+
+  void AppendWarningFlags (std::vector<const char*>& out);
 };
 
 enum AiSummarizationChatMode {
@@ -307,6 +317,7 @@ private:
   wxSpinCtrl *m_updatesDays = nullptr;
   wxChoice *m_clangDiagChoice = nullptr;
   wxChoice *m_clangCompChoice = nullptr;
+  wxChoice *m_clangWarnChoice = nullptr;
   wxCheckBox *m_openSourceInside = nullptr;
   wxTextCtrl *m_clangExtSourceCmd = nullptr;
   wxButton *m_clangExtSourceBrowse = nullptr;

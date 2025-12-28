@@ -1742,7 +1742,6 @@ void ArduinoEditor::OnChanged(wxStyledTextEvent &event) {
 
   ArduinoEditorFrame *frame = GetOwnerFrame();
   if (frame && !m_clangSettings.resolveDiagOnlyAfterSave) {
-    APP_DEBUG_LOG("text modified -> schedule diag");
     frame->ScheduleDiagRefresh();
   }
 

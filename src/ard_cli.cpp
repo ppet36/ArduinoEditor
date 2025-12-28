@@ -339,7 +339,7 @@ static void ExpandResponseFileSanitized(const std::string &atArg, std::vector<st
 
   std::string content;
   if (!LoadFileToString(path, content)) {
-    APP_DEBUG_LOG("CLI: ExpandResponseFileSanitized cannot open '%s'", path.c_str());
+    APP_DEBUG_LOG("CLI: ExpandResponseFileSanitized: ignoring '%s'", path.c_str());
     return;
   }
 
@@ -1457,16 +1457,36 @@ bool ArduinoCli::SearchLibraryProvidingHeader(const std::string &header,
 
   const json *libsJson = nullptr;
 
-  // typical structure: { "libraries": [ ... ] }
-  if (j.contains("libraries") && j["libraries"].is_array()) {
-    libsJson = &j["libraries"];
-  } else if (j.is_array()) {
-    // just in case some cli version returns an array directly
-    libsJson = &j;
-  }
+  // Prefer explicit status handling.
+  // When nothing matches, arduino-cli may return: { "status": "success" }
+  if (j.is_object()) {
+    if (j.contains("status") && j["status"].is_string()) {
+      const std::string status = j["status"].get<std::string>();
+      if (status != "success") {
+        wxLogWarning(wxT("arduino-cli lib search returned status '%s'."),
+                     wxString::FromUTF8(status));
+        return false;
+      }
+    }
 
-  if (!libsJson) {
-    wxLogWarning(wxT("arduino-cli lib search JSON has unexpected structure."));
+    // Typical structure: { "libraries": [ ... ] }
+    if (j.contains("libraries")) {
+      if (j["libraries"].is_array()) {
+        libsJson = &j["libraries"];
+      } else {
+        // Weird but valid JSON; treat as empty result rather than hard failure.
+        wxLogWarning(wxT("arduino-cli lib search JSON: 'libraries' is not an array; treating as empty."));
+        return true;
+      }
+    } else {
+      // status success + no 'libraries' => no results
+      return true;
+    }
+  } else if (j.is_array()) {
+    // Just in case some cli version returns an array directly
+    libsJson = &j;
+  } else {
+    wxLogWarning(wxT("arduino-cli lib search JSON has unexpected top-level type."));
     return false;
   }
 
@@ -1519,8 +1539,8 @@ bool ArduinoCli::LoadInstalledLibraries() {
   }
 
   if (!libsJson) {
-    wxLogWarning(wxT("arduino-cli lib list JSON has unexpected structure."));
-    return false;
+    // no installed libraries
+    return true;
   }
 
   std::vector<ArduinoLibraryInfo> tmp;

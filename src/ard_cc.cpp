@@ -1136,6 +1136,41 @@ std::string ArduinoCodeCompletion::GetClangCode(const std::string &filename,
     return code;
   }
 
+  auto isBlankLine = [](const std::string &s) {
+    for (unsigned char c : s) {
+      if (!std::isspace(c))
+        return false;
+    }
+    return true;
+  };
+
+  // Fast-path: cache the insert line for the generated .ino.hpp include.
+  // Typing inside function bodies keeps the same "declarations signature" -> we can avoid a clang scan.
+  const uint64_t declsSig = CcSumDecls(std::string_view(filename), std::string_view(code));
+  auto itCached = m_inoInsertCache.find(declsSig);
+  if (itCached != m_inoInsertCache.end()) {
+    const std::size_t cachedIdx = itCached->second;
+    if (cachedIdx < lines.size() && isBlankLine(lines[cachedIdx])) {
+      fs::path p(filename);
+      std::string hppIncludeName = p.filename().string() + ".hpp";
+
+      lines[cachedIdx] = "#include \"" + hppIncludeName + "\"";
+
+      std::string result;
+      result.reserve(code.size() + 32);
+      for (std::size_t i = 0; i < lines.size(); ++i) {
+        if (i > 0)
+          result.push_back('\n');
+        result += lines[i];
+      }
+
+      APP_DEBUG_LOG("CC: InoInsert cache hit for %s (idx=%zu)", filename.c_str(), cachedIdx);
+      return result;
+    }
+
+    APP_DEBUG_LOG("CC: InoInsert cache stale for %s (idx=%zu) -> recompute", filename.c_str(), cachedIdx);
+  }
+
   // --- 1) Using clang, we can find out where the top-level function definitions are ---
   struct FnInfo {
     unsigned line;
@@ -1166,10 +1201,7 @@ std::string ArduinoCodeCompletion::GetClangCode(const std::string &filename,
         static_cast<int>(args.size()),
         &uf,
         1,
-        CXTranslationUnit_DetailedPreprocessingRecord |
-            CXTranslationUnit_IncludeBriefCommentsInCodeCompletion |
-            CXTranslationUnit_KeepGoing |
-            CXTranslationUnit_LimitSkipFunctionBodiesToPreamble,
+        CXTranslationUnit_KeepGoing,
         &tu);
 
     if (err == CXError_Success && tu) {
@@ -1242,14 +1274,6 @@ std::string ArduinoCodeCompletion::GetClangCode(const std::string &filename,
               return a.line < b.line;
             });
 
-  auto isBlankLine = [](const std::string &s) {
-    for (unsigned char c : s) {
-      if (!std::isspace(c))
-        return false;
-    }
-    return true;
-  };
-
   // --- 2) We find an empty line before the first suitable function ---
   bool foundPlace = false;
   std::size_t insertIdx = 0;
@@ -1280,6 +1304,9 @@ std::string ArduinoCodeCompletion::GetClangCode(const std::string &filename,
   fs::path p(filename);
   std::string hppIncludeName = p.filename().string() + ".hpp";
 
+  // Cache this insert location (keyed by declarations/signatures only).
+  m_inoInsertCache[declsSig] = insertIdx;
+
   lines[insertIdx] = "#include \"" + hppIncludeName + "\"";
 
   // --- 4) Let's put the code back into one string ---
@@ -1299,12 +1326,12 @@ std::string ArduinoCodeCompletion::GetClangCode(const std::string &filename,
 }
 
 std::string ArduinoCodeCompletion::GenerateInoHpp(const std::string &inoFilename, const std::string &code) const {
-  ScopeTimer t("CC: GenerateInoHpp(%s, code.size=%d)", inoFilename.c_str(), code.length());
+  ScopeTimer t("CC: GenerateInoHpp()");
 
   std::string hpp;
   hpp.reserve(code.size() / 2 + 256);
 
-  APP_DEBUG_LOG("CC: GenerateInoHpp: filename=%s, code.length=%d", inoFilename.c_str(), code.length());
+  APP_DEBUG_LOG("CC: GenerateInoHpp (filename=%s, code.length=%d)", inoFilename.c_str(), code.length());
 
   std::string clangFilename = GetClangFilename(inoFilename);
 
@@ -1347,10 +1374,7 @@ std::string ArduinoCodeCompletion::GenerateInoHpp(const std::string &inoFilename
         static_cast<int>(args.size()),
         &uf,
         1,
-        CXTranslationUnit_DetailedPreprocessingRecord |
-            CXTranslationUnit_IncludeBriefCommentsInCodeCompletion |
-            CXTranslationUnit_KeepGoing |
-            CXTranslationUnit_LimitSkipFunctionBodiesToPreamble,
+        CXTranslationUnit_KeepGoing,
         &tu);
 
     if (err != CXError_Success || !tu) {
@@ -1527,9 +1551,11 @@ ClangUnsavedFiles ArduinoCodeCompletion::CreateClangUnsavedFiles(const std::stri
     const std::string absIno = AbsoluteFilename(filename);
     const std::size_t codeHash = HashCode(code);
 
+    uint64_t sum = CcSumDecls(std::string_view(filename), std::string_view(code));
+
     std::string hppCode;
-    auto it = m_inoHeaderCache.find(absIno);
-    if (it != m_inoHeaderCache.end() && it->second.codeHash == codeHash) {
+    auto it = m_inoHeaderCache.find(sum);
+    if (it != m_inoHeaderCache.end()) {
       // cache hit
       hppCode = it->second.hppCode;
       APP_DEBUG_LOG("CC: InoHpp cache hit for %s", absIno.c_str());
@@ -1541,7 +1567,7 @@ ClangUnsavedFiles ArduinoCodeCompletion::CreateClangUnsavedFiles(const std::stri
       InoHeaderCacheEntry entry;
       entry.codeHash = codeHash;
       entry.hppCode = hppCode;
-      m_inoHeaderCache[absIno] = std::move(entry);
+      m_inoHeaderCache[sum] = std::move(entry);
     }
 
     uf.hppFilename = absIno + ".hpp";
@@ -1566,7 +1592,7 @@ CXTranslationUnit ArduinoCodeCompletion::GetTranslationUnit(const std::string &f
                                                             int *outAddedLines,
                                                             std::string *outMainFile) {
   // WARNING: expects that m_ccMutex is held!
-  ScopeTimer t("GetTranslationUnit()");
+  ScopeTimer t("CC: GetTranslationUnit()");
 
   APP_DEBUG_LOG("CC: GetTranslationUnit: filename=%s, code.length=%d", filename.c_str(), code.length());
 
@@ -1589,7 +1615,7 @@ CXTranslationUnit ArduinoCodeCompletion::GetTranslationUnit(const std::string &f
 
     const auto &clangArgs = GetCompilerArgs();
     std::vector<const char *> args;
-    args.reserve(clangArgs.size() + 4);
+    args.reserve(clangArgs.size() + 20); // next optional flags + warning flags
 
     for (const auto &a : clangArgs) {
       args.push_back(a.c_str());
@@ -1616,13 +1642,16 @@ CXTranslationUnit ArduinoCodeCompletion::GetTranslationUnit(const std::string &f
       APP_TRACE_LOG("CC: CLP: Arduino.h");
     }
 
+    m_clangSettings.AppendWarningFlags(args);
+
     APP_DEBUG_LOG("CC: [TU NEW] %s (%d args)", uf.mainFilename.c_str(), args.size());
 
     const unsigned parseOptsFull =
         CXTranslationUnit_DetailedPreprocessingRecord |
         CXTranslationUnit_IncludeBriefCommentsInCodeCompletion |
         CXTranslationUnit_KeepGoing |
-        CXTranslationUnit_LimitSkipFunctionBodiesToPreamble;
+        CXTranslationUnit_PrecompiledPreamble |
+        CXTranslationUnit_CreatePreambleOnFirstParse;
 
     const unsigned parseOptsNoPreamble =
         (parseOptsFull & ~CXTranslationUnit_LimitSkipFunctionBodiesToPreamble);
@@ -2027,7 +2056,6 @@ void ArduinoCodeCompletion::RefreshDiagnosticsAsync(const std::string &filename,
   std::vector<SketchFileBuffer> filesSnapshot;
   TryCollectSketchFiles(filesSnapshot);
 
-  // async worker - similar to ShowAutoCompletionAsync
   std::thread([this, filename, code, filesSnapshot = std::move(filesSnapshot)]() {
     CcFilesSnapshotGuard guard(&filesSnapshot);
 
@@ -2045,7 +2073,7 @@ std::vector<CompletionItem> ArduinoCodeCompletion::GetCompletions(const std::str
                                                                   int line,
                                                                   int column) {
   std::lock_guard<std::mutex> lock(m_ccMutex);
-  ScopeTimer t("GetCompletions()");
+  ScopeTimer t("CC: GetCompletions()");
 
   std::vector<CompletionItem> items;
 
@@ -2078,7 +2106,7 @@ std::vector<CompletionItem> ArduinoCodeCompletion::GetCompletions(const std::str
 
   auto end = Clock::now();
   auto us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-  APP_DEBUG_LOG("- clang_codeCompleteAt() %lld s.", static_cast<long long>(us));
+  APP_DEBUG_LOG("CC: - clang_codeCompleteAt() %lldus", static_cast<long long>(us));
 
   start = Clock::now();
 
@@ -2131,13 +2159,13 @@ std::vector<CompletionItem> ArduinoCodeCompletion::GetCompletions(const std::str
 
   end = Clock::now();
   us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-  APP_DEBUG_LOG("- extracting %d completions & sorting %lld s.", items.size(), static_cast<long long>(us));
+  APP_DEBUG_LOG("CC: - extracting %d completions & sorting %lldus", items.size(), static_cast<long long>(us));
   return items;
 }
 
 void ArduinoCodeCompletion::FilterAndSortCompletionsWithPrefix(const std::string &prefix, std::vector<CompletionItem> &inOutCompletions) {
 
-  ScopeTimer("FilterAndSortCompletionsWithPrefix(%s)", prefix.c_str());
+  ScopeTimer("CC: FilterAndSortCompletionsWithPrefix(%s)", prefix.c_str());
 
   inOutCompletions.erase(
       std::remove_if(inOutCompletions.begin(), inOutCompletions.end(),
@@ -2223,7 +2251,7 @@ void ArduinoCodeCompletion::FilterAndSortCompletionsWithPrefix(const std::string
 bool ArduinoCodeCompletion::TryCollectSketchFiles(std::vector<SketchFileBuffer> &outFiles) const {
   outFiles.clear();
 
-  // owner je in reality ArduinoEditorFrame
+  // owner is in reality ArduinoEditorFrame
   ArduinoEditorFrame *frame = wxDynamicCast(m_eventHandler, ArduinoEditorFrame);
   if (!frame) {
     return false;
@@ -2251,38 +2279,49 @@ std::vector<std::string> ArduinoCodeCompletion::GetCompilerArgs(const std::vecto
     return {};
   }
 
-  if (arduinoCli->IsInitializedFromCompileCommands()) {
-    return arduinoCli->GetCompilerArgs();
-  }
+  ScopeTimer t("CC: GetCompilerArgs()");
 
+  APP_DEBUG_LOG("CC: GetCompilerArgs(%zu files)", files.size());
+
+  std::vector<std::string> result;
   std::vector<std::string> compArgs = arduinoCli->GetCompilerArgs();
-  std::vector<std::string> libsIncludes = ResolveLibrariesIncludes(files);
 
-  if (libsIncludes.empty()) {
-    return compArgs;
-  }
+  if (arduinoCli->IsInitializedFromCompileCommands()) {
+    // If it is evaluated via compile_command, the library includes
+    // are already in the arguments from ArduinoCli.
 
-  std::vector<std::string> merged;
-  merged.reserve(compArgs.size() + libsIncludes.size());
-  bool injected = false;
+    result = compArgs;
+  } else {
+    std::vector<std::string> libsIncludes = ResolveLibrariesIncludes(files);
 
-  for (const auto &a : compArgs) {
-    merged.push_back(a);
-    if (!injected && a.size() >= 2 && a[0] == '-' && a[1] == 'I') {
-      for (const auto &dir : libsIncludes) {
-        merged.push_back("-I" + dir);
+    if (!libsIncludes.empty()) {
+      std::vector<std::string> merged;
+      merged.reserve(compArgs.size() + libsIncludes.size());
+      bool injected = false;
+
+      for (const auto &a : compArgs) {
+        merged.push_back(a);
+        if (!injected && a.size() >= 2 && a[0] == '-' && a[1] == 'I') {
+          for (const auto &dir : libsIncludes) {
+            merged.push_back("-I" + dir);
+          }
+          injected = true;
+        }
       }
-      injected = true;
+
+      if (!injected) {
+        for (const auto &dir : libsIncludes) {
+          merged.push_back("-I" + dir);
+        }
+      }
+
+      result = merged;
+    } else {
+      result = compArgs;
     }
   }
 
-  if (!injected) {
-    for (const auto &dir : libsIncludes) {
-      merged.push_back("-I" + dir);
-    }
-  }
-
-  return merged;
+  return result;
 }
 
 void ArduinoCodeCompletion::ShowAutoCompletionAsync(wxStyledTextCtrl *editor, std::string filename, CompletionMetadata &metadata, wxEvtHandler *handler) {
@@ -2798,8 +2837,7 @@ bool ArduinoCodeCompletion::FindSiblingFunctionDefinition(CXCursor declCursor, J
 
   int wantedArgs = clang_Cursor_getNumArguments(declCursor);
   CXType declType = clang_getCursorType(declCursor);
-  bool wantedVariadic =
-      clang_isFunctionTypeVariadic(declType) != 0;
+  bool wantedVariadic = clang_isFunctionTypeVariadic(declType) != 0;
 
   // Candidates: header -> header.cpp / header.cc / header.cxx
   static const char *exts[] = {".cpp", ".cc", ".cxx"};
@@ -2810,10 +2848,15 @@ bool ArduinoCodeCompletion::FindSiblingFunctionDefinition(CXCursor declCursor, J
       continue;
 
     const auto &clangArgs = GetCompilerArgs();
+
     std::vector<const char *> args;
-    args.reserve(clangArgs.size());
-    for (const auto &a : clangArgs)
+    args.reserve(clangArgs.size() + 2);
+    for (const auto &a : clangArgs) {
       args.push_back(a.c_str());
+    }
+
+    args.push_back("-x");
+    args.push_back("c++-header");
 
     CXTranslationUnit tu = nullptr;
     CXErrorCode err = clang_parseTranslationUnit2(
@@ -2823,10 +2866,7 @@ bool ArduinoCodeCompletion::FindSiblingFunctionDefinition(CXCursor declCursor, J
         (int)args.size(),
         nullptr,
         0,
-        CXTranslationUnit_DetailedPreprocessingRecord |
-            CXTranslationUnit_IncludeBriefCommentsInCodeCompletion |
-            CXTranslationUnit_KeepGoing |
-            CXTranslationUnit_LimitSkipFunctionBodiesToPreamble,
+        CXTranslationUnit_KeepGoing,
         &tu);
 
     if (err != CXError_Success || !tu)
@@ -3024,10 +3064,8 @@ bool ArduinoCodeCompletion::FindSiblingFunctionDefinition(const std::string &fil
           (int)args.size(),
           nullptr,
           0,
-          CXTranslationUnit_DetailedPreprocessingRecord |
-              CXTranslationUnit_IncludeBriefCommentsInCodeCompletion |
-              CXTranslationUnit_KeepGoing |
-              CXTranslationUnit_LimitSkipFunctionBodiesToPreamble,
+          CXTranslationUnit_KeepGoing |
+          CXTranslationUnit_LimitSkipFunctionBodiesToPreamble,
           &htu);
 
       if (err != CXError_Success || !htu) {
@@ -4109,18 +4147,30 @@ void ArduinoCodeCompletion::InvalidateTranslationUnit() {
     }
   }
   m_tuCache.clear();
+
+  for (auto &kv : m_projectTuCache) {
+    if (kv.second.tu) {
+      clang_disposeTranslationUnit(kv.second.tu);
+      kv.second.tu = nullptr;
+    }
+  }
+  m_projectTuCache.clear();
+
   m_symbolCache.clear();
   m_inoHeaderCache.clear();
+  m_inoInsertCache.clear();
 
   m_completionSession.valid = false;
   m_completionSession.baseItems.clear();
 
   m_lastDiagHash = 0;
   m_lastProjectErrors.clear();
+
+  m_resolvedIncludesCache.clear();
 }
 
 bool ArduinoCodeCompletion::InitTranslationUnitForIno() {
-  ScopeTimer t("InitTranslationUnitForIno()");
+  ScopeTimer t("CC: InitTranslationUnitForIno()");
   APP_DEBUG_LOG("CC: InitTranslationUnitForIno()");
 
   std::string sketchPath = arduinoCli->GetSketchPath();
@@ -4197,167 +4247,366 @@ void ArduinoCodeCompletion::RefreshProjectDiagnosticsAsync(const std::vector<Ske
 }
 
 std::vector<ArduinoParseError> ArduinoCodeCompletion::ComputeProjectDiagnosticsLocked(const std::vector<SketchFileBuffer> &files) {
-  ScopeTimer t("CC: ComputeProjectDiagnosticsLocked(%d files)", files.size());
+  ScopeTimer t("CC: ComputeProjectDiagnosticsLocked(%zu files)", files.size());
   std::vector<ArduinoParseError> allErrors;
 
-  APP_DEBUG_LOG("CC: ComputeProjectDiagnosticsLocked: files.length=%d", files.size());
+  APP_DEBUG_LOG("CC: ComputeProjectDiagnosticsLocked(%zu files)", files.size());
 
-  if (!arduinoCli) {
+  if (!arduinoCli || !index) {
     return allErrors;
   }
 
-  std::string sketchDir = arduinoCli->GetSketchPath();
+  const std::string sketchDir = arduinoCli->GetSketchPath();
 
-  // Common clang args
-  const auto &clangArgs = GetCompilerArgs(files);
-  std::vector<const char *> args;
-  args.reserve(clangArgs.size() + 4);
+  // -----------------------------
+  // Base compiler args (common for all files in this snapshot)
+  // -----------------------------
+  const std::vector<std::string> clangArgs = GetCompilerArgs(files);
+
+  std::vector<const char *> baseArgs;
+  baseArgs.reserve(clangArgs.size() + 4);
   for (const auto &a : clangArgs) {
-    args.push_back(a.c_str());
+    baseArgs.push_back(a.c_str());
   }
 
-  CXIndex index = clang_createIndex(0, 0);
-  if (!index) {
-    ArduinoParseError e;
-    e.file = sketchDir;
-    e.line = 0;
-    e.column = 0;
-    e.message = "Failed to create clang index";
-    e.severity = CXDiagnostic_Error;
-    allErrors.push_back(std::move(e));
-    return allErrors;
-  }
+  // -----------------------------
+  // Unsaved headers (open headers only) + stable signature hash
+  // -----------------------------
+  struct HeaderItem {
+    std::string abs;
+    const SketchFileBuffer *f = nullptr;
+  };
 
-  //  We prepare unsaved headers once-only
-  std::vector<std::string> headerAbsPaths;
-  std::vector<CXUnsavedFile> headerUnsaved;
-
-  headerAbsPaths.reserve(files.size());
-  headerUnsaved.reserve(files.size());
+  std::vector<HeaderItem> headers;
+  headers.reserve(files.size());
 
   for (const auto &hf : files) {
     if (!isHeaderFile(hf.filename))
       continue;
 
-    headerAbsPaths.push_back(AbsoluteFilename(hf.filename)); // must live for c_str()
-    CXUnsavedFile huf{};
-    huf.Filename = headerAbsPaths.back().c_str();
-    huf.Contents = hf.code.c_str(); // hf.code lives for the duration of the call (filesCopy in the thread)
-    huf.Length = hf.code.size();
-    headerUnsaved.push_back(huf);
+    HeaderItem it;
+    it.abs = AbsoluteFilename(hf.filename);
+    it.f = &hf;
+    headers.push_back(std::move(it));
   }
 
-  //  For each source file, we create a TU with its own unsaved + all headers
+  std::sort(headers.begin(), headers.end(),
+            [](const HeaderItem &a, const HeaderItem &b) {
+              return a.abs < b.abs;
+            });
+
+  // FNV-1a hash of (headerAbsPath + '\n' + HashCode(headerText)) for all headers, in stable order.
+  std::size_t headersSigHash = 1469598103934665603ull;
+  auto fnvMix = [&headersSigHash](unsigned char c) {
+    headersSigHash ^= c;
+    headersSigHash *= 1099511628211ull;
+  };
+
+  std::vector<std::string> headerAbsPaths;
+  std::vector<CXUnsavedFile> headerUnsaved;
+
+  headerAbsPaths.reserve(headers.size());
+  headerUnsaved.reserve(headers.size());
+
+  for (const auto &h : headers) {
+    headerAbsPaths.push_back(h.abs);
+
+    const std::size_t codeHash = HashCode(h.f->code);
+
+    for (unsigned char c : headerAbsPaths.back())
+      fnvMix(c);
+    fnvMix((unsigned char)'\n');
+
+    // mix codeHash bytes (portable enough for our local cache)
+    for (std::size_t i = 0; i < sizeof(std::size_t); ++i) {
+      fnvMix((unsigned char)((codeHash >> (i * 8)) & 0xFF));
+    }
+
+    CXUnsavedFile uf{};
+    uf.Filename = headerAbsPaths.back().c_str();
+    uf.Contents = h.f->code.c_str(); // backed by files snapshot in the worker thread
+    uf.Length = h.f->code.size();
+    headerUnsaved.push_back(uf);
+  }
+
+  // -----------------------------
+  // Arg hash helper: base args + file-specific extras
+  // Note: clang_reparseTranslationUnit() cannot change command line args,
+  // so if args change we must recreate the TU.
+  // -----------------------------
+  auto HashArgsForTU = [&](bool isHeaderTU, bool isInoMain) -> std::size_t {
+    std::size_t h = 1469598103934665603ull;
+    auto mix = [&h](unsigned char c) {
+      h ^= c;
+      h *= 1099511628211ull;
+    };
+
+    auto mixStr = [&](const char *s) {
+      if (!s)
+        return;
+      for (const unsigned char *p = (const unsigned char *)s; *p; ++p)
+        mix(*p);
+      mix(0); // delimiter
+    };
+
+    for (const auto &a : clangArgs) {
+      mixStr(a.c_str());
+    }
+
+    if (isHeaderTU) {
+      mixStr("-x");
+      mixStr("c++-header");
+    }
+
+    if (isInoMain) {
+      mixStr("-include");
+      mixStr("Arduino.h");
+    }
+
+    return h;
+  };
+
+  // Keep track of files in this snapshot -> evict removed entries from cache.
+  std::unordered_set<std::string> keepKeys;
+  keepKeys.reserve(files.size());
+
+  // -----------------------------
+  // Build / update per-file TUs
+  // -----------------------------
   for (const auto &f : files) {
     if (!isSourceFile(f.filename))
       continue;
 
-    APP_DEBUG_LOG("CC: ComputeProjectDiagnosticsLocked: adding file %s with length %d", f.filename.c_str(), f.code.length());
+    const std::string key = AbsoluteFilename(f.filename);
+    keepKeys.insert(key);
 
-    ClangUnsavedFiles uf = CreateClangUnsavedFiles(f.filename, f.code);
+    const std::size_t codeHash = HashCode(f.code);
 
-    std::vector<const char *> localArgs = args;
+    const std::string mainFilename = GetClangFilename(f.filename);
 
-    bool isHeaderTU = isHeaderFile(uf.mainFilename);
+    // command line extras for header TU / ino TU
+    const bool isHeaderTU = isHeaderFile(mainFilename);
+    const bool isInoMain = HasSuffix(mainFilename, ".ino.cpp");
+
+    std::vector<const char *> localArgs = baseArgs;
+
     if (isHeaderTU) {
       localArgs.push_back("-x");
       localArgs.push_back("c++-header");
     }
 
-    bool isInoMain = HasSuffix(uf.mainFilename, ".ino.cpp");
     if (isInoMain) {
       localArgs.push_back("-include");
       localArgs.push_back("Arduino.h");
     }
 
-    // unsaved = main file (+ .ino.hpp) + all open headers
-    std::vector<CXUnsavedFile> unsaved;
-    unsaved.reserve(uf.count + headerUnsaved.size());
+    m_clangSettings.AppendWarningFlags(localArgs);
 
-    for (unsigned i = 0; i < uf.count; ++i) {
-      unsaved.push_back(uf.files[i]);
-    }
-    for (const auto &hu : headerUnsaved) {
-      unsaved.push_back(hu);
-    }
+    const std::size_t argsHash = HashArgsForTU(isHeaderTU, isInoMain);
 
-    CXTranslationUnit tu = nullptr;
 
-    CXErrorCode err = clang_parseTranslationUnit2(
-        index,
-        uf.mainFilename.c_str(),
-        localArgs.data(),
-        (int)localArgs.size(),
-        unsaved.empty() ? nullptr : unsaved.data(),
-        (int)unsaved.size(),
-        CXTranslationUnit_DetailedPreprocessingRecord |
-            CXTranslationUnit_IncludeBriefCommentsInCodeCompletion |
-            CXTranslationUnit_KeepGoing |
-            CXTranslationUnit_LimitSkipFunctionBodiesToPreamble,
-        &tu);
-
-    if (err != CXError_Success || !tu) {
-      ArduinoParseError e;
-      e.file = f.filename;
-      e.line = 0;
-      e.column = 0;
-      e.message =
-          "Failed to parse translation unit (libclang error " +
-          std::to_string(static_cast<int>(err)) + ")";
-      e.severity = CXDiagnostic_Error;
-      allErrors.push_back(std::move(e));
-      continue;
+    // Find or create cache entry
+    auto it = m_projectTuCache.find(key);
+    if (it == m_projectTuCache.end()) {
+      ProjectTuEntry e;
+      e.key = key;
+      e.mainFilename = mainFilename;
+      e.codeHash = 0;
+      e.headersSigHash = 0;
+      e.argsHash = 0;
+      e.tu = nullptr;
+      it = m_projectTuCache.emplace(key, std::move(e)).first;
     }
 
-    // --- drag diagnostics from this TU ---
-    unsigned numDiags = clang_getNumDiagnostics(tu);
+    ProjectTuEntry &entry = it->second;
 
-    for (unsigned i = 0; i < numDiags; ++i) {
-      CXDiagnostic diag = clang_getDiagnostic(tu, i);
-      CXDiagnosticSeverity severity = clang_getDiagnosticSeverity(diag);
+    // Decide what to do:
+    // - recreate TU if it doesn't exist or args/main file changed (reparse can't change args)
+    // - otherwise, reparse if code/header signature changed
+    const bool needRecreate =
+        (!entry.tu) ||
+        (entry.argsHash != argsHash) ||
+        (entry.mainFilename != mainFilename);
 
-      CXString spellingStr = clang_getDiagnosticSpelling(diag);
-      const char *spellingCStr = clang_getCString(spellingStr);
+    const bool needReparse =
+        (!needRecreate) &&
+        ((entry.codeHash != codeHash) ||
+         (entry.headersSigHash != headersSigHash));
 
-      CXSourceLocation loc = clang_getDiagnosticLocation(diag);
-      CXFile file;
-      unsigned line = 0, column = 0, offset = 0;
-      clang_getSpellingLocation(loc, &file, &line, &column, &offset);
+    if (needRecreate) {
+      ClangUnsavedFiles uf = CreateClangUnsavedFiles(f.filename, f.code);
 
-      std::string fileName;
-      if (file) {
-        CXString fileNameStr = clang_getFileName(file);
-        if (const char *fn = clang_getCString(fileNameStr)) {
-          fileName = fn;
-        }
-        clang_disposeString(fileNameStr);
+      if (entry.tu) {
+        clang_disposeTranslationUnit(entry.tu);
+        entry.tu = nullptr;
       }
 
-      ArduinoParseError e;
-      e.file = fileName;
-      e.line = line;
-      e.column = column;
-      e.message = spellingCStr ? spellingCStr : "";
-      e.severity = severity;
+      // unsaved = main file (+ .ino.hpp) + all open headers
+      std::vector<CXUnsavedFile> unsaved;
+      unsaved.reserve(uf.count + headerUnsaved.size());
+      for (unsigned i = 0; i < uf.count; ++i) {
+        unsaved.push_back(uf.files[i]);
+      }
+      for (const auto &hu : headerUnsaved) {
+        unsaved.push_back(hu);
+      }
 
-      clang_disposeString(spellingStr);
-      clang_disposeDiagnostic(diag);
+      APP_DEBUG_LOG("CC: [PROJ TU NEW] %s (%d args, %d unsaved, hdrSig=%zu)",
+                    uf.mainFilename.c_str(),
+                    (int)localArgs.size(),
+                    (int)unsaved.size(),
+                    headersSigHash);
 
-      if (!fileName.empty() &&
-          fileName.rfind(sketchDir, 0) == 0) {
+      CXTranslationUnit tu = nullptr;
+      CXErrorCode err = clang_parseTranslationUnit2(
+          index,
+          uf.mainFilename.c_str(),
+          localArgs.empty() ? nullptr : localArgs.data(),
+          (int)localArgs.size(),
+          unsaved.empty() ? nullptr : unsaved.data(),
+          (int)unsaved.size(),
+          CXTranslationUnit_KeepGoing  | CXTranslationUnit_PrecompiledPreamble | CXTranslationUnit_CreatePreambleOnFirstParse,
+          &tu);
+
+      if ((err != CXError_Success || !tu) && tu) {
+        // Some libclang builds may return a TU even when err != Success.
+        APP_DEBUG_LOG("CC: project parse returned TU but err=%d (%s) -> continuing",
+                      (int)err, ClangErrorToString(err));
+        err = CXError_Success;
+      }
+
+      if (err != CXError_Success || !tu) {
+        ArduinoParseError e;
+        e.file = key;
+        e.line = 0;
+        e.column = 0;
+        e.message =
+            "Failed to parse translation unit (libclang error " +
+            std::to_string(static_cast<int>(err)) + " / " + ClangErrorToString(err) + ")";
+        e.severity = CXDiagnostic_Error;
         allErrors.push_back(std::move(e));
+
+        APP_DEBUG_LOG("CC: [PROJ TU FAIL] %s: err=%d (%s) tu=%p",
+                      uf.mainFilename.c_str(), (int)err, ClangErrorToString(err), (void *)tu);
+
+        // keep entry fields updated for future attempts, but leave tu=null
+        entry.mainFilename = uf.mainFilename;
+        entry.codeHash = codeHash;
+        entry.headersSigHash = headersSigHash;
+        entry.argsHash = argsHash;
+        entry.cachedErrors.clear();
+        continue;
       }
+
+      entry.tu = tu;
+      entry.mainFilename = uf.mainFilename;
+      entry.codeHash = codeHash;
+      entry.headersSigHash = headersSigHash;
+      entry.argsHash = argsHash;
+
+      // refresh cached diagnostics
+      entry.cachedErrors = CollectDiagnosticsLocked(entry.tu);
+    } else if (needReparse) {
+      ClangUnsavedFiles uf = CreateClangUnsavedFiles(f.filename, f.code);
+
+      // unsaved = main file (+ .ino.hpp) + all open headers
+      std::vector<CXUnsavedFile> unsaved;
+      unsaved.reserve(uf.count + headerUnsaved.size());
+      for (unsigned i = 0; i < uf.count; ++i) {
+        unsaved.push_back(uf.files[i]);
+      }
+      for (const auto &hu : headerUnsaved) {
+        unsaved.push_back(hu);
+      }
+
+      APP_DEBUG_LOG("CC: [PROJ TU REPARSE] %s (code/header changed, %d unsaved)",
+                    entry.mainFilename.c_str(),
+                    (int)unsaved.size());
+
+      clang_reparseTranslationUnit(
+          entry.tu,
+          (unsigned)unsaved.size(),
+          unsaved.empty() ? nullptr : unsaved.data(),
+          clang_defaultReparseOptions(entry.tu));
+
+      entry.codeHash = codeHash;
+      entry.headersSigHash = headersSigHash;
+
+      // refresh cached diagnostics
+      entry.cachedErrors = CollectDiagnosticsLocked(entry.tu);
+    } else {
+      APP_DEBUG_LOG("CC: [PROJ TU CACHE-HIT] %s", entry.mainFilename.c_str());
     }
 
-    clang_disposeTranslationUnit(tu);
+    // Append cached errors (already filtered to sketch dir by CollectDiagnosticsLocked)
+    for (const auto &e : entry.cachedErrors) {
+      allErrors.push_back(e);
+    }
   }
 
-  clang_disposeIndex(index);
+  // -----------------------------
+  // Evict cached TUs that no longer exist in this snapshot
+  // -----------------------------
+  for (auto it = m_projectTuCache.begin(); it != m_projectTuCache.end();) {
+    if (keepKeys.find(it->first) == keepKeys.end()) {
+      if (it->second.tu) {
+        clang_disposeTranslationUnit(it->second.tu);
+        it->second.tu = nullptr;
+      }
+      it = m_projectTuCache.erase(it);
+    } else {
+      ++it;
+    }
+  }
+
+  // -----------------------------
+  // Final sort + dedup (keeps hash stable and avoids header duplicates)
+  // -----------------------------
+  auto severityRank = [](CXDiagnosticSeverity s) {
+    switch (s) {
+      case CXDiagnostic_Error:
+      case CXDiagnostic_Fatal:
+        return 0;
+      case CXDiagnostic_Warning:
+        return 1;
+      default:
+        return 2;
+    }
+  };
+
+  std::sort(allErrors.begin(), allErrors.end(),
+            [&](const ArduinoParseError &a, const ArduinoParseError &b) {
+              int ra = severityRank(a.severity);
+              int rb = severityRank(b.severity);
+              if (ra != rb)
+                return ra < rb;
+
+              if (a.file != b.file)
+                return a.file < b.file;
+              if (a.line != b.line)
+                return a.line < b.line;
+              if (a.column != b.column)
+                return a.column < b.column;
+              if (a.message != b.message)
+                return a.message < b.message;
+              return (int)a.severity < (int)b.severity;
+            });
+
+  allErrors.erase(std::unique(allErrors.begin(), allErrors.end(),
+                             [](const ArduinoParseError &a, const ArduinoParseError &b) {
+                               return a.severity == b.severity &&
+                                      a.file == b.file &&
+                                      a.line == b.line &&
+                                      a.column == b.column &&
+                                      a.message == b.message;
+                             }),
+                  allErrors.end());
+
   return allErrors;
 }
 
+
 std::vector<std::string> ArduinoCodeCompletion::ResolveLibrariesIncludes(const std::vector<SketchFileBuffer> &files) const {
-  // XXY
   std::vector<std::string> result;
 
   if (!arduinoCli) {
@@ -4367,6 +4616,16 @@ std::vector<std::string> ArduinoCodeCompletion::ResolveLibrariesIncludes(const s
   std::string sketchDirStr = arduinoCli->GetSketchPath();
   if (sketchDirStr.empty()) {
     return result;
+  }
+
+  uint64_t sum = CcSumIncludes(files);
+
+  {
+    std::lock_guard<std::mutex> lk(m_resolvedIncludesCacheMutex);
+    auto it = m_resolvedIncludesCache.find(sum);
+    if (it != m_resolvedIncludesCache.end()) {
+      return it->second;
+    }
   }
 
   // a unique list of header names to be resolved through libraries
@@ -4383,7 +4642,12 @@ std::vector<std::string> ArduinoCodeCompletion::ResolveLibrariesIncludes(const s
   }
 
   result = arduinoCli->ResolveLibraries(includes);
-  return result;
+
+  {
+    std::lock_guard<std::mutex> lk(m_resolvedIncludesCacheMutex);
+    m_resolvedIncludesCache[sum] = result;
+    return m_resolvedIncludesCache[sum];
+  }
 }
 
 std::vector<ArduinoParseError> ArduinoCodeCompletion::GetLastProjectErrors() const {
@@ -4483,8 +4747,12 @@ bool ArduinoCodeCompletion::IsClangTargetSupported(const std::string &target) {
   return ok;
 }
 
-ArduinoCodeCompletion::ArduinoCodeCompletion(ArduinoCli *ardCli, wxEvtHandler *eventHandler)
-    : arduinoCli(ardCli), m_eventHandler(eventHandler) {
+void ArduinoCodeCompletion::ApplySettings (const ClangSettings &settings) {
+  m_clangSettings = settings;
+}
+
+ArduinoCodeCompletion::ArduinoCodeCompletion(ArduinoCli *ardCli, const ClangSettings &clangSettings, wxEvtHandler *eventHandler)
+    : arduinoCli(ardCli), m_clangSettings(clangSettings), m_eventHandler(eventHandler) {
   index = clang_createIndex(0, 0);
 
   CXString v = clang_getClangVersion();
@@ -4502,6 +4770,15 @@ ArduinoCodeCompletion::~ArduinoCodeCompletion() {
     }
   }
   m_tuCache.clear();
+
+
+  for (auto &kv : m_projectTuCache) {
+    if (kv.second.tu) {
+      clang_disposeTranslationUnit(kv.second.tu);
+      kv.second.tu = nullptr;
+    }
+  }
+  m_projectTuCache.clear();
 
   clang_disposeIndex(index);
 }

@@ -73,7 +73,7 @@ private:
   wxConfigBase *config;
   ArduinoCli *arduinoCli = nullptr;
   ArduinoCodeCompletion *completion = nullptr;
-  int m_tabPopupIndex = wxNOT_FOUND;
+  bool m_firstInitCompleted = false;
 
   ArduinoAiActions m_aiGlobalActions{/*editor=*/nullptr};
   void UpdateAiGlobalEditor();
@@ -166,15 +166,20 @@ private:
   void OnChangeBoardOptions(wxCommandEvent &);
   void OnClangArgsReady(wxThreadEvent &event);
 
+  // wxAuiNotebook
   void OnNotebookPageChanged(wxBookCtrlEvent &event);
   void OnNotebookPageChanging(wxBookCtrlEvent &event);
   void OnNotebookPageClose(wxAuiNotebookEvent &e);
   bool ConfirmAndCloseTab(int idx);
+
+  int m_tabPopupIndex = wxNOT_FOUND;
   void OnNotebookTabRightUp(wxAuiNotebookEvent &e);
+
   void OnTabMenuClose(wxCommandEvent &);
   void OnTabMenuCloseOthers(wxCommandEvent &);
   void OnTabMenuCloseAll(wxCommandEvent &);
 
+  // Sketch management
   void DeleteSketchFile(const wxString &filename);
 
   void OnNewSketch(wxCommandEvent &evt);
@@ -185,10 +190,12 @@ private:
   void OnExit(wxCommandEvent &evt);
   void OnColors(wxCommandEvent &evt);
 
+  // Navigation
   void OnNavBack(wxCommandEvent &event);
   void OnNavForward(wxCommandEvent &event);
   void OnFindSymbol(wxCommandEvent &event);
 
+  // Project menu
   void OnProjectClean(wxCommandEvent &event);
   void CleanProjectIfFqbnChanged(const std::string &newFqbn);
   void OnProjectBuild(wxCommandEvent &event);
@@ -264,6 +271,7 @@ private:
   void RequestShowLibraries(const std::vector<ArduinoLibraryInfo> &libs);
   void CheckMissingHeadersInDiagnostics(const std::vector<ArduinoParseError> &errors);
   std::vector<std::string> m_queriedMissingHeaders;
+  std::vector<std::string> m_notFoundHeaders;
   std::unordered_set<std::string> m_wantedHeaders;
   std::vector<CandidateGroup> m_foundLibraryGroups;
   void OnLibrariesFound(wxThreadEvent &evt);

@@ -341,4 +341,3 @@ void ArduinoAboutDialog::OnHtmlLink(wxHtmlLinkEvent &event) {
     event.Skip();
   }
 }
-

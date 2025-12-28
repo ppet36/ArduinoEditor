@@ -22,6 +22,9 @@
 #include "ard_ap.hpp"
 #include "ard_fmtdlg.hpp"
 #include "utils.hpp"
+#include <cstddef>
+#include <cstdint>
+#include <vector>
 #include <nlohmann/json.hpp>
 #include <wx/artprov.h>
 #include <wx/bmpbuttn.h>
@@ -45,6 +48,52 @@ const wxString defaultClangFormat = wxT(
     "  \"BreakBeforeBraces\": \"Attach\",\n"
     "  \"SpaceBeforeParens\": \"ControlStatements\"\n"
     "}\n");
+
+struct CStrListView {
+  const char* const* data = nullptr;
+  std::size_t size = 0;
+};
+
+inline CStrListView GetWarningFlagsView(ClangWarningMode mode) {
+  static constexpr const char* kOff[] = { "-w" };
+  static constexpr const char* kDefault[] = { };
+
+  static constexpr const char* kArduinoLike[] = {
+    "-Wformat=2",
+    "-Wshadow",
+    "-Wunused-variable",
+    "-Wunused-parameter",
+    "-Wsign-compare",
+    "-Wreorder",
+    "-Wimplicit-fallthrough"
+  };
+
+  static constexpr const char* kStrict[] = {
+    "-Wall",
+    "-Wextra",
+    "-Wpedantic",
+    "-Wconversion",
+    "-Wformat=2",
+    "-Wshadow",
+    "-Wunused-variable",
+    "-Wunused-parameter",
+    "-Wsign-compare",
+    "-Wreorder",
+    "-Wimplicit-fallthrough"
+  };
+
+  switch (mode) {
+    case ClangWarningMode::warningOff:
+      return { kOff, sizeof(kOff) / sizeof(kOff[0]) };
+    case ClangWarningMode::warningDefault:
+      return { kDefault, 0 };
+    case ClangWarningMode::warningArduinoLike:
+      return { kArduinoLike, sizeof(kArduinoLike) / sizeof(kArduinoLike[0]) };
+    case ClangWarningMode::warningStrict:
+      return { kStrict, sizeof(kStrict) / sizeof(kStrict[0]) };
+  }
+  return { kDefault, 0 };
+}
 
 static wxColour ReadEditorColour(wxConfigBase *cfg, const wxString &prefix, ThemeMode themeMode, const wxColour &defColor) {
   long r, g, b;
@@ -428,6 +477,11 @@ void ClangSettings::Load(wxConfigBase *cfg) {
   else
     resolveMode = internalResolver;
 
+  if (cfg->Read(wxT("Clang/WarningMode"), &lw))
+    warningMode = static_cast<ClangWarningMode>(lw);
+  else
+    warningMode = warningDefault;  
+
   ConfigReadInt(cfg, wxT("Clang/AutocompletionDelay"), autocompletionDelay, 1500);
   ConfigReadInt(cfg, wxT("Clang/ResolveDiagnosticsDelay"), resolveDiagnosticsDelay, 5000);
   ConfigReadBool(cfg, wxT("Clang/ResolveOnlyAfterSave"), resolveDiagOnlyAfterSave, true);
@@ -439,6 +493,7 @@ void ClangSettings::Save(wxConfigBase *cfg) const {
   cfg->Write(wxT("Clang/DiagnosticMode"), (long)diagnosticMode);
   cfg->Write(wxT("Clang/CompletionMode"), (long)completionMode);
   cfg->Write(wxT("Clang/ResolveMode"), (long)resolveMode);
+  cfg->Write(wxT("Clang/WarningMode"), (long)warningMode);
   cfg->Write(wxT("Clang/AutocompletionDelay"), (long)autocompletionDelay);
   cfg->Write(wxT("Clang/ResolveDiagnosticsDelay"), (long)resolveDiagnosticsDelay);
   cfg->Write(wxT("Clang/ResolveOnlyAfterSave"), resolveDiagOnlyAfterSave);
@@ -486,6 +541,11 @@ void ClangSettings::OpenExternalSourceFile(const wxString &filename, int line) {
 
   // Run via shell (wxExecute(string) -> /bin/sh -c / cmd.exe /c)
   wxExecute(formatted, wxEXEC_ASYNC);
+}
+
+void ClangSettings::AppendWarningFlags(std::vector<const char*>& out) {
+  auto v = GetWarningFlagsView (warningMode);
+  out.insert(out.end(), v.data, v.data + v.size);
 }
 
 void AiSettings::Load(wxConfigBase *cfg) {
@@ -630,6 +690,200 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
   // --- Notebook ---
   m_notebook = new wxNotebook(this, wxID_ANY);
 
+  // ==== GENERAL PAGE ====
+  wxPanel *generalPage = new wxPanel(m_notebook, wxID_ANY);
+  auto *generalPageSizer = new wxBoxSizer(wxVERTICAL);
+
+  // --- Language box ---
+  auto *langBox = new wxStaticBoxSizer(wxVERTICAL, generalPage, _("Language"));
+
+  auto *langRow = new wxBoxSizer(wxHORIZONTAL);
+  auto *langLabel = new wxStaticText(generalPage, wxID_ANY, _("User interface language:"));
+  langRow->Add(langLabel, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
+
+  m_languageChoice = new wxChoice(generalPage, wxID_ANY);
+  const int langIndent = langLabel->GetBestSize().GetWidth() + 5;
+
+  m_langEntries.clear();
+
+  m_langEntries.push_back({wxT("system"), _("System language")});
+  m_langEntries.push_back({wxT("en"), _("English")});
+
+  wxString locBase = GetLocalizationBaseDir();
+  wxDir dir(locBase);
+  if (dir.IsOpened()) {
+    wxString subdir;
+    bool cont = dir.GetFirst(&subdir, wxEmptyString, wxDIR_DIRS);
+    while (cont) {
+      // expected structure <locBase>/<subdir>/LC_MESSAGES/ArduinoEditor.mo
+      wxFileName mo(locBase, wxEmptyString);
+      mo.AppendDir(subdir);
+      mo.AppendDir(wxT("LC_MESSAGES"));
+      mo.SetFullName(wxT("ArduinoEditor.mo"));
+
+      if (mo.FileExists()) {
+        wxString code = subdir;
+
+        const wxLanguageInfo *info = wxLocale::FindLanguageInfo(code);
+        wxString label;
+        if (info) {
+          label = info->Description;
+        } else {
+          label = code;
+        }
+
+        m_langEntries.push_back({code, label});
+      }
+
+      cont = dir.GetNext(&subdir);
+    }
+  }
+
+  wxArrayString choices;
+  for (const auto &e : m_langEntries) {
+    choices.Add(e.label);
+  }
+  m_languageChoice->Append(choices);
+
+  wxString langPref = wxT("system");
+  if (m_config) {
+    m_config->Read(wxT("Language"), &langPref, wxT("system"));
+  }
+
+  int sel = 0;
+  for (size_t i = 0; i < m_langEntries.size(); ++i) {
+    if (m_langEntries[i].code == langPref) {
+      sel = static_cast<int>(i);
+      break;
+    }
+  }
+  m_languageChoice->SetSelection(sel);
+  langRow->Add(m_languageChoice, 1, wxEXPAND);
+  langBox->Add(langRow, 0, wxALL | wxEXPAND, 5);
+
+  auto *langHint = new wxStaticText(
+      generalPage, wxID_ANY,
+      _("Language change will take effect after restarting the application."));
+  langHint->Wrap(520);
+
+  auto *langHintRow = new wxBoxSizer(wxHORIZONTAL);
+  langHintRow->Add(langIndent, 0);
+  langHintRow->Add(langHint, 1, wxEXPAND);
+  langBox->Add(langHintRow, 0, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, 5);
+
+  generalPageSizer->Add(langBox, 0, wxALL | wxEXPAND, 10);
+
+  // --- Updates box ---
+  auto *updatesBox = new wxStaticBoxSizer(wxVERTICAL, generalPage, _("Updates"));
+
+  long updHours = 24;
+  if (m_config) {
+    m_config->Read(wxT("ArduinoEditor/Updates/check_interval_hours"), &updHours, 24L);
+  }
+
+  bool updEnabled = (updHours > 0);
+  int updDays = 1;
+  if (updHours > 0) {
+    updDays = (int)((updHours + 23) / 24); // round up
+    if (updDays < 1) {
+      updDays = 1;
+    }
+  }
+
+  auto *updRow = new wxBoxSizer(wxHORIZONTAL);
+
+  // left label
+  updRow->Add(new wxStaticText(generalPage, wxID_ANY, _("Automatically check for updates ")),
+              0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
+
+  // right side controls
+  m_updatesEnable = new wxCheckBox(generalPage, wxID_ANY, _("every"));
+  m_updatesEnable->SetValue(updEnabled);
+  updRow->Add(m_updatesEnable, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
+
+  m_updatesDays = new wxSpinCtrl(generalPage, wxID_ANY);
+  m_updatesDays->SetRange(1, 30);
+  m_updatesDays->SetValue(updDays);
+  updRow->Add(m_updatesDays, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
+
+  updRow->Add(new wxStaticText(generalPage, wxID_ANY, _("day(s)")),
+              0, wxALIGN_CENTER_VERTICAL);
+
+  updatesBox->Add(updRow, 0, wxALL | wxEXPAND, 5);
+
+  // enable/disable spin based on checkbox
+  m_updatesDays->Enable(m_updatesEnable->GetValue());
+  m_updatesEnable->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent &) {
+    if (m_updatesDays && m_updatesEnable) {
+      m_updatesDays->Enable(m_updatesEnable->GetValue());
+    }
+  });
+
+  generalPageSizer->Add(updatesBox, 0, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, 10);
+
+  // === External files ===
+  auto *extLinksBox = new wxStaticBoxSizer(wxVERTICAL, generalPage, _("External files"));
+
+  m_openSourceInside = new wxCheckBox(
+      generalPage,
+      wxID_ANY,
+      _("Open external C/C++ source files inside the IDE (when possible)"));
+  m_openSourceInside->SetValue(m_clangSettings.openSourceFilesInside);
+  extLinksBox->Add(m_openSourceInside, 0, wxALL | wxEXPAND, 5);
+
+  auto *extInfo = new wxStaticText(
+      generalPage, wxID_ANY,
+      _("When this option is disabled, the following command is used to open C/C++ source files "
+        "that are outside the current sketch/project.\n"
+        "Use %s as a placeholder for the file path, and %l for the line number.\n"
+        "All other file types will be opened with the system's default application."));
+
+  extLinksBox->Add(extInfo, 0, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, 5);
+
+  auto *extRow = new wxBoxSizer(wxHORIZONTAL);
+
+  m_clangExtSourceCmd = new wxTextCtrl(
+      generalPage,
+      wxID_ANY,
+      m_clangSettings.extSourceOpenCommand);
+
+  extRow->Add(m_clangExtSourceCmd, 1, wxRIGHT | wxEXPAND, 5);
+
+  m_clangExtSourceBrowse = new wxButton(
+      generalPage,
+      wxID_ANY,
+      _("Browse..."));
+
+  extRow->Add(m_clangExtSourceBrowse, 0);
+
+  // Browse handler
+  m_clangExtSourceBrowse->Bind(
+      wxEVT_BUTTON,
+      &ArduinoEditorSettingsDialog::OnBrowseExtSourceCommand,
+      this);
+
+  // Init enabled state
+  bool inside = m_openSourceInside->GetValue();
+  m_clangExtSourceCmd->Enable(!inside);
+  m_clangExtSourceBrowse->Enable(!inside);
+
+  m_openSourceInside->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent &evt) {
+    bool useInside = m_openSourceInside->GetValue();
+    if (m_clangExtSourceCmd)
+      m_clangExtSourceCmd->Enable(!useInside);
+    if (m_clangExtSourceBrowse)
+      m_clangExtSourceBrowse->Enable(!useInside);
+    evt.Skip();
+  });
+
+  extLinksBox->Add(extRow, 0, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, 5);
+
+  generalPageSizer->Add(extLinksBox, 0, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, 10);
+
+  generalPage->SetSizer(generalPageSizer);
+  m_notebook->AddPage(generalPage, _("General"), true);
+
+
   // ==== CLI PAGE ====
   wxPanel *cliPage = new wxPanel(m_notebook, wxID_ANY);
   auto *cliSizer = new wxBoxSizer(wxVERTICAL);
@@ -757,7 +1011,7 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
   cliSizer->Add(m_cliTimeout, 0, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, 8);
 
   cliPage->SetSizer(cliSizer);
-  m_notebook->AddPage(cliPage, _("CLI"), true); // default selected page
+  m_notebook->AddPage(cliPage, _("CLI"), false);
 
   // ==== EDITOR PAGE ====
   wxPanel *editorPage = new wxPanel(m_notebook, wxID_ANY);
@@ -1149,124 +1403,9 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
 
   m_notebook->AddPage(editorPage, _("Editor"), false);
 
-  // ==== CLANG PAGE ====
+  // ==== CLANG/LLVM PAGE ====
   wxPanel *clangPage = new wxPanel(m_notebook, wxID_ANY);
   auto *clangPageSizer = new wxBoxSizer(wxVERTICAL);
-
-  // --- Language box ---
-
-  auto *langBox = new wxStaticBoxSizer(wxVERTICAL, clangPage, _("General"));
-
-  auto *langRow = new wxBoxSizer(wxHORIZONTAL);
-  langRow->Add(new wxStaticText(clangPage, wxID_ANY, _("User interface language:")),
-               0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
-
-  m_languageChoice = new wxChoice(clangPage, wxID_ANY);
-
-  m_langEntries.clear();
-
-  m_langEntries.push_back({wxT("system"), _("System language")});
-  m_langEntries.push_back({wxT("en"), _("English")});
-
-  wxString locBase = GetLocalizationBaseDir();
-  wxDir dir(locBase);
-  if (dir.IsOpened()) {
-    wxString subdir;
-    bool cont = dir.GetFirst(&subdir, wxEmptyString, wxDIR_DIRS);
-    while (cont) {
-      // expected structure <locBase>/<subdir>/LC_MESSAGES/ArduinoEditor.mo
-      wxFileName mo(locBase, wxEmptyString);
-      mo.AppendDir(subdir);
-      mo.AppendDir(wxT("LC_MESSAGES"));
-      mo.SetFullName(wxT("ArduinoEditor.mo"));
-
-      if (mo.FileExists()) {
-        wxString code = subdir;
-
-        const wxLanguageInfo *info = wxLocale::FindLanguageInfo(code);
-        wxString label;
-        if (info) {
-          label = info->Description;
-        } else {
-          label = code;
-        }
-
-        m_langEntries.push_back({code, label});
-      }
-
-      cont = dir.GetNext(&subdir);
-    }
-  }
-
-  wxArrayString choices;
-  for (const auto &e : m_langEntries) {
-    choices.Add(e.label);
-  }
-  m_languageChoice->Append(choices);
-
-  wxString langPref = wxT("system");
-  if (m_config) {
-    m_config->Read(wxT("Language"), &langPref, wxT("system"));
-  }
-
-  int sel = 0;
-  for (size_t i = 0; i < m_langEntries.size(); ++i) {
-    if (m_langEntries[i].code == langPref) {
-      sel = static_cast<int>(i);
-      break;
-    }
-  }
-  m_languageChoice->SetSelection(sel);
-  m_languageChoice->SetToolTip(_("Language change will take effect after restarting the application."));
-
-  langRow->Add(m_languageChoice, 1, wxEXPAND);
-  langBox->Add(langRow, 0, wxALL | wxEXPAND, 5);
-
-  // --- Updates row ---
-  long updHours = 24;
-  if (m_config) {
-    m_config->Read(wxT("ArduinoEditor/Updates/check_interval_hours"), &updHours, 24L);
-  }
-
-  bool updEnabled = (updHours > 0);
-  int updDays = 1;
-  if (updHours > 0) {
-    updDays = (int)((updHours + 23) / 24); // round up
-    if (updDays < 1) {
-      updDays = 1;
-    }
-  }
-
-  auto *updRow = new wxBoxSizer(wxHORIZONTAL);
-
-  // left label
-  updRow->Add(new wxStaticText(clangPage, wxID_ANY, _("Automatically check for updates ")),
-              0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
-
-  // right side controls
-  m_updatesEnable = new wxCheckBox(clangPage, wxID_ANY, _("every"));
-  m_updatesEnable->SetValue(updEnabled);
-  updRow->Add(m_updatesEnable, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
-
-  m_updatesDays = new wxSpinCtrl(clangPage, wxID_ANY);
-  m_updatesDays->SetRange(1, 30);
-  m_updatesDays->SetValue(updDays);
-  updRow->Add(m_updatesDays, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
-
-  updRow->Add(new wxStaticText(clangPage, wxID_ANY, _("day(s)")),
-              0, wxALIGN_CENTER_VERTICAL);
-
-  langBox->Add(updRow, 0, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, 5);
-
-  // enable/disable spin based on checkbox
-  m_updatesDays->Enable(m_updatesEnable->GetValue());
-  m_updatesEnable->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent &) {
-    if (m_updatesDays && m_updatesEnable) {
-      m_updatesDays->Enable(m_updatesEnable->GetValue());
-    }
-  });
-
-  clangPageSizer->Add(langBox, 0, wxALL | wxEXPAND, 10);
 
   // --- Clang/LLVM box ---
   auto *clangBox = new wxStaticBoxSizer(wxVERTICAL, clangPage, _("Clang/LLVM"));
@@ -1367,93 +1506,73 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
 
   clangGrid->Add(m_clangResolveChoice, 1, wxEXPAND, 10);
 
-  clangGrid->AddSpacer(10);
-  clangGrid->AddSpacer(10);
-
-  // --- Autocompletion delay ---
-  clangGrid->Add(new wxStaticText(clangPage, wxID_ANY, _("Autocompletion delay (ms):")),
+  // --- Warning mode choice ---
+  clangGrid->Add(new wxStaticText(
+                     clangPage,
+                     wxID_ANY,
+                     _("Warnings mode:\n"
+                       "- Off - disables compiler warnings (equivalent to -w).\n"
+                       "- Default - uses Clang's default warning set.\n"
+                       "- Arduino-like - enables a practical set of warnings for typical Arduino sketches.\n"
+                       "- Strict - enables a very strict warning set (-Wall, -Wextra, -Wpedantic, etc.).")),
                  0, wxALIGN_CENTER_VERTICAL);
 
-  m_clangAutoDelay = new wxSpinCtrl(clangPage, wxID_ANY);
-  m_clangAutoDelay->SetRange(250, 999999);
-  m_clangAutoDelay->SetValue((int)m_clangSettings.autocompletionDelay);
-  clangGrid->Add(m_clangAutoDelay, 1, wxEXPAND);
+  wxArrayString wModeChoices;
+  wModeChoices.Add(_("Off"));
+  wModeChoices.Add(_("Default"));
+  wModeChoices.Add(_("Arduino-like"));
+  wModeChoices.Add(_("Strict"));
 
-  // --- Resolve diagnostics delay ---
-  clangGrid->Add(new wxStaticText(clangPage, wxID_ANY, _("Resolve diagnostics delay (ms):")),
-                 0, wxALIGN_CENTER_VERTICAL);
+  m_clangWarnChoice = new wxChoice(
+      clangPage,
+      wxID_ANY,
+      wxDefaultPosition,
+      wxDefaultSize,
+      wModeChoices);
 
-  m_clangDiagDelay = new wxSpinCtrl(clangPage, wxID_ANY);
-  m_clangDiagDelay->SetRange(1000, 999999);
-  m_clangDiagDelay->SetValue((int)m_clangSettings.resolveDiagnosticsDelay);
-  clangGrid->Add(m_clangDiagDelay, 1, wxEXPAND);
+  int wIndex = static_cast<int>(m_clangSettings.warningMode);
+  if (wIndex < 0 || wIndex >= (int)wModeChoices.GetCount()) {
+    wIndex = 1; // warningDefault
+  }
+  m_clangWarnChoice->SetSelection(wIndex);
+
+  clangGrid->Add(m_clangWarnChoice, 1, wxEXPAND);
 
   clangBox->Add(clangGrid, 1, wxALL | wxEXPAND, 5);
   clangPageSizer->Add(clangBox, 0, wxALL | wxEXPAND, 10);
 
-  // === External links ===
-  auto *extLinksBox = new wxStaticBoxSizer(wxVERTICAL, clangPage, _("External links"));
 
-  // Checkbox: otevrat zdrojky uvnit editoru
-  m_openSourceInside = new wxCheckBox(
-      clangPage,
-      wxID_ANY,
-      _("Open external C/C++ source files inside the IDE (when possible)"));
-  m_openSourceInside->SetValue(m_clangSettings.openSourceFilesInside);
-  extLinksBox->Add(m_openSourceInside, 0, wxALL | wxEXPAND, 5);
 
-  auto *extInfo = new wxStaticText(
-      clangPage, wxID_ANY,
-      _("When this option is disabled, the following command is used to open C/C++ source files "
-        "that are outside the current sketch/project.\n"
-        "Use %s as a placeholder for the file path, and %l for the line number.\n"
-        "All other file types will be opened with the system's default application."));
+  // --- Behavior box ---
+  auto *behaviorBox = new wxStaticBoxSizer(wxVERTICAL, clangPage, _("Behavior"));
 
-  extLinksBox->Add(extInfo, 0, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, 5);
+  auto *behaviorGrid = new wxFlexGridSizer(2, 5, 5);
+  behaviorGrid->AddGrowableCol(1, 1);
 
-  auto *extRow = new wxBoxSizer(wxHORIZONTAL);
+  // --- Autocompletion delay ---
+  behaviorGrid->Add(new wxStaticText(clangPage, wxID_ANY, _("Autocompletion delay (ms):")),
+                    0, wxALIGN_CENTER_VERTICAL);
 
-  m_clangExtSourceCmd = new wxTextCtrl(
-      clangPage,
-      wxID_ANY,
-      m_clangSettings.extSourceOpenCommand);
+  m_clangAutoDelay = new wxSpinCtrl(clangPage, wxID_ANY);
+  m_clangAutoDelay->SetRange(250, 999999);
+  m_clangAutoDelay->SetValue((int)m_clangSettings.autocompletionDelay);
+  behaviorGrid->Add(m_clangAutoDelay, 1, wxEXPAND);
 
-  extRow->Add(m_clangExtSourceCmd, 1, wxRIGHT | wxEXPAND, 5);
+  // --- Resolve diagnostics delay ---
+  behaviorGrid->Add(new wxStaticText(clangPage, wxID_ANY, _("Resolve diagnostics delay (ms):")),
+                    0, wxALIGN_CENTER_VERTICAL);
 
-  m_clangExtSourceBrowse = new wxButton(
-      clangPage,
-      wxID_ANY,
-      _("Browse..."));
+  m_clangDiagDelay = new wxSpinCtrl(clangPage, wxID_ANY);
+  m_clangDiagDelay->SetRange(1000, 999999);
+  m_clangDiagDelay->SetValue((int)m_clangSettings.resolveDiagnosticsDelay);
+  behaviorGrid->Add(m_clangDiagDelay, 1, wxEXPAND);
 
-  extRow->Add(m_clangExtSourceBrowse, 0);
-
-  // Browse handler
-  m_clangExtSourceBrowse->Bind(
-      wxEVT_BUTTON,
-      &ArduinoEditorSettingsDialog::OnBrowseExtSourceCommand,
-      this);
-
-  // Init enabled state
-  bool inside = m_openSourceInside->GetValue();
-  m_clangExtSourceCmd->Enable(!inside);
-  m_clangExtSourceBrowse->Enable(!inside);
-
-  m_openSourceInside->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent &evt) {
-    bool useInside = m_openSourceInside->GetValue();
-    if (m_clangExtSourceCmd)
-      m_clangExtSourceCmd->Enable(!useInside);
-    if (m_clangExtSourceBrowse)
-      m_clangExtSourceBrowse->Enable(!useInside);
-    evt.Skip();
-  });
-
-  extLinksBox->Add(extRow, 0, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, 5);
-
-  clangPageSizer->Add(extLinksBox, 0, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, 10);
+  behaviorBox->Add(behaviorGrid, 1, wxALL | wxEXPAND, 5);
+  clangPageSizer->Add(behaviorBox, 0, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, 10);
 
   clangPage->SetSizer(clangPageSizer);
 
-  m_notebook->AddPage(clangPage, _("IDE"), false);
+  m_notebook->AddPage(clangPage, _("Clang/LLVM"), false);
 
   // ==== AI PAGE ====
   wxPanel *aiPage = new wxPanel(m_notebook, wxID_ANY);
@@ -1911,6 +2030,13 @@ ClangSettings ArduinoEditorSettingsDialog::GetClangSettings() const {
     if (sel < 0)
       sel = 0; // default = internalResolver
     s.resolveMode = static_cast<ClangResolveMode>(sel);
+  }
+
+  if (m_clangWarnChoice) {
+    int sel = m_clangWarnChoice->GetSelection();
+    if (sel < 0)
+      sel = 1; // warningDefault
+    s.warningMode = static_cast<ClangWarningMode>(sel);
   }
 
   if (m_clangAutoDelay) {

@@ -34,9 +34,9 @@
 #include <atomic>
 #include <cctype>
 #include <ctime>
+#include <mutex>
 #include <nlohmann/json.hpp>
 #include <thread>
-#include <mutex>
 
 #include <curl/curl.h>
 

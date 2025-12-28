@@ -18,6 +18,8 @@
 
 #include "utils.hpp"
 #include "ard_setdlg.hpp"
+#include <cctype>
+#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <regex>
@@ -730,77 +732,154 @@ wxImageList *CreateNotebookPageImageList(const wxColour &color) {
 }
 
 std::unordered_set<std::string> SearchCodeIncludes(const std::vector<SketchFileBuffer> &files, const std::string &sketchPath) {
+  ScopeTimer t("UTIL: SearchCodeIncludes()");
 
-  // XXY
+  // Why this exists:
+  // We want to collect header names from `#include ...` directives in the sketch sources.
+  // This is used to resolve Arduino libraries that provide those headers.
+  //
+  // Performance goals:
+  // - Avoid std::regex (often surprisingly slow in C++).
+  // - Avoid allocating a new std::string for every line (substr()).
+  // - Avoid filesystem access for quoted includes ("Foo.h") by checking against the
+  //   already-known in-memory file list (SketchFileBuffer vector).
+  //
+  // Trade-offs:
+  // - This is a pragmatic preprocessor-line scanner, not a full C/C++ preprocessor.
+  // - It intentionally focuses on common Arduino patterns: `#include <X.h>` and `#include "X.hpp"`.
 
-  // Regex for line #include
-  //   #include <Foo.h>
-  //   #include "subdir/Bar.hpp"
-  static const std::regex includeRegex(R"(^\s*#\s*include\s*([<"])\s*([^>"]+)\s*[>"])");
+  const fs::path sketchDir(sketchPath);
 
-  fs::path sketchDir(sketchPath);
-
-  // a unique list of header names to be resolved through libraries
-  std::unordered_set<std::string> headerNames;
+  // Build a set of "local" headers that exist inside the sketch itself.
+  // This lets us skip resolving `"local.h"` as a library candidate without hitting the filesystem.
+  //
+  // Note: We store normalized relative paths using generic_string() (forward slashes),
+  // so it matches typical include syntax like "subdir/Foo.h".
+  std::unordered_set<std::string> localRel;
+  localRel.reserve(files.size() * 2);
 
   for (const auto &sf : files) {
+    fs::path p(sf.filename);
+    std::error_code ec;
+
+    fs::path rel = p.is_absolute() ? p.lexically_relative(sketchDir) : p;
+    rel = rel.lexically_normal();
+
+    // Store "subdir/Foo.h"
+    localRel.insert(rel.generic_string());
+
+    // Also store "Foo.h" for root-level files (common include form)
+    if (!rel.has_parent_path() || rel.parent_path() == ".") {
+      localRel.insert(rel.filename().generic_string());
+    }
+  }
+
+  // Output: unique list of header strings to resolve via libraries
+  std::unordered_set<std::string> headerNames;
+  headerNames.reserve(64);
+
+  auto isSpace = [](unsigned char c) {
+    return c == ' ' || c == '\t' || c == '\r' || c == '\n' || c == '\f' || c == '\v';
+  };
+
+  auto skipWs = [&](const char *p, const char *end) {
+    while (p < end && isSpace((unsigned char)*p)) ++p;
+    return p;
+  };
+
+  auto endsWith = [](std::string_view s, std::string_view suf) {
+    return s.size() >= suf.size() && s.substr(s.size() - suf.size()) == suf;
+  };
+
+  // Scan each file line-by-line using pointers and memchr (no per-line allocations).
+  for (const auto &sf : files) {
     const std::string &code = sf.code;
-    APP_DEBUG_LOG("Resolving includes in %s", sf.filename.c_str());
 
-    std::size_t pos = 0;
-    const std::size_t len = code.size();
+    // Be careful with logging in hot paths. Even in debug builds this can cost real time.
+    // APP_DEBUG_LOG("UTIL: Resolving includes in %s", sf.filename.c_str());
 
-    while (pos < len) {
-      std::size_t lineEnd = code.find('\n', pos);
-      if (lineEnd == std::string::npos)
-        lineEnd = len;
+    const char *p = code.data();
+    const char *end = p + code.size();
 
-      std::string line = code.substr(pos, lineEnd - pos);
+    while (p < end) {
+      const char *line = p;
+      const char *eol = (const char*)memchr(p, '\n', (size_t)(end - p));
+      if (!eol) eol = end;
+      p = (eol < end) ? eol + 1 : end;
 
-      std::smatch m;
-      // if (std::regex_match(line, m, includeRegex) && m.size() >= 3) {
-      if (std::regex_search(line, m, includeRegex) && m.size() >= 3) {
-        char delim = m[1].str()[0];
-        std::string inner = m[2].str();
-        TrimInPlace(inner);
+      // Minimal parsing:
+      //   optional whitespace
+      //   '#'
+      //   optional whitespace
+      //   "include"
+      //   optional whitespace
+      //   '<' ... '>'  OR  '"' ... '"'
+      const char *s = skipWs(line, eol);
+      if (s >= eol || *s != '#') continue;
 
-        if (inner.empty()) {
-          pos = (lineEnd < len) ? lineEnd + 1 : len;
-          continue;
-        }
+      ++s; // skip '#'
+      s = skipWs(s, eol);
 
-        // We are only interested in *.h / *.hpp
-        fs::path hp(inner);
-        std::string ext = hp.extension().string();
-        if (ext != ".h" && ext != ".hpp") {
-          pos = (lineEnd < len) ? lineEnd + 1 : len;
-          continue;
-        }
+      // Match the keyword "include" exactly (case-sensitive, like the preprocessor).
+      static constexpr char kw[] = "include";
+      constexpr size_t kwLen = sizeof(kw) - 1;
 
-        bool isQuoted = (delim == '"');
+      if ((size_t)(eol - s) < kwLen) continue;
+      if (std::memcmp(s, kw, kwLen) != 0) continue;
 
-        bool isLocalHeader = false;
-        if (isQuoted) {
-          // for "aaa.h" or "bbb/ccc.h":
-          // 1) convert to fs::path
-          fs::path relPath(inner);
-          fs::path candidate = sketchDir / relPath;
+      s += kwLen;
+      s = skipWs(s, eol);
+      if (s >= eol) continue;
 
-          std::error_code ec;
-          if (fs::exists(candidate, ec) && fs::is_regular_file(candidate, ec)) {
-            // local header in sketch -> NOT solved as a library
-            isLocalHeader = true;
-          }
-        }
+      const char delim = *s;
+      char closing = 0;
 
-        if (!isLocalHeader) {
-          // this is a library candidate
-          headerNames.insert(inner);
-          APP_DEBUG_LOG(" - resolved %s", inner.c_str());
+      if (delim == '<') closing = '>';
+      else if (delim == '"') closing = '"';
+      else continue;
+
+      ++s; // skip opening delimiter
+
+      // Trim leading whitespace inside delimiters
+      while (s < eol && isSpace((unsigned char)*s)) ++s;
+      if (s >= eol) continue;
+
+      const char *start = s;
+      while (s < eol && *s != closing) ++s;
+      if (s >= eol) continue;
+
+      const char *stop = s;
+
+      // Trim trailing whitespace before the closing delimiter
+      while (stop > start && isSpace((unsigned char)stop[-1])) --stop;
+
+      std::string_view inner(start, (size_t)(stop - start));
+      if (inner.empty()) continue;
+
+      // Only interested in typical Arduino header extensions
+      // (Keep this cheap: avoid fs::path just for extension checks.)
+      const bool isHeader = endsWith(inner, ".h") || endsWith(inner, ".hpp");
+      if (!isHeader) continue;
+
+      // If it's a quoted include, it might be a local sketch header.
+      // Check against our precomputed set instead of hitting the filesystem.
+      bool isLocalHeader = false;
+      if (delim == '"') {
+        // Normalize the include path (handles "subdir/../Foo.h" etc.).
+        // This allocation happens only for includes found (usually few), not per line.
+        fs::path relPath{std::string(inner)};
+        std::string relKey = relPath.lexically_normal().generic_string();
+
+        if (localRel.find(relKey) != localRel.end()) {
+          isLocalHeader = true;
         }
       }
 
-      pos = (lineEnd < len) ? lineEnd + 1 : len;
+      if (!isLocalHeader) {
+        // This is a library candidate.
+        headerNames.emplace(inner); // constructs std::string from string_view
+        // APP_DEBUG_LOG(" - resolved %.*s", (int)inner.size(), inner.data());
+      }
     }
   }
 
@@ -980,3 +1059,353 @@ wxString ColorToHex(const wxColour &color) {
                           color.Green(),
                           color.Blue());
 }
+
+// ---------- 64-bit FNV-1a ----------
+static inline uint64_t fnv1a64_init() {
+  return 14695981039346656037ull;
+}
+static inline uint64_t fnv1a64_update(uint64_t h, const void *data, size_t len) {
+  const uint8_t *p = static_cast<const uint8_t *>(data);
+  for (size_t i = 0; i < len; ++i) {
+    h ^= (uint64_t)p[i];
+    h *= 1099511628211ull;
+  }
+  return h;
+}
+static inline uint64_t fnv1a64_update_sv(uint64_t h, std::string_view sv) {
+  return fnv1a64_update(h, sv.data(), sv.size());
+}
+
+static inline bool is_space(unsigned char c) {
+  return c == ' ' || c == '\t' || c == '\r' || c == '\n' || c == '\f' || c == '\v';
+}
+
+static inline const char *skip_ws(const char *p, const char *end) {
+  while (p < end && is_space((unsigned char)*p))
+    ++p;
+  return p;
+}
+
+// Case-sensitive match "include" after '#'
+static inline bool match_word(const char *p, const char *end, const char *word) {
+  const size_t n = std::strlen(word);
+  if ((size_t)(end - p) < n)
+    return false;
+  return std::memcmp(p, word, n) == 0;
+}
+
+// ---------- SUM #1: full code ----------
+uint64_t CcSumCode(const std::vector<SketchFileBuffer> &files) {
+  ScopeTimer t("UTIL: CcSumCode(%zu files)", files.size());
+
+  uint64_t h = fnv1a64_init();
+  for (const auto &f : files) {
+    std::string_view name = f.filename;
+    std::string_view code = f.code;
+
+    h = fnv1a64_update_sv(h, name);
+    h = fnv1a64_update(h, "\0", 1); // separator
+    h = fnv1a64_update_sv(h, code);
+    h = fnv1a64_update(h, "\0", 1); // separator
+  }
+  return h;
+}
+
+// ---------- SUM #2: includes only ----------
+uint64_t CcSumIncludes(const std::vector<SketchFileBuffer> &files) {
+  ScopeTimer t("UTIL: CcSumIncludes(%zu files)", files.size());
+
+  uint64_t h = fnv1a64_init();
+
+  for (const auto &f : files) {
+    std::string_view name = f.filename;
+    std::string_view code = f.code;
+
+    h = fnv1a64_update_sv(h, name);
+    h = fnv1a64_update(h, "\n", 1);
+
+    const char *p = code.data();
+    const char *end = p + code.size();
+
+    bool inBlockComment = false;
+
+    while (p < end) {
+      const char *line = p;
+      const char *eol = (const char *)memchr(p, '\n', (size_t)(end - p));
+      if (!eol)
+        eol = end;
+      p = (eol < end) ? eol + 1 : end;
+
+      const char *s = line;
+      const char *le = eol;
+
+      // fast removal of block comments /* ... */ across lines
+      // (line-based; enough for includes)
+      // also ignore // comments at the end
+      // This is not a C preprocessor parser; just “good enough”.
+      // Find the first relevant character outside the block comment.
+      for (;;) {
+        if (inBlockComment) {
+          const char *c = (const char *)memchr(s, '*', (size_t)(le - s));
+          if (!c) {
+            s = le;
+            break;
+          }
+          if (c + 1 < le && c[1] == '/') {
+            inBlockComment = false;
+            s = c + 2;
+            continue;
+          }
+          s = c + 1;
+          continue;
+        }
+
+        // skip ws
+        s = skip_ws(s, le);
+        if (s >= le)
+          break;
+
+        // line comment?
+        if (s + 1 < le && s[0] == '/' && s[1] == '/') {
+          s = le;
+          break;
+        }
+
+        // block comment start?
+        if (s + 1 < le && s[0] == '/' && s[1] == '*') {
+          inBlockComment = true;
+          s += 2;
+          continue;
+        }
+
+        break;
+      }
+
+      if (s >= le)
+        continue;
+
+      // Preprocessor?
+      if (*s != '#')
+        continue;
+      s++;
+      s = skip_ws(s, le);
+
+      if (!match_word(s, le, "include"))
+        continue;
+      s += 7;
+      s = skip_ws(s, le);
+
+      if (s >= le)
+        continue;
+
+      char kind = 0;
+      char closing = 0;
+      if (*s == '<') {
+        kind = '<';
+        closing = '>';
+        s++;
+      } else if (*s == '"') {
+        kind = '"';
+        closing = '"';
+        s++;
+      } else
+        continue;
+
+      const char *start = s;
+      while (s < le && *s != closing)
+        ++s;
+      if (s >= le)
+        continue;
+
+      std::string_view header(start, (size_t)(s - start));
+
+      while (!header.empty() && is_space((unsigned char)header.front()))
+        header.remove_prefix(1);
+      while (!header.empty() && is_space((unsigned char)header.back()))
+        header.remove_suffix(1);
+
+      h = fnv1a64_update(h, &kind, 1);
+      h = fnv1a64_update_sv(h, header);
+      h = fnv1a64_update(h, "\n", 1);
+    }
+  }
+
+  return h;
+}
+
+// ---------- SUM: declarations/signatures (skip function bodies) ----------
+// Computes a fast fingerprint of "declaration-ish" text by skipping function bodies.
+// Intended use: cache key for ino.hpp generation / prototype extraction.
+// Notes:
+// - This is a heuristic scanner, not a full C++ parser.
+// - It ignores string/char literals and comments.
+// - It normalizes whitespace.
+// - It skips everything inside function bodies detected as: ')' ... '{' ... matching '}'.
+//
+// The key property: edits inside function bodies usually won't change the hash.
+uint64_t CcSumDecls(std::string_view filename, std::string_view code) {
+  ScopeTimer t("UTIL: CcSumDecls(%zu bytes)", (size_t)code.size());
+
+  uint64_t h = fnv1a64_init();
+
+  // Mix filename into the hash so same code in another file doesn't collide.
+  h = fnv1a64_update_sv(h, filename);
+  h = fnv1a64_update(h, "\n", 1);
+
+  const char *p = code.data();
+  const char *end = p + code.size();
+
+  bool inLineComment = false;
+  bool inBlockComment = false;
+  bool inString = false;
+  bool inChar = false;
+  bool escape = false;
+
+  int  skipBodyDepth = 0;        // >0 => inside skipped function body
+  bool pendingFuncBody = false;  // saw ')' and waiting to see if '{' follows
+
+  bool lastWasSpace = false;
+
+  auto hash_space = [&]() {
+    if (!lastWasSpace) {
+      const char sp = ' ';
+      h = fnv1a64_update(h, &sp, 1);
+      lastWasSpace = true;
+    }
+  };
+
+  auto hash_char = [&](char c) {
+    h = fnv1a64_update(h, &c, 1);
+    lastWasSpace = false;
+  };
+
+  while (p < end) {
+    const char c = *p;
+    const char n = (p + 1 < end) ? p[1] : '\0';
+
+    // Treat newlines as whitespace and terminate line comments
+    if (c == '\n') {
+      inLineComment = false;
+      hash_space();
+      ++p;
+      continue;
+    }
+
+    // ---------- Inside skipped body: only track braces, but still respect comments/strings ----------
+    if (skipBodyDepth > 0) {
+      if (inLineComment) { ++p; continue; }
+
+      if (inBlockComment) {
+        if (c == '*' && n == '/') { inBlockComment = false; p += 2; continue; }
+        ++p; continue;
+      }
+
+      if (inString) {
+        if (!escape && c == '"') inString = false;
+        escape = (!escape && c == '\\');
+        ++p; continue;
+      }
+
+      if (inChar) {
+        if (!escape && c == '\'') inChar = false;
+        escape = (!escape && c == '\\');
+        ++p; continue;
+      }
+
+      // Comment / string starts
+      if (c == '/' && n == '/') { inLineComment = true; p += 2; continue; }
+      if (c == '/' && n == '*') { inBlockComment = true; p += 2; continue; }
+      if (c == '"') { inString = true; escape = false; ++p; continue; }
+      if (c == '\'') { inChar = true; escape = false; ++p; continue; }
+
+      // Track nested braces to find end of body
+      if (c == '{') { ++skipBodyDepth; ++p; continue; }
+      if (c == '}') {
+        --skipBodyDepth;
+        if (skipBodyDepth == 0) {
+          // Include a marker that a body ended (keeps "body presence" visible in the hash)
+          hash_char('}');
+        }
+        ++p;
+        continue;
+      }
+
+      ++p;
+      continue;
+    }
+
+    // ---------- Outside body: handle comments/strings first ----------
+    if (inLineComment) { ++p; continue; }
+
+    if (inBlockComment) {
+      if (c == '*' && n == '/') { inBlockComment = false; p += 2; continue; }
+      ++p; continue;
+    }
+
+    if (inString) {
+      if (!escape && c == '"') inString = false;
+      escape = (!escape && c == '\\');
+      ++p; continue; // ignore string contents
+    }
+
+    if (inChar) {
+      if (!escape && c == '\'') inChar = false;
+      escape = (!escape && c == '\\');
+      ++p; continue; // ignore char contents
+    }
+
+    // Start comment?
+    if (c == '/' && n == '/') { inLineComment = true; p += 2; continue; }
+    if (c == '/' && n == '*') { inBlockComment = true; p += 2; continue; }
+
+    // Start string/char?
+    if (c == '"') { inString = true; escape = false; ++p; continue; }
+    if (c == '\'') { inChar = true; escape = false; ++p; continue; }
+
+    // Normalize whitespace
+    if (is_space((unsigned char)c)) {
+      hash_space();
+      ++p;
+      continue;
+    }
+
+    // Heuristic: after ')' we may be entering a function body if '{' follows soon.
+    if (c == ')') {
+      pendingFuncBody = true;
+      hash_char(c);
+      ++p;
+      continue;
+    }
+
+    // ';' cancels pending function body
+    if (c == ';') {
+      pendingFuncBody = false;
+      hash_char(c);
+      ++p;
+      continue;
+    }
+
+    // '{' after ')' => treat as function body start and skip its contents
+    if (c == '{') {
+      if (pendingFuncBody) {
+        pendingFuncBody = false;
+        hash_char('{');     // include body-start marker
+        skipBodyDepth = 1;  // skip until matching '}'
+        ++p;
+        continue;
+      }
+
+      // Non-function block (namespace/class/if/while etc.) is not skipped
+      hash_char('{');
+      ++p;
+      continue;
+    }
+
+    // Default: hash the character
+    hash_char(c);
+    ++p;
+  }
+
+  return h;
+}
+

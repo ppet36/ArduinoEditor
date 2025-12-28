@@ -21,6 +21,7 @@
 #include "ard_cli.hpp"
 #include "ard_ev.hpp"
 #include "utils.hpp"
+#include "ard_setdlg.hpp"
 #include <atomic>
 #include <chrono>
 #include <clang-c/Index.h>
@@ -126,6 +127,18 @@ struct CachedTranslationUnit {
   CXTranslationUnit tu = nullptr;
 };
 
+struct ProjectTuEntry {
+  std::string key;                 // abs original filename (.ino/.cpp)
+  std::string mainFilename;        // clang main filename (e.g. .ino.cpp)
+  std::size_t codeHash = 0;
+  std::size_t headersSigHash = 0;  // hash of opened headers (unsaved)
+  std::size_t argsHash = 0;        // hash clang args (+ file-specific extras)
+  CXTranslationUnit tu = nullptr;
+
+  // Diagnostics filtered/sorted (CollectDiagnosticsLocked)
+  std::vector<ArduinoParseError> cachedErrors;
+};
+
 struct SymbolCacheEntry {
   std::string filename;     // absolute filename
   std::size_t codeHash = 0; // hash of the code when the symbols were counted
@@ -179,17 +192,29 @@ private:
 
   CXIndex index;
   ArduinoCli *arduinoCli;
+  ClangSettings m_clangSettings;
+
   CompletionMetadata m_completionMetadata;
   std::vector<ArduinoParseError> m_lastProjectErrors;
   std::size_t m_lastDiagHash = 0;
   // Cache TU according to the "main" clang filename (.ino.cpp, .cpp, ...)
   std::unordered_map<std::string, CachedTranslationUnit> m_tuCache;
+  // .. and for whole project
+  std::unordered_map<std::string, ProjectTuEntry> m_projectTuCache;
+  
   std::unordered_map<std::string, SymbolCacheEntry> m_symbolCache;
-  std::unordered_map<std::string, InoHeaderCacheEntry> m_inoHeaderCache;
+  std::unordered_map<uint64_t, InoHeaderCacheEntry> m_inoHeaderCache;
+  // cache: decls signature -> insertIdx for "#include <sketch>.hpp" replacement
+  mutable std::unordered_map<uint64_t, std::size_t> m_inoInsertCache;
+
+  // includes resolving caching
+  mutable std::mutex m_resolvedIncludesCacheMutex;
+  mutable std::unordered_map<uint64_t, std::vector<std::string>> m_resolvedIncludesCache;
 
   mutable std::mutex m_ccMutex;   // protection TU/libclang
   std::atomic<uint64_t> m_seq{0}; // sequential request counter
 
+  // Completion session machinery
   mutable std::mutex m_completionSessionMutex;
   CompletionSessionCache m_completionSession;
 
@@ -246,8 +271,11 @@ private:
   std::vector<std::string> GetCompilerArgs() const;
 
 public:
-  ArduinoCodeCompletion(ArduinoCli *ardCli, wxEvtHandler *eventHandler);
+  ArduinoCodeCompletion(ArduinoCli *ardCli, const ClangSettings &clangSettings, wxEvtHandler *eventHandler);
   ~ArduinoCodeCompletion();
+
+
+  void ApplySettings (const ClangSettings &settings);
 
   static bool IsClangTargetSupported(const std::string &target);
 

@@ -144,6 +144,10 @@ void ArduinoEditorFrame::ApplySettings(const ClangSettings &settings) {
   for (auto *ed : GetAllEditors()) {
     ed->ApplySettings(settings);
   }
+
+  if (completion) {
+    completion->ApplySettings(settings);
+  }
 }
 
 void ArduinoEditorFrame::ApplySettings(const AiSettings &settings) {
@@ -203,6 +207,7 @@ void ArduinoEditorFrame::OnEditorSettings(wxCommandEvent &) {
     auto newClangSettings = dlg.GetClangSettings();
     bool diagModeChanged = (newClangSettings.diagnosticMode != m_clangSettings.diagnosticMode);
     bool resolveModeChanged = (newClangSettings.resolveMode != m_clangSettings.resolveMode);
+    bool warningModeChanged = (newClangSettings.warningMode != m_clangSettings.warningMode);
     m_clangSettings = newClangSettings;
     m_clangSettings.Save(config);
     ApplySettings(m_clangSettings);
@@ -242,11 +247,11 @@ void ArduinoEditorFrame::OnEditorSettings(wxCommandEvent &) {
             wxOK | wxICON_WARNING);
       }
     }
-
-    if (diagModeChanged && !resolveModeChanged) {
-      ScheduleDiagRefresh();
-    } else if (resolveModeChanged) {
+    
+    if (warningModeChanged || resolveModeChanged) {
       CleanProject();
+    } else if (diagModeChanged && !resolveModeChanged) {
+      ScheduleDiagRefresh();
     }
   }
 }
@@ -254,7 +259,7 @@ void ArduinoEditorFrame::OnEditorSettings(wxCommandEvent &) {
 void ArduinoEditorFrame::UpdateAiGlobalEditor() {
   auto *edit = GetCurrentEditor();
   if (edit) {
-    APP_DEBUG_LOG("Set AI editor to %s", edit->GetFilePath().c_str());
+    APP_DEBUG_LOG("FRM: set AI editor to %s", edit->GetFilePath().c_str());
     m_aiGlobalActions.SetCurrentEditor(edit);
   }
 }
@@ -416,7 +421,7 @@ void ArduinoEditorFrame::OpenSketch(const std::string &skp) {
   }
 
   app.SetSplashMessage(_("Creating completion engine..."));
-  completion = new ArduinoCodeCompletion(arduinoCli, this);
+  completion = new ArduinoCodeCompletion(arduinoCli, m_clangSettings, this);
 
   // ---------------------------------------------------------------------------
   // Create editor ONLY for the primary .ino file.
@@ -574,7 +579,13 @@ void ArduinoEditorFrame::OnClangArgsReady(wxThreadEvent &event) {
 
     UpdateStatus(_("Arduino Clang completion initialized for ") + wxString::FromUTF8(arduinoCli->GetBoardName()));
 
-    ResolveLibrariesForSketch();
+    if (m_firstInitCompleted) {
+      // We only call it if the first initialization has already taken place.
+      // Otherwise it is called from OnInstalledLibrariesUpdated so it would
+      // be called twice unnecessarily.
+
+      ResolveLibrariesForSketch();
+    }
   } else {
 
     if (!m_cleanTried) {
@@ -1488,9 +1499,10 @@ void ArduinoEditorFrame::MaybeOfferToInstallLibrariesForHeaders(const std::vecto
   m_foundLibraryGroups.clear();
 
   for (const auto &header : headers) {
-    bool alreadyAsked =
-        std::find(m_queriedMissingHeaders.begin(), m_queriedMissingHeaders.end(), header) != m_queriedMissingHeaders.end();
-    if (alreadyAsked) {
+    bool alreadyAsked = std::find(m_queriedMissingHeaders.begin(), m_queriedMissingHeaders.end(), header) != m_queriedMissingHeaders.end();
+    bool notFound = std::find(m_notFoundHeaders.begin(), m_notFoundHeaders.end(), header) != m_notFoundHeaders.end();
+
+    if (alreadyAsked || notFound) {
       continue;
     }
 
@@ -1556,6 +1568,7 @@ void ArduinoEditorFrame::OnDiagnosticsUpdated(wxThreadEvent &WXUNUSED(evt)) {
   StopProcess(ID_PROCESS_DIAG_EVAL);
 
   m_currentDiagErrors.clear();
+  m_firstInitCompleted = true;
 
   if (!completion || !m_diagListCtrl) {
     return;
@@ -1700,6 +1713,7 @@ void ArduinoEditorFrame::CheckMissingHeadersInDiagnostics(const std::vector<Ardu
 
 // Collects the project's source files, either from open editors or from the filesystem.
 void ArduinoEditorFrame::CollectEditorSources(std::vector<SketchFileBuffer> &files) {
+  ScopeTimer t("FRM: CollectEditorSources()");
   APP_DEBUG_LOG("FRM: CollectEditorSources()");
 
   // 1) Collect buffers from all open editors (these override disk content)
@@ -1859,6 +1873,9 @@ void ArduinoEditorFrame::OnLibrariesUpdated(wxThreadEvent &evt) {
   if (m_libManager) {
     m_libManager->RefreshLibraries();
   }
+
+  // Invalidate not found libs
+  m_notFoundHeaders.clear();
 }
 
 void ArduinoEditorFrame::OnLibrariesFound(wxThreadEvent &evt) {
@@ -1872,15 +1889,19 @@ void ArduinoEditorFrame::OnLibrariesFound(wxThreadEvent &evt) {
   if (ok) {
     auto libs = evt.GetPayload<std::vector<ArduinoLibraryInfo>>();
 
-    libs.erase(
-        std::remove_if(libs.begin(), libs.end(),
-                       [&](const ArduinoLibraryInfo &lib) {
-                         return !arduinoCli->IsLibraryArchitectureCompatible(lib.latest.architectures);
-                       }),
-        libs.end());
+    if (libs.empty()) {
+      m_notFoundHeaders.push_back(header);
+    } else {
+      libs.erase(
+          std::remove_if(libs.begin(), libs.end(),
+                         [&](const ArduinoLibraryInfo &lib) {
+                           return !arduinoCli->IsLibraryArchitectureCompatible(lib.latest.architectures);
+                         }),
+          libs.end());
 
-    if (!libs.empty()) {
-      m_foundLibraryGroups.push_back({header, std::move(libs)});
+      if (!libs.empty()) {
+        m_foundLibraryGroups.push_back({header, std::move(libs)});
+      }
     }
   }
 
@@ -1960,7 +1981,7 @@ void ArduinoEditorFrame::OnInstalledLibrariesUpdated(wxThreadEvent &evt) {
 
   const auto &iLibs = arduinoCli->GetInstalledLibraries();
 
-  APP_DEBUG_LOG("FRM: Installed libraries: %d", iLibs.size());
+  APP_DEBUG_LOG("FRM: OnInstalledLibrariesUpdated (%zu libraries)", iLibs.size());
 
   if (m_libManager) {
     m_libManager->RefreshInstalledLibraries();
@@ -1983,7 +2004,7 @@ void ArduinoEditorFrame::OnResolvedLibrariesReady(wxThreadEvent &evt) {
 
   auto libs = evt.GetPayload<std::vector<ResolvedLibraryInfo>>();
 
-  APP_DEBUG_LOG("FRM: resolved %d libraries", libs.size());
+  APP_DEBUG_LOG("FRM: OnResolvedLibrariesReady (%zu libraries)", libs.size());
 
   if (m_filesPanel) {
     m_filesPanel->UpdateResolvedLibraries(libs);
@@ -2072,7 +2093,9 @@ void ArduinoEditorFrame::OnAvailableBoardsUpdated(wxThreadEvent &evt) {
 }
 
 void ArduinoEditorFrame::ResolveLibrariesForSketch() {
+  APP_DEBUG_LOG("FRM: ResolveLibrariesForSketch()");
   StartProcess(_("Resolving libraries..."), ID_PROCESS_RESOLVE_LIBRARIES, ArduinoActivityState::Background);
+
   std::vector<SketchFileBuffer> files;
   CollectEditorSources(files);
   arduinoCli->GetResolvedLibrariesAsync(files, this);
@@ -2087,6 +2110,8 @@ void ArduinoEditorFrame::ScheduleDiagRefresh() {
 }
 
 void ArduinoEditorFrame::OnDiagTimer(wxTimerEvent &WXUNUSED(event)) {
+  APP_DEBUG_LOG("FRM: OnDiagTimer()");
+
   ResolveLibrariesForSketch();
 }
 
