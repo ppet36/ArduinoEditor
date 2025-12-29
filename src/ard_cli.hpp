@@ -188,6 +188,7 @@ private:
   std::vector<ArduinoLibraryInfo> libraries;
   std::vector<ArduinoLibraryInfo> installedLibraries;
   std::vector<ArduinoCoreInfo> cores;
+  std::vector<std::string> m_compileCommandsResolvedLibraries;
 
   std::atomic<bool> m_cancelAsync{false};
 
@@ -199,6 +200,8 @@ private:
   std::string DetectClangTarget(const std::string &compilerPath) const;
 
   std::vector<std::string> BuildClangArgsFromBoardDetails(const nlohmann::json &j);
+
+  bool ResolveLibInfoFromIncludePath(const std::string &includePath, ResolvedLibraryInfo &outInfo) const;
 
   bool LoadLibraries();
   bool LoadInstalledLibraries();
@@ -239,6 +242,9 @@ public:
   bool GetResolvedLibraries(const std::vector<SketchFileBuffer> &files, std::vector<ResolvedLibraryInfo> &outLibs);
   // Asynchronous variant – copies the buffers into the worker thread.
   void GetResolvedLibrariesAsync(const std::vector<SketchFileBuffer> &files, wxEvtHandler *handler);
+  // Returns include paths of libraries that came out of arduino-cli compile_commands
+  // (detected via library.properties in include dir or one level up).
+  std::vector<ResolvedLibraryInfo> GetResolvedLibrariesFromCompileCommands() const;
 
   bool LoadCores();
   void LoadCoresAsync(wxEvtHandler *handler);

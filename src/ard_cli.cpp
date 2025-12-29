@@ -1202,6 +1202,41 @@ std::vector<std::string> ArduinoCli::BuildClangArgsFromBoardDetails(const nlohma
 std::vector<std::string> ArduinoCli::BuildClangArgsFromCompileCommands(const std::string &inoBaseName) {
   std::vector<std::string> result;
 
+  // reset cache resolved libs for this build
+  m_compileCommandsResolvedLibraries.clear();
+  std::unordered_set<std::string> seenResolvedLibIncludes;
+
+  auto MaybeRecordResolvedLibraryInclude = [&](const std::string &incPathUtf8) {
+    if (incPathUtf8.empty())
+      return;
+
+    std::error_code ec;
+
+    fs::path p = fs::u8path(incPathUtf8);
+    if (p.empty())
+      return;
+
+    // Normalize for stable dedupe (but don't fail hard if canonicalization fails)
+    fs::path norm = fs::weakly_canonical(p, ec);
+    if (ec) {
+      norm = p.lexically_normal();
+      ec.clear();
+    }
+
+    // Check library.properties in include dir or one level above
+    const fs::path lp1 = norm / "library.properties";
+    const fs::path lp2 = norm.parent_path() / "library.properties";
+
+    if (!fs::exists(lp1, ec) && !fs::exists(lp2, ec))
+      return;
+
+    std::string store = norm.u8string();
+
+    if (seenResolvedLibIncludes.insert(store).second) {
+      m_compileCommandsResolvedLibraries.push_back(store);
+    }
+  };
+
   // 1) load compile_commands.json
   std::filesystem::path cc = std::filesystem::path(sketchPath) / ".ardedit" / "build" / "compile_commands.json";
   std::string ccPath = cc.string();
@@ -1335,8 +1370,24 @@ std::vector<std::string> ArduinoCli::BuildClangArgsFromCompileCommands(const std
       if (a.compare(0, 5, "-std=") == 0) {
         a = NormalizeStdFlag(a);
       }
+
       // simple -I/path works normally
       result.push_back(a);
+
+      // Track resolved library include dirs (only if it's some kind of include flag)
+      if (a.rfind("-I", 0) == 0 && a.size() > 2) {
+        MaybeRecordResolvedLibraryInclude(a.substr(2));
+      } else if (a.rfind("-isystem", 0) == 0) {
+        // if someone passes -isystem/path (rare, but harmless)
+        std::string rest = a.substr(std::string("-isystem").size());
+        if (!rest.empty() && (rest[0] == '=' || rest[0] == ' ')) {
+          while (!rest.empty() && (rest[0] == '=' || rest[0] == ' '))
+            rest.erase(rest.begin());
+        }
+        if (!rest.empty()) {
+          MaybeRecordResolvedLibraryInclude(rest);
+        }
+      }
     }
   }
 
@@ -1354,24 +1405,84 @@ std::vector<std::string> ArduinoCli::BuildClangArgsFromCompileCommands(const std
   return result;
 }
 
-void ArduinoCli::InvalidateLibraryCache() {
-  std::string sketchPath = GetSketchPath();
-  if (!sketchPath.empty()) {
-    fs::path cacheFile = fs::path(sketchPath) / ".ardedit" / "libraries.json";
+bool ArduinoCli::ResolveLibInfoFromIncludePath(const std::string &includePath, ResolvedLibraryInfo &outInfo) const {
+  fs::path libPath(includePath);
 
-    if (fs::exists(cacheFile)) {
-      fs::remove(cacheFile);
+  // try <includePath>/library.properties
+  fs::path propsPath = libPath / "library.properties";
+  std::ifstream in(propsPath);
+
+  // if not exist, try parent(includePath)/library.properties
+  if (!in) {
+    fs::path parent = libPath.parent_path();
+    if (!parent.empty()) {
+      propsPath = parent / "library.properties";
+      in.close();
+      in.clear();
+      in.open(propsPath);
     }
   }
 
-  {
-    std::lock_guard<std::mutex> lock(m_resolveCacheMutex);
-    m_hasResolveLibrariesCache = false;
-    m_resolveLibs.clear();
-    m_resolveHeaderToLibSrc.clear();
-    m_resolveSrcRootToLibIndex.clear();
-    m_resolveNameToLibIndex.clear();
+  outInfo.includePath = includePath;
+
+  outInfo.isCoreLibrary = (!m_platformPath.empty() && includePath.rfind(m_platformPath, 0) == 0) || (!m_corePlatformPath.empty() && includePath.rfind(m_corePlatformPath, 0) == 0);
+
+  if (in) {
+    std::string line;
+    while (std::getline(in, line)) {
+      if (!line.empty() && line.back() == '\r') {
+        line.pop_back();
+      }
+
+      // ignore empty lines and comments
+      std::string raw = line;
+      TrimInPlace(raw);
+      if (raw.empty() || raw[0] == '#')
+        continue;
+
+      auto eq = raw.find('=');
+      if (eq == std::string::npos)
+        continue;
+
+      std::string key = raw.substr(0, eq);
+      std::string val = raw.substr(eq + 1);
+      TrimInPlace(key);
+      TrimInPlace(val);
+
+      if (key == "name") {
+        outInfo.name = val;
+      } else if (key == "version") {
+        outInfo.version = val;
+      }
+
+      return true;
+    }
   }
+
+  return false;
+}
+
+std::vector<ResolvedLibraryInfo> ArduinoCli::GetResolvedLibrariesFromCompileCommands() const {
+  std::vector<ResolvedLibraryInfo> outLibs;
+
+  // for every path try find library.properties.
+  for (const auto &includePath : m_compileCommandsResolvedLibraries) {
+    ResolvedLibraryInfo info;
+    if (ResolveLibInfoFromIncludePath(includePath, info)) {
+      outLibs.emplace_back(info);
+    }
+  }
+
+  return outLibs;
+}
+
+void ArduinoCli::InvalidateLibraryCache() {
+  std::lock_guard<std::mutex> lock(m_resolveCacheMutex);
+  m_hasResolveLibrariesCache = false;
+  m_resolveLibs.clear();
+  m_resolveHeaderToLibSrc.clear();
+  m_resolveSrcRootToLibIndex.clear();
+  m_resolveNameToLibIndex.clear();
 }
 
 bool ArduinoCli::LoadLibraries() {
@@ -2298,64 +2409,10 @@ bool ArduinoCli::GetResolvedLibraries(const std::vector<SketchFileBuffer> &files
 
   // for every path try find library.properties.
   for (const auto &includePath : includePaths) {
-    std::string name;
-    std::string version;
-    bool isCoreLibrary = false;
-
-    fs::path libPath(includePath);
-
-    // try <includePath>/library.properties
-    fs::path propsPath = libPath / "library.properties";
-    std::ifstream in(propsPath);
-
-    // if not exist, try parent(includePath)/library.properties
-    if (!in) {
-      fs::path parent = libPath.parent_path();
-      if (!parent.empty()) {
-        propsPath = parent / "library.properties";
-        in.close();
-        in.clear();
-        in.open(propsPath);
-      }
+    ResolvedLibraryInfo info;
+    if (ResolveLibInfoFromIncludePath(includePath, info)) {
+      outLibs.emplace_back(info);
     }
-
-    isCoreLibrary = (!m_platformPath.empty() && includePath.rfind(m_platformPath, 0) == 0) || (!m_corePlatformPath.empty() && includePath.rfind(m_corePlatformPath, 0) == 0);
-
-    if (in) {
-      std::string line;
-      while (std::getline(in, line)) {
-        if (!line.empty() && line.back() == '\r') {
-          line.pop_back();
-        }
-
-        // ignore empty lines and comments
-        std::string raw = line;
-        TrimInPlace(raw);
-        if (raw.empty() || raw[0] == '#')
-          continue;
-
-        auto eq = raw.find('=');
-        if (eq == std::string::npos)
-          continue;
-
-        std::string key = raw.substr(0, eq);
-        std::string val = raw.substr(eq + 1);
-        TrimInPlace(key);
-        TrimInPlace(val);
-
-        if (key == "name") {
-          name = val;
-        } else if (key == "version") {
-          version = val;
-        }
-      }
-    }
-
-    outLibs.emplace_back(ResolvedLibraryInfo{
-        name,
-        version,
-        includePath,
-        isCoreLibrary});
   }
 
   return true;

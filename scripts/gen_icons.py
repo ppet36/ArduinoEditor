@@ -173,15 +173,12 @@ def render_xpm(svg_path: Path, out_xpm: Path, size: int, color_hex: str, im_base
         "-background", "none",
         str(svg_path),
 
-        # nejdřív na cílovou velikost
         "-resize", f"{size}x{size}",
 
-        # udělej 1-bit masku z alpha kanálu (vyhodí antialias šedou)
         "-alpha", "set",
         "-alpha", "extract",
         "-threshold", "50%",
 
-        # vytvoř barevnou plochu a přenes do ní masku jako opacity
         "(", "-size", f"{size}x{size}", f"xc:{color_hex}", ")",
         "+swap",
         "-compose", "CopyOpacity",

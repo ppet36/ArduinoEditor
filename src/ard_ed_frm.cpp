@@ -584,10 +584,20 @@ void ArduinoEditorFrame::OnClangArgsReady(wxThreadEvent &event) {
       // Otherwise it is called from OnInstalledLibrariesUpdated so it would
       // be called twice unnecessarily.
 
-      ResolveLibrariesForSketch();
+      ResolveLibrariesOrDiagnostics();
+      return;
+    }
+
+    if (m_clangSettings.resolveMode == compileCommandsResolver) {
+      if (m_filesPanel) {
+        auto libs = arduinoCli->GetResolvedLibrariesFromCompileCommands();
+
+        m_filesPanel->UpdateResolvedLibraries(libs);
+      }
+
+      ResolveLibrariesOrDiagnostics();
     }
   } else {
-
     if (!m_cleanTried) {
       m_cleanTried = true;
       CleanProject();
@@ -1133,7 +1143,7 @@ void ArduinoEditorFrame::OnSave(wxCommandEvent &WXUNUSED(event)) {
   ArduinoEditor *editor = GetCurrentEditor();
   if (editor) {
     if (editor->Save()) {
-      ResolveLibrariesForSketch();
+      ResolveLibrariesOrDiagnostics();
       UpdateStatus(_("Saved..."));
     } else {
       ModalMsgDialog(_("Save error!"));
@@ -1147,7 +1157,7 @@ bool ArduinoEditorFrame::SaveAll() {
     auto *ed = dynamic_cast<ArduinoEditor *>(m_notebook->GetPage(i));
     if (ed) {
       if (!ed->IsReadOnly() && !ed->Save()) {
-        ResolveLibrariesForSketch();
+        ResolveLibrariesOrDiagnostics();
         anyError = true;
       }
     }
@@ -1568,7 +1578,6 @@ void ArduinoEditorFrame::OnDiagnosticsUpdated(wxThreadEvent &WXUNUSED(evt)) {
   StopProcess(ID_PROCESS_DIAG_EVAL);
 
   m_currentDiagErrors.clear();
-  m_firstInitCompleted = true;
 
   if (!completion || !m_diagListCtrl || !m_bottomNotebook) {
     return;
@@ -1608,6 +1617,7 @@ void ArduinoEditorFrame::OnDiagnosticsUpdated(wxThreadEvent &WXUNUSED(evt)) {
     return;
   }
 
+
   std::vector<ArduinoParseError> errors;
 
   switch (m_clangSettings.diagnosticMode) {
@@ -1627,9 +1637,12 @@ void ArduinoEditorFrame::OnDiagnosticsUpdated(wxThreadEvent &WXUNUSED(evt)) {
       errors = completion->GetLastProjectErrors();
       break;
     default: // noCompletion
+      m_firstInitCompleted = true;
       ShowSingleDiagMessage(_("Diagnostics turned off."));
       return;
   }
+
+  m_firstInitCompleted = true;
 
   errorCount = errors.size();
   APP_DEBUG_LOG("FRM: OnDiagnosticsUpdated: %d diagnostics", errorCount);
@@ -1936,6 +1949,45 @@ void ArduinoEditorFrame::OnLibrariesFound(wxThreadEvent &evt) {
       return;
     }
 
+    // If resolving is performed via compile commands
+    // and we found at least one library that is installed but
+    // still missing its header, we will start a project rebuild.
+    if (m_clangSettings.resolveMode == compileCommandsResolver) {
+      const auto it = std::find_if(
+          m_foundLibraryGroups.begin(), m_foundLibraryGroups.end(),
+          [&](const auto &group) {
+            return std::any_of(group.libs.begin(), group.libs.end(),
+                               [&](const auto &lib) {
+                                 return arduinoCli->IsArduinoLibraryInstalled(lib);
+                               });
+          });
+
+      if (it != m_foundLibraryGroups.end()) {
+        auto header = it->header;
+        m_queriedMissingHeaders.push_back(header);
+
+        const wxString msg = wxString::Format(
+            _("Header '%s' was not found, but it looks like it belongs to an installed Arduino library.\n\n"
+              "In this mode, libraries are detected from the last project build, so newly added #include directives "
+              "won't be picked up until you rebuild.\n\n"
+              "Rebuild will regenerate the build configuration (including compile_commands.json) and attach libraries "
+              "to this sketch.\n\n"
+              "Rebuild now?"),
+            wxString::FromUTF8(it->header));
+
+        const int res = ModalMsgDialog(
+            msg,
+            _("Rebuild required"),
+            wxYES_NO | wxYES_DEFAULT | wxICON_QUESTION);
+
+        if (res == wxID_YES) {
+          SaveAll();
+          CleanProject();
+        }
+        return;
+      }
+    }
+
     wxString msg;
     msg << _("The following missing headers are claimed to be provided by Arduino libraries:\n\n");
 
@@ -2014,7 +2066,19 @@ void ArduinoEditorFrame::OnInstalledLibrariesUpdated(wxThreadEvent &evt) {
     m_examplesFrame->RefreshLibraries();
   }
 
-  ResolveLibrariesForSketch();
+  if (m_clangSettings.resolveMode == compileCommandsResolver) {
+    if (m_firstInitCompleted) {
+      // Here we will heuristically determine if the user has the library manager running/displayed and
+      // from that we can conclude whether they could potentially have installed a library and thus trigger
+      // this event. If so, we need to rebuild the project because the libraries used may have been changed by the sketch.
+
+      if (m_libManager && m_libManager->IsShownOnScreen()) {
+        CleanProject();
+      }
+    }
+  } else {
+    ResolveLibrariesOrDiagnostics();
+  }
 }
 
 void ArduinoEditorFrame::OnResolvedLibrariesReady(wxThreadEvent &evt) {
@@ -2115,8 +2179,15 @@ void ArduinoEditorFrame::OnAvailableBoardsUpdated(wxThreadEvent &evt) {
   RefreshSerialPorts();
 }
 
-void ArduinoEditorFrame::ResolveLibrariesForSketch() {
-  APP_DEBUG_LOG("FRM: ResolveLibrariesForSketch()");
+void ArduinoEditorFrame::ResolveLibrariesOrDiagnostics() {
+  if (m_clangSettings.resolveMode == compileCommandsResolver) {
+    // If the compile commands resolver is used, the libraries are
+    // already evaluated in it, so we can start diagnostics straight away.
+    RefreshDiagnostics();
+    return;
+  }
+
+  APP_DEBUG_LOG("FRM: ResolveLibrariesOrDiagnostics()");
   StartProcess(_("Resolving libraries..."), ID_PROCESS_RESOLVE_LIBRARIES, ArduinoActivityState::Background);
 
   std::vector<SketchFileBuffer> files;
@@ -2135,7 +2206,7 @@ void ArduinoEditorFrame::ScheduleDiagRefresh() {
 void ArduinoEditorFrame::OnDiagTimer(wxTimerEvent &WXUNUSED(event)) {
   APP_DEBUG_LOG("FRM: OnDiagTimer()");
 
-  ResolveLibrariesForSketch();
+  ResolveLibrariesOrDiagnostics();
 }
 
 void ArduinoEditorFrame::RefreshSerialPorts() {

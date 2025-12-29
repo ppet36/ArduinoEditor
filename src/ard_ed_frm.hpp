@@ -296,7 +296,7 @@ private:
 
   void OnBoardChoiceChanged(wxCommandEvent &event);
 
-  void ResolveLibrariesForSketch();
+  void ResolveLibrariesOrDiagnostics();
 
   void OnCheckForUpdates(wxCommandEvent &);
 
