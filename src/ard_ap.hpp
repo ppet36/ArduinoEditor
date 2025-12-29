@@ -22,8 +22,6 @@
 #include <wx/bmpbndl.h>
 #include <wx/settings.h>
 
-
-
 // Arduino Editor private art IDs (no overlap with wxART_*).
 namespace wxAEArt {
 inline const wxArtID Refresh = wxASCII_STR("wxAE_ART_REFRESH");
@@ -83,8 +81,6 @@ inline wxArtClient AEArtClient() {
   return IsDarkMode() ? wxASCII_STR("AE_DARK") : wxASCII_STR("AE_LIGHT");
 }
 
-
-
 class ArduinoArtProvider {
 public:
   wxBitmapBundle CreateBitmapBundle(const wxArtID &id, const wxArtClient &client, const wxSize &size);
@@ -92,7 +88,6 @@ public:
 
 static ArduinoArtProvider gsArduinoArtProvider;
 
-inline wxBitmapBundle AEGetArtBundle(const wxArtID& artId) {
+inline wxBitmapBundle AEGetArtBundle(const wxArtID &artId) {
   return gsArduinoArtProvider.CreateBitmapBundle(artId, AEArtClient(), wxDefaultSize);
 }
-

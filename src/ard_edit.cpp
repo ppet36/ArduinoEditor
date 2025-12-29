@@ -83,6 +83,47 @@ static inline bool IsDangerousEmoji(wxUniChar ch) {
 }
 #endif
 
+namespace {
+
+// Map libclang cursor kind to our image IDs registered in InitCodeCompletionIcons().
+static inline int CompletionImageType(CXCursorKind kind) {
+  switch (kind) {
+    case CXCursor_FunctionDecl:
+    case CXCursor_CXXMethod:
+    case CXCursor_Constructor:
+    case CXCursor_Destructor:
+      return 1; // function
+    case CXCursor_VarDecl:
+    case CXCursor_FieldDecl:
+    case CXCursor_ParmDecl:
+      return 2; // variable/parameter
+    case CXCursor_StructDecl:
+    case CXCursor_ClassDecl:
+    case CXCursor_UnionDecl:
+    case CXCursor_EnumDecl:
+      return 3; // type
+    case CXCursor_MacroDefinition:
+      return 4; // macro
+    default:
+      return 0;
+  }
+}
+
+static wxString BuildCompletionList(const std::vector<CompletionItem> &completions) {
+  wxString list;
+  for (size_t i = 0; i < completions.size(); ++i) {
+    if (i > 0)
+      list << '\n';
+
+    const auto &item = completions[i];
+    list << wxString::FromUTF8(item.label.c_str());
+    list << wxT("?") << CompletionImageType(item.kind);
+  }
+  return list;
+}
+
+} // namespace
+
 // -------------------------------------------------------------------------------
 ArduinoEditor::ArduinoEditor(wxWindow *parent,
                              ArduinoCli *cli,
@@ -344,6 +385,77 @@ void ArduinoEditor::OnCharHook(wxKeyEvent &event) {
       ShowAutoCompletion();
       return;
     }
+  }
+
+  // --- BACKSPACE while completion popup is visible: keep it alive and re-filter from cache ---
+  // Scintilla's AutoComp window tends to close on backspace. If we already have completion items
+  // in memory, we can instantly re-show the popup with a shorter prefix, so a small typo doesn't
+  // make the whole thing disappear.
+  if (!alt && !anyCtrl && !shift && key == WXK_BACK &&
+      m_popupMode == PopupMode::Completion &&
+      !m_completionMetadata.m_lastCompletions.empty()) {
+
+    // Let the editor actually delete the character first.
+    event.Skip();
+
+    const int wordStart = m_completionMetadata.m_lastWordStart;
+
+    CallAfter([this, wordStart]() {
+      if (!m_editor)
+        return;
+
+      if (m_completionMetadata.m_lastCompletions.empty()) {
+        if (m_editor->AutoCompActive()) {
+          m_editor->AutoCompCancel();
+        }
+        return;
+      }
+
+      CancelCallTip();
+
+      const int curPos = m_editor->GetCurrentPos();
+
+      // If the user deleted "behind" the start (or moved elsewhere), just cancel the popup.
+      if (wordStart < 0 || curPos < wordStart) {
+        if (m_editor->AutoCompActive()) {
+          m_editor->AutoCompCancel();
+        }
+
+        m_popupMode = PopupMode::None;
+        return;
+      }
+
+      // Do not keep the popup when the caret jumped to a different line.
+      if (m_editor->LineFromPosition(curPos) != m_editor->LineFromPosition(wordStart)) {
+        if (m_editor->AutoCompActive()) {
+          m_editor->AutoCompCancel();
+        }
+
+        m_popupMode = PopupMode::None;
+        return;
+      }
+
+      int lengthEntered = curPos - wordStart;
+      if (lengthEntered < 0) {
+        lengthEntered = 0;
+      }
+
+      m_popupMode = PopupMode::Completion;
+
+      // After backspace, we leave interactive code completion. The popup will remain open
+      // and the user can do whatever they want with it, including constructing a completely
+      // different expression from the root.
+
+      ScheduleAutoCompletion();
+
+      wxString list = BuildCompletionList(m_completionMetadata.m_lastCompletions);
+      if (!list.IsEmpty()) {
+        m_editor->AutoCompShow(lengthEntered, list);
+        m_completionMetadata.m_lastLengthEntered = lengthEntered;
+      }
+    });
+
+    return;
   }
 
   // ---- Alt + Up/Down -> jump to previous/next occurrence of symbol ----
@@ -1343,7 +1455,11 @@ void ArduinoEditor::ScheduleAutoCompletion() {
   m_scheduledPos = m_editor->GetCurrentPos();
 
   // one-shot timer, after the last character
-  m_completionTimer.Start(m_clangSettings.autocompletionDelay, wxTIMER_ONE_SHOT);
+  m_completionTimer.Stop();
+
+  // If the completion has already been invoked and the corresponding options have been loaded,
+  // we will only make a short pause before re-evaluating.
+  m_completionTimer.Start(m_editor->AutoCompActive() ? 250 : m_clangSettings.autocompletionDelay, wxTIMER_ONE_SHOT);
 }
 
 void ArduinoEditor::OnCompletionTimer(wxTimerEvent &WXUNUSED(evt)) {
@@ -1374,47 +1490,11 @@ void ArduinoEditor::OnCompletionReady(wxThreadEvent &event) {
     return;
   }
 
-  wxString completionList;
-  for (size_t i = 0; i < completions.size(); ++i) {
-    if (i > 0)
-      completionList << '\n';
-
-    const auto &item = completions[i];
-
-    int imageType = 0;
-    switch (item.kind) {
-      case CXCursor_FunctionDecl:
-      case CXCursor_CXXMethod:
-      case CXCursor_Constructor:
-      case CXCursor_Destructor:
-        imageType = 1;
-        break;
-      case CXCursor_VarDecl:
-      case CXCursor_FieldDecl:
-      case CXCursor_ParmDecl:
-        imageType = 2;
-        break;
-      case CXCursor_StructDecl:
-      case CXCursor_ClassDecl:
-      case CXCursor_UnionDecl:
-      case CXCursor_EnumDecl:
-        imageType = 3;
-        break;
-      case CXCursor_MacroDefinition:
-        imageType = 4;
-        break;
-      default:
-        imageType = 0;
-        break;
-    }
-
-    completionList << wxString::FromUTF8(item.label.c_str());
-    completionList << wxT("?") << imageType;
-  }
-
   m_completionMetadata.m_lastCompletions = completions;
   m_completionMetadata.m_lastWordStart = wordStart;
   m_completionMetadata.m_lastLengthEntered = lengthEntered;
+
+  wxString completionList = BuildCompletionList(completions);
 
   if (!completionList.IsEmpty()) {
     m_editor->AutoCompShow(lengthEntered, completionList);
@@ -1771,23 +1851,35 @@ void ArduinoEditor::AutoIndent(char ch) {
 void ArduinoEditor::OnCharAdded(wxStyledTextEvent &event) {
   char ch = event.GetKey();
 
-  // --- Auto-indent ---
   if (m_autoIndentEnabled) {
     AutoIndent(ch);
   }
 
-  // Only if autocomp is always
   if (m_clangSettings.completionMode == always) {
-    // Trigger after '.' or '->'
-    if (ch == '.' || (ch == '>' && m_editor->GetCurrentPos() >= 2 && m_editor->GetCharAt(m_editor->GetCurrentPos() - 2) == '-')) {
+    const int currentPos = m_editor->GetCurrentPos();
+
+    auto isIdentChar = [](char c) {
+      return wxIsalnum(static_cast<unsigned char>(c)) || c == '_';
+    };
+
+    const bool isArrow =
+        (ch == '>' && currentPos >= 2 &&
+         m_editor->GetCharAt(currentPos - 2) == '-');
+
+    const bool isScope =
+        (ch == ':' && currentPos >= 2 &&
+         m_editor->GetCharAt(currentPos - 2) == ':');
+
+    // Trigger after '.', '->', '::'
+    if (ch == '.' || isArrow || isScope) {
       ShowAutoCompletion();
-    } else if (wxIsalnum(ch)) {
-      int currentPos = m_editor->GetCurrentPos();
+    } else if (isIdentChar(ch)) {
       int wordStart = m_editor->WordStartPosition(currentPos, true);
       if (currentPos - wordStart >= 2) {
         ScheduleAutoCompletion();
       }
-    } else if (ch == ';' || ch == '(') {
+    } else {
+      // Anything that cannot continue an identifier/prefix -> close completion
       m_completionTimer.Stop();
       if (m_editor->AutoCompActive()) {
         m_editor->AutoCompCancel();

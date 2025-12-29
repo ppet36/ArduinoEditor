@@ -2804,17 +2804,18 @@ void ArduinoEditorFrame::InitComponents() {
 
   // AI chat panel
   if (m_aiPanel) {
-    m_auiManager.AddPane(
-        m_aiPanel,
-        wxAuiPaneInfo()
-            .Name(wxT("ai"))
-            .Float()
-            .Caption(_("AI assistant"))
-            .BestSize(640, 480)
-            .CloseButton(true)
-            .MaximizeButton(false)
-            .Floatable(true)
-            .Show(false)); // initially hidden
+    m_auiManager.AddPane(m_aiPanel,
+                         wxAuiPaneInfo()
+                             .Name(wxT("ai"))
+                             .Caption(_("AI assistant"))
+                             .Right()
+                             .Dockable(true)
+                             .Floatable(true)
+                             .BestSize(320, 640)
+                             .MinSize(200, 150)
+                             .CloseButton(true)
+                             .MaximizeButton(false)
+                             .Show(false));
   }
 
   // Let's try to load the saved perspective
@@ -3748,7 +3749,7 @@ void ArduinoEditorFrame::OnSysColoursChanged(wxSysColourChangedEvent &evt) {
     m_serialMonitor->OnSysColourChanged();
   }
 
-  m_optionsButton->SetBitmap(AEGetArtBundle(wxAEArt::Settings));  
+  m_optionsButton->SetBitmap(AEGetArtBundle(wxAEArt::Settings));
   m_buildButton->SetBitmap(AEGetArtBundle(wxAEArt::Check));
   m_uploadButton->SetBitmap(AEGetArtBundle(wxAEArt::Play));
   m_refreshPortsButton->SetBitmap(AEGetArtBundle(wxAEArt::Refresh));

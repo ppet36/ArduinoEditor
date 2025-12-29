@@ -125,7 +125,7 @@ void SketchFilesPanel::OnSysColourChanged() {
   auto *newList = new wxImageList(iconSize.GetWidth(), iconSize.GetHeight(), true);
 
   auto addBundle = [&](const wxArtID &artId) -> int {
-    wxBitmapBundle bb = AEGetArtBundle (artId);
+    wxBitmapBundle bb = AEGetArtBundle(artId);
     wxBitmap bmp = bb.GetBitmap(iconSize);
 
     if (bmp.IsOk() && (bmp.GetWidth() != iconSize.x || bmp.GetHeight() != iconSize.y)) {

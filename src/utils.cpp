@@ -17,8 +17,8 @@
  */
 
 #include "utils.hpp"
-#include "ard_setdlg.hpp"
 #include "ard_ap.hpp"
+#include "ard_setdlg.hpp"
 #include <algorithm>
 #include <cctype>
 #include <cstddef>
@@ -376,7 +376,7 @@ void SaveWindowSize(const wxString &prefix, wxWindow *win, wxConfigBase *config)
 wxMenuItem *AddMenuItemWithArt(wxMenu *menu, int id, const wxString &text, const wxString &help, const wxArtID &artId) {
   wxMenuItem *item = new wxMenuItem(menu, id, text, help);
   if (!artId.IsEmpty()) {
-    wxBitmapBundle bmp = AEGetArtBundle (artId);
+    wxBitmapBundle bmp = AEGetArtBundle(artId);
     if (bmp.IsOk()) {
       item->SetBitmap(bmp);
     }

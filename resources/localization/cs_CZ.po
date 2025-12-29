@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ArduinoEditor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-29 14:58+0100\n"
+"POT-Creation-Date: 2025-12-29 21:07+0100\n"
 "PO-Revision-Date: 2025-12-09 22:52:00+0100\n"
 "Last-Translator: Pavel Petržela <r17c@seznam.cz>\n"
 "Language-Team: -\n"
@@ -923,7 +923,7 @@ msgstr "API klíč je ukládán pomocí systémového zabezpečeného úložišt
 msgid "Extra request JSON"
 msgstr "Dodatečné JSON parametry"
 
-#: ../src/ard_aimdldlg.cpp:183 ../src/ard_ed_frm.cpp:3871
+#: ../src/ard_aimdldlg.cpp:183 ../src/ard_ed_frm.cpp:3872
 msgid "Delete"
 msgstr "Smazat"
 
@@ -1680,8 +1680,8 @@ msgstr "Varování"
 msgid "Initializing..."
 msgstr "Inicializuji..."
 
-#: ../src/ard_ed_frm.cpp:301 ../src/ard_ed_frm.cpp:3498
-#: ../src/ard_ed_frm.cpp:3693
+#: ../src/ard_ed_frm.cpp:301 ../src/ard_ed_frm.cpp:3499
+#: ../src/ard_ed_frm.cpp:3694
 #, c-format
 msgid "Directory '%s' does not exist."
 msgstr "Adresář '%s' neexistuje."
@@ -2156,7 +2156,7 @@ msgstr "Správce desek..."
 msgid "Manage Arduino boards (cores)"
 msgstr "Spravujte Arduino desky (cores)"
 
-#: ../src/ard_ed_frm.cpp:2472 ../src/ard_ed_frm.cpp:3357
+#: ../src/ard_ed_frm.cpp:2472 ../src/ard_ed_frm.cpp:3358
 msgid "Serial monitor"
 msgstr "Serial monitor"
 
@@ -2204,7 +2204,7 @@ msgstr "Prohlížeč souborů"
 msgid "Show browser for Sketch directory"
 msgstr "Zobrazit prohlížeč pro adresář sketche"
 
-#: ../src/ard_ed_frm.cpp:2526 ../src/ard_ed_frm.cpp:2812
+#: ../src/ard_ed_frm.cpp:2526 ../src/ard_ed_frm.cpp:2810
 #: ../src/ard_setdlg.cpp:1599
 msgid "AI assistant"
 msgstr "AI asistent"
@@ -2299,27 +2299,27 @@ msgstr "CLI"
 msgid "Sketch files"
 msgstr "Soubory sketche"
 
-#: ../src/ard_ed_frm.cpp:3077 ../src/sf.cpp:68
+#: ../src/ard_ed_frm.cpp:3078 ../src/sf.cpp:68
 msgid "Arduino Editor"
 msgstr "Arduino Editor"
 
-#: ../src/ard_ed_frm.cpp:3084
+#: ../src/ard_ed_frm.cpp:3085
 msgid "Application initializing..."
 msgstr "Inicializace aplikace..."
 
-#: ../src/ard_ed_frm.cpp:3241
+#: ../src/ard_ed_frm.cpp:3242
 msgid "Copy problem"
 msgstr "Kopírovat problém"
 
-#: ../src/ard_ed_frm.cpp:3242
+#: ../src/ard_ed_frm.cpp:3243
 msgid "Copy all problems"
 msgstr "Zkopírovat všechny problémy"
 
-#: ../src/ard_ed_frm.cpp:3250
+#: ../src/ard_ed_frm.cpp:3251
 msgid "Solve error with AI"
 msgstr "Vyřešit chybu pomocí AI"
 
-#: ../src/ard_ed_frm.cpp:3355
+#: ../src/ard_ed_frm.cpp:3356
 msgid ""
 "Serial monitor is available only for local serial ports.\n"
 "\n"
@@ -2329,274 +2329,274 @@ msgstr ""
 "\n"
 "Vyberte sériový port na panelu nástrojů."
 
-#: ../src/ard_ed_frm.cpp:3456
+#: ../src/ard_ed_frm.cpp:3457
 msgid "(Empty)"
 msgstr "(Prázdné)"
 
-#: ../src/ard_ed_frm.cpp:3459 ../src/ard_ed_frm.cpp:3485
-#: ../src/ard_ed_frm.cpp:3515
+#: ../src/ard_ed_frm.cpp:3460 ../src/ard_ed_frm.cpp:3486
+#: ../src/ard_ed_frm.cpp:3516
 msgid "Clear history"
 msgstr "Vymazat historii"
 
-#: ../src/ard_ed_frm.cpp:3515
+#: ../src/ard_ed_frm.cpp:3516
 msgid "Do you really want to clear the recent sketches history?"
 msgstr "Opravdu chcete vymazat historii nedávných sketchů?"
 
-#: ../src/ard_ed_frm.cpp:3580
+#: ../src/ard_ed_frm.cpp:3581
 msgid "(SketchesDir does not exist)"
 msgstr "(SketchesDir neexistuje)"
 
-#: ../src/ard_ed_frm.cpp:3587
+#: ../src/ard_ed_frm.cpp:3588
 msgid "(Cannot open SketchesDir)"
 msgstr "(Nelze otevřít SketchesDir)"
 
-#: ../src/ard_ed_frm.cpp:3651
+#: ../src/ard_ed_frm.cpp:3652
 msgid "(No sketches found)"
 msgstr "(Nebyly nalezeny žádné sketche)"
 
-#: ../src/ard_ed_frm.cpp:3793 ../src/ard_ed_frm.cpp:3944
+#: ../src/ard_ed_frm.cpp:3794 ../src/ard_ed_frm.cpp:3945
 #, c-format
 msgid "Cannot open '%s' in associated application."
 msgstr "Nelze otevřít '%s' v přidružené aplikaci."
 
-#: ../src/ard_ed_frm.cpp:3793 ../src/ard_ed_frm.cpp:3944
+#: ../src/ard_ed_frm.cpp:3794 ../src/ard_ed_frm.cpp:3945
 msgid "Open file"
 msgstr "Otevřít soubor"
 
-#: ../src/ard_ed_frm.cpp:3804
+#: ../src/ard_ed_frm.cpp:3805
 msgid "Enter new file name:"
 msgstr "Zadejte nový název souboru:"
 
-#: ../src/ard_ed_frm.cpp:3804 ../src/ard_filestree.cpp:392
+#: ../src/ard_ed_frm.cpp:3805 ../src/ard_filestree.cpp:392
 msgid "New file"
 msgstr "Nový soubor"
 
-#: ../src/ard_ed_frm.cpp:3804
+#: ../src/ard_ed_frm.cpp:3805
 msgid "new_file.cpp"
 msgstr "new_file.cpp"
 
-#: ../src/ard_ed_frm.cpp:3813
+#: ../src/ard_ed_frm.cpp:3814
 msgid "File name must not contain path separators."
 msgstr "Název souboru nesmí obsahovat oddělovače cest."
 
-#: ../src/ard_ed_frm.cpp:3829
+#: ../src/ard_ed_frm.cpp:3830
 msgid "Folder name:"
 msgstr "Název složky:"
 
-#: ../src/ard_ed_frm.cpp:3830 ../src/ard_filestree.cpp:393
+#: ../src/ard_ed_frm.cpp:3831 ../src/ard_filestree.cpp:393
 msgid "New folder"
 msgstr "Nová složka"
 
-#: ../src/ard_ed_frm.cpp:3831
+#: ../src/ard_ed_frm.cpp:3832
 msgid "new_folder"
 msgstr "nová_slozka"
 
-#: ../src/ard_ed_frm.cpp:3840
+#: ../src/ard_ed_frm.cpp:3841
 msgid "Invalid folder name."
 msgstr "Neplatný název složky."
 
-#: ../src/ard_ed_frm.cpp:3846
+#: ../src/ard_ed_frm.cpp:3847
 msgid "Cannot create folder."
 msgstr "Nelze vytvořit složku."
 
-#: ../src/ard_ed_frm.cpp:3862
+#: ../src/ard_ed_frm.cpp:3863
 msgid "Cannot delete .ino file of sketch."
 msgstr "Nelze smazat .ino soubor sketche."
 
-#: ../src/ard_ed_frm.cpp:3867
+#: ../src/ard_ed_frm.cpp:3868
 #, c-format
 msgid "Do you want to delete folder %s and all its contents?"
 msgstr "Chcete smazat složku %s a veškerý její obsah?"
 
-#: ../src/ard_ed_frm.cpp:3868
+#: ../src/ard_ed_frm.cpp:3869
 #, c-format
 msgid "Do you want to delete file %s?"
 msgstr "Opravdu chcete smazat soubor %s?"
 
-#: ../src/ard_ed_frm.cpp:3879
+#: ../src/ard_ed_frm.cpp:3880
 msgid "Failed to delete: "
 msgstr "Nepodařilo se odstranit: "
 
-#: ../src/ard_ed_frm.cpp:3896 ../src/ard_renamedlg.cpp:121
+#: ../src/ard_ed_frm.cpp:3897 ../src/ard_renamedlg.cpp:121
 msgid "New name:"
 msgstr "Nový název:"
 
-#: ../src/ard_ed_frm.cpp:3896
+#: ../src/ard_ed_frm.cpp:3897
 msgid "Rename"
 msgstr "Přejmenovat"
 
-#: ../src/ard_ed_frm.cpp:3930
+#: ../src/ard_ed_frm.cpp:3931
 msgid "Rename failed."
 msgstr "Přejmenování se nezdařilo."
 
-#: ../src/ard_ed_frm.cpp:3951
+#: ../src/ard_ed_frm.cpp:3952
 msgid "No board selected"
 msgstr "Není vybrána žádná deska"
 
-#: ../src/ard_ed_frm.cpp:3999 ../src/ard_ed_frm.cpp:4087
+#: ../src/ard_ed_frm.cpp:4000 ../src/ard_ed_frm.cpp:4088
 msgid "--- Select board ---"
 msgstr "--- Vyberte desku ---"
 
-#: ../src/ard_ed_frm.cpp:4199
+#: ../src/ard_ed_frm.cpp:4200
 msgid "Code completion engine is not available."
 msgstr "Prostředí pro dokončování není inicializováno."
 
-#: ../src/ard_ed_frm.cpp:4209
+#: ../src/ard_ed_frm.cpp:4210
 msgid "Translation unit is not valid."
 msgstr "Překladová jednotka není připravena."
 
-#: ../src/ard_ed_frm.cpp:4209 ../src/ard_ed_frm.cpp:4230
-#: ../src/ard_ed_frm.cpp:4243 ../src/ard_ed_frm.cpp:4252
-#: ../src/ard_ed_frm.cpp:4273 ../src/ard_ed_frm.cpp:4283
-#: ../src/ard_ed_frm.cpp:4290 ../src/ard_ed_frm.cpp:4304
-#: ../src/ard_ed_frm.cpp:4332 ../src/ard_refactor.cpp:473
+#: ../src/ard_ed_frm.cpp:4210 ../src/ard_ed_frm.cpp:4231
+#: ../src/ard_ed_frm.cpp:4244 ../src/ard_ed_frm.cpp:4253
+#: ../src/ard_ed_frm.cpp:4274 ../src/ard_ed_frm.cpp:4284
+#: ../src/ard_ed_frm.cpp:4291 ../src/ard_ed_frm.cpp:4305
+#: ../src/ard_ed_frm.cpp:4333 ../src/ard_refactor.cpp:473
 #: ../src/ard_refactor.cpp:483 ../src/ard_renamedlg.cpp:71
 msgid "Rename symbol"
 msgstr "Přejmenovat symbol"
 
-#: ../src/ard_ed_frm.cpp:4230
+#: ../src/ard_ed_frm.cpp:4231
 msgid "Sources contains compilation errors."
 msgstr "Zdrojové soubory obsahují chyby překladu."
 
-#: ../src/ard_ed_frm.cpp:4243
+#: ../src/ard_ed_frm.cpp:4244
 msgid "No usages of this symbol were found."
 msgstr "Nebyly nalezeny žádné výskyty symbolu."
 
-#: ../src/ard_ed_frm.cpp:4252
+#: ../src/ard_ed_frm.cpp:4253
 msgid "Symbol is declared outside of sketch directory."
 msgstr "Symbol je deklarován mimo sketch."
 
-#: ../src/ard_ed_frm.cpp:4273
+#: ../src/ard_ed_frm.cpp:4274
 msgid "New name cannot be empty."
 msgstr "Název nesmí být prázdný."
 
-#: ../src/ard_ed_frm.cpp:4283
+#: ../src/ard_ed_frm.cpp:4284
 msgid "New name is not a valid identifier."
 msgstr "Zadaný název není platným identifikátorem."
 
-#: ../src/ard_ed_frm.cpp:4290
+#: ../src/ard_ed_frm.cpp:4291
 msgid "No occurrences selected."
 msgstr "Nebyly vybrány žádné výskyty."
 
-#: ../src/ard_ed_frm.cpp:4304
+#: ../src/ard_ed_frm.cpp:4305
 msgid "No usages of this symbol were found inside the current sketch."
 msgstr "Nebyly nalezeny žádné výskyty symbolu v aktuálním sketchi."
 
-#: ../src/ard_ed_frm.cpp:4332
+#: ../src/ard_ed_frm.cpp:4333
 msgid "No matching occurrences to rename were found."
 msgstr "Žádné odpovídající výskyty pro přejmenování nebyly nalezeny."
 
-#: ../src/ard_ed_frm.cpp:4336
+#: ../src/ard_ed_frm.cpp:4337
 #, c-format
 msgid "Renamed %d occurrences."
 msgstr "Přejmenováno %d výskytů."
 
-#: ../src/ard_edit.cpp:203
+#: ../src/ard_edit.cpp:244
 #, c-format
 msgid "Unable to load file %s."
 msgstr "Nelze načíst soubor %s."
 
-#: ../src/ard_edit.cpp:301
+#: ../src/ard_edit.cpp:342
 msgid "Find and Replace"
 msgstr "Najít a nahradit"
 
-#: ../src/ard_edit.cpp:301
+#: ../src/ard_edit.cpp:342
 msgid "Find"
 msgstr "Najít"
 
-#: ../src/ard_edit.cpp:970
+#: ../src/ard_edit.cpp:1083
 msgid "&Undo\tCtrl+Z"
 msgstr "&Zpět\tCtrl+Z"
 
-#: ../src/ard_edit.cpp:971
+#: ../src/ard_edit.cpp:1084
 msgid "&Redo\tCtrl+Y"
 msgstr "&Znovu\tCtrl+Y"
 
-#: ../src/ard_edit.cpp:974
+#: ../src/ard_edit.cpp:1087
 msgid "Cu&t\tCtrl+X"
 msgstr "Vyjmout\tCtrl+X"
 
-#: ../src/ard_edit.cpp:975
+#: ../src/ard_edit.cpp:1088
 msgid "&Copy\tCtrl+C"
 msgstr "&Kopírovat\tCtrl+C"
 
-#: ../src/ard_edit.cpp:976
+#: ../src/ard_edit.cpp:1089
 msgid "&Paste\tCtrl+V"
 msgstr "&Vložit\tCtrl+V"
 
-#: ../src/ard_edit.cpp:977
+#: ../src/ard_edit.cpp:1090
 msgid "&Delete\tDel"
 msgstr "&Odstranit\tDel"
 
-#: ../src/ard_edit.cpp:980
+#: ../src/ard_edit.cpp:1093
 msgid "Select &All\tCtrl+A"
 msgstr "Vybrat &vše\tCtrl+A"
 
-#: ../src/ard_edit.cpp:985
+#: ../src/ard_edit.cpp:1098
 msgid "&Find...\tCtrl+F"
 msgstr "&Najít...\tCtrl+F"
 
-#: ../src/ard_edit.cpp:986
+#: ../src/ard_edit.cpp:1099
 msgid "R&eplace...\tCtrl+Alt+F"
 msgstr "Nahradit...\tCtrl+Alt+F"
 
-#: ../src/ard_edit.cpp:996
+#: ../src/ard_edit.cpp:1109
 msgid "Go to definition (Cmd+Click)"
 msgstr "Přejít na definici (Cmd+Click)"
 
-#: ../src/ard_edit.cpp:998
+#: ../src/ard_edit.cpp:1111
 msgid "Go to definition\tCtrl+Click"
 msgstr "Přejít na definici\tCtrl+Click"
 
-#: ../src/ard_edit.cpp:1000
+#: ../src/ard_edit.cpp:1113
 msgid "Jump to the definition of the symbol under the cursor."
 msgstr "Přejít na definici symbolu pod kurzorem."
 
-#: ../src/ard_edit.cpp:1007
+#: ../src/ard_edit.cpp:1120
 msgid "Previous symbol occurrence\tCtrl+Up"
 msgstr "Předchozí výskyt symbolu\tCtrl+Up"
 
-#: ../src/ard_edit.cpp:1008
+#: ../src/ard_edit.cpp:1121
 msgid "Jump to the previous symbol occurrence in the current file."
 msgstr "Přejít na předchozí výskyt symbolu v aktuálním souboru."
 
-#: ../src/ard_edit.cpp:1013
+#: ../src/ard_edit.cpp:1126
 msgid "Next symbol occurrence\tCtrl+Down"
 msgstr "Následující výskyt sumbolu\tCtrl+Down"
 
-#: ../src/ard_edit.cpp:1014
+#: ../src/ard_edit.cpp:1127
 msgid "Jump to the next symbol occurrence in the current file."
 msgstr "Přejít na následující výskyt symbolu v aktuálním souboru."
 
-#: ../src/ard_edit.cpp:1021
+#: ../src/ard_edit.cpp:1134
 msgid "Show symbol occurrences\tShift+F12"
 msgstr "Zobrazit výskyty symbolu\tShift+F12"
 
-#: ../src/ard_edit.cpp:1022
+#: ../src/ard_edit.cpp:1135
 msgid "Shows list of all project-wide symbol occurrences."
 msgstr "Zobrazí seznam všech výskytů symbolu v celém projektu."
 
-#: ../src/ard_edit.cpp:1025
+#: ../src/ard_edit.cpp:1138
 msgid "Navigate"
 msgstr "Navigace"
 
-#: ../src/ard_edit.cpp:1031
+#: ../src/ard_edit.cpp:1144
 msgid "Rename symbol..."
 msgstr "Přejmenovat symbol..."
 
-#: ../src/ard_edit.cpp:1032
+#: ../src/ard_edit.cpp:1145
 msgid "Rename the selected symbol across the project."
 msgstr "Přejmenovat vybraný symbol v celém projektu."
 
-#: ../src/ard_edit.cpp:1037
+#: ../src/ard_edit.cpp:1150
 msgid "Introduce variable..."
 msgstr "Vytvořit proměnnou..."
 
-#: ../src/ard_edit.cpp:1038
+#: ../src/ard_edit.cpp:1151
 msgid "Extract the selected expression into a new local variable."
 msgstr "Extrahuje vybraný výraz do nové lokální proměnné."
 
-#: ../src/ard_edit.cpp:1043 ../src/ard_refactor.cpp:640
+#: ../src/ard_edit.cpp:1156 ../src/ard_refactor.cpp:640
 #: ../src/ard_refactor.cpp:657 ../src/ard_refactor.cpp:665
 #: ../src/ard_refactor.cpp:672 ../src/ard_refactor.cpp:683
 #: ../src/ard_refactor.cpp:690 ../src/ard_refactor.cpp:701
@@ -2606,109 +2606,109 @@ msgstr "Extrahuje vybraný výraz do nové lokální proměnné."
 msgid "Inline variable"
 msgstr "Nahradit proměnnou jejím výrazem"
 
-#: ../src/ard_edit.cpp:1044
+#: ../src/ard_edit.cpp:1157
 msgid "Replace all usages of the variable with its initializer."
 msgstr "Nahradit všechna použití proměnné jejím inicializačním výrazem."
 
-#: ../src/ard_edit.cpp:1049
+#: ../src/ard_edit.cpp:1162
 msgid "Generate function implementation..."
 msgstr "Vygenerovat implementaci funkce..."
 
-#: ../src/ard_edit.cpp:1050
+#: ../src/ard_edit.cpp:1163
 msgid "Insert an implementation stub for the selected function."
 msgstr "Vložit prázdnou implementaci pro vybranou funkci."
 
-#: ../src/ard_edit.cpp:1055
+#: ../src/ard_edit.cpp:1168
 msgid "Create declaration in header..."
 msgstr "Vytvořit deklaraci v hlavičce..."
 
-#: ../src/ard_edit.cpp:1056
+#: ../src/ard_edit.cpp:1169
 msgid "Add a missing function declaration to the appropriate header file."
 msgstr ""
 "Přidat chybějící deklaraci funkce do odpovídajícího hlavičkového souboru."
 
-#: ../src/ard_edit.cpp:1061
+#: ../src/ard_edit.cpp:1174
 msgid "Organize includes..."
 msgstr "Uspořádat direktivy #include..."
 
-#: ../src/ard_edit.cpp:1062
+#: ../src/ard_edit.cpp:1175
 msgid "Detect and clean up unused or duplicate #include directives."
 msgstr "Vyhledá a odstraní nepoužívané nebo duplicitní direktivy #include."
 
-#: ../src/ard_edit.cpp:1067
+#: ../src/ard_edit.cpp:1180
 msgid "Extract function..."
 msgstr "Vytvořit funkci..."
 
-#: ../src/ard_edit.cpp:1068
+#: ../src/ard_edit.cpp:1181
 msgid "Create a new function from the selected block of code."
 msgstr "Vytvoří novou funkci z vybraného bloku kódu."
 
-#: ../src/ard_edit.cpp:1075
+#: ../src/ard_edit.cpp:1188
 msgid "Format Selection"
 msgstr "Naformátovat výběr"
 
-#: ../src/ard_edit.cpp:1076
+#: ../src/ard_edit.cpp:1189
 msgid "Format the selected text using clang-format."
 msgstr "Naformátuje vybraný blok pomocí clang-format."
 
-#: ../src/ard_edit.cpp:1081
+#: ../src/ard_edit.cpp:1194
 msgid "Format File"
 msgstr "Naformátovat soubor"
 
-#: ../src/ard_edit.cpp:1082
+#: ../src/ard_edit.cpp:1195
 msgid "Format the current file using clang-format."
 msgstr "Naformátuje aktuální soubor pomocí clang-format."
 
-#: ../src/ard_edit.cpp:1085 ../src/ard_refactor.cpp:1643
+#: ../src/ard_edit.cpp:1198 ../src/ard_refactor.cpp:1643
 msgid "Refactor"
 msgstr "Refaktoring"
 
-#: ../src/ard_edit.cpp:1094
+#: ../src/ard_edit.cpp:1207
 msgid "Explain selection"
 msgstr "Vysvětlit výběr"
 
-#: ../src/ard_edit.cpp:1095
+#: ../src/ard_edit.cpp:1208
 msgid "AI explains the meaning and behavior of the selected code."
 msgstr "AI vysvětlí význam a chování vybraného kódu."
 
-#: ../src/ard_edit.cpp:1100
+#: ../src/ard_edit.cpp:1213
 msgid "Generate documentation for Symbol"
 msgstr "Vygenerovat dokumentaci k symbolu"
 
-#: ../src/ard_edit.cpp:1101
+#: ../src/ard_edit.cpp:1214
 msgid "AI generates a documentation comment for the symbol under the cursor."
 msgstr "AI vygeneruje dokumentační komentář pro symbol pod kurzorem."
 
-#: ../src/ard_edit.cpp:1106
+#: ../src/ard_edit.cpp:1219
 msgid "Auto-Document All Functions in File"
 msgstr "Automaticky dokumentovat všechny funkce v souboru"
 
-#: ../src/ard_edit.cpp:1107
+#: ../src/ard_edit.cpp:1220
 msgid "AI generates documentation comments for all functions in this file."
 msgstr ""
 "AI vygeneruje dokumentační komentáře pro všechny funkce v tomto souboru."
 
-#: ../src/ard_edit.cpp:1112
+#: ../src/ard_edit.cpp:1225
 msgid "Document All Methods in Class"
 msgstr "Automaticky dokumentovat všechny metody třídy"
 
-#: ../src/ard_edit.cpp:1113
+#: ../src/ard_edit.cpp:1226
 msgid "AI generates documentation for all methods of the selected class."
 msgstr "AI vygeneruje dokumentaci pro všechny metody vybrané třídy."
 
-#: ../src/ard_edit.cpp:1118
+#: ../src/ard_edit.cpp:1231
 msgid "Optimize function or method"
 msgstr "Optimalizace funkce nebo metody"
 
-#: ../src/ard_edit.cpp:1119
+#: ../src/ard_edit.cpp:1232
 msgid "AI optimizes function or method."
 msgstr "AI optimalizuje funkci nebo metodu."
 
-#: ../src/ard_edit.cpp:1122 ../src/ard_setdlg.cpp:1852
+#: ../src/ard_edit.cpp:1235 ../src/ard_setdlg.cpp:1852
 msgid "AI"
 msgstr "AI"
 
-#: ../src/ard_edit.cpp:1489
+#: ../src/ard_edit.cpp:1570
 msgid ""
 "File is opened as read-only. Enable editing first if you want to save "
 "changes."
@@ -2716,11 +2716,11 @@ msgstr ""
 "Soubor je otevřen pouze pro čtení. Nejprve povolte úpravy, pokud chcete "
 "změny uložit."
 
-#: ../src/ard_edit.cpp:1490
+#: ../src/ard_edit.cpp:1571
 msgid "Read-only file"
 msgstr "Soubor pouze pro čtení"
 
-#: ../src/ard_edit.cpp:1496
+#: ../src/ard_edit.cpp:1577
 #, c-format
 msgid "Unable to save file %s."
 msgstr "Nelze uložit soubor %s."

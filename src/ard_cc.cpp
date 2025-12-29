@@ -2838,7 +2838,7 @@ bool ArduinoCodeCompletion::GetHoverInfo(const std::string &filename, const std:
       }
 
       if (!codeBlock.empty()) {
-        outInfo.fullComment = wxToStd(_("Declaration:")) + "\n" + NormalizeIndent (codeBlock, 2);
+        outInfo.fullComment = wxToStd(_("Declaration:")) + "\n" + NormalizeIndent(codeBlock, 2);
         outInfo.briefComment.clear();
       }
     }

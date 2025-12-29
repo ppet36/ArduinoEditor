@@ -114,6 +114,7 @@ void SplashFrame::SetMessage(const wxString &msg) {
 
 void SplashFrame::Present() {
   Show();
+  CentreOnScreen();
   Raise();
 }
 

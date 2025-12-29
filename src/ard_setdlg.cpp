@@ -1631,10 +1631,10 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
   m_aiModelChoice = new wxChoice(aiPage, wxID_ANY);
   modelRow->Add(m_aiModelChoice, 1, wxRIGHT | wxEXPAND, 5);
 
-  m_aiModelEditBtn = new wxBitmapButton(aiPage, wxID_ANY, AEGetArtBundle (wxAEArt::Edit));
+  m_aiModelEditBtn = new wxBitmapButton(aiPage, wxID_ANY, AEGetArtBundle(wxAEArt::Edit));
   modelRow->Add(m_aiModelEditBtn, 0, wxRIGHT, 5);
 
-  m_aiModelAddBtn = new wxBitmapButton(aiPage, wxID_ANY, AEGetArtBundle (wxAEArt::Plus));
+  m_aiModelAddBtn = new wxBitmapButton(aiPage, wxID_ANY, AEGetArtBundle(wxAEArt::Plus));
   modelRow->Add(m_aiModelAddBtn, 0);
 
   modelBox->Add(modelRow, 0, wxALL | wxEXPAND, 5);

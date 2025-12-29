@@ -489,7 +489,7 @@ void ArduinoSerialMonitorFrame::CreateControls() {
 
   m_sendButton = new wxBitmapButton(this,
                                     ID_SendButton,
-                                    AEGetArtBundle (wxAEArt::GoForward));
+                                    AEGetArtBundle(wxAEArt::GoForward));
   bottomSizer->Add(m_sendButton, 0, wxALIGN_CENTER_VERTICAL);
 
   topSizer->Add(bottomSizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 8);
@@ -760,7 +760,6 @@ void ArduinoSerialMonitorFrame::Unblock() {
 }
 
 void ArduinoSerialMonitorFrame::OnSysColourChanged() {
-  m_sendButton->SetBitmap (AEGetArtBundle(wxAEArt::GoForward));
+  m_sendButton->SetBitmap(AEGetArtBundle(wxAEArt::GoForward));
   Layout();
 }
-

@@ -30,7 +30,7 @@ wxBitmapBundle ArduinoArtProvider::CreateBitmapBundle(const wxArtID &id, const w
   const char *const *x24 = nullptr;
   const char *const *x32 = nullptr;
 
-  APP_DEBUG_LOG ("ARTPROV: getting bitmap %s for %s mode", wxToStd(id).c_str(), dark ? "dark" : "light");
+  APP_DEBUG_LOG("ARTPROV: getting bitmap %s for %s mode", wxToStd(id).c_str(), dark ? "dark" : "light");
 
   if (id == wxAEArt::Refresh) {
     x16 = dark ? mdi_sync_dark_16 : mdi_sync_light_16;
