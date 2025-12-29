@@ -20,8 +20,8 @@
 
 #include "ard_cli.hpp"
 #include "ard_ev.hpp"
-#include "utils.hpp"
 #include "ard_setdlg.hpp"
+#include "utils.hpp"
 #include <atomic>
 #include <chrono>
 #include <clang-c/Index.h>
@@ -68,6 +68,8 @@ struct HoverInfo {
   std::string briefComment; // short comment (doxygen @brief, ///)
   std::string fullComment;  // entire comment block (/** ... */)
   std::vector<ParameterInfo> parameters;
+
+  std::string ToHoverString();
 };
 
 struct JumpTarget {
@@ -128,11 +130,11 @@ struct CachedTranslationUnit {
 };
 
 struct ProjectTuEntry {
-  std::string key;                 // abs original filename (.ino/.cpp)
-  std::string mainFilename;        // clang main filename (e.g. .ino.cpp)
+  std::string key;          // abs original filename (.ino/.cpp)
+  std::string mainFilename; // clang main filename (e.g. .ino.cpp)
   std::size_t codeHash = 0;
-  std::size_t headersSigHash = 0;  // hash of opened headers (unsaved)
-  std::size_t argsHash = 0;        // hash clang args (+ file-specific extras)
+  std::size_t headersSigHash = 0; // hash of opened headers (unsaved)
+  std::size_t argsHash = 0;       // hash clang args (+ file-specific extras)
   CXTranslationUnit tu = nullptr;
 
   // Diagnostics filtered/sorted (CollectDiagnosticsLocked)
@@ -201,7 +203,7 @@ private:
   std::unordered_map<std::string, CachedTranslationUnit> m_tuCache;
   // .. and for whole project
   std::unordered_map<std::string, ProjectTuEntry> m_projectTuCache;
-  
+
   std::unordered_map<std::string, SymbolCacheEntry> m_symbolCache;
   std::unordered_map<uint64_t, InoHeaderCacheEntry> m_inoHeaderCache;
   // cache: decls signature -> insertIdx for "#include <sketch>.hpp" replacement
@@ -274,8 +276,7 @@ public:
   ArduinoCodeCompletion(ArduinoCli *ardCli, const ClangSettings &clangSettings, wxEvtHandler *eventHandler);
   ~ArduinoCodeCompletion();
 
-
-  void ApplySettings (const ClangSettings &settings);
+  void ApplySettings(const ClangSettings &settings);
 
   static bool IsClangTargetSupported(const std::string &target);
 

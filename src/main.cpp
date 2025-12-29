@@ -35,7 +35,6 @@
 bool g_debugLogging = false;
 bool g_verboseLogging = false;
 std::unique_ptr<wxLocale> g_locale;
-ArduinoArtProvider *g_artProvider = new ArduinoArtProvider();
 
 enum {
   TIMER_START = wxID_HIGHEST + 1,
@@ -256,8 +255,6 @@ bool ArduinoEditApp::OnInit() {
 #endif
 
   // icons
-  wxArtProvider::Push(g_artProvider);
-
   cfg = wxConfig::Get();
 
   wxString langPref = wxT("system");

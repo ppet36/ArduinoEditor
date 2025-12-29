@@ -1,28 +1,44 @@
 #!/usr/bin/env python3
-import os, sys, subprocess, re
-from pathlib import Path
-import io
-try:
-    from PIL import Image
-except ImportError:
-    Image = None
+"""
+gen_icons_simple.py
 
-# NOTE:
-#   This script clones the full Google Material Design Icons repository.
-#   That repository is huge (~22 GB at the time of writing).
-#   Make sure you have enough disk space and a decent connection.
+Minimal icon generator for Arduino Editor.
+
+- Uses Google Material Design Icons repository as SVG source.
+- Finds matching SVG for each icon name.
+- Uses ImageMagick ONLY (magick/convert) to render XPM.
+- Generates monochrome icons with transparent background in sizes: 16, 20, 24, 32.
+- Two variants:
+    * dark  -> #000000
+    * light -> #FFFFFF
+
+Output:
+  A single header containing XPM arrays and a small lookup table.
+
+Usage:
+  python3 gen_icons_simple.py --out ../src/material_xpm.h --icons sync delete note_add
+  python3 gen_icons_simple.py --out m.h --icons delete
+  python3 gen_icons_simple.py --no-update --icons delete
+
+Notes:
+  - The Material repo is huge.
+  - By default we use ../build/material-design-icons relative to this script.
+"""
+
+from __future__ import annotations
+
+import argparse
+import subprocess
+from pathlib import Path
+from typing import Iterable, List, Optional, Tuple
 
 REPO_URL = "https://github.com/google/material-design-icons"
-CACHE_DIR = Path("../build/material-design-icons")
-OUT_H   = Path("../src/material_xpm.h")
 
-COLOR_LIGHT = "#1f2937"  # (light theme)
-COLOR_DARK  = "#e5e7eb"  # (dark theme)
+# Default location (matches your project layout): ../build/material-design-icons
+CACHE_DIR = (Path(__file__).resolve().parent.parent / "build" / "material-design-icons").resolve()
 
-BG_LIGHT = "#f0f0f0"   # something like btnface in light
-BG_DARK  = "#0b0f14"   # almost black background in dark
+SVG_SUFFIX = "/24px.svg"
 
-# preferred variants in the repo (if one is not available, we will take the first one found)
 PREFERRED_THEMES = [
     "materialiconsoutlined",
     "materialiconsround",
@@ -31,401 +47,254 @@ PREFERRED_THEMES = [
     "materialiconstwotone",
 ]
 
-# wxART_* -> [preferred material names...]
-# wxAE_ART_* (custom ids) -> [preferred material icon names...]
-#
-# Keep this mapping "truthy": only include ids that your code actually asks
-# the wxArtProvider for (wxAE_ART_*). This script then generates XPM variants
-# for those ids.
-MAP = {
-    "wxAE_ART_REFRESH": ["sync"],
-    "wxAE_ART_DELETE": ["delete"],
-    "wxAE_ART_NEW": ["note_add", "add"],
-    "wxAE_ART_FILE_OPEN": ["file_open"],
-    "wxAE_ART_FILE_SAVE": ["save"],
-    "wxAE_ART_FILE_SAVE_AS": ["save_as", "save_alt"],
-    "wxAE_ART_QUIT": ["logout", "exit_to_app"],
-    "wxAE_ART_GO_BACK": ["arrow_back"],
-    "wxAE_ART_GO_FORWARD": ["arrow_forward"],
-    "wxAE_ART_FIND": ["search"],
-    "wxAE_ART_FIND_AND_REPLACE": ["find_replace"],
-    "wxAE_ART_UNDO": ["undo"],
-    "wxAE_ART_REDO": ["redo"],
-    "wxAE_ART_CUT": ["content_cut"],
-    "wxAE_ART_COPY": ["content_copy"],
-    "wxAE_ART_PASTE": ["content_paste"],
-    "wxAE_ART_PRINT": ["print"],
+SIZES = [16, 20, 24, 32]
 
-    "wxAE_ART_FOLDER": ["folder"],
-    "wxAE_ART_FOLDER_OPEN": ["folder_open"],
-    "wxAE_ART_NORMAL_FILE": ["description", "insert_drive_file"],
-    "wxAE_ART_EXECUTABLE_FILE": ["terminal", "code"],
-
-    "wxAE_ART_SYSLIBRARY": ["library_books", "local_library"],
-    "wxAE_ART_USRLIBRARY": ["library_add", "local_library"],
-
-    "wxAE_ART_GO_UP": ["arrow_upward"],
-    "wxAE_ART_GO_TO_PARENT": ["drive_file_move", "subdirectory_arrow_left"],
-    "wxAE_ART_PLUS": ["add"],
-    "wxAE_ART_MINUS": ["remove"],
-    "wxAE_ART_EDIT": ["edit"],
-    "wxAE_ART_LIST_VIEW": ["view_list"],
-    "wxAE_ART_REPORT_VIEW": ["table_rows", "view_headline"],
-    "wxAE_ART_TIP": ["lightbulb"],
-    "wxAE_ART_INFORMATION": ["info"],
-    "wxAE_ART_QUESTION": ["help"],
-    "wxAE_ART_DEVBOARD": ["developer_board"],
-    "wxAE_ART_PLAY": ["play_arrow"],
-    "wxAE_ART_CHECK": ["check_circle"],
-    "wxAE_ART_SERMON": ["monitor_heart"],
-    "wxAE_ART_SOURCE_FORMAT": ["format_align_justify"],
-    "wxAE_ART_SETTINGS": ["settings"],
-    "wxAE_ART_SELECT_ALL": ["select_all"],
-    "wxAE_ART_CHECK_FOR_UPDATES": ["update"],
+VARIANTS = {
+    "dark":  "#FFFFFF",  # white glyph for dark UI
+    "light": "#000000",  # black glyph for light UI
 }
 
-def run(cmd, cwd=None):
-    r = subprocess.run(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    if r.returncode != 0:
-        raise RuntimeError(f"cmd failed: {' '.join(cmd)}\n{r.stderr}")
-    return r.stdout
+ICONS_DEFAULT = [
+    "sync",
+    "delete",
+    "note_add",
+    "file_open",
+    "save",
+    "save_as",
+    "logout",
+    "arrow_back",
+    "arrow_forward",
+    "search",
+    "find_replace",
+    "find_in_page",
+    "adjust",
+    "undo",
+    "redo",
+    "content_cut",
+    "content_copy",
+    "content_paste",
+    "print",
+    "folder",
+    "folder_open",
+    "description",
+    "terminal",
+    "library_books",
+    "library_add",
+    "arrow_upward",
+    "arrow_downward",
+    "drive_file_move",
+    "add",
+    "remove",
+    "edit",
+    "view_list",
+    "table_rows",
+    "lightbulb",
+    "info",
+    "question_mark",
+    "developer_board",
+    "play_arrow",
+    "check_circle",
+    "monitor_heart",
+    "format_align_justify",
+    "settings",
+    "select_all",
+    "update",
+]
 
-def run_bytes(cmd, cwd=None):
-    r = subprocess.run(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if r.returncode != 0:
-        stderr = r.stderr.decode("utf-8", errors="replace")
-        raise RuntimeError(f"cmd failed: {' '.join(cmd)}\n{stderr}")
-    return r.stdout
 
-def ensure_repo():
-    if (CACHE_DIR / ".git").exists():
-        return
-    CACHE_DIR.parent.mkdir(parents=True, exist_ok=True)
-    run(["git", "clone", "--depth", "1", REPO_URL, str(CACHE_DIR)])
+def run(cmd: List[str], cwd: Optional[Path] = None) -> str:
+    p = subprocess.run(
+        cmd,
+        cwd=str(cwd) if cwd else None,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    if p.returncode != 0:
+        raise RuntimeError(
+            f"Command failed ({p.returncode}): {' '.join(cmd)}\n"
+            f"--- stdout ---\n{p.stdout}\n--- stderr ---\n{p.stderr}"
+        )
+    return p.stdout
 
-def git_ls_files():
-    out = run(["git", "ls-files"], cwd=CACHE_DIR)
-    return out.splitlines()
 
-def pick_svg(files, icon_name):
-    # candidates where path contains /<icon_name>/ and ends with /24px.svg
-    cands = [f for f in files if f"/{icon_name}/" in f and f.endswith("/24px.svg") and f.startswith("src/")]
+def ensure_repo(repo_dir: Path) -> None:
+    repo_dir.parent.mkdir(parents=True, exist_ok=True)
+    if (repo_dir / ".git").exists():
+        run(["git", "fetch", "--all", "--prune"], cwd=repo_dir)
+        # material-design-icons uses 'master' (at least historically); this keeps it simple
+        run(["git", "checkout", "master"], cwd=repo_dir)
+        run(["git", "pull", "--ff-only"], cwd=repo_dir)
+    else:
+        run(["git", "clone", "--depth", "1", REPO_URL, str(repo_dir)])
+
+
+def git_ls_files(repo_dir: Path) -> List[str]:
+    out = run(["git", "ls-files"], cwd=repo_dir)
+    return [ln.strip() for ln in out.splitlines() if ln.strip()]
+
+
+def pick_svg(files: Iterable[str], icon_name: str) -> Optional[str]:
+    needle = f"/{icon_name}/"
+    cands = [f for f in files if f.startswith("src/") and needle in f and f.endswith(SVG_SUFFIX)]
     if not cands:
         return None
 
-    # preferred topics
     for theme in PREFERRED_THEMES:
-        themed = [f for f in cands if f"/{theme}/24px.svg" in f]
+        themed = [f for f in cands if f"/{theme}/" in f]
         if themed:
-            # if there are more, take the first one (repo usually has 1)
             return themed[0]
 
     return cands[0]
 
-def magick_cmd():
-    # ImageMagick can be "magick" or "convert"
-    for c in ("magick", "convert"):
-        if shutil_which(c):
-            return c
-    raise RuntimeError("ImageMagick not found (magick/convert).")
 
-def shutil_which(name):
-    from shutil import which
-    return which(name)
-
-# --- Dithered “AA” for XPM (binary alpha via ordered dithering) ---
-
-SUPERSAMPLE   = 8         # render SVG in larger, then downscale
-ALPHA_LOW     = 8         # below = always transparent
-ALPHA_HIGH    = 247       # above = always opaque
-QUANTIZE_COLORS_SMALL = 8 # zkus 4..6 podle oka
-QUANTIZE_MAX_PX = 40      # jen pro malé (16/20/24); 32 nech klidně bez kvantizace
+def find_imagemagick() -> Tuple[List[str], bool]:
+    """Return (base_cmd, is_magick7). base_cmd is ['magick'] or ['convert']."""
+    for exe in ("magick", "convert"):
+        try:
+            subprocess.run([exe, "-version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+            return [exe], (exe == "magick")
+        except Exception:
+            pass
+    raise RuntimeError("ImageMagick not found. Ensure `magick` (IM7) or `convert` (IM6) is in PATH.")
 
 
-BG_LIGHT = "#f0f0f0"   # btnface-ish
-BG_WHITE = "#ffffff"   # for white areas / dialogs
-BG_DARK  = "#0b0f14"   # almost black background in dark theme
+def render_xpm(svg_path: Path, out_xpm: Path, size: int, color_hex: str, im_base: List[str], is_magick7: bool) -> None:
+    out_xpm.parent.mkdir(parents=True, exist_ok=True)
 
-def _blend_hex(fg_hex, bg_hex, fg_w):
-    fg_hex = fg_hex.lstrip("#")
-    bg_hex = bg_hex.lstrip("#")
-    fr, fg, fb = int(fg_hex[0:2],16), int(fg_hex[2:4],16), int(fg_hex[4:6],16)
-    br, bg, bb = int(bg_hex[0:2],16), int(bg_hex[2:4],16), int(bg_hex[4:6],16)
-    r = int(br + (fr - br) * fg_w + 0.5)
-    g = int(bg + (fg - bg) * fg_w + 0.5)
-    b = int(bb + (fb - bb) * fg_w + 0.5)
-    return f"#{r:02x}{g:02x}{b:02x}"
+    # IM7 uses: magick convert ...
+    # IM6 uses: convert ...
+    cmd = []
+    cmd += im_base
+    if is_magick7:
+        cmd += ["convert"]
 
-def _xpm_from_alpha_3(alpha_img, fg_hex, bg_hex, var_name):
-    w, h = alpha_img.size
-    apx = alpha_img.load()
-
-    mid_hex = _blend_hex(fg_hex, bg_hex, 0.65)  # 65% fg, 35% bg (ladíš podle oka)
-
-    rows = []
-    for y in range(h):
-        row = []
-        for x in range(w):
-            a = apx[x, y]
-            if a < 32:
-                row.append(' ')
-            elif a > 220:
-                row.append('.')
-            else:
-                row.append('+')
-        rows.append("".join(row))
-
-    out = []
-    out.append(f"static const char * const {var_name}[] = {{\n")
-    out.append(f"\"{w} {h} 3 1 \",\n")
-    out.append("\"  c None\",\n")
-    out.append(f"\". c {fg_hex}\",\n")
-    out.append(f"\"+ c {mid_hex}\",\n")
-    for r in rows:
-        out.append(f"\"{r}\",\n")
-    out.append("};\n")
-    return "".join(out)
-
-def _render_svg_to_png_bytes(svg_path, render_px):
-    magick = magick_cmd()
-    cmd = [
-        magick,
+    cmd += [
         "-background", "none",
-        "-density", "384",
-        str(svg_path),
-        "-resize", f"{render_px}x{render_px}",
-        "-alpha", "on",
-        "png:-"
-    ]
-    return run_bytes(cmd)
-
-def xpm_make_corner_color_none(xpm_text: str) -> str:
-    lines = xpm_text.splitlines()
-
-    def is_xpm_string_line(ln: str) -> bool:
-        s = ln.strip()
-        return s.startswith('"') and (s.endswith('"') or s.endswith('",'))
-
-    def strip_xpm_quotes(ln: str) -> str:
-        s = ln.strip()
-        if s.endswith('",'):
-            s = s[:-1]  # zahodí jen čárku, zůstane koncová uvozovka
-        return s.strip().strip('"')
-
-    def wrap_xpm_line(body: str, original_line: str) -> str:
-        # zachovej čárku, pokud tam byla
-        s = original_line.rstrip()
-        comma = "," if s.endswith(",") else ""
-        return f"\"{body}\"{comma}"
-
-    # najdi hlavičku "W H N CPP"
-    hdr_i = None
-    w = h = ncolors = cpp = None
-    for i, ln in enumerate(lines):
-        if not is_xpm_string_line(ln):
-            continue
-        body = strip_xpm_quotes(ln)
-        parts = body.split()
-        if len(parts) >= 4 and all(p.isdigit() for p in parts[:4]):
-            w, h, ncolors, cpp = map(int, parts[:4])
-            hdr_i = i
-            break
-    if hdr_i is None:
-        return xpm_text
-
-    color_start = hdr_i + 1
-    color_end = color_start + ncolors
-    pixel_start = color_end
-
-    if pixel_start + h > len(lines):
-        return xpm_text
-
-    sym_to_idx = {}
-    for i in range(color_start, min(color_end, len(lines))):
-        ln = lines[i]
-        if not is_xpm_string_line(ln):
-            continue
-        body = strip_xpm_quotes(ln)
-        sym = body[:cpp]
-        sym_to_idx[sym] = i
-
-    def get_sym_at(x: int, y: int) -> str:
-        row = strip_xpm_quotes(lines[pixel_start + y])
-        return row[x*cpp:(x+1)*cpp]
-
-    corners = [
-        get_sym_at(0, 0),
-        get_sym_at(w-1, 0),
-        get_sym_at(0, h-1),
-        get_sym_at(w-1, h-1),
-    ]
-    bg_sym = max(set(corners), key=corners.count)
-
-    idx = sym_to_idx.get(bg_sym)
-    if idx is None:
-        return xpm_text
-
-    orig = lines[idx]
-    body = strip_xpm_quotes(orig)
-
-    # Přepiš " c <barva>" na " c None"
-    # typicky: "<sym> c #RRGGBB"
-    if " c " not in body:
-        return xpm_text
-
-    before, after = body.split(" c ", 1)
-    rest = after.split()
-    tail = ""
-    if len(rest) > 1:
-        tail = " " + " ".join(rest[1:])
-    new_body = f"{before} c None{tail}"
-
-    lines[idx] = wrap_xpm_line(new_body, orig)
-    return "\n".join(lines)
-
-
-def svg_to_xpm_quantized(svg_path, size_px, color_hex, bg_hex, var_name, colors):
-    magick = "magick" if shutil_which("magick") else "convert"
-
-    # Render ve větším rozlišení, přebarvit FG, zmenšit, zploštit na BG,
-    # kvantizovat na pár barev => pěkné "mezistupně" anti-aliasu.
-    cmd = [
-        magick,
-        "-background", "none",
-        "-density", "384",
         str(svg_path),
 
-        # přebarvení (vezme jen RGB kanál; alfa zůstane na hranách)
-        "-alpha", "on",
-        "-channel", "RGB",
-        "-fill", color_hex,
-        "-colorize", "100",
-        "+channel",
+        # nejdřív na cílovou velikost
+        "-resize", f"{size}x{size}",
 
-        # supersampling -> downscale
-        "-resize", f"{size_px * SUPERSAMPLE}x{size_px * SUPERSAMPLE}",
-        "-filter", "Lanczos",
-        "-resize", f"{size_px}x{size_px}",
+        # udělej 1-bit masku z alpha kanálu (vyhodí antialias šedou)
+        "-alpha", "set",
+        "-alpha", "extract",
+        "-threshold", "50%",
 
-        # 1) vytvoř masku z původní alfy (ještě před zploštěním)
-        "(",
-            "+clone",
-            "-alpha", "extract",
-            "-threshold", "50%",
-        ")",
-
-        # 2) vyrob “hezky” vyhlazené barvy zploštěním na BG + kvantizací
-        "-background", bg_hex,
-        "-alpha", "remove",
-        "-alpha", "off",
-        "-colors", str(colors),
-
-        # 3) aplikuj masku jako opacity -> skutečné pozadí bude transparentní,
-        #    i když má stejnou barvu jako část ikonky
+        # vytvoř barevnou plochu a přenes do ní masku jako opacity
+        "(", "-size", f"{size}x{size}", f"xc:{color_hex}", ")",
+        "+swap",
         "-compose", "CopyOpacity",
         "-composite",
 
-        "xpm:-"
+        str(out_xpm),
     ]
-    xpm = run(cmd)
-    xpm = xpm_make_corner_color_none(xpm)
-    return normalize_xpm(xpm, var_name)
 
-def svg_to_xpm(svg_path, size_px, color_hex, bg_hex, var_name):
-    # Pro malé ikony použij IM kvantizaci (lepší AA než náš alpha-dither).
-    if size_px <= QUANTIZE_MAX_PX:
-        return svg_to_xpm_quantized(
-            svg_path, size_px, color_hex, bg_hex, var_name, QUANTIZE_COLORS_SMALL
-        )
-
-    # Pro větší (32) klidně nech “čistý” převod bez kvantizace,
-    # ať to není zbytečně “posterizované”.
-    magick = "magick" if shutil_which("magick") else "convert"
-    cmd = [
-        magick,
-        "-background", "none",
-        "-density", "384",
-        str(svg_path),
-        "-resize", f"{size_px}x{size_px}",
-        "-alpha", "on",
-        "-channel", "RGB",
-        "-fill", color_hex,
-        "-colorize", "100",
-        "+channel",
-        "-background", bg_hex,
-        "-alpha", "remove",
-        "-alpha", "off",
-        "xpm:-"
-    ]
-    xpm = run(cmd)
-    xpm = xpm_make_corner_color_none(xpm)
-    return normalize_xpm(xpm, var_name)
+    run(cmd)
 
 
-def normalize_xpm(xpm_text, var_name):
-    # Outputs from IM can be:
-    # static char *xpm__[] = {
-    # static char * xpm[] = {
-    # static const char *xpm[] = {
-    # We want: static const char * const <var_name>[] = {
+def xpm_to_c_array(xpm_text: str, symbol: str) -> str:
+    """
+    Extract the quoted XPM records and emit a clean C array:
 
-    patterns = [
-        r'static\s+char\s*\*\s*\w+\s*\[\]\s*=\s*\{',
-        r'static\s+const\s+char\s*\*\s*\w+\s*\[\]\s*=\s*\{',
-    ]
-    for pat in patterns:
-        new_text, n = re.subn(
-            pat,
-            f'static const char * const {var_name}[] = {{',
-            xpm_text,
-            count=1
-        )
-        if n:
-            return new_text
+      static const char * const <symbol>[] = {
+        "w h colors cpp",
+        "  c None",
+        ". c #000000",
+        ...
+      };
 
-    # If the rename failed, you better fail, so you know right away
-    raise RuntimeError("normalize_xpm(): could not rewrite XPM header line")
+    We intentionally drop the leading /* XPM */ comment and the original variable name.
+    """
+    quoted: List[str] = []
+    for raw in xpm_text.splitlines():
+        ln = raw.strip()
+        if ln.startswith('"') and (ln.endswith('",') or ln.endswith('"')):
+            if not ln.endswith(","):
+                ln += ","
+            quoted.append(ln)
+
+    if not quoted:
+        # Fallback: try between braces
+        in_brace = False
+        for raw in xpm_text.splitlines():
+            if "{" in raw:
+                in_brace = True
+                continue
+            if "}" in raw:
+                in_brace = False
+                continue
+            if not in_brace:
+                continue
+            ln = raw.strip()
+            if ln.startswith('"') and (ln.endswith('",') or ln.endswith('"')):
+                if not ln.endswith(","):
+                    ln += ","
+                quoted.append(ln)
+
+    if not quoted:
+        raise RuntimeError("Failed to parse XPM output (no quoted records found).")
+
+    body = "\n".join(quoted)
+    return f"static const char * const {symbol}[] = {{\n{body}\n}};\n"
 
 
-def main():
-    ensure_repo()
-    files = git_ls_files()
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--out", default=None, help="Output header path (default: ./material_xpm.h next to this script)")
+    ap.add_argument("--icons", nargs="*", default=None, help="Icon names (Material) e.g. sync delete note_add")
+    ap.add_argument("--repo", default=str(CACHE_DIR), help="Path to cached material-design-icons repo")
+    ap.add_argument("--no-update", action="store_true", help="Do not git pull/fetch; assumes repo already present")
+    ap.add_argument("--work", default=None, help="Work directory for intermediates (default: ../build/_icons_work)")
+    args = ap.parse_args()
 
-    OUT_H.parent.mkdir(parents=True, exist_ok=True)
+    icons = args.icons if args.icons else ICONS_DEFAULT
 
-    chunks = []
-    chunks.append("// Auto-generated. Do not edit.\n")
-    chunks.append("// Source icons: google/material-design-icons (Apache-2.0)\n\n")
+    repo_dir = Path(args.repo).resolve()
+    if args.no_update:
+        if not (repo_dir / ".git").exists():
+            raise RuntimeError(f"--no-update was given but repo is missing: {repo_dir}")
+    else:
+        ensure_repo(repo_dir)
 
-    for wx_id, names in MAP.items():
-        chosen = None
-        chosen_name = None
-        for n in names:
-            p = pick_svg(files, n)
-            if p:
-                chosen = CACHE_DIR / p
-                chosen_name = n
-                break
+    files = git_ls_files(repo_dir)
+    im_base, is_magick7 = find_imagemagick()
 
-        if not chosen:
-            print(f"[WARN] no SVG found for {wx_id} ({names})", file=sys.stderr)
-            continue
+    work_dir = Path(args.work).resolve() if args.work else (Path(__file__).resolve().parent.parent / "build" / "_icons_work").resolve()
+    work_dir.mkdir(parents=True, exist_ok=True)
 
-        # 16/32 + light/dark
-        for mode, color in (("light", COLOR_LIGHT), ("dark", COLOR_DARK)):
-            for px in (16, 20, 24, 32):
-                var = f"mdi_{chosen_name}_{mode}_{px}"
-                bg = BG_DARK if mode == "dark" else BG_LIGHT
-                xpm = svg_to_xpm(chosen, px, color, bg, var)
-                chunks.append(f"// {wx_id} -> {chosen_name} ({mode}, {px}px)\n")
-                chunks.append(xpm)
-                if not xpm.endswith("\n"):
-                    chunks.append("\n")
-                chunks.append("\n")
+    out_path = Path(args.out).resolve() if args.out else (Path(__file__).resolve().parent.parent / "src" / "material_xpm.h").resolve()
+    out_path.parent.mkdir(parents=True, exist_ok=True)
 
-    OUT_H.write_text("".join(chunks), encoding="utf-8")
-    print(f"Written: {OUT_H}")
+    arrays: List[str] = []
+    index: List[str] = []
+
+    for icon in icons:
+        rel = pick_svg(files, icon)
+        if not rel:
+            raise RuntimeError(f"SVG for icon '{icon}' not found in repo.")
+        svg = (repo_dir / rel).resolve()
+
+        for variant_name, color_hex in VARIANTS.items():
+            for size in SIZES:
+                out_xpm = work_dir / f"{icon}.{variant_name}.{size}.xpm"
+                render_xpm(svg, out_xpm, size, color_hex, im_base, is_magick7)
+
+                sym = f"mdi_{icon}_{variant_name}_{size}"
+                xpm_text = out_xpm.read_text(encoding="utf-8", errors="replace")
+                arrays.append(xpm_to_c_array(xpm_text, sym))
+                index.append(f'  {{"{icon}", "{variant_name}", {size}, {sym}}},')
+
+    header: List[str] = []
+    header.append("// Auto-generated by gen_icons_simple.py. DO NOT EDIT.\n")
+    header.append("#pragma once\n\n")
+    header.append("#include <cstddef>\n\n")
+
+    header.extend(arrays)
+
+    out_path.write_text("".join(header), encoding="utf-8")
+    print(f"Wrote: {out_path}")
+
 
 if __name__ == "__main__":
     main()
-

@@ -36,17 +36,6 @@
 
 namespace {
 
-// Trim string
-static std::string TrimCopy(const std::string &s) {
-  const char *ws = " \t\r\n";
-  size_t start = s.find_first_not_of(ws);
-  if (start == std::string::npos)
-    return std::string();
-
-  size_t end = s.find_last_not_of(ws);
-  return s.substr(start, end - start + 1);
-}
-
 static wxString ExtractIndent(const wxString &lineText) {
   wxString indent;
   for (int i = 0, n = (int)lineText.Length(); i < n; ++i) {

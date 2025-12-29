@@ -135,6 +135,7 @@ private:
   void OnDwellEnd(wxStyledTextEvent &event);
   // Def. search
   void OnEditorLeftDown(wxMouseEvent &event);
+  void GotoSymbolDefinition();
 
   // Autocomp filter
   void AutoIndent(char ch);

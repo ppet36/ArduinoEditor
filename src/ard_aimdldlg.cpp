@@ -38,11 +38,6 @@
 
 #include <nlohmann/json.hpp>
 
-static wxString TrimCopy(wxString s) {
-  s.Trim(true).Trim(false);
-  return s;
-}
-
 static bool WriteTextFile(const wxString &path, const wxString &text) {
   wxFileOutputStream os(path);
   if (!os.IsOk())

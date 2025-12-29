@@ -83,6 +83,8 @@ struct EditorColorScheme {
   wxColour number;
   wxColour preprocessor;
   wxColour caretLine;
+  wxColour calltipText;
+  wxColour calltipBackground;
   wxColour error;
   wxColour warning;
   wxColour symbolHighlight;
@@ -139,7 +141,7 @@ struct ClangSettings {
 
   void OpenExternalSourceFile(const wxString &file, int line);
 
-  void AppendWarningFlags (std::vector<const char*>& out);
+  void AppendWarningFlags(std::vector<const char *> &out);
 };
 
 enum AiSummarizationChatMode {
@@ -246,6 +248,8 @@ private:
   wxColourPickerCtrl *m_kw2 = nullptr;
   wxColourPickerCtrl *m_preprocessor = nullptr;
   wxColourPickerCtrl *m_caretLine = nullptr;
+  wxColourPickerCtrl *m_calltipText = nullptr;
+  wxColourPickerCtrl *m_calltipBackground = nullptr;
   wxColourPickerCtrl *m_error = nullptr;
   wxColourPickerCtrl *m_warning = nullptr;
   wxColourPickerCtrl *m_symbolHighlight = nullptr;
@@ -261,6 +265,8 @@ private:
   wxColourPickerCtrl *m_kw2Dark{nullptr};
   wxColourPickerCtrl *m_preprocessorDark{nullptr};
   wxColourPickerCtrl *m_caretLineDark{nullptr};
+  wxColourPickerCtrl *m_calltipTextDark{nullptr};
+  wxColourPickerCtrl *m_calltipBackgroundDark{nullptr};
   wxColourPickerCtrl *m_errorDark{nullptr};
   wxColourPickerCtrl *m_warningDark{nullptr};
   wxColourPickerCtrl *m_symbolHighlightDark{nullptr};

@@ -105,6 +105,10 @@ std::string Trim(const std::string &s);
 
 void TrimInPlace(std::string &s);
 
+std::string TrimCopy(std::string s);
+
+wxString TrimCopy(wxString s);
+
 bool LoadWindowSize(const wxString &prefix, wxWindow *win, wxConfigBase *config);
 
 void SaveWindowSize(const wxString &prefix, wxWindow *win, wxConfigBase *config);
@@ -173,3 +177,11 @@ uint64_t CcSumCode(const std::vector<SketchFileBuffer> &files);
 uint64_t CcSumIncludes(const std::vector<SketchFileBuffer> &files);
 uint64_t CcSumDecls(std::string_view filename, std::string_view code);
 
+#include <algorithm>
+#include <cstddef>
+#include <limits>
+#include <string>
+#include <string_view>
+#include <vector>
+
+std::string NormalizeIndent(std::string_view code, size_t indent);

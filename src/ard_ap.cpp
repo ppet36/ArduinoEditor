@@ -17,13 +17,9 @@
  */
 
 #include "ard_ap.hpp"
-#include <wx/settings.h>
+#include "utils.hpp"
 
 #include "material_xpm.h" // generated static const char* const ...
-
-static bool IsDarkMode() {
-  return wxSystemSettings::GetAppearance().IsDark();
-}
 
 wxBitmapBundle ArduinoArtProvider::CreateBitmapBundle(const wxArtID &id, const wxArtClient &WXUNUSED(client), const wxSize &WXUNUSED(size)) {
   const bool dark = IsDarkMode();
@@ -33,6 +29,8 @@ wxBitmapBundle ArduinoArtProvider::CreateBitmapBundle(const wxArtID &id, const w
   const char *const *x20 = nullptr;
   const char *const *x24 = nullptr;
   const char *const *x32 = nullptr;
+
+  APP_DEBUG_LOG ("ARTPROV: getting bitmap %s for %s mode", wxToStd(id).c_str(), dark ? "dark" : "light");
 
   if (id == wxAEArt::Refresh) {
     x16 = dark ? mdi_sync_dark_16 : mdi_sync_light_16;
@@ -89,6 +87,16 @@ wxBitmapBundle ArduinoArtProvider::CreateBitmapBundle(const wxArtID &id, const w
     x20 = dark ? mdi_find_replace_dark_20 : mdi_find_replace_light_20;
     x24 = dark ? mdi_find_replace_dark_24 : mdi_find_replace_light_24;
     x32 = dark ? mdi_find_replace_dark_32 : mdi_find_replace_light_32;
+  } else if (id == wxAEArt::FindAll) {
+    x16 = dark ? mdi_find_in_page_dark_16 : mdi_find_in_page_light_16;
+    x20 = dark ? mdi_find_in_page_dark_20 : mdi_find_in_page_light_20;
+    x24 = dark ? mdi_find_in_page_dark_24 : mdi_find_in_page_light_24;
+    x32 = dark ? mdi_find_in_page_dark_32 : mdi_find_in_page_light_32;
+  } else if (id == wxAEArt::GoToDef) {
+    x16 = dark ? mdi_adjust_dark_16 : mdi_adjust_light_16;
+    x20 = dark ? mdi_adjust_dark_20 : mdi_adjust_light_20;
+    x24 = dark ? mdi_adjust_dark_24 : mdi_adjust_light_24;
+    x32 = dark ? mdi_adjust_dark_32 : mdi_adjust_light_32;
   } else if (id == wxAEArt::Undo) {
     x16 = dark ? mdi_undo_dark_16 : mdi_undo_light_16;
     x20 = dark ? mdi_undo_dark_20 : mdi_undo_light_20;
@@ -154,6 +162,11 @@ wxBitmapBundle ArduinoArtProvider::CreateBitmapBundle(const wxArtID &id, const w
     x20 = dark ? mdi_arrow_upward_dark_20 : mdi_arrow_upward_light_20;
     x24 = dark ? mdi_arrow_upward_dark_24 : mdi_arrow_upward_light_24;
     x32 = dark ? mdi_arrow_upward_dark_32 : mdi_arrow_upward_light_32;
+  } else if (id == wxAEArt::GoDown) {
+    x16 = dark ? mdi_arrow_downward_dark_16 : mdi_arrow_downward_light_16;
+    x20 = dark ? mdi_arrow_downward_dark_20 : mdi_arrow_downward_light_20;
+    x24 = dark ? mdi_arrow_downward_dark_24 : mdi_arrow_downward_light_24;
+    x32 = dark ? mdi_arrow_downward_dark_32 : mdi_arrow_downward_light_32;
   } else if (id == wxAEArt::GoToParent) {
     x16 = dark ? mdi_drive_file_move_dark_16 : mdi_drive_file_move_light_16;
     x20 = dark ? mdi_drive_file_move_dark_20 : mdi_drive_file_move_light_20;
@@ -195,10 +208,10 @@ wxBitmapBundle ArduinoArtProvider::CreateBitmapBundle(const wxArtID &id, const w
     x24 = dark ? mdi_info_dark_24 : mdi_info_light_24;
     x32 = dark ? mdi_info_dark_32 : mdi_info_light_32;
   } else if (id == wxAEArt::Question) {
-    x16 = dark ? mdi_help_dark_16 : mdi_help_light_16;
-    x20 = dark ? mdi_help_dark_20 : mdi_help_light_20;
-    x24 = dark ? mdi_help_dark_24 : mdi_help_light_24;
-    x32 = dark ? mdi_help_dark_32 : mdi_help_light_32;
+    x16 = dark ? mdi_question_mark_dark_16 : mdi_question_mark_light_16;
+    x20 = dark ? mdi_question_mark_dark_20 : mdi_question_mark_light_20;
+    x24 = dark ? mdi_question_mark_dark_24 : mdi_question_mark_light_24;
+    x32 = dark ? mdi_question_mark_dark_32 : mdi_question_mark_light_32;
   } else if (id == wxAEArt::DevBoard) {
     x16 = dark ? mdi_developer_board_dark_16 : mdi_developer_board_light_16;
     x20 = dark ? mdi_developer_board_dark_20 : mdi_developer_board_light_20;

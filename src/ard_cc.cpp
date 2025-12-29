@@ -205,6 +205,87 @@ static std::string MakeBriefFromFull(const std::string &full) {
   return first;
 }
 
+static std::string ExtractBodySnippetFromText(const std::string &fileText,
+                                              unsigned fromLine,
+                                              unsigned toLine) {
+  if (fromLine == 0 || toLine == 0 || toLine < fromLine) {
+    return {};
+  }
+
+  // index of line beginnings
+  std::vector<size_t> starts;
+  starts.reserve(4096);
+  starts.push_back(0);
+  for (size_t i = 0; i < fileText.size(); ++i) {
+    if (fileText[i] == '\n')
+      starts.push_back(i + 1);
+  }
+  const unsigned lineCount = (unsigned)starts.size();
+  if (lineCount == 0) {
+    return {};
+  }
+
+  if (fromLine > lineCount) {
+    return {};
+  }
+  if (toLine > lineCount) {
+    toLine = lineCount;
+  }
+
+  auto getLine = [&](unsigned line1) -> std::string {
+    if (line1 < 1 || line1 > lineCount)
+      return {};
+    size_t b = starts[(size_t)(line1 - 1)];
+    size_t e = (line1 < lineCount) ? starts[(size_t)line1] : fileText.size();
+    if (e > b && fileText[e - 1] == '\n')
+      --e;
+    return fileText.substr(b, e - b);
+  };
+
+  const unsigned totalLines = toLine - fromLine + 1;
+
+  std::vector<std::string> lines;
+  lines.reserve((totalLines <= 6) ? (size_t)totalLines : 7);
+
+  if (totalLines <= 6) {
+    for (unsigned ln = fromLine; ln <= toLine; ++ln) {
+      lines.push_back(getLine(ln));
+    }
+  } else {
+    for (unsigned i = 0; i < 3; ++i) {
+      lines.push_back(getLine(fromLine + i));
+    }
+    lines.push_back("...");
+    for (unsigned i = 0; i < 3; ++i) {
+      lines.push_back(getLine(toLine - 2 + i));
+    }
+  }
+
+  // Join
+  std::string out;
+  out.reserve(2048);
+  for (size_t i = 0; i < lines.size(); ++i) {
+    out += lines[i];
+    if (i + 1 < lines.size())
+      out += '\n';
+  }
+
+  // Keep it sane
+  constexpr size_t MAX_SNIPPET = 4096;
+  if (out.size() > MAX_SNIPPET) {
+    out.resize(MAX_SNIPPET);
+    out += "...";
+  }
+
+  // Trim leading / trailing blank lines
+  while (!out.empty() && (out.front() == '\n' || out.front() == '\r'))
+    out.erase(out.begin());
+  while (!out.empty() && (out.back() == '\n' || out.back() == '\r'))
+    out.pop_back();
+
+  return out;
+}
+
 static const char *ClangErrorToString(CXErrorCode err) {
   switch (err) {
     case CXError_Success:
@@ -460,8 +541,13 @@ static bool GetBodyRangeForCursor(CXCursor cursor,
                                   unsigned &fromLine,
                                   unsigned &fromCol,
                                   unsigned &toLine,
-                                  unsigned &toCol) {
+                                  unsigned &toCol,
+                                  CXFile *outFile = nullptr) {
   fromLine = fromCol = toLine = toCol = 0;
+
+  if (outFile) {
+    *outFile = nullptr;
+  }
 
   CXCursorKind kind = clang_getCursorKind(cursor);
 
@@ -519,6 +605,9 @@ static bool GetBodyRangeForCursor(CXCursor cursor,
       fromCol = sc;
       toLine = el;
       toCol = ec;
+      if (outFile) {
+        *outFile = fStart;
+      }
       return true;
     }
 
@@ -562,6 +651,9 @@ static bool GetBodyRangeForCursor(CXCursor cursor,
     fromCol = sc;
     toLine = el;
     toCol = ec;
+    if (outFile) {
+      *outFile = fStart;
+    }
     return true;
   }
 
@@ -979,6 +1071,57 @@ static enum CXChildVisitResult ExtractVisitor(CXCursor cursor,
   return CXChildVisit_Recurse;
 }
 
+// If we have ParameterInfo captured from clang, reconstruct the parameter list
+// inside a "pretty" signature string and inject parameter names.
+// Example: "void digitalWrite(uint8_t, uint8_t)" -> "void digitalWrite(uint8_t pin, uint8_t val)".
+static std::string InjectParameterNamesIntoSignature(const std::string &sig, const std::vector<ParameterInfo> &params) {
+  if (sig.empty() || params.empty()) {
+    return sig;
+  }
+
+  const size_t open = sig.find('(');
+  const size_t close = sig.rfind(')');
+  if (open == std::string::npos || close == std::string::npos || close < open) {
+    return sig;
+  }
+
+  std::string out;
+  out.reserve(sig.size() + params.size() * 8);
+
+  // prefix including '('
+  out.append(sig, 0, open + 1);
+
+  for (size_t i = 0; i < params.size(); ++i) {
+    if (i > 0) {
+      out += ", ";
+    }
+
+    std::string t = TrimCopy(params[i].type);
+    std::string n = TrimCopy(params[i].name);
+
+    // Variadic (best-effort).
+    if (t == "..." || n == "...") {
+      out += "...";
+      continue;
+    }
+
+    if (!t.empty()) {
+      out += t;
+    }
+
+    if (!n.empty()) {
+      if (!t.empty()) {
+        out += ' ';
+      }
+      out += n;
+    }
+  }
+
+  // suffix including ')', plus any trailing qualifiers (const/noexcept/...)
+  out.append(sig, close, std::string::npos);
+  return out;
+}
+
 // -------------------------------------------------------------------------------
 
 std::string ArduinoParseError::ToString() const {
@@ -997,6 +1140,65 @@ std::string ArduinoParseError::ToString() const {
 
   oss << file << ":" << line << ":" << column << ":" << message;
   return oss.str();
+}
+
+std::string HoverInfo::ToHoverString() {
+  std::string tooltip;
+
+  bool sigIsSameAsName = !signature.empty() && signature == name;
+
+  bool noUsefulSignature = signature.empty() || sigIsSameAsName;
+
+  // does the type exist and is it different from the name?
+  bool typeAddsInfo = !type.empty() && type != name;
+
+  // "useful" symbol = has a comment, or a signature other than the name
+  bool hasUsefulInfo =
+      !kind.empty() ||
+      !briefComment.empty() ||
+      !fullComment.empty() ||
+      (!noUsefulSignature) || // signature contains more than just the name
+      typeAddsInfo;           // type makes sense to display
+
+  // If we don't have useful info -> display nothing
+  if (!hasUsefulInfo) {
+    return tooltip;
+  }
+
+  // If we captured parameters with names, prefer them over unnamed params in the signature.
+  std::string sig = signature;
+  if (!parameters.empty()) {
+    sig = InjectParameterNamesIntoSignature(sig, parameters);
+  }
+
+  // Compose the tooltip text
+  if (!kind.empty()) {
+    tooltip += kind + "\n\n";
+  }
+
+  if (!sig.empty() && !sigIsSameAsName) {
+    // typical case of a function: "void digitalWrite(uint8_t pin, uint8_t val)"
+    tooltip += sig;
+    tooltip += "\n";
+  } else if (!name.empty()) {
+    // variable, typedef, enum value... -> name + type
+    tooltip += name;
+    if (!type.empty()) {
+      tooltip += " : ";
+      tooltip += type;
+    }
+    tooltip += "\n";
+  }
+
+  if (!fullComment.empty()) {
+    tooltip += "\n";
+    tooltip += fullComment;
+  } else if (!briefComment.empty()) {
+    tooltip += "\n";
+    tooltip += briefComment;
+  }
+
+  return tooltip;
 }
 
 /**
@@ -2022,7 +2224,7 @@ void ArduinoCodeCompletion::NotifyDiagnosticsChangedLocked(const std::vector<Ard
   std::string sketchDir = arduinoCli->GetSketchPath();
 
   std::size_t newHash = ComputeDiagHash(errs, sketchDir);
-  if (newHash == m_lastDiagHash) {
+  if ((m_lastDiagHash != 0) && (newHash == m_lastDiagHash)) {
     APP_DEBUG_LOG("No diagnostics errors changed; skipping event.");
     return;
   }
@@ -2504,7 +2706,8 @@ bool ArduinoCodeCompletion::GetHoverInfo(const std::string &filename, const std:
   outInfo = HoverInfo{};
 
   int addedLines = 0;
-  CXTranslationUnit tu = GetTranslationUnit(filename, code, &addedLines, nullptr);
+  std::string mainFile;
+  CXTranslationUnit tu = GetTranslationUnit(filename, code, &addedLines, &mainFile);
   if (!tu) {
     return false;
   }
@@ -2551,7 +2754,7 @@ bool ArduinoCodeCompletion::GetHoverInfo(const std::string &filename, const std:
     outInfo.type = cxStringToStd(clang_getTypeSpelling(ctype));
   }
 
-  // signature - from displayName (often already nice), or create your own if needed
+  // signature - from displayName (often already nice)
   outInfo.signature = cxStringToStd(clang_getCursorDisplayName(cursor));
 
   bool isCtorOrDtor =
@@ -2580,6 +2783,12 @@ bool ArduinoCodeCompletion::GetHoverInfo(const std::string &filename, const std:
   // try to pull the comment block just above the declaration/definition.
   if (outInfo.briefComment.empty() && outInfo.fullComment.empty()) {
     ScopeTimer t("CC: Harvest non Doxygen comment...");
+
+    JumpTarget siblingDef;
+    bool siblingDefFound = false;
+
+    std::string codeBlock;
+
     // 1) comment block above this cursor (in the file where the cursor lives)
     {
       CXSourceLocation cloc = clang_getCursorLocation(cursor);
@@ -2588,7 +2797,7 @@ bool ArduinoCodeCompletion::GetHoverInfo(const std::string &filename, const std:
       clang_getSpellingLocation(cloc, &cfile, &cline, &ccol, &coff);
 
       if (cfile && cline > 0) {
-        std::string path = cxStringToStd(clang_getFileName(cfile));
+        std::string path = NormalizeFilename(arduinoCli->GetSketchPath(), cxStringToStd(clang_getFileName(cfile)));
         if (!path.empty()) {
           std::string txt;
           if (LoadFileToString(path, txt)) {
@@ -2596,6 +2805,13 @@ bool ArduinoCodeCompletion::GetHoverInfo(const std::string &filename, const std:
             if (!extracted.empty()) {
               outInfo.fullComment = extracted;
               outInfo.briefComment = MakeBriefFromFull(extracted);
+            } else {
+              unsigned blFrom = 0, bcFrom = 0, blTo = 0, bcTo = 0;
+              if (GetBodyRangeForCursor(target, blFrom, bcFrom, blTo, bcTo)) {
+                codeBlock = ExtractBodySnippetFromText(txt, blFrom, blTo);
+              } else {
+                codeBlock = ExtractBodySnippetFromText(txt, cline, cline);
+              }
             }
           }
         }
@@ -2604,18 +2820,26 @@ bool ArduinoCodeCompletion::GetHoverInfo(const std::string &filename, const std:
 
     // 2) If still nothing and cursor is declared in the header, try sibling .cpp definition
     if (outInfo.fullComment.empty()) {
-      JumpTarget impl;
-      if (FindSiblingFunctionDefinition(cursor, impl)) {
-        if (!impl.file.empty() && impl.line > 0) {
+      siblingDefFound = FindSiblingFunctionDefinition(cursor, siblingDef);
+
+      if (siblingDefFound) {
+        if (!siblingDef.file.empty() && siblingDef.line > 0) {
           std::string txt;
-          if (LoadFileToString(impl.file, txt)) {
-            std::string extracted = ExtractCommentBlockAboveLine(txt, impl.line);
+          if (LoadFileToString(NormalizeFilename(arduinoCli->GetSketchPath(), siblingDef.file), txt)) {
+            std::string extracted = ExtractCommentBlockAboveLine(txt, siblingDef.line);
             if (!extracted.empty()) {
               outInfo.fullComment = extracted;
               outInfo.briefComment = MakeBriefFromFull(extracted);
+            } else if (codeBlock.empty()) {
+              codeBlock = ExtractBodySnippetFromText(txt, siblingDef.line, siblingDef.line + 3);
             }
           }
         }
+      }
+
+      if (!codeBlock.empty()) {
+        outInfo.fullComment = wxToStd(_("Declaration:")) + "\n" + NormalizeIndent (codeBlock, 2);
+        outInfo.briefComment.clear();
       }
     }
   }
@@ -2866,7 +3090,8 @@ bool ArduinoCodeCompletion::FindSiblingFunctionDefinition(CXCursor declCursor, J
         (int)args.size(),
         nullptr,
         0,
-        CXTranslationUnit_KeepGoing,
+        CXTranslationUnit_KeepGoing |
+            CXTranslationUnit_IncludeBriefCommentsInCodeCompletion,
         &tu);
 
     if (err != CXError_Success || !tu)
@@ -3065,7 +3290,8 @@ bool ArduinoCodeCompletion::FindSiblingFunctionDefinition(const std::string &fil
           nullptr,
           0,
           CXTranslationUnit_KeepGoing |
-          CXTranslationUnit_LimitSkipFunctionBodiesToPreamble,
+              CXTranslationUnit_IncludeBriefCommentsInCodeCompletion |
+              CXTranslationUnit_LimitSkipFunctionBodiesToPreamble,
           &htu);
 
       if (err != CXError_Success || !htu) {
@@ -4404,7 +4630,6 @@ std::vector<ArduinoParseError> ArduinoCodeCompletion::ComputeProjectDiagnosticsL
 
     const std::size_t argsHash = HashArgsForTU(isHeaderTU, isInoMain);
 
-
     // Find or create cache entry
     auto it = m_projectTuCache.find(key);
     if (it == m_projectTuCache.end()) {
@@ -4465,7 +4690,7 @@ std::vector<ArduinoParseError> ArduinoCodeCompletion::ComputeProjectDiagnosticsL
           (int)localArgs.size(),
           unsaved.empty() ? nullptr : unsaved.data(),
           (int)unsaved.size(),
-          CXTranslationUnit_KeepGoing  | CXTranslationUnit_PrecompiledPreamble | CXTranslationUnit_CreatePreambleOnFirstParse,
+          CXTranslationUnit_KeepGoing | CXTranslationUnit_PrecompiledPreamble | CXTranslationUnit_CreatePreambleOnFirstParse,
           &tu);
 
       if ((err != CXError_Success || !tu) && tu) {
@@ -4593,18 +4818,17 @@ std::vector<ArduinoParseError> ArduinoCodeCompletion::ComputeProjectDiagnosticsL
             });
 
   allErrors.erase(std::unique(allErrors.begin(), allErrors.end(),
-                             [](const ArduinoParseError &a, const ArduinoParseError &b) {
-                               return a.severity == b.severity &&
-                                      a.file == b.file &&
-                                      a.line == b.line &&
-                                      a.column == b.column &&
-                                      a.message == b.message;
-                             }),
+                              [](const ArduinoParseError &a, const ArduinoParseError &b) {
+                                return a.severity == b.severity &&
+                                       a.file == b.file &&
+                                       a.line == b.line &&
+                                       a.column == b.column &&
+                                       a.message == b.message;
+                              }),
                   allErrors.end());
 
   return allErrors;
 }
-
 
 std::vector<std::string> ArduinoCodeCompletion::ResolveLibrariesIncludes(const std::vector<SketchFileBuffer> &files) const {
   std::vector<std::string> result;
@@ -4747,7 +4971,7 @@ bool ArduinoCodeCompletion::IsClangTargetSupported(const std::string &target) {
   return ok;
 }
 
-void ArduinoCodeCompletion::ApplySettings (const ClangSettings &settings) {
+void ArduinoCodeCompletion::ApplySettings(const ClangSettings &settings) {
   m_clangSettings = settings;
 }
 
@@ -4770,7 +4994,6 @@ ArduinoCodeCompletion::~ArduinoCodeCompletion() {
     }
   }
   m_tuCache.clear();
-
 
   for (auto &kv : m_projectTuCache) {
     if (kv.second.tu) {

@@ -20,7 +20,6 @@
 
 #include "ard_ap.hpp"
 #include "ard_cli.hpp"
-#include <wx/artprov.h>
 #include <wx/dir.h>
 #include <wx/filename.h>
 #include <wx/imaglist.h>
@@ -126,7 +125,7 @@ void SketchFilesPanel::OnSysColourChanged() {
   auto *newList = new wxImageList(iconSize.GetWidth(), iconSize.GetHeight(), true);
 
   auto addBundle = [&](const wxArtID &artId) -> int {
-    wxBitmapBundle bb = wxArtProvider::GetBitmapBundle(artId, wxASCII_STR(wxART_OTHER));
+    wxBitmapBundle bb = AEGetArtBundle (artId);
     wxBitmap bmp = bb.GetBitmap(iconSize);
 
     if (bmp.IsOk() && (bmp.GetWidth() != iconSize.x || bmp.GetHeight() != iconSize.y)) {

@@ -247,7 +247,7 @@ void ArduinoEditorFrame::OnEditorSettings(wxCommandEvent &) {
             wxOK | wxICON_WARNING);
       }
     }
-    
+
     if (warningModeChanged || resolveModeChanged) {
       CleanProject();
     } else if (diagModeChanged && !resolveModeChanged) {
@@ -1570,9 +1570,31 @@ void ArduinoEditorFrame::OnDiagnosticsUpdated(wxThreadEvent &WXUNUSED(evt)) {
   m_currentDiagErrors.clear();
   m_firstInitCompleted = true;
 
-  if (!completion || !m_diagListCtrl) {
+  if (!completion || !m_diagListCtrl || !m_bottomNotebook) {
     return;
   }
+
+  int problemsPageIndex = m_bottomNotebook->FindPage(m_diagListCtrl);
+  if (problemsPageIndex == wxNOT_FOUND) {
+    return;
+  }
+
+  // --- tab title updater (runs on every return) ---
+  int errorCount = 0; // number of errors/warnings
+  auto updateProblemsTabTitle = [&]() {
+    wxString text = _("Problems");
+    if (errorCount > 0) {
+      text += wxString::Format(wxT(" (%d)"), errorCount);
+    }
+
+    m_bottomNotebook->SetPageText(problemsPageIndex, text);
+  };
+
+  // scope-guard (RAII); calls update nbk text on every return
+  struct TabTitleGuard {
+    decltype(updateProblemsTabTitle) &fn;
+    ~TabTitleGuard() { fn(); }
+  } tabTitleGuard{updateProblemsTabTitle};
 
   // If autocompleting is active in the editor, we ignore errors
   ArduinoEditor *ed = GetCurrentEditor();
@@ -1609,7 +1631,8 @@ void ArduinoEditorFrame::OnDiagnosticsUpdated(wxThreadEvent &WXUNUSED(evt)) {
       return;
   }
 
-  APP_DEBUG_LOG("FRM: OnDiagnosticsUpdated: %zu diagnostics", errors.size());
+  errorCount = errors.size();
+  APP_DEBUG_LOG("FRM: OnDiagnosticsUpdated: %d diagnostics", errorCount);
 
   for (const auto &e : errors) {
     APP_DEBUG_LOG("FRM: OnDiag:  sev=%d %s:%u:%u: %s",
@@ -2481,7 +2504,7 @@ wxMenuBar *ArduinoEditorFrame::CreateMenuBar() {
                                 _("Output"),
                                 _("Output window problems / build"));
   {
-    wxBitmapBundle bmp = wxArtProvider::GetBitmapBundle(wxAEArt::ReportView, wxASCII_STR(wxART_MENU));
+    wxBitmapBundle bmp = AEGetArtBundle(wxAEArt::ReportView);
     if (bmp.IsOk()) {
       outputItem->SetBitmap(bmp);
     }
@@ -2492,7 +2515,7 @@ wxMenuBar *ArduinoEditorFrame::CreateMenuBar() {
                                 _("Sketch browser"),
                                 _("Show browser for Sketch directory"));
   {
-    wxBitmapBundle bmp = wxArtProvider::GetBitmapBundle(wxAEArt::FolderOpen, wxASCII_STR(wxART_MENU));
+    wxBitmapBundle bmp = AEGetArtBundle(wxAEArt::FolderOpen);
     if (bmp.IsOk()) {
       sketchBrowserItem->SetBitmap(bmp);
     }
@@ -2503,7 +2526,7 @@ wxMenuBar *ArduinoEditorFrame::CreateMenuBar() {
                                 _("AI assistant"),
                                 _("Show AI chat panel"));
   {
-    wxBitmapBundle bmp = wxArtProvider::GetBitmapBundle(wxAEArt::Tip, wxASCII_STR(wxART_MENU));
+    wxBitmapBundle bmp = AEGetArtBundle(wxAEArt::Tip);
     if (bmp.IsOk()) {
       aiItem->SetBitmap(bmp);
     }
@@ -2637,7 +2660,7 @@ void ArduinoEditorFrame::InitComponents() {
 
   // --- Build / Upload toolbar buttons (wxBitmapButton) ---
   auto addToolBmpBtn = [&](wxBitmapButton *&btn, const wxArtID &art, const wxString &tip) {
-    wxBitmapBundle bb = wxArtProvider::GetBitmapBundle(art, wxASCII_STR(wxART_TOOLBAR));
+    wxBitmapBundle bb = AEGetArtBundle(art);
 
     btn = new wxBitmapButton(toolbarPanel, wxID_ANY, bb, wxDefaultPosition, wxDefaultSize);
 
@@ -3075,18 +3098,6 @@ ArduinoEditorFrame::ArduinoEditorFrame(wxConfigBase *cfg) : wxFrame(nullptr, wxI
 
 void ArduinoEditorFrame::OnViewOutput(wxCommandEvent &WXUNUSED(evt)) {
   UpdateOutputTabsFromMenu();
-}
-
-int ArduinoEditorFrame::FindOutputPage(wxWindow *win) const {
-  if (!m_bottomNotebook || !win)
-    return wxNOT_FOUND;
-
-  int count = m_bottomNotebook->GetPageCount();
-  for (int i = 0; i < count; ++i) {
-    if (m_bottomNotebook->GetPage(i) == win)
-      return i;
-  }
-  return wxNOT_FOUND;
 }
 
 void ArduinoEditorFrame::UpdateOutputTabsFromMenu() {
@@ -3713,15 +3724,6 @@ void ArduinoEditorFrame::OnSysColoursChanged(wxSysColourChangedEvent &evt) {
   EditorSettings settings;
   settings.Load(config);
 
-  // Recreate art provider
-  if (g_artProvider) {
-    wxArtProvider::Delete(g_artProvider); // removes from stack + deletes object
-    g_artProvider = nullptr;
-  }
-
-  g_artProvider = new ArduinoArtProvider();
-  wxArtProvider::Push(g_artProvider);
-
   wxSystemAppearance app = wxSystemSettings::GetAppearance();
   if (app.IsDark()) {
     APP_DEBUG_LOG("FRM: GetAppearance() -> DARK");
@@ -3731,17 +3733,8 @@ void ArduinoEditorFrame::OnSysColoursChanged(wxSysColourChangedEvent &evt) {
 
   ApplySettings(settings);
 
-  // Recolor wxNotebook imagelist and reset indexes for repaint
   m_tabImageList = CreateNotebookPageImageList(settings.GetColors().text);
   m_notebook->AssignImageList(m_tabImageList);
-
-  for (int i = 0, n = m_notebook->GetPageCount(); i < n; i++) {
-    int ii = m_notebook->GetPageImage(i);
-    if (ii != IMLI_NOTEBOOK_NONE) {
-      m_notebook->SetPageImage(i, IMLI_NOTEBOOK_NONE);
-      m_notebook->SetPageImage(i, ii);
-    }
-  }
 
   if (m_filesPanel) {
     m_filesPanel->OnSysColourChanged();
@@ -3750,6 +3743,18 @@ void ArduinoEditorFrame::OnSysColoursChanged(wxSysColourChangedEvent &evt) {
   if (m_aiPanel) {
     m_aiPanel->OnSysColourChanged();
   }
+
+  if (m_serialMonitor) {
+    m_serialMonitor->OnSysColourChanged();
+  }
+
+  m_optionsButton->SetBitmap(AEGetArtBundle(wxAEArt::Settings));  
+  m_buildButton->SetBitmap(AEGetArtBundle(wxAEArt::Check));
+  m_uploadButton->SetBitmap(AEGetArtBundle(wxAEArt::Play));
+  m_refreshPortsButton->SetBitmap(AEGetArtBundle(wxAEArt::Refresh));
+  m_serialMonitorButton->SetBitmap(AEGetArtBundle(wxAEArt::SerMon));
+
+  Layout();
 
   evt.Skip();
 }

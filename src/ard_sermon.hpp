@@ -74,6 +74,8 @@ public:
   bool IsBlocked() const { return m_isBlocked; }
   void Close();
 
+  void OnSysColourChanged();
+
 private:
   void CreateControls();
   void StartWorker();

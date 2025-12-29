@@ -245,7 +245,6 @@ private:
   void OnToggleOutput(wxCommandEvent &event);
   void OnViewOutput(wxCommandEvent &evt);
   void OnAuiPaneClose(wxAuiManagerEvent &evt);
-  int FindOutputPage(wxWindow *win) const;
   void UpdateOutputTabsFromMenu();
   void RestoreWindowPlacement();
   void OnOpenSerialMonitor(wxCommandEvent &);

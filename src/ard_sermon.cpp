@@ -23,7 +23,6 @@
 #include "ard_setdlg.hpp"
 #include "utils.hpp"
 #include <errno.h>
-#include <wx/artprov.h>
 #include <wx/datetime.h>
 
 #if defined(__unix__) || defined(__APPLE__)
@@ -490,7 +489,7 @@ void ArduinoSerialMonitorFrame::CreateControls() {
 
   m_sendButton = new wxBitmapButton(this,
                                     ID_SendButton,
-                                    wxArtProvider::GetBitmapBundle(wxAEArt::GoForward, wxASCII_STR(wxART_BUTTON)));
+                                    AEGetArtBundle (wxAEArt::GoForward));
   bottomSizer->Add(m_sendButton, 0, wxALIGN_CENTER_VERTICAL);
 
   topSizer->Add(bottomSizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 8);
@@ -759,3 +758,9 @@ void ArduinoSerialMonitorFrame::Unblock() {
     m_outputCtrl->ShowPosition(lastPos);
   }
 }
+
+void ArduinoSerialMonitorFrame::OnSysColourChanged() {
+  m_sendButton->SetBitmap (AEGetArtBundle(wxAEArt::GoForward));
+  Layout();
+}
+

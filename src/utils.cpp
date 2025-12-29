@@ -18,13 +18,16 @@
 
 #include "utils.hpp"
 #include "ard_setdlg.hpp"
+#include "ard_ap.hpp"
+#include <algorithm>
 #include <cctype>
+#include <cstddef>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <limits>
 #include <regex>
 #include <sstream>
-#include <string>
 #include <wx/dir.h>
 #include <wx/filename.h>
 #include <wx/statline.h>
@@ -335,6 +338,18 @@ void TrimInPlace(std::string &s) {
   s.erase(std::find_if(s.rbegin(), s.rend(), notSpace).base(), s.end());
 }
 
+std::string TrimCopy(std::string s) {
+  auto notSpace = [](unsigned char c) { return !std::isspace(c); };
+  s.erase(s.begin(), std::find_if(s.begin(), s.end(), notSpace));
+  s.erase(std::find_if(s.rbegin(), s.rend(), notSpace).base(), s.end());
+  return s;
+}
+
+wxString TrimCopy(wxString s) {
+  s.Trim(true).Trim(false);
+  return s;
+}
+
 bool LoadWindowSize(const wxString &prefix, wxWindow *win, wxConfigBase *config) {
   long x, y, w, h;
   if (config->Read(prefix + wxT("/PosX"), &x) &&
@@ -361,7 +376,7 @@ void SaveWindowSize(const wxString &prefix, wxWindow *win, wxConfigBase *config)
 wxMenuItem *AddMenuItemWithArt(wxMenu *menu, int id, const wxString &text, const wxString &help, const wxArtID &artId) {
   wxMenuItem *item = new wxMenuItem(menu, id, text, help);
   if (!artId.IsEmpty()) {
-    wxBitmapBundle bmp = wxArtProvider::GetBitmapBundle(artId, wxASCII_STR(wxART_MENU));
+    wxBitmapBundle bmp = AEGetArtBundle (artId);
     if (bmp.IsOk()) {
       item->SetBitmap(bmp);
     }
@@ -675,6 +690,10 @@ void ApplyStyledTextCtrlSettings(wxStyledTextCtrl *stc, const EditorSettings &s)
   stc->StyleSetForeground(wxSTC_STYLE_BRACEBAD, c.text);
   stc->StyleSetBold(wxSTC_STYLE_BRACEBAD, true);
   stc->StyleSetBackground(wxSTC_STYLE_BRACEBAD, c.braceBad);
+
+  // ---- Calltip ----
+  stc->CallTipSetForeground(c.calltipText);
+  stc->CallTipSetBackground(c.calltipBackground);
 }
 
 bool isIno(const std::string &name) {
@@ -783,7 +802,8 @@ std::unordered_set<std::string> SearchCodeIncludes(const std::vector<SketchFileB
   };
 
   auto skipWs = [&](const char *p, const char *end) {
-    while (p < end && isSpace((unsigned char)*p)) ++p;
+    while (p < end && isSpace((unsigned char)*p))
+      ++p;
     return p;
   };
 
@@ -803,8 +823,9 @@ std::unordered_set<std::string> SearchCodeIncludes(const std::vector<SketchFileB
 
     while (p < end) {
       const char *line = p;
-      const char *eol = (const char*)memchr(p, '\n', (size_t)(end - p));
-      if (!eol) eol = end;
+      const char *eol = (const char *)memchr(p, '\n', (size_t)(end - p));
+      if (!eol)
+        eol = end;
       p = (eol < end) ? eol + 1 : end;
 
       // Minimal parsing:
@@ -815,7 +836,8 @@ std::unordered_set<std::string> SearchCodeIncludes(const std::vector<SketchFileB
       //   optional whitespace
       //   '<' ... '>'  OR  '"' ... '"'
       const char *s = skipWs(line, eol);
-      if (s >= eol || *s != '#') continue;
+      if (s >= eol || *s != '#')
+        continue;
 
       ++s; // skip '#'
       s = skipWs(s, eol);
@@ -824,42 +846,55 @@ std::unordered_set<std::string> SearchCodeIncludes(const std::vector<SketchFileB
       static constexpr char kw[] = "include";
       constexpr size_t kwLen = sizeof(kw) - 1;
 
-      if ((size_t)(eol - s) < kwLen) continue;
-      if (std::memcmp(s, kw, kwLen) != 0) continue;
+      if ((size_t)(eol - s) < kwLen)
+        continue;
+      if (std::memcmp(s, kw, kwLen) != 0)
+        continue;
 
       s += kwLen;
       s = skipWs(s, eol);
-      if (s >= eol) continue;
+      if (s >= eol)
+        continue;
 
       const char delim = *s;
       char closing = 0;
 
-      if (delim == '<') closing = '>';
-      else if (delim == '"') closing = '"';
-      else continue;
+      if (delim == '<')
+        closing = '>';
+      else if (delim == '"')
+        closing = '"';
+      else
+        continue;
 
       ++s; // skip opening delimiter
 
       // Trim leading whitespace inside delimiters
-      while (s < eol && isSpace((unsigned char)*s)) ++s;
-      if (s >= eol) continue;
+      while (s < eol && isSpace((unsigned char)*s))
+        ++s;
+      if (s >= eol)
+        continue;
 
       const char *start = s;
-      while (s < eol && *s != closing) ++s;
-      if (s >= eol) continue;
+      while (s < eol && *s != closing)
+        ++s;
+      if (s >= eol)
+        continue;
 
       const char *stop = s;
 
       // Trim trailing whitespace before the closing delimiter
-      while (stop > start && isSpace((unsigned char)stop[-1])) --stop;
+      while (stop > start && isSpace((unsigned char)stop[-1]))
+        --stop;
 
       std::string_view inner(start, (size_t)(stop - start));
-      if (inner.empty()) continue;
+      if (inner.empty())
+        continue;
 
       // Only interested in typical Arduino header extensions
       // (Keep this cheap: avoid fs::path just for extension checks.)
       const bool isHeader = endsWith(inner, ".h") || endsWith(inner, ".hpp");
-      if (!isHeader) continue;
+      if (!isHeader)
+        continue;
 
       // If it's a quoted include, it might be a local sketch header.
       // Check against our precomputed set instead of hitting the filesystem.
@@ -1261,8 +1296,8 @@ uint64_t CcSumDecls(std::string_view filename, std::string_view code) {
   bool inChar = false;
   bool escape = false;
 
-  int  skipBodyDepth = 0;        // >0 => inside skipped function body
-  bool pendingFuncBody = false;  // saw ')' and waiting to see if '{' follows
+  int skipBodyDepth = 0;        // >0 => inside skipped function body
+  bool pendingFuncBody = false; // saw ')' and waiting to see if '{' follows
 
   bool lastWasSpace = false;
 
@@ -1293,33 +1328,67 @@ uint64_t CcSumDecls(std::string_view filename, std::string_view code) {
 
     // ---------- Inside skipped body: only track braces, but still respect comments/strings ----------
     if (skipBodyDepth > 0) {
-      if (inLineComment) { ++p; continue; }
+      if (inLineComment) {
+        ++p;
+        continue;
+      }
 
       if (inBlockComment) {
-        if (c == '*' && n == '/') { inBlockComment = false; p += 2; continue; }
-        ++p; continue;
+        if (c == '*' && n == '/') {
+          inBlockComment = false;
+          p += 2;
+          continue;
+        }
+        ++p;
+        continue;
       }
 
       if (inString) {
-        if (!escape && c == '"') inString = false;
+        if (!escape && c == '"')
+          inString = false;
         escape = (!escape && c == '\\');
-        ++p; continue;
+        ++p;
+        continue;
       }
 
       if (inChar) {
-        if (!escape && c == '\'') inChar = false;
+        if (!escape && c == '\'')
+          inChar = false;
         escape = (!escape && c == '\\');
-        ++p; continue;
+        ++p;
+        continue;
       }
 
       // Comment / string starts
-      if (c == '/' && n == '/') { inLineComment = true; p += 2; continue; }
-      if (c == '/' && n == '*') { inBlockComment = true; p += 2; continue; }
-      if (c == '"') { inString = true; escape = false; ++p; continue; }
-      if (c == '\'') { inChar = true; escape = false; ++p; continue; }
+      if (c == '/' && n == '/') {
+        inLineComment = true;
+        p += 2;
+        continue;
+      }
+      if (c == '/' && n == '*') {
+        inBlockComment = true;
+        p += 2;
+        continue;
+      }
+      if (c == '"') {
+        inString = true;
+        escape = false;
+        ++p;
+        continue;
+      }
+      if (c == '\'') {
+        inChar = true;
+        escape = false;
+        ++p;
+        continue;
+      }
 
       // Track nested braces to find end of body
-      if (c == '{') { ++skipBodyDepth; ++p; continue; }
+      if (c == '{') {
+        ++skipBodyDepth;
+        ++p;
+        continue;
+      }
       if (c == '}') {
         --skipBodyDepth;
         if (skipBodyDepth == 0) {
@@ -1335,32 +1404,62 @@ uint64_t CcSumDecls(std::string_view filename, std::string_view code) {
     }
 
     // ---------- Outside body: handle comments/strings first ----------
-    if (inLineComment) { ++p; continue; }
+    if (inLineComment) {
+      ++p;
+      continue;
+    }
 
     if (inBlockComment) {
-      if (c == '*' && n == '/') { inBlockComment = false; p += 2; continue; }
-      ++p; continue;
+      if (c == '*' && n == '/') {
+        inBlockComment = false;
+        p += 2;
+        continue;
+      }
+      ++p;
+      continue;
     }
 
     if (inString) {
-      if (!escape && c == '"') inString = false;
+      if (!escape && c == '"')
+        inString = false;
       escape = (!escape && c == '\\');
-      ++p; continue; // ignore string contents
+      ++p;
+      continue; // ignore string contents
     }
 
     if (inChar) {
-      if (!escape && c == '\'') inChar = false;
+      if (!escape && c == '\'')
+        inChar = false;
       escape = (!escape && c == '\\');
-      ++p; continue; // ignore char contents
+      ++p;
+      continue; // ignore char contents
     }
 
     // Start comment?
-    if (c == '/' && n == '/') { inLineComment = true; p += 2; continue; }
-    if (c == '/' && n == '*') { inBlockComment = true; p += 2; continue; }
+    if (c == '/' && n == '/') {
+      inLineComment = true;
+      p += 2;
+      continue;
+    }
+    if (c == '/' && n == '*') {
+      inBlockComment = true;
+      p += 2;
+      continue;
+    }
 
     // Start string/char?
-    if (c == '"') { inString = true; escape = false; ++p; continue; }
-    if (c == '\'') { inChar = true; escape = false; ++p; continue; }
+    if (c == '"') {
+      inString = true;
+      escape = false;
+      ++p;
+      continue;
+    }
+    if (c == '\'') {
+      inChar = true;
+      escape = false;
+      ++p;
+      continue;
+    }
 
     // Normalize whitespace
     if (is_space((unsigned char)c)) {
@@ -1389,8 +1488,8 @@ uint64_t CcSumDecls(std::string_view filename, std::string_view code) {
     if (c == '{') {
       if (pendingFuncBody) {
         pendingFuncBody = false;
-        hash_char('{');     // include body-start marker
-        skipBodyDepth = 1;  // skip until matching '}'
+        hash_char('{');    // include body-start marker
+        skipBodyDepth = 1; // skip until matching '}'
         ++p;
         continue;
       }
@@ -1409,3 +1508,95 @@ uint64_t CcSumDecls(std::string_view filename, std::string_view code) {
   return h;
 }
 
+std::string NormalizeIndent(std::string_view code, size_t indent) {
+  // Split into lines, keeping '\n' (except possibly last line).
+  auto splitLinesKeepNewline = [](std::string_view s) -> std::vector<std::string_view> {
+    std::vector<std::string_view> out;
+    size_t i = 0;
+    while (i < s.size()) {
+      size_t j = s.find('\n', i);
+      if (j == std::string_view::npos) {
+        out.push_back(s.substr(i));
+        break;
+      }
+      out.push_back(s.substr(i, (j - i) + 1)); // include '\n'
+      i = j + 1;
+    }
+    if (s.empty())
+      out.push_back(std::string_view{});
+    return out;
+  };
+
+  auto isBlankLine = [](std::string_view line) -> bool {
+    for (char c : line) {
+      if (c == '\n')
+        break;
+      if (c != ' ' && c != '\t' && c != '\r')
+        return false;
+    }
+    return true;
+  };
+
+  auto leadingWsCount = [](std::string_view line) -> size_t {
+    size_t n = 0;
+    for (char c : line) {
+      if (c == ' ' || c == '\t' || c == '\r') {
+        ++n;
+        continue;
+      }
+      if (c == '\n')
+        break;
+      break;
+    }
+    return n;
+  };
+
+  auto lines = splitLinesKeepNewline(code);
+
+  // Find minimal common indentation among non-blank lines.
+  size_t minIndent = std::numeric_limits<size_t>::max();
+  bool anyNonBlank = false;
+  for (auto line : lines) {
+    if (isBlankLine(line))
+      continue;
+    anyNonBlank = true;
+    minIndent = std::min(minIndent, leadingWsCount(line));
+  }
+  if (!anyNonBlank) {
+    return std::string(code); // preserve all-blank blocks as-is
+  }
+  if (minIndent == std::numeric_limits<size_t>::max())
+    minIndent = 0;
+
+  const std::string targetPrefix(indent, ' ');
+
+  // Rebuild.
+  std::string out;
+  out.reserve(code.size() + lines.size() * indent);
+
+  for (auto line : lines) {
+    if (isBlankLine(line)) {
+      // Keep blank lines exactly as-is (incl. newline).
+      out.append(line.data(), line.size());
+      continue;
+    }
+
+    // Strip exactly minIndent leading whitespace *characters*.
+    size_t toStrip = minIndent;
+    size_t pos = 0;
+    while (pos < line.size() && toStrip > 0) {
+      char c = line[pos];
+      if (c == ' ' || c == '\t' || c == '\r') {
+        ++pos;
+        --toStrip;
+        continue;
+      }
+      break;
+    }
+
+    out += targetPrefix;
+    out.append(line.data() + pos, line.size() - pos);
+  }
+
+  return out;
+}

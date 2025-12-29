@@ -24,9 +24,8 @@
 #include "utils.hpp"
 #include <cstddef>
 #include <cstdint>
-#include <vector>
 #include <nlohmann/json.hpp>
-#include <wx/artprov.h>
+#include <vector>
 #include <wx/bmpbuttn.h>
 #include <wx/combobox.h>
 #include <wx/dir.h>
@@ -50,49 +49,47 @@ const wxString defaultClangFormat = wxT(
     "}\n");
 
 struct CStrListView {
-  const char* const* data = nullptr;
+  const char *const *data = nullptr;
   std::size_t size = 0;
 };
 
 inline CStrListView GetWarningFlagsView(ClangWarningMode mode) {
-  static constexpr const char* kOff[] = { "-w" };
-  static constexpr const char* kDefault[] = { };
+  static constexpr const char *kOff[] = {"-w"};
+  static constexpr const char *kDefault[] = {};
 
-  static constexpr const char* kArduinoLike[] = {
-    "-Wformat=2",
-    "-Wshadow",
-    "-Wunused-variable",
-    "-Wunused-parameter",
-    "-Wsign-compare",
-    "-Wreorder",
-    "-Wimplicit-fallthrough"
-  };
+  static constexpr const char *kArduinoLike[] = {
+      "-Wformat=2",
+      "-Wshadow",
+      "-Wunused-variable",
+      "-Wunused-parameter",
+      "-Wsign-compare",
+      "-Wreorder",
+      "-Wimplicit-fallthrough"};
 
-  static constexpr const char* kStrict[] = {
-    "-Wall",
-    "-Wextra",
-    "-Wpedantic",
-    "-Wconversion",
-    "-Wformat=2",
-    "-Wshadow",
-    "-Wunused-variable",
-    "-Wunused-parameter",
-    "-Wsign-compare",
-    "-Wreorder",
-    "-Wimplicit-fallthrough"
-  };
+  static constexpr const char *kStrict[] = {
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wformat=2",
+      "-Wshadow",
+      "-Wunused-variable",
+      "-Wunused-parameter",
+      "-Wsign-compare",
+      "-Wreorder",
+      "-Wimplicit-fallthrough"};
 
   switch (mode) {
     case ClangWarningMode::warningOff:
-      return { kOff, sizeof(kOff) / sizeof(kOff[0]) };
+      return {kOff, sizeof(kOff) / sizeof(kOff[0])};
     case ClangWarningMode::warningDefault:
-      return { kDefault, 0 };
+      return {kDefault, 0};
     case ClangWarningMode::warningArduinoLike:
-      return { kArduinoLike, sizeof(kArduinoLike) / sizeof(kArduinoLike[0]) };
+      return {kArduinoLike, sizeof(kArduinoLike) / sizeof(kArduinoLike[0])};
     case ClangWarningMode::warningStrict:
-      return { kStrict, sizeof(kStrict) / sizeof(kStrict[0]) };
+      return {kStrict, sizeof(kStrict) / sizeof(kStrict[0])};
   }
-  return { kDefault, 0 };
+  return {kDefault, 0};
 }
 
 static wxColour ReadEditorColour(wxConfigBase *cfg, const wxString &prefix, ThemeMode themeMode, const wxColour &defColor) {
@@ -151,11 +148,6 @@ static wxString GenAiModelId() {
   ++counter;
   auto ms = wxGetUTCTimeMillis();
   return wxString::Format(wxT("mdl_%lld_%ld"), (long long)ms.GetValue(), counter);
-}
-
-static wxString TrimCopy(wxString s) {
-  s.Trim(true).Trim(false);
-  return s;
 }
 
 static wxString AiModelsBaseKey() {
@@ -311,6 +303,18 @@ void EditorColorScheme::Load(wxConfigBase *cfg, ThemeMode themeMode) {
           ? wxColour(42, 42, 42)
           : wxColour(240, 240, 240));
 
+  calltipText = ReadEditorColour(
+      cfg, wxT("CalltipText"), themeMode,
+      (themeMode == ThemeMode::AlwaysDark)
+          ? wxColour(212, 212, 212) // Dark: #D4D4D4 (VS/VSCode editor foreground-ish)
+          : wxColour(30, 30, 30));  // Light: #1E1E1E (near-black)
+
+  calltipBackground = ReadEditorColour(
+      cfg, wxT("CalltipBackground"), themeMode,
+      (themeMode == ThemeMode::AlwaysDark)
+          ? wxColour(65, 65, 78)      // Dark: (VS/VSCode tooltip-ish dark)
+          : wxColour(255, 255, 225)); // Light: #FFFFE1 (classic Scintilla/tooltip „pale yellow“)
+
   error = ReadEditorColour(
       cfg, wxT("Error"), themeMode,
       (themeMode == ThemeMode::AlwaysDark)
@@ -381,6 +385,8 @@ void EditorColorScheme::Save(wxConfigBase *cfg, ThemeMode themeMode) {
   WriteEditorColour(cfg, wxT("Number"), themeMode, number);
   WriteEditorColour(cfg, wxT("Preprocessor"), themeMode, preprocessor);
   WriteEditorColour(cfg, wxT("CaretLine"), themeMode, caretLine);
+  WriteEditorColour(cfg, wxT("CalltipText"), themeMode, calltipText);
+  WriteEditorColour(cfg, wxT("CalltipBackground"), themeMode, calltipBackground);
   WriteEditorColour(cfg, wxT("Error"), themeMode, error);
   WriteEditorColour(cfg, wxT("Warning"), themeMode, warning);
   WriteEditorColour(cfg, wxT("SymbolHighlight"), themeMode, symbolHighlight);
@@ -480,7 +486,7 @@ void ClangSettings::Load(wxConfigBase *cfg) {
   if (cfg->Read(wxT("Clang/WarningMode"), &lw))
     warningMode = static_cast<ClangWarningMode>(lw);
   else
-    warningMode = warningDefault;  
+    warningMode = warningDefault;
 
   ConfigReadInt(cfg, wxT("Clang/AutocompletionDelay"), autocompletionDelay, 1500);
   ConfigReadInt(cfg, wxT("Clang/ResolveDiagnosticsDelay"), resolveDiagnosticsDelay, 5000);
@@ -543,8 +549,8 @@ void ClangSettings::OpenExternalSourceFile(const wxString &filename, int line) {
   wxExecute(formatted, wxEXEC_ASYNC);
 }
 
-void ClangSettings::AppendWarningFlags(std::vector<const char*>& out) {
-  auto v = GetWarningFlagsView (warningMode);
+void ClangSettings::AppendWarningFlags(std::vector<const char *> &out) {
+  auto v = GetWarningFlagsView(warningMode);
   out.insert(out.end(), v.data, v.data + v.size);
 }
 
@@ -883,7 +889,6 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
   generalPage->SetSizer(generalPageSizer);
   m_notebook->AddPage(generalPage, _("General"), true);
 
-
   // ==== CLI PAGE ====
   wxPanel *cliPage = new wxPanel(m_notebook, wxID_ANY);
   auto *cliSizer = new wxBoxSizer(wxVERTICAL);
@@ -1198,6 +1203,20 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
   grid->Add(m_caretLine, 1, wxEXPAND);
   m_caretLineDark = new wxColourPickerCtrl(m_colorsPanel, wxID_ANY, m_settings.colors[1].caretLine);
   grid->Add(m_caretLineDark, 1, wxEXPAND);
+
+  // Calltip text
+  grid->Add(new wxStaticText(m_colorsPanel, wxID_ANY, _("Calltip text:")), 0, wxALIGN_CENTER_VERTICAL);
+  m_calltipText = new wxColourPickerCtrl(m_colorsPanel, wxID_ANY, m_settings.colors[0].calltipText);
+  grid->Add(m_calltipText, 1, wxEXPAND);
+  m_calltipTextDark = new wxColourPickerCtrl(m_colorsPanel, wxID_ANY, m_settings.colors[1].calltipText);
+  grid->Add(m_calltipTextDark, 1, wxEXPAND);
+
+  // Current line background
+  grid->Add(new wxStaticText(m_colorsPanel, wxID_ANY, _("Calltip background:")), 0, wxALIGN_CENTER_VERTICAL);
+  m_calltipBackground = new wxColourPickerCtrl(m_colorsPanel, wxID_ANY, m_settings.colors[0].calltipBackground);
+  grid->Add(m_calltipBackground, 1, wxEXPAND);
+  m_calltipBackgroundDark = new wxColourPickerCtrl(m_colorsPanel, wxID_ANY, m_settings.colors[1].calltipBackground);
+  grid->Add(m_calltipBackgroundDark, 1, wxEXPAND);
 
   // Error
   grid->Add(new wxStaticText(m_colorsPanel, wxID_ANY, _("Error:")), 0, wxALIGN_CENTER_VERTICAL);
@@ -1541,8 +1560,6 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
   clangBox->Add(clangGrid, 1, wxALL | wxEXPAND, 5);
   clangPageSizer->Add(clangBox, 0, wxALL | wxEXPAND, 10);
 
-
-
   // --- Behavior box ---
   auto *behaviorBox = new wxStaticBoxSizer(wxVERTICAL, clangPage, _("Behavior"));
 
@@ -1614,10 +1631,10 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
   m_aiModelChoice = new wxChoice(aiPage, wxID_ANY);
   modelRow->Add(m_aiModelChoice, 1, wxRIGHT | wxEXPAND, 5);
 
-  m_aiModelEditBtn = new wxBitmapButton(aiPage, wxID_ANY, wxArtProvider::GetBitmapBundle(wxAEArt::Edit, wxASCII_STR(wxART_BUTTON)));
+  m_aiModelEditBtn = new wxBitmapButton(aiPage, wxID_ANY, AEGetArtBundle (wxAEArt::Edit));
   modelRow->Add(m_aiModelEditBtn, 0, wxRIGHT, 5);
 
-  m_aiModelAddBtn = new wxBitmapButton(aiPage, wxID_ANY, wxArtProvider::GetBitmapBundle(wxAEArt::Plus, wxASCII_STR(wxART_BUTTON)));
+  m_aiModelAddBtn = new wxBitmapButton(aiPage, wxID_ANY, AEGetArtBundle (wxAEArt::Plus));
   modelRow->Add(m_aiModelAddBtn, 0);
 
   modelBox->Add(modelRow, 0, wxALL | wxEXPAND, 5);
@@ -1915,6 +1932,8 @@ EditorSettings ArduinoEditorSettingsDialog::GetSettings() const {
   s.colors[0].keyword2 = m_kw2->GetColour();
   s.colors[0].preprocessor = m_preprocessor->GetColour();
   s.colors[0].caretLine = m_caretLine->GetColour();
+  s.colors[0].calltipText = m_calltipText->GetColour();
+  s.colors[0].calltipBackground = m_calltipBackground->GetColour();
   s.colors[0].error = m_error->GetColour();
   s.colors[0].warning = m_warning->GetColour();
   s.colors[0].symbolHighlight = m_symbolHighlight->GetColour();
@@ -1944,6 +1963,8 @@ EditorSettings ArduinoEditorSettingsDialog::GetSettings() const {
   s.colors[1].keyword2 = m_kw2Dark->GetColour();
   s.colors[1].preprocessor = m_preprocessorDark->GetColour();
   s.colors[1].caretLine = m_caretLineDark->GetColour();
+  s.colors[1].calltipText = m_calltipTextDark->GetColour();
+  s.colors[1].calltipBackground = m_calltipBackgroundDark->GetColour();
   s.colors[1].error = m_errorDark->GetColour();
   s.colors[1].warning = m_warningDark->GetColour();
   s.colors[1].symbolHighlight = m_symbolHighlightDark->GetColour();

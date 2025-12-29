@@ -45,7 +45,11 @@ enum {
   ID_MENU_AI_GENERATE_COMMENT,
   ID_MENU_AI_GENERATE_DOC_FUNC,
   ID_MENU_AI_GENERATE_DOC_CLASS,
-  ID_MENU_AI_OPTIMIZE_FUNC_METHOD
+  ID_MENU_AI_OPTIMIZE_FUNC_METHOD,
+  ID_MENU_NAV_PREV_OCCURRENCE,
+  ID_MENU_NAV_NEXT_OCCURRENCE,
+  ID_MENU_NAV_SYM_OCCURRENCE,
+  ID_MENU_NAV_GOTO_DEFINITION
 };
 
 enum {
@@ -419,23 +423,32 @@ void ArduinoEditor::NavigateSymbolOccurrence(bool forward) {
     return;
   }
 
-  int curPos = m_editor->GetCurrentPos();
+  const int caretPos = m_editor->GetCurrentPos();
+
+  // If the caret is inside a symbol, use symbol boundaries to decide what is
+  // "previous/next", so we don't just jump to the start of the current occurrence.
+  const int wordStart = m_editor->WordStartPosition(caretPos, true);
+  const int wordEnd = m_editor->WordEndPosition(caretPos, true);
+
+  const int comparePos = forward
+                             ? ((wordEnd > wordStart) ? wordEnd : caretPos)
+                             : ((wordEnd > wordStart) ? wordStart : caretPos);
 
   int targetPos = -1;
   if (forward) {
-    // find first position
+    // Find the first occurrence strictly after the current symbol.
     for (int p : m_symbolOccPositions) {
-      if (p > curPos) {
+      if (p > comparePos) {
         targetPos = p;
         break;
       }
     }
     // no next occurrence, no movement
   } else {
-    // find last occurrence
+    // Find the last occurrence strictly before the current symbol.
     for (int i = (int)m_symbolOccPositions.size() - 1; i >= 0; --i) {
       int p = m_symbolOccPositions[i];
-      if (p < curPos) {
+      if (p < comparePos) {
         targetPos = p;
         break;
       }
@@ -940,6 +953,8 @@ void ArduinoEditor::OnFindClose(wxFindDialogEvent &WXUNUSED(event)) {
 }
 
 void ArduinoEditor::OnContextMenu(wxContextMenuEvent &event) {
+  m_editor->CallTipCancel();
+
   // Position in the client coordinates of the editor
   wxPoint pt = event.GetPosition();
   if (pt == wxDefaultPosition) {
@@ -969,6 +984,45 @@ void ArduinoEditor::OnContextMenu(wxContextMenuEvent &event) {
   // Find / Replace
   AddMenuItemWithArt(&menu, wxID_FIND, _("&Find...\tCtrl+F"), wxEmptyString, wxAEArt::Find);
   AddMenuItemWithArt(&menu, wxID_REPLACE, _("R&eplace...\tCtrl+Alt+F"), wxEmptyString, wxAEArt::FindReplace);
+
+  menu.AppendSeparator();
+
+  // Navigate menu
+  auto *navMenu = new wxMenu;
+
+  AddMenuItemWithArt(navMenu,
+                     ID_MENU_NAV_GOTO_DEFINITION,
+#ifdef __WXMAC__
+                     _("Go to definition (Cmd+Click)"),
+#else
+                     _("Go to definition\tCtrl+Click"),
+#endif
+                     _("Jump to the definition of the symbol under the cursor."),
+                     wxAEArt::GoToParent);
+
+  navMenu->AppendSeparator();
+
+  AddMenuItemWithArt(navMenu,
+                     ID_MENU_NAV_PREV_OCCURRENCE,
+                     _("Previous symbol occurrence\tCtrl+Up"),
+                     _("Jump to the previous symbol occurrence in the current file."),
+                     wxAEArt::GoUp);
+
+  AddMenuItemWithArt(navMenu,
+                     ID_MENU_NAV_NEXT_OCCURRENCE,
+                     _("Next symbol occurrence\tCtrl+Down"),
+                     _("Jump to the next symbol occurrence in the current file."),
+                     wxAEArt::GoDown);
+
+  navMenu->AppendSeparator();
+
+  AddMenuItemWithArt(navMenu,
+                     ID_MENU_NAV_SYM_OCCURRENCE,
+                     _("Show symbol occurrences\tShift+F12"),
+                     _("Shows list of all project-wide symbol occurrences."),
+                     wxAEArt::FindAll);
+
+  menu.AppendSubMenu(navMenu, _("Navigate"));
 
   // Refactor submenu
   auto *refMenu = new wxMenu;
@@ -1257,6 +1311,22 @@ void ArduinoEditor::OnPopupMenu(wxCommandEvent &event) {
     case ID_MENU_AI_OPTIMIZE_FUNC_METHOD:
       if (!readOnly)
         AiOptimizeFunctionOrMethod();
+      break;
+
+    case ID_MENU_NAV_GOTO_DEFINITION:
+      GotoSymbolDefinition();
+      break;
+
+    case ID_MENU_NAV_PREV_OCCURRENCE:
+      NavigateSymbolOccurrence(false);
+      break;
+
+    case ID_MENU_NAV_NEXT_OCCURRENCE:
+      NavigateSymbolOccurrence(true);
+      break;
+
+    case ID_MENU_NAV_SYM_OCCURRENCE:
+      FindSymbolUsagesAtCursor();
       break;
 
     default:
@@ -2141,59 +2211,7 @@ void ArduinoEditor::OnDwellStart(wxStyledTextEvent &event) {
                 info.briefComment.c_str(),
                 info.fullComment.c_str());
 
-  bool sigIsSameAsName =
-      !info.signature.empty() &&
-      info.signature == info.name;
-
-  bool noUsefulSignature =
-      info.signature.empty() || sigIsSameAsName;
-
-  // does the type exist and is it different from the name?
-  bool typeAddsInfo =
-      !info.type.empty() && info.type != info.name;
-
-  // "useful" symbol = has a comment, or a signature other than the name
-  bool hasUsefulInfo =
-      !info.briefComment.empty() ||
-      !info.fullComment.empty() ||
-      (!noUsefulSignature) || // signature contains more than just the name
-      typeAddsInfo;           // type makes sense to display
-
-  // If we don't have useful info -> display nothing
-  if (!hasUsefulInfo) {
-    return;
-  }
-
-  // Compose the tooltip text
-  std::string tooltip;
-
-  if (!info.signature.empty() && !sigIsSameAsName) {
-    // typical case of a function: "void digitalWrite(uint8_t pin, uint8_t val)"
-    tooltip += info.signature;
-    tooltip += "\n";
-  } else if (!info.name.empty()) {
-    // variable, typedef, enum value... -> name + type
-    tooltip += info.name;
-    if (!info.type.empty()) {
-      tooltip += " : ";
-      tooltip += info.type;
-    }
-    tooltip += "\n";
-  }
-
-  if (!info.fullComment.empty()) {
-    tooltip += "\n";
-    tooltip += info.fullComment;
-  } else if (!info.briefComment.empty()) {
-    tooltip += "\n";
-    tooltip += info.briefComment;
-  }
-
-  if (tooltip.empty()) {
-    return;
-  }
-
-  wxString wxTip = wxString::FromUTF8(tooltip.c_str());
+  wxString wxTip = wxString::FromUTF8(info.ToHoverString());
   wxTip.Trim(true).Trim(false);
   m_editor->CallTipShow(pos, wxTip);
 }
@@ -2209,7 +2227,7 @@ void ArduinoEditor::OnDwellEnd(wxStyledTextEvent &WXUNUSED(event)) {
 }
 
 void ArduinoEditor::OnEditorLeftDown(wxMouseEvent &event) {
-#ifdef __APPLE__
+#ifdef __WXMAC__
   bool goTo = event.CmdDown();
 #else
   bool goTo = event.ControlDown();
@@ -2220,7 +2238,7 @@ void ArduinoEditor::OnEditorLeftDown(wxMouseEvent &event) {
     return;
   }
 
-  // 1) Determine where we clicked (according to the mouse)
+  // Determine where we clicked (according to the mouse)
   int x = event.GetX();
   int y = event.GetY();
   int pos = m_editor->PositionFromPointClose(x, y);
@@ -2229,25 +2247,25 @@ void ArduinoEditor::OnEditorLeftDown(wxMouseEvent &event) {
     return;
   }
 
-  // Old cursor position for return
-  int curLine, curCol;
-  GetCurrentCursor(curLine, curCol);
-
-  int line = m_editor->LineFromPosition(pos) + 1; // 1-based for libclang
-  int column = m_editor->GetColumn(pos) + 1;      // 1-based
-
-  // 2) Save this position as "back" (i.e., where we came from)
-  if (auto *frame = GetOwnerFrame()) {
-    frame->PushNavLocation(m_filePath, curLine, curCol);
-  }
-
-  // 3) also move the cursor visually to the click position
+  // also move the cursor visually to the click position
   m_editor->GotoPos(pos);
   m_editor->SetCurrentPos(pos);
   m_editor->SetSelection(pos, pos);
 
-  // 4) Find the definition using libclang
+  GotoSymbolDefinition();
+}
+
+void ArduinoEditor::GotoSymbolDefinition() {
+  // Find the definition using libclang
   std::string code = wxToStd(m_editor->GetText());
+
+  int line, column;
+  GetCurrentCursor(line, column); // 1-based
+
+  // Save this position as "back" (i.e., where we came from)
+  if (auto *frame = GetOwnerFrame()) {
+    frame->PushNavLocation(m_filePath, line, column);
+  }
 
   JumpTarget target;
   if (!completion->FindDefinition(m_filePath, code, line, column, target)) {
@@ -2257,12 +2275,12 @@ void ArduinoEditor::OnEditorLeftDown(wxMouseEvent &event) {
 
   APP_DEBUG_LOG("EDIT: FindDefinition() -> file=%s, line=%d, column=%d", target.file.c_str(), target.line, target.column);
 
-  if ((target.file == m_filePath) && (target.line == curLine) /* not compare curCol */) {
+  if ((target.file == m_filePath) && (target.line == line) /* not compare curCol */) {
     FindSymbolUsagesAtCursor();
     return;
   }
 
-  // 5) Perform a jump to the target definition
+  // Perform a jump to the target definition
   HandleGoToLocation(target);
 }
 
