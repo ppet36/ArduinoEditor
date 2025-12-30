@@ -1865,6 +1865,7 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
   Layout();
 
   Bind(wxEVT_CLOSE_WINDOW, &ArduinoEditorSettingsDialog::OnClose, this);
+  Bind(wxEVT_SYS_COLOUR_CHANGED, &ArduinoEditorSettingsDialog::OnSysColourChanged, this);
 
   wxSize best = GetBestSize();
   SetMinSize(best);
@@ -1892,6 +1893,20 @@ void ArduinoEditorSettingsDialog::UpdateAiControlsEnabled() {
   if (m_summarizeChatSessionsModeChoice) {
     m_summarizeChatSessionsModeChoice->Enable(en && m_aiStoreChatHistory && m_aiStoreChatHistory->GetValue());
   }
+}
+
+void ArduinoEditorSettingsDialog::OnSysColourChanged(wxSysColourChangedEvent &event) {
+  if (m_aiModelAddBtn) {
+    m_aiModelAddBtn->SetBitmap(AEGetArtBundle(wxAEArt::Plus));
+  }
+
+  if (m_aiModelEditBtn) {
+    m_aiModelEditBtn->SetBitmap(AEGetArtBundle(wxAEArt::Edit));
+  }
+
+  Layout();
+
+  event.Skip();
 }
 
 void ArduinoEditorSettingsDialog::EndModal(int retCode) {

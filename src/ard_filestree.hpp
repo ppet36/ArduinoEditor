@@ -51,7 +51,6 @@ public:
 
   void SelectPath(const wxString &fullPath);
 
-  void OnSysColourChanged();
 
 private:
   struct SketchTreeItemData : public wxTreeItemData {
@@ -76,6 +75,7 @@ private:
 
   wxString m_rootPath;
 
+  void SetupIcons();
   void BuildTree();
   void AddDirRecursive(const wxTreeItemId &parent, const wxString &dirPath);
 
@@ -87,6 +87,8 @@ private:
   void OnMenuDelete(wxCommandEvent &evt);
   void OnMenuRename(wxCommandEvent &evt);
   void OnMenuOpenExternally(wxCommandEvent &evt);
+
+  void OnSysColourChanged(wxSysColourChangedEvent &event);
 
   void SendPathEvent(wxEventType type, const wxString &path, bool isDir) const;
 };

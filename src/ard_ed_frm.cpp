@@ -579,23 +579,28 @@ void ArduinoEditorFrame::OnClangArgsReady(wxThreadEvent &event) {
 
     UpdateStatus(_("Arduino Clang completion initialized for ") + wxString::FromUTF8(arduinoCli->GetBoardName()));
 
-    if (m_firstInitCompleted) {
-      // We only call it if the first initialization has already taken place.
-      // Otherwise it is called from OnInstalledLibrariesUpdated so it would
-      // be called twice unnecessarily.
+    switch (m_clangSettings.resolveMode) {
+      case internalResolver:
+        if (m_firstInitCompleted) {
+          // We only call it if the first initialization has already taken place.
+          // Otherwise it is called from OnInstalledLibrariesUpdated so it would
+          // be called twice unnecessarily.
+          ResolveLibrariesOrDiagnostics();
+        }
+        break;
+      case compileCommandsResolver:
+        if (m_filesPanel) {
+          auto libs = arduinoCli->GetResolvedLibrariesFromCompileCommands();
 
-      ResolveLibrariesOrDiagnostics();
-      return;
-    }
+          APP_DEBUG_LOG("FRM: update %zu resolved libraries", libs.size());
 
-    if (m_clangSettings.resolveMode == compileCommandsResolver) {
-      if (m_filesPanel) {
-        auto libs = arduinoCli->GetResolvedLibrariesFromCompileCommands();
+          m_filesPanel->UpdateResolvedLibraries(libs);
+        }
 
-        m_filesPanel->UpdateResolvedLibraries(libs);
-      }
-
-      ResolveLibrariesOrDiagnostics();
+        ResolveLibrariesOrDiagnostics();
+        break;
+      default:
+        break;
     }
   } else {
     if (!m_cleanTried) {
@@ -1249,8 +1254,11 @@ void ArduinoEditorFrame::CleanProject() {
   m_optionsButton->Enable(false);
   m_boardChoice->Enable(false);
 
-  completion->SetReady(false);
-  completion->InvalidateTranslationUnit();
+  if (completion) {
+    completion->SetReady(false);
+    completion->InvalidateTranslationUnit();
+  }
+
   ShowSingleDiagMessage(_("Rebuilding project..."));
 
   UpdateStatus(_("Initializing Arduino Clang completion..."));
@@ -1616,7 +1624,6 @@ void ArduinoEditorFrame::OnDiagnosticsUpdated(wxThreadEvent &WXUNUSED(evt)) {
     ShowSingleDiagMessage(_("Preparing..."));
     return;
   }
-
 
   std::vector<ArduinoParseError> errors;
 
@@ -2501,7 +2508,12 @@ wxMenuBar *ArduinoEditorFrame::CreateMenuBar() {
                      wxID_EXIT,
                      _("Exit"),
                      _("Exit the application"),
-                     wxAEArt::Quit);
+#ifdef __WXMAC__
+                     wxEmptyString
+#else
+                     wxAEArt::Quit
+#endif
+);
 
   // Tools / Navigation menu
   wxMenu *navMenu = new wxMenu();
@@ -3808,23 +3820,70 @@ void ArduinoEditorFrame::OnSysColoursChanged(wxSysColourChangedEvent &evt) {
   m_tabImageList = CreateNotebookPageImageList(settings.GetColors().text);
   m_notebook->AssignImageList(m_tabImageList);
 
-  if (m_filesPanel) {
-    m_filesPanel->OnSysColourChanged();
-  }
-
-  if (m_aiPanel) {
-    m_aiPanel->OnSysColourChanged();
-  }
-
-  if (m_serialMonitor) {
-    m_serialMonitor->OnSysColourChanged();
-  }
-
   m_optionsButton->SetBitmap(AEGetArtBundle(wxAEArt::Settings));
   m_buildButton->SetBitmap(AEGetArtBundle(wxAEArt::Check));
   m_uploadButton->SetBitmap(AEGetArtBundle(wxAEArt::Play));
   m_refreshPortsButton->SetBitmap(AEGetArtBundle(wxAEArt::Refresh));
   m_serialMonitorButton->SetBitmap(AEGetArtBundle(wxAEArt::SerMon));
+
+
+  auto ReplaceMenuItemBitmap = [this](int id, const wxArtID& bitmapId) {
+    auto bmp = AEGetArtBundle(bitmapId);
+    wxMenu* menu = nullptr;
+    wxMenuItem* item = m_menuBar->FindItem(id, &menu);
+    if (!item || !menu) return;
+
+    // find index (pos) of the item inside this menu
+    auto FindPos = [](wxMenu* m, int itemId) -> int {
+      if (!m) return wxNOT_FOUND;
+      const wxMenuItemList& items = m->GetMenuItems();
+      int pos = 0;
+      for (auto node = items.GetFirst(); node; node = node->GetNext(), ++pos) {
+        wxMenuItem* it = node->GetData();
+        if (it && it->GetId() == itemId) return pos;
+      }
+      return wxNOT_FOUND;
+    };
+
+    int pos = FindPos(menu, id);
+    if (pos == wxNOT_FOUND) return;
+
+    // Remove returns the item pointer; it does NOT delete it
+    wxMenuItem* removed = menu->Remove(id);
+    if (!removed) return;
+
+    removed->SetBitmap(bmp);
+    menu->Insert(pos, removed);
+  };
+
+  ReplaceMenuItemBitmap(ID_MENU_NEW_SKETCH, wxAEArt::New);
+  ReplaceMenuItemBitmap(ID_MENU_OPEN_SKETCH, wxAEArt::FileOpen);
+  ReplaceMenuItemBitmap(ID_MENU_SKETCH_EXAMPLES, wxAEArt::ListView);
+  ReplaceMenuItemBitmap(ID_MENU_SAVE, wxAEArt::FileSave);
+  ReplaceMenuItemBitmap(ID_MENU_SAVE_ALL, wxAEArt::FileSaveAs);
+#ifndef __WXMAC__
+  ReplaceMenuItemBitmap(wxID_PREFERENCES, wxAEArt::Settings);
+  ReplaceMenuItemBitmap(wxID_EXIT, wxAEArt::Quit);
+#endif
+  ReplaceMenuItemBitmap(ID_MENU_NAV_BACK, wxAEArt::GoBack);
+  ReplaceMenuItemBitmap(ID_MENU_NAV_FORWARD, wxAEArt::GoForward);
+  ReplaceMenuItemBitmap(ID_MENU_NAV_FIND_SYMBOL, wxAEArt::Find);
+  ReplaceMenuItemBitmap(ID_MENU_LIBRARY_MANAGER, wxAEArt::ListView);
+  ReplaceMenuItemBitmap(ID_MENU_CORE_MANAGER, wxAEArt::DevBoard);
+  ReplaceMenuItemBitmap(ID_MENU_SERIAL_MONITOR, wxAEArt::SerMon);
+  ReplaceMenuItemBitmap(ID_MENU_PROJECT_BUILD, wxAEArt::Check);
+  ReplaceMenuItemBitmap(ID_MENU_PROJECT_UPLOAD, wxAEArt::Play);
+  ReplaceMenuItemBitmap(ID_MENU_PROJECT_CLEAN, wxAEArt::Delete);
+  ReplaceMenuItemBitmap(ID_MENU_VIEW_OUTPUT, wxAEArt::ReportView);
+  ReplaceMenuItemBitmap(ID_MENU_VIEW_SKETCHES, wxAEArt::FolderOpen);
+  ReplaceMenuItemBitmap(ID_MENU_VIEW_AI, wxAEArt::Tip);
+  ReplaceMenuItemBitmap(ID_MENU_CHECK_FOR_UPDATES, wxAEArt::CheckForUpdates);
+#ifndef __WXMAC__
+  ReplaceMenuItemBitmap(wxID_ABOUT, wxAEArt::Information);
+#endif
+
+  m_menuBar->Refresh();
+  m_menuBar->Update();
 
   Layout();
 

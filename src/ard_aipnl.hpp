@@ -36,7 +36,6 @@ public:
 
   void Clear();
 
-  void OnSysColourChanged();
 
 private:
   wxConfigBase *m_config;
@@ -65,6 +64,8 @@ private:
   void ResetChat();
   void OnRefreshSessions(wxCommandEvent &);
   void OnRefreshTimer(wxTimerEvent &);
+
+  void OnSysColourChanged(wxSysColourChangedEvent &event);
 
   void OnSessionChoice(wxCommandEvent &);
   void LoadSelectedSession();

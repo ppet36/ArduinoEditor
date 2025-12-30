@@ -344,6 +344,8 @@ private:
 
   void UpdateAiControlsEnabled();
 
+  void OnSysColourChanged(wxSysColourChangedEvent& event);
+
   void EndModal(int retCode) override;
 
   void OnClose(wxCloseEvent &evt);

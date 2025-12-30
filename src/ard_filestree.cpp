@@ -20,6 +20,7 @@
 
 #include "ard_ap.hpp"
 #include "ard_cli.hpp"
+#include <algorithm>
 #include <wx/dir.h>
 #include <wx/filename.h>
 #include <wx/imaglist.h>
@@ -100,6 +101,8 @@ SketchFilesPanel::SketchFilesPanel(wxWindow *parent, wxWindowID id)
   sizer->Add(m_tree, 1, wxEXPAND);
   SetSizer(sizer);
 
+  Bind(wxEVT_SYS_COLOUR_CHANGED, &SketchFilesPanel::OnSysColourChanged, this);
+
   m_tree->Bind(wxEVT_TREE_ITEM_ACTIVATED, &SketchFilesPanel::OnItemActivated, this);
   m_tree->Bind(wxEVT_TREE_ITEM_MENU, &SketchFilesPanel::OnContextMenu, this);
 
@@ -109,14 +112,12 @@ SketchFilesPanel::SketchFilesPanel(wxWindow *parent, wxWindowID id)
   Bind(wxEVT_MENU, &SketchFilesPanel::OnMenuRename, this, ID_TREE_RENAME);
   Bind(wxEVT_MENU, &SketchFilesPanel::OnMenuOpenExternally, this, ID_TREE_OPEN_EXTERNALLY);
 
-  OnSysColourChanged();
+  SetupIcons();
 
   RefreshTree();
 }
 
-void SketchFilesPanel::OnSysColourChanged() {
-  APP_DEBUG_LOG("FSTREE: OnSysColourChanged()");
-
+void SketchFilesPanel::SetupIcons() {
   const int iconDip = 16;
 
   const int px = m_tree ? m_tree->FromDIP(iconDip) : FromDIP(iconDip);
@@ -149,6 +150,12 @@ void SketchFilesPanel::OnSysColourChanged() {
   m_tree->Update();
 }
 
+void SketchFilesPanel::OnSysColourChanged(wxSysColourChangedEvent &event) {
+  APP_DEBUG_LOG("FSTREE: OnSysColourChanged()");
+  SetupIcons();
+  event.Skip();
+}
+
 void SketchFilesPanel::SetRootPath(const wxString &rootPath) {
   m_rootPath = rootPath;
 
@@ -177,7 +184,29 @@ void SketchFilesPanel::UpdateResolvedLibraries(const std::vector<ResolvedLibrary
 
   m_tree->DeleteChildren(m_libsRootId);
 
-  for (const auto &lib : libs) {
+  // --- sort: core libs first (A-Z), then user libs (A-Z) ---
+  std::vector<ResolvedLibraryInfo> sorted = libs;
+  std::sort(sorted.begin(), sorted.end(),
+            [](const ResolvedLibraryInfo &a, const ResolvedLibraryInfo &b) {
+              if (a.isCoreLibrary != b.isCoreLibrary)
+                return a.isCoreLibrary > b.isCoreLibrary; // core first
+
+              // case-insensitive by name
+              wxString an = wxString::FromUTF8(a.name.c_str());
+              wxString bn = wxString::FromUTF8(b.name.c_str());
+              int c = an.CmpNoCase(bn);
+              if (c != 0)
+                return c < 0;
+
+              // deterministic tiebreakers
+              if (a.name != b.name)
+                return a.name < b.name;
+              if (a.version != b.version)
+                return a.version < b.version;
+              return a.includePath < b.includePath;
+            });
+
+  for (const auto &lib : sorted) {
     wxString name = wxString::FromUTF8(lib.name.c_str());
     wxString ver = wxString::FromUTF8(lib.version.c_str());
 

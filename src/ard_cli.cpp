@@ -1234,6 +1234,25 @@ std::vector<std::string> ArduinoCli::BuildClangArgsFromCompileCommands(const std
 
     if (seenResolvedLibIncludes.insert(store).second) {
       m_compileCommandsResolvedLibraries.push_back(store);
+
+      if (m_platformPath.empty()) {
+        // We will try to detect the platform path using the existence of the platform.txt
+        // file in the include. We will do this only once until m_platformPath is found.
+        std::error_code ec;
+        fs::path p = fs::path(store);
+        if (!p.empty())
+          p = p.parent_path();
+
+        for (int i = 0; i < 5 && !p.empty(); ++i) {
+          fs::path platformTxt = p / "platform.txt";
+          if (fs::exists(platformTxt, ec) && fs::is_regular_file(platformTxt, ec)) {
+            m_platformPath = p.string();
+            APP_DEBUG_LOG("CLI: Detected plaform path %s", m_platformPath.c_str());
+            break;
+          }
+          p = p.parent_path();
+        }
+      }
     }
   };
 

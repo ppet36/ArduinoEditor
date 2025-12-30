@@ -257,6 +257,8 @@ ArduinoAboutDialog::ArduinoAboutDialog(wxWindow *parent)
   settings.Load(config);
   int pointSize = settings.GetFont().GetPointSize();
 
+  Bind(wxEVT_SYS_COLOUR_CHANGED, &ArduinoAboutDialog::OnSysColourChanged, this);
+
   auto setupHtmlFonts = [&](wxHtmlWindow *w) {
 #ifdef __WXMAC__
     w->SetFonts(wxT("Helvetica Neue"), wxT("Menlo"), nullptr);
@@ -279,19 +281,19 @@ ArduinoAboutDialog::ArduinoAboutDialog(wxWindow *parent)
   auto *aboutPanel = new wxPanel(notebook, wxID_ANY);
   auto *aboutSizer = new wxBoxSizer(wxVERTICAL);
 
-  auto *html = new wxHtmlWindow(aboutPanel,
+  m_html = new wxHtmlWindow(aboutPanel,
                                 wxID_ANY,
                                 wxDefaultPosition,
                                 wxDefaultSize,
                                 wxHW_SCROLLBAR_AUTO);
 
-  setupHtmlFonts(html);
+  setupHtmlFonts(m_html);
 
   wxString aboutHtml = GetAboutHtml();
-  html->SetPage(aboutHtml);
-  html->Bind(wxEVT_HTML_LINK_CLICKED, &ArduinoAboutDialog::OnHtmlLink, this);
+  m_html->SetPage(aboutHtml);
+  m_html->Bind(wxEVT_HTML_LINK_CLICKED, &ArduinoAboutDialog::OnHtmlLink, this);
 
-  aboutSizer->Add(html, 1, wxEXPAND | wxALL, 10);
+  aboutSizer->Add(m_html, 1, wxEXPAND | wxALL, 10);
   aboutPanel->SetSizer(aboutSizer);
 
   notebook->AddPage(aboutPanel, _("About"), true);
@@ -300,17 +302,17 @@ ArduinoAboutDialog::ArduinoAboutDialog(wxWindow *parent)
   auto *licPanel = new wxPanel(notebook, wxID_ANY);
   auto *licSizer = new wxBoxSizer(wxVERTICAL);
 
-  auto *licHtml = new wxHtmlWindow(licPanel,
+  m_licHtml = new wxHtmlWindow(licPanel,
                                    wxID_ANY,
                                    wxDefaultPosition,
                                    wxDefaultSize,
                                    wxHW_SCROLLBAR_AUTO);
-  setupHtmlFonts(licHtml);
+  setupHtmlFonts(m_licHtml);
 
-  licHtml->SetPage(GetLicensesHtml());
-  licHtml->Bind(wxEVT_HTML_LINK_CLICKED, &ArduinoAboutDialog::OnHtmlLink, this);
+  m_licHtml->SetPage(GetLicensesHtml());
+  m_licHtml->Bind(wxEVT_HTML_LINK_CLICKED, &ArduinoAboutDialog::OnHtmlLink, this);
 
-  licSizer->Add(licHtml, 1, wxEXPAND | wxALL, 10);
+  licSizer->Add(m_licHtml, 1, wxEXPAND | wxALL, 10);
   licPanel->SetSizer(licSizer);
 
   notebook->AddPage(licPanel, _("Licenses"), false);
@@ -326,6 +328,18 @@ ArduinoAboutDialog::ArduinoAboutDialog(wxWindow *parent)
   SetSizer(topSizer);
   SetSize(wxSize(800, 600));
   CenterOnScreen();
+}
+
+void ArduinoAboutDialog::OnSysColourChanged(wxSysColourChangedEvent &event) {
+  if (m_html) {
+    m_html->SetPage(GetAboutHtml());
+  }
+
+  if (m_licHtml) {
+    m_licHtml->SetPage(GetLicensesHtml());
+  }
+
+  event.Skip();
 }
 
 void ArduinoAboutDialog::OnHtmlLink(wxHtmlLinkEvent &event) {

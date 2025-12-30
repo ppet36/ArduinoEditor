@@ -56,6 +56,7 @@ ArduinoAiChatPanel::ArduinoAiChatPanel(wxWindow *parent, ArduinoAiActions *actio
   Bind(wxEVT_AI_SIMPLE_CHAT_ERROR, &ArduinoAiChatPanel::OnChatError, this);
   Bind(wxEVT_AI_SIMPLE_CHAT_PROGRESS, &ArduinoAiChatPanel::OnChatProgress, this);
   Bind(wxEVT_AI_SUMMARIZATION_UPDATED, &ArduinoAiChatPanel::OnSessionTitleUpdated, this);
+  Bind(wxEVT_SYS_COLOUR_CHANGED, &ArduinoAiChatPanel::OnSysColourChanged, this);
 }
 
 ArduinoAiChatPanel::~ArduinoAiChatPanel() {
@@ -371,8 +372,9 @@ void ArduinoAiChatPanel::Clear() {
   }
 }
 
-void ArduinoAiChatPanel::OnSysColourChanged() {
+void ArduinoAiChatPanel::OnSysColourChanged(wxSysColourChangedEvent &event) {
   m_historyPanel->Render(/*scrollToEnd=*/false);
+  event.Skip();
 }
 
 void ArduinoAiChatPanel::OnCharHook(wxKeyEvent &event) {

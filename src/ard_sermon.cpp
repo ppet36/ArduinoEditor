@@ -358,6 +358,7 @@ ArduinoSerialMonitorFrame::ArduinoSerialMonitorFrame(wxWindow *parent,
 
   // ---- Bindings for GUI events ----
   Bind(wxEVT_CLOSE_WINDOW, &ArduinoSerialMonitorFrame::OnClose, this);
+  Bind(wxEVT_SYS_COLOUR_CHANGED, &ArduinoSerialMonitorFrame::OnSysColourChanged, this);
 
   m_sendButton->Bind(wxEVT_BUTTON, &ArduinoSerialMonitorFrame::OnSend, this);
   m_inputCtrl->Bind(wxEVT_TEXT_ENTER, &ArduinoSerialMonitorFrame::OnInputEnter, this);
@@ -759,7 +760,8 @@ void ArduinoSerialMonitorFrame::Unblock() {
   }
 }
 
-void ArduinoSerialMonitorFrame::OnSysColourChanged() {
+void ArduinoSerialMonitorFrame::OnSysColourChanged(wxSysColourChangedEvent& event) {
   m_sendButton->SetBitmap(AEGetArtBundle(wxAEArt::GoForward));
   Layout();
+  event.Skip();
 }
