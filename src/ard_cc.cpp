@@ -445,11 +445,6 @@ struct LocKeyHash {
   }
 };
 
-static bool HasSuffix(const std::string &s, const char *suf) {
-  size_t len = std::strlen(suf);
-  return s.size() >= len && s.compare(s.size() - len, len, suf) == 0;
-}
-
 static std::string cxStringToStd(CXString s) {
   const char *c = clang_getCString(s);
   std::string out = c ? c : "";
@@ -1811,6 +1806,8 @@ ClangUnsavedFiles ArduinoCodeCompletion::CreateClangUnsavedFiles(const std::stri
   return uf;
 }
 
+// They will try to get a translation unit at all costs.
+// The result of a long struggle with parsing various Arduino sources.
 CXTranslationUnit ArduinoCodeCompletion::GetTranslationUnit(const std::string &filename,
                                                             const std::string &code,
                                                             int *outAddedLines,
@@ -1847,9 +1844,9 @@ CXTranslationUnit ArduinoCodeCompletion::GetTranslationUnit(const std::string &f
     }
 
     bool isHeader =
-        HasSuffix(uf.mainFilename, ".h") ||
-        HasSuffix(uf.mainFilename, ".hpp") ||
-        HasSuffix(uf.mainFilename, ".hh");
+        hasSuffix(uf.mainFilename, ".h") ||
+        hasSuffix(uf.mainFilename, ".hpp") ||
+        hasSuffix(uf.mainFilename, ".hh");
 
     if (isHeader) {
       args.push_back("-x");
@@ -1858,7 +1855,7 @@ CXTranslationUnit ArduinoCodeCompletion::GetTranslationUnit(const std::string &f
       APP_TRACE_LOG("CC: CLP: c++-header");
     }
 
-    bool isInoMain = HasSuffix(uf.mainFilename, ".ino.cpp");
+    bool isInoMain = hasSuffix(uf.mainFilename, ".ino.cpp");
     if (isInoMain) {
       args.push_back("-include");
       args.push_back("Arduino.h");
@@ -2071,9 +2068,7 @@ std::vector<ArduinoParseError> ArduinoCodeCompletion::ParseCode(const std::strin
   return CollectDiagnosticsLocked(tu);
 }
 
-std::size_t ArduinoCodeCompletion::DiagHashLocked(
-    const std::vector<ArduinoParseError> &errs,
-    const std::string &sketchDir) const {
+std::size_t ArduinoCodeCompletion::DiagHashLocked(const std::vector<ArduinoParseError> &errs, const std::string &sketchDir) const {
 
   std::size_t h = 1469598103934665603ull; // FNV-1a
 
@@ -2108,6 +2103,7 @@ std::size_t ArduinoCodeCompletion::HashCode(const std::string &code) {
 
 // Prefer expansion/presumed location if it points into sketch dir, otherwise keep spelling location.
 // Drop-in replacement for clang_getSpellingLocation used only for diagnostics mapping.
+// It may be a little confusing at first glance, but it can help the user.
 void ArduinoCodeCompletion::AeGetBestDiagLocation(CXSourceLocation loc,
                                                   CXFile *out_file,
                                                   unsigned *out_line,
@@ -2239,7 +2235,7 @@ std::vector<ArduinoParseError> ArduinoCodeCompletion::CollectDiagnosticsLocked(C
   };
 
   auto noteKey = [](const ArduinoParseError &e) -> std::string {
-    // key pro deduplikaci notes (stačí na praktické případy)
+    // key for deduplication of notes (enough for practical cases)
     std::ostringstream os;
     os << e.file << ":" << e.line << ":" << e.column << ":" << e.message;
     return os.str();
@@ -2250,7 +2246,7 @@ std::vector<ArduinoParseError> ArduinoCodeCompletion::CollectDiagnosticsLocked(C
     CXDiagnostic diag = clang_getDiagnostic(tu, i);
     CXDiagnosticSeverity severity = clang_getDiagnosticSeverity(diag);
 
-    // notes samotné přeskočíme (obvykle je přilepíme k předchozímu error/warning)
+    // we skip the notes themselves (usually we paste them to the previous error/warning)
     if (severity == CXDiagnostic_Note || severity == CXDiagnostic_Ignored) {
       clang_disposeDiagnostic(diag);
       ++i;
@@ -2305,7 +2301,7 @@ std::vector<ArduinoParseError> ArduinoCodeCompletion::CollectDiagnosticsLocked(C
 
     clang_disposeDiagnostic(diag);
 
-    // ---------- FILTERING (jen parent) ----------
+    // ---------- FILTERING (only parent) ----------
     if (e.file.empty()) {
       i = j;
       continue;
@@ -3235,7 +3231,7 @@ bool ArduinoCodeCompletion::GetSymbolInfo(const std::string &filename,
     outInfo.file = AbsoluteFilename(filename);
   }
 
-  if (HasSuffix(outInfo.file, ".ino.hpp")) {
+  if (hasSuffix(outInfo.file, ".ino.hpp")) {
     // /path/sketch.ino.hpp -> /path/sketch.ino
     outInfo.file.resize(outInfo.file.size() - 4);
   }
@@ -3628,7 +3624,7 @@ bool ArduinoCodeCompletion::FindDefinition(const std::string &filename, const st
     clang_getSpellingLocation(rloc, &rf, &rl, &rc, &ro);
     if (rf) {
       std::string rfile = cxStringToStd(clang_getFileName(rf));
-      if (HasSuffix(rfile, ".ino.hpp")) {
+      if (hasSuffix(rfile, ".ino.hpp")) {
         refInInoHpp = true;
       }
     }
@@ -3686,7 +3682,7 @@ bool ArduinoCodeCompletion::FindDefinition(const std::string &filename, const st
   }
 
   // 7) Still protection against .ino.hpp - we don't have it in the editor anyway
-  if (HasSuffix(fileName, ".ino.hpp")) {
+  if (hasSuffix(fileName, ".ino.hpp")) {
     // /path/sketch.ino.hpp -> /path/sketch.ino
     fileName.resize(fileName.size() - 4); // strip ".hpp"
   }
@@ -3760,7 +3756,7 @@ static void CollectSymbolOccurrencesInTU(CXTranslationUnit tu,
 
         std::string fileName = cxStringToStd(clang_getFileName(file));
 
-        if (HasSuffix(fileName, ".ino.hpp")) {
+        if (hasSuffix(fileName, ".ino.hpp")) {
           return CXChildVisit_Recurse;
         }
 
@@ -3777,7 +3773,7 @@ static void CollectSymbolOccurrencesInTU(CXTranslationUnit tu,
         }
 
         if (!d->mainFile.empty() && fileName == d->mainFile) {
-          if (HasSuffix(fileName, ".ino.cpp")) {
+          if (hasSuffix(fileName, ".ino.cpp")) {
             fileName.resize(fileName.size() - 4);
           }
         }
@@ -4183,7 +4179,7 @@ bool ArduinoCodeCompletion::FindEnclosingContainerInfo(const std::string &filena
           }
 
           // Protection against .ino.hpp - same as FindDefinition
-          if (HasSuffix(fileName, ".ino.hpp")) {
+          if (hasSuffix(fileName, ".ino.hpp")) {
             fileName.resize(fileName.size() - 4); // cut ".hpp"
           }
 
@@ -4836,7 +4832,7 @@ std::vector<ArduinoParseError> ArduinoCodeCompletion::ComputeProjectDiagnosticsL
 
     // command line extras for header TU / ino TU
     const bool isHeaderTU = isHeaderFile(mainFilename);
-    const bool isInoMain = HasSuffix(mainFilename, ".ino.cpp");
+    const bool isInoMain = hasSuffix(mainFilename, ".ino.cpp");
 
     std::vector<const char *> localArgs = baseArgs;
 

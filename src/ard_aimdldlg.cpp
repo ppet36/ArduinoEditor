@@ -35,6 +35,7 @@
 #include <wx/stc/stc.h>
 #include <wx/textctrl.h>
 #include <wx/wfstream.h>
+#include <thread>
 
 #include <nlohmann/json.hpp>
 
@@ -386,7 +387,6 @@ void ArduinoAiModelDialog::OnTest() {
       ok = client.TestConnection(&err);
     }
 
-    // návrat na UI thread
     CallAfter([this, ok, err]() {
       m_testInProgress.store(false);
 
@@ -419,9 +419,6 @@ void ArduinoAiModelDialog::OnDelete() {
   m_deleted = true;
   EndModal(wxID_DELETE);
 }
-
-// nahoře v cpp budeš potřebovat:
-#include <thread>
 
 void ArduinoAiModelDialog::OnOk() {
   // validate JSON

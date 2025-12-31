@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ArduinoEditor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-31 16:17+0100\n"
+"POT-Creation-Date: 2025-12-31 21:08+0100\n"
 "PO-Revision-Date: 2025-12-09 22:52:00+0100\n"
 "Last-Translator: Pavel Petržela <r17c@seznam.cz>\n"
 "Language-Team: -\n"
@@ -692,9 +692,9 @@ msgstr "%s (dovnitř: %d, ven: %d, celkem: %d) tokenů"
 msgid "Another AI action is running."
 msgstr "Jiná AI akce běží."
 
-#: ../src/ard_ai.cpp:724 ../src/ard_ai.cpp:731 ../src/ard_ai.cpp:2856
-#: ../src/ard_ai.cpp:3166 ../src/ard_ai.cpp:3189 ../src/ard_ai.cpp:3485
-#: ../src/ard_ai.cpp:3554
+#: ../src/ard_ai.cpp:724 ../src/ard_ai.cpp:731 ../src/ard_ai.cpp:2855
+#: ../src/ard_ai.cpp:3165 ../src/ard_ai.cpp:3188 ../src/ard_ai.cpp:3484
+#: ../src/ard_ai.cpp:3553
 msgid "Arduino Editor AI"
 msgstr "Arduino Editor AI"
 
@@ -707,7 +707,7 @@ msgid "Please select some code you want to explain."
 msgstr "Vyberte prosím nějaký kód pro vysvětlení."
 
 #: ../src/ard_ai.cpp:766 ../src/ard_ai.cpp:778 ../src/ard_ai.cpp:800
-#: ../src/ard_ai.cpp:3509
+#: ../src/ard_ai.cpp:3508
 msgid "AI explain selection"
 msgstr "AI vysvětlení"
 
@@ -799,8 +799,8 @@ msgstr "Tento symbol je již zdokumentován."
 #: ../src/ard_ai.cpp:979 ../src/ard_ai.cpp:1061 ../src/ard_ai.cpp:1117
 #: ../src/ard_ai.cpp:1178 ../src/ard_ai.cpp:1189 ../src/ard_ai.cpp:1217
 #: ../src/ard_ai.cpp:1228 ../src/ard_ai.cpp:1237 ../src/ard_ai.cpp:1292
-#: ../src/ard_ai.cpp:1302 ../src/ard_ai.cpp:3454 ../src/ard_ai.cpp:3515
-#: ../src/ard_ai.cpp:3541
+#: ../src/ard_ai.cpp:1302 ../src/ard_ai.cpp:3453 ../src/ard_ai.cpp:3514
+#: ../src/ard_ai.cpp:3540
 msgid "AI generate documentation"
 msgstr "AI generování dokumentace"
 
@@ -850,7 +850,7 @@ msgstr ""
 "Nejsou žádné metody v aktuální třídě, které by potřebovaly dokumentaci."
 
 #: ../src/ard_ai.cpp:1342 ../src/ard_ai.cpp:1358 ../src/ard_ai.cpp:1367
-#: ../src/ard_ai.cpp:1423 ../src/ard_ai.cpp:3547
+#: ../src/ard_ai.cpp:1423 ../src/ard_ai.cpp:3546
 msgid "AI optimize function or method"
 msgstr "AI optimalizace funkce nebo metody"
 
@@ -862,7 +862,7 @@ msgstr "Kurzor není na deklaraci funkce nebo metody."
 msgid "Function or method body range is not available."
 msgstr "Rozsah těla funkce nebo metody není dostupný."
 
-#: ../src/ard_ai.cpp:1497 ../src/ard_ai.cpp:3521
+#: ../src/ard_ai.cpp:1497 ../src/ard_ai.cpp:3520
 msgid "AI solve project errors"
 msgstr "AI řešení chyb projektu"
 
@@ -874,7 +874,7 @@ msgstr "prosím "
 msgid "pls "
 msgstr "pls "
 
-#: ../src/ard_ai.cpp:1784 ../src/ard_ai.cpp:3533
+#: ../src/ard_ai.cpp:1784 ../src/ard_ai.cpp:3532
 msgid "AI interactive chat"
 msgstr "AI interaktivní chat"
 
@@ -908,7 +908,7 @@ msgstr ""
 "\n"
 "<informace API typu %s byla vyžádána>\n"
 
-#: ../src/ard_ai.cpp:2843
+#: ../src/ard_ai.cpp:2842
 msgid ""
 "\n"
 "\n"
@@ -918,11 +918,11 @@ msgstr ""
 "\n"
 "<patch zamítnut: je vyžadováno file_range>\n"
 
-#: ../src/ard_ai.cpp:2855
+#: ../src/ard_ai.cpp:2854
 msgid "AI requested more information too many times."
 msgstr "Počet požadavků na AI překročil nastavený limit."
 
-#: ../src/ard_ai.cpp:3140
+#: ../src/ard_ai.cpp:3139
 msgid ""
 "\n"
 "\n"
@@ -932,15 +932,15 @@ msgstr ""
 "\n"
 "<záplata odmítnuta>"
 
-#: ../src/ard_ai.cpp:3166
+#: ../src/ard_ai.cpp:3165
 msgid "New sketch file can not be created!"
 msgstr "Nepodařilo se vytvořit nový soubor sketche!"
 
-#: ../src/ard_ai.cpp:3188
+#: ../src/ard_ai.cpp:3187
 msgid "AI patch does not apply to the current file."
 msgstr "AI patch nenáleží aktuálnímu souboru."
 
-#: ../src/ard_ai.cpp:3196
+#: ../src/ard_ai.cpp:3195
 #, c-format
 msgid ""
 "\n"
@@ -951,148 +951,148 @@ msgstr ""
 "\n"
 "<úprava provedena v souboru %s>\n"
 
-#: ../src/ard_ai.cpp:3247
+#: ../src/ard_ai.cpp:3246
 #, c-format
 msgid "<info with type %s requested>\n"
 msgstr "<informace API typu %s byla vyžádána>\n"
 
-#: ../src/ard_ai.cpp:3453
+#: ../src/ard_ai.cpp:3452
 msgid "Failed to start AI request for next symbol."
 msgstr "Nepodařilo spustit AI požadavek pro následující symbol."
 
-#: ../src/ard_ai.cpp:3499
+#: ../src/ard_ai.cpp:3498
 msgid "Unknown AI error."
 msgstr "Neznámá AI chyba."
 
-#: ../src/ard_ai.cpp:3508 ../src/ard_ai.cpp:3514 ../src/ard_ai.cpp:3520
-#: ../src/ard_ai.cpp:3532 ../src/ard_ai.cpp:3540 ../src/ard_ai.cpp:3546
-#: ../src/ard_ai.cpp:3553
+#: ../src/ard_ai.cpp:3507 ../src/ard_ai.cpp:3513 ../src/ard_ai.cpp:3519
+#: ../src/ard_ai.cpp:3531 ../src/ard_ai.cpp:3539 ../src/ard_ai.cpp:3545
+#: ../src/ard_ai.cpp:3552
 msgid "AI request failed:\n"
 msgstr "AI požadavek selhal:\n"
 
-#: ../src/ard_aimdldlg.cpp:67
+#: ../src/ard_aimdldlg.cpp:68
 msgid "AI model"
 msgstr "AI model"
 
-#: ../src/ard_aimdldlg.cpp:98
+#: ../src/ard_aimdldlg.cpp:99
 msgid "Name:"
 msgstr "Název:"
 
-#: ../src/ard_aimdldlg.cpp:102
+#: ../src/ard_aimdldlg.cpp:103
 msgid "Endpoint URL:"
 msgstr "URL endpointu:"
 
-#: ../src/ard_aimdldlg.cpp:106
+#: ../src/ard_aimdldlg.cpp:107
 msgid "Model:"
 msgstr "Název modelu:"
 
-#: ../src/ard_aimdldlg.cpp:110
+#: ../src/ard_aimdldlg.cpp:111
 msgid "Maximum AI iterations:"
 msgstr "Maximální počet AI iterací:"
 
-#: ../src/ard_aimdldlg.cpp:116
+#: ../src/ard_aimdldlg.cpp:117
 msgid "Request timeout (seconds, 0 = no limit):"
 msgstr "Časový limit požadavku (v sekundách, 0 = bez omezení):"
 
-#: ../src/ard_aimdldlg.cpp:123
+#: ../src/ard_aimdldlg.cpp:124
 msgid "Force file_range policy (AI must inspect files before PATCH)"
 msgstr ""
 "Vynutit file_range pravidlo (AI se musí podívat na soubor před jeho úpravou)"
 
-#: ../src/ard_aimdldlg.cpp:127
+#: ../src/ard_aimdldlg.cpp:128
 msgid "Keep full AI context (include all requested code and info)"
 msgstr ""
 "Zachovat úplný AI kontext (včetně veškerého vyžádaného kódu a informací)"
 
-#: ../src/ard_aimdldlg.cpp:131
+#: ../src/ard_aimdldlg.cpp:132
 msgid "Limit AI context to last applied change (floating window)"
 msgstr "Omezit AI kontext na poslední provedenou změnu (plovoucí okno)"
 
-#: ../src/ard_aimdldlg.cpp:136
+#: ../src/ard_aimdldlg.cpp:137
 msgid "Authentication"
 msgstr "Autentikace"
 
-#: ../src/ard_aimdldlg.cpp:137
+#: ../src/ard_aimdldlg.cpp:138
 msgid "This endpoint requires an API key"
 msgstr "Tento endpoint vyžaduje API klíč"
 
-#: ../src/ard_aimdldlg.cpp:142
+#: ../src/ard_aimdldlg.cpp:143
 msgid "API key:"
 msgstr "API klíč:"
 
-#: ../src/ard_aimdldlg.cpp:147
+#: ../src/ard_aimdldlg.cpp:148
 msgid "Clear stored key"
 msgstr "Vymazat uložený klíč"
 
-#: ../src/ard_aimdldlg.cpp:153
+#: ../src/ard_aimdldlg.cpp:154
 msgid "The API key is stored using the system's secure keychain."
 msgstr "API klíč je ukládán pomocí systémového zabezpečeného úložiště."
 
-#: ../src/ard_aimdldlg.cpp:159
+#: ../src/ard_aimdldlg.cpp:160
 msgid "Extra request JSON"
 msgstr "Dodatečné JSON parametry"
 
-#: ../src/ard_aimdldlg.cpp:183 ../src/ard_ed_frm.cpp:4077
+#: ../src/ard_aimdldlg.cpp:184 ../src/ard_ed_frm.cpp:4077
 msgid "Delete"
 msgstr "Smazat"
 
-#: ../src/ard_aimdldlg.cpp:184
+#: ../src/ard_aimdldlg.cpp:185
 msgid "Export..."
 msgstr "Exportovat..."
 
-#: ../src/ard_aimdldlg.cpp:185
+#: ../src/ard_aimdldlg.cpp:186
 msgid "Test"
 msgstr "Test"
 
-#: ../src/ard_aimdldlg.cpp:193 ../src/ard_boptdlg.cpp:76
+#: ../src/ard_aimdldlg.cpp:194 ../src/ard_boptdlg.cpp:76
 #: ../src/ard_fmtdlg.cpp:187 ../src/utils.cpp:961
 msgid "OK"
 msgstr "OK"
 
-#: ../src/ard_aimdldlg.cpp:194 ../src/ard_boptdlg.cpp:77
+#: ../src/ard_aimdldlg.cpp:195 ../src/ard_boptdlg.cpp:77
 #: ../src/ard_diff.cpp:126 ../src/ard_ed_frm.cpp:2362 ../src/ard_fmtdlg.cpp:188
 #: ../src/utils.cpp:962
 msgid "Cancel"
 msgstr "Storno"
 
-#: ../src/ard_aimdldlg.cpp:253
+#: ../src/ard_aimdldlg.cpp:254
 msgid "A key is already stored. Leave empty to keep it."
 msgstr "Klíč je již uložen. Ponechte prázdné pro jeho uchování."
 
-#: ../src/ard_aimdldlg.cpp:255
+#: ../src/ard_aimdldlg.cpp:256
 msgid "Enter your API key (will be stored securely)."
 msgstr "Zadejte váš API klíč (bude uložen zabezpečeně)."
 
-#: ../src/ard_aimdldlg.cpp:291
+#: ../src/ard_aimdldlg.cpp:292
 msgid "Export model to JSON"
 msgstr "Export definice modelu do JSON"
 
-#: ../src/ard_aimdldlg.cpp:292 ../src/ard_setdlg.cpp:1760
+#: ../src/ard_aimdldlg.cpp:293 ../src/ard_setdlg.cpp:1760
 msgid "JSON files (*.json)|*.json|All files|*.*"
 msgstr "JSON soubory (*.json)|*.json|Všechny soubory (*.*)|*.*"
 
-#: ../src/ard_aimdldlg.cpp:298
+#: ../src/ard_aimdldlg.cpp:299
 msgid "Failed to write file."
 msgstr "Nepodařilo se zapsat do souboru."
 
-#: ../src/ard_aimdldlg.cpp:298
+#: ../src/ard_aimdldlg.cpp:299
 msgid "Export"
 msgstr "Export"
 
-#: ../src/ard_aimdldlg.cpp:312 ../src/ard_aimdldlg.cpp:431
+#: ../src/ard_aimdldlg.cpp:313 ../src/ard_aimdldlg.cpp:428
 msgid "Invalid JSON"
 msgstr "Chybné JSON"
 
-#: ../src/ard_aimdldlg.cpp:338 ../src/ard_aimdldlg.cpp:439
+#: ../src/ard_aimdldlg.cpp:339 ../src/ard_aimdldlg.cpp:436
 msgid "Endpoint URL is empty."
 msgstr "URL endpointu je prázdné."
 
-#: ../src/ard_aimdldlg.cpp:338 ../src/ard_aimdldlg.cpp:360
-#: ../src/ard_aimdldlg.cpp:439
+#: ../src/ard_aimdldlg.cpp:339 ../src/ard_aimdldlg.cpp:361
+#: ../src/ard_aimdldlg.cpp:436
 msgid "Validation"
 msgstr "Kontrola"
 
-#: ../src/ard_aimdldlg.cpp:360
+#: ../src/ard_aimdldlg.cpp:361
 msgid ""
 "API key is required for this endpoint (no key provided and none stored)."
 msgstr "Tento endpoint vyžaduje API klíč (není zadán ani uložen)."
@@ -1109,7 +1109,7 @@ msgstr "AI Test"
 msgid "Connection test failed."
 msgstr "Připojení se nepodařilo"
 
-#: ../src/ard_aimdldlg.cpp:466
+#: ../src/ard_aimdldlg.cpp:463
 msgid ""
 "System keyring (Secret Service) is not available in this session.\n"
 "\n"
@@ -1128,11 +1128,11 @@ msgstr ""
 "(chybí `DBUS_SESSION_BUS_ADDRESS`) nebo není spuštěn žádný poskytovatel "
 "secret-service."
 
-#: ../src/ard_aimdldlg.cpp:470
+#: ../src/ard_aimdldlg.cpp:467
 msgid "API key not saved"
 msgstr "API klíč není uložen"
 
-#: ../src/ard_aimdldlg.cpp:508
+#: ../src/ard_aimdldlg.cpp:505
 msgid "Failed to save AI API key to the system secret store."
 msgstr "Chyba při ukládání API klíče do systémového zabezpečeného úložiště."
 
@@ -1228,7 +1228,7 @@ msgstr "<nahrávají se programátory...>"
 msgid "<default>"
 msgstr "<výchozí>"
 
-#: ../src/ard_cc.cpp:3066
+#: ../src/ard_cc.cpp:3061
 msgid "Declaration:"
 msgstr "Deklarace:"
 

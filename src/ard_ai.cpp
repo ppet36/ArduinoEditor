@@ -2461,17 +2461,16 @@ bool ArduinoAiActions::ApplyAiPatchToEditor(wxStyledTextCtrl *stc,
 
     bool emptyRange = (h.toLine == 0);
 
-    // pokud to není "prázdný" (0-0) range, trváme na fromLine >= 1
+    // if it is not an "empty" (0-0) range, we insist on fromLine >= 1
     if (!emptyRange && h.fromLine < 1) {
       continue;
     }
 
     if (!emptyRange) {
-      // pokud začátek rozsahu je za koncem souboru, nemá smysl patch aplikovat
+      // if the start of the range is after the end of the file, there is no point in applying the patch
       if (h.fromLine > lineCount) {
         continue;
       }
-      // jen kontrola pořadí; NEKONTROLUJEME už h.toLine > lineCount
       if (h.toLine < h.fromLine) {
         continue;
       }
