@@ -9,7 +9,7 @@ Unicode true
 !define APP_ID          "ArduinoEditor"
 
 Name "${APP_NAME} ${APP_VERSION}"
-OutFile "ArduinoEditorSetup-x64-${APP_VERSION}.exe"
+OutFile "ArduinoEditorSetup-x86_64-${APP_VERSION}.exe"
 
 InstallDir "$PROGRAMFILES64\${APP_NAME}"
 InstallDirRegKey HKLM "Software\${COMPANY}\${APP_ID}" "InstallDir"
