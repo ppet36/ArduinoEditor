@@ -327,6 +327,12 @@ void EditorColorScheme::Load(wxConfigBase *cfg, ThemeMode themeMode) {
           ? wxColour(255, 205, 112)
           : wxColour(255, 160, 0));
 
+  note = ReadEditorColour(
+    cfg, wxT("Note"), themeMode,
+    (themeMode == ThemeMode::AlwaysDark)
+        ? wxColour(86, 156, 214)  // Dark: info blue (#569CD6)
+        : wxColour(0, 102, 204)); // Light: calmer blue (#0066CC)
+
   symbolHighlight = ReadEditorColour(
       cfg, wxT("SymbolHighlight"), themeMode,
       (themeMode == ThemeMode::AlwaysDark)
@@ -389,6 +395,7 @@ void EditorColorScheme::Save(wxConfigBase *cfg, ThemeMode themeMode) {
   WriteEditorColour(cfg, wxT("CalltipBackground"), themeMode, calltipBackground);
   WriteEditorColour(cfg, wxT("Error"), themeMode, error);
   WriteEditorColour(cfg, wxT("Warning"), themeMode, warning);
+  WriteEditorColour(cfg, wxT("Note"), themeMode, note);
   WriteEditorColour(cfg, wxT("SymbolHighlight"), themeMode, symbolHighlight);
   WriteEditorColour(cfg, wxT("AiUserBackground"), themeMode, aiUserBg);
   WriteEditorColour(cfg, wxT("AiAssistantBackground"), themeMode, aiAssistantBg);
@@ -1232,6 +1239,13 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
   m_warningDark = new wxColourPickerCtrl(m_colorsPanel, wxID_ANY, m_settings.colors[1].warning);
   grid->Add(m_warningDark, 1, wxEXPAND);
 
+  // Note
+  grid->Add(new wxStaticText(m_colorsPanel, wxID_ANY, _("Note:")), 0, wxALIGN_CENTER_VERTICAL);
+  m_note = new wxColourPickerCtrl(m_colorsPanel, wxID_ANY, m_settings.colors[0].note);
+  grid->Add(m_note, 1, wxEXPAND);
+  m_noteDark = new wxColourPickerCtrl(m_colorsPanel, wxID_ANY, m_settings.colors[1].note);
+  grid->Add(m_noteDark, 1, wxEXPAND);
+
   // Symbol highlight
   grid->Add(new wxStaticText(m_colorsPanel, wxID_ANY, _("Symbol highlight:")), 0, wxALIGN_CENTER_VERTICAL);
   m_symbolHighlight = new wxColourPickerCtrl(m_colorsPanel, wxID_ANY, m_settings.colors[0].symbolHighlight);
@@ -1951,6 +1965,7 @@ EditorSettings ArduinoEditorSettingsDialog::GetSettings() const {
   s.colors[0].calltipBackground = m_calltipBackground->GetColour();
   s.colors[0].error = m_error->GetColour();
   s.colors[0].warning = m_warning->GetColour();
+  s.colors[0].note = m_note->GetColour();
   s.colors[0].symbolHighlight = m_symbolHighlight->GetColour();
   s.colors[0].aiUserBg = m_aiUserBg->GetColour();
   s.colors[0].aiAssistantBg = m_aiAssistantBg->GetColour();
@@ -1982,6 +1997,7 @@ EditorSettings ArduinoEditorSettingsDialog::GetSettings() const {
   s.colors[1].calltipBackground = m_calltipBackgroundDark->GetColour();
   s.colors[1].error = m_errorDark->GetColour();
   s.colors[1].warning = m_warningDark->GetColour();
+  s.colors[1].note = m_noteDark->GetColour();
   s.colors[1].symbolHighlight = m_symbolHighlightDark->GetColour();
   s.colors[1].aiUserBg = m_aiUserBgDark->GetColour();
   s.colors[1].aiAssistantBg = m_aiAssistantBgDark->GetColour();

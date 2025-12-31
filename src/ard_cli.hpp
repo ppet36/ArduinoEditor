@@ -169,6 +169,16 @@ private:
     bool isCore = false;              // core vs user library (only info)
   };
 
+  // Process termination
+  std::atomic<bool> m_cancelRequested{false};
+  std::mutex m_cancelMtx;
+
+#if defined(__WXMSW__)
+  HANDLE m_runningProcess{NULL};
+#else
+  pid_t m_runningPid{-1};
+#endif
+
   // Cache for ResolveLibraries
   mutable std::mutex m_resolveCacheMutex;
   bool m_hasResolveLibrariesCache = false;
@@ -179,6 +189,7 @@ private:
 
   std::string fqbn;
   std::string sketchPath;
+  bool m_initializedFromCompileCommands = false;
   std::string m_cli = "";
   std::vector<std::string> clangArgs;
   std::string serialPort;
@@ -220,6 +231,11 @@ public:
 
   static int ExecuteCommand(const std::string &cmd, std::string &output);
 
+  inline std::string GetPlatformPath() const { return m_platformPath; }
+
+  // Kill for asynchronous currently running process
+  bool CancelRunning();
+
   // Configurations
   ArduinoCliConfig GetConfig() const;
   bool SetConfigValue(const std::string &key, const std::string &value);
@@ -230,7 +246,7 @@ public:
   bool LoadProperties();
   void LoadPropertiesAsync(wxEvtHandler *handler);
   std::string GetCachedEnviromentFqbn() const;
-  inline bool IsInitializedFromCompileCommands() { return m_platformPath.empty(); }
+  inline bool IsInitializedFromCompileCommands() { return m_initializedFromCompileCommands; }
 
   // board details
   bool LoadBoardParameters();

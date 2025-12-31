@@ -165,8 +165,10 @@ void ThreadNice();
 
 bool LooksLikeIdentifier(const std::string &str);
 
+std::string StripInoGeneratedSuffix(const std::string &filename);
 std::string NormalizeFilename(const std::string &sketchPath, const std::string &filename);
 std::string StripFilename(const std::string &sketchPath, const std::string &filename);
+std::string DiagnosticsFilename(const std::string& sketchPath, const std::string& input, std::size_t keepParts = 3);
 
 bool IsInSketchDir(const std::string &sketchPath, const std::string &file);
 

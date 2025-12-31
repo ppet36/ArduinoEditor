@@ -44,6 +44,7 @@
 #include <wx/richmsgdlg.h>
 #include <wx/textdlg.h>
 #include <wx/tokenzr.h>
+#include <wx/tooltip.h>
 
 #ifndef __WXMSW__
 #include <sys/stat.h> // chmod
@@ -573,8 +574,7 @@ void ArduinoEditorFrame::OnClangArgsReady(wxThreadEvent &event) {
 
     completion->SetReady();
 
-    m_optionsButton->Enable();
-    m_boardChoice->Enable();
+    EnableUIActions(true);
     UpdateBoardText();
 
     UpdateStatus(_("Arduino Clang completion initialized for ") + wxString::FromUTF8(arduinoCli->GetBoardName()));
@@ -634,8 +634,7 @@ void ArduinoEditorFrame::UpdateStatus(const wxString &msg) {
 void ArduinoEditorFrame::UpdateBoard(std::string &fqbn) {
   arduinoCli->SetFQBN(fqbn);
 
-  m_optionsButton->Enable(false);
-  m_boardChoice->Enable(false);
+  EnableUIActions(false);
 
   UpdateBoardText();
 
@@ -1251,13 +1250,14 @@ void ArduinoEditorFrame::CleanProject() {
   arduinoCli->CleanCachedEnvironment();
   arduinoCli->InvalidateLibraryCache();
 
-  m_optionsButton->Enable(false);
-  m_boardChoice->Enable(false);
+  EnableUIActions(false);
 
   if (completion) {
     completion->SetReady(false);
     completion->InvalidateTranslationUnit();
   }
+
+  m_lastSuccessfulCompileCodeSum = 0;
 
   ShowSingleDiagMessage(_("Rebuilding project..."));
 
@@ -1279,6 +1279,13 @@ void ArduinoEditorFrame::CleanProject() {
 
 void ArduinoEditorFrame::OnProjectClean(wxCommandEvent &WXUNUSED(event)) {
   CleanProject();
+}
+
+void ArduinoEditorFrame::OnCliProcessKill(wxCommandEvent &) {
+  APP_DEBUG_LOG("FRM: OnCliProcessKill()");
+  if (arduinoCli) {
+    arduinoCli->CancelRunning();
+  }
 }
 
 wxString ArduinoEditorFrame::GetCurrentActionName() const {
@@ -1353,6 +1360,21 @@ void ArduinoEditorFrame::FinalizeCurrentAction(bool successful) {
       arduinoCli->InvalidateLibraryCache();
       arduinoCli->LoadLibrariesAsync(this);
       break;
+    case build:
+      m_lastSuccessfulCompileCodeSum = 0;
+      if (successful) {
+        std::vector<SketchFileBuffer> files;
+        CollectEditorSources(files);
+        m_lastSuccessfulCompileCodeSum = CcSumCode(files);
+
+        if (m_runUploadAfterCompile) {
+          m_runUploadAfterCompile = false;
+          UploadProject();
+          return;
+        }
+      }
+      m_runUploadAfterCompile = false;
+      break;
     case upload:
       if (m_serialMonitor) {
         m_serialMonitor->Unblock();
@@ -1369,47 +1391,85 @@ void ArduinoEditorFrame::FinalizeCurrentAction(bool successful) {
     default:
       break;
   }
+
+  if (successful) {
+    if (m_lastBottomNotebookSelectedPage != wxNOT_FOUND) {
+      if (m_returnBottomPageTimer.IsRunning()) {
+        m_returnBottomPageTimer.Stop();
+      }
+
+      m_returnBottomPageTimer.Start(1000, wxTIMER_ONE_SHOT);
+    }
+  }
 }
 
 void ArduinoEditorFrame::EnableUIActions(bool enable) {
+  m_boardChoice->Enable(enable);
+  m_optionsButton->Enable(enable);
   m_buildButton->Enable(enable);
   m_uploadButton->Enable(enable);
   m_menuBar->Enable(ID_MENU_PROJECT_BUILD, enable);
   m_menuBar->Enable(ID_MENU_PROJECT_UPLOAD, enable);
+  m_menuBar->Enable(ID_MENU_PROJECT_CLEAN, enable);
 }
 
 void ArduinoEditorFrame::OnProjectBuild(wxCommandEvent &WXUNUSED(event)) {
+  m_runUploadAfterCompile = false;
+  BuildProject();
+}
+
+// returns true if project build started
+bool ArduinoEditorFrame::BuildProject() {
   if (arduinoCli) {
     if (CanPerformAction(build)) {
       if (SaveAll()) {
         if (m_buildOutputCtrl) {
           m_buildOutputCtrl->Clear();
         }
+
         SetCurrentAction(build);
-        StartProcess(_("Building project..."), ID_PROCESS_CLI, ArduinoActivityState::Busy);
+        StartProcess(_("Building project..."), ID_PROCESS_CLI, ArduinoActivityState::Busy, /*canBeTerminated=*/true);
         arduinoCli->CompileAsync(this);
+        return true;
       }
     }
   }
+  return false;
 }
 
 void ArduinoEditorFrame::OnProjectUpload(wxCommandEvent &WXUNUSED(event)) {
+  std::vector<SketchFileBuffer> files;
+  CollectEditorSources(files);
+  uint64_t currentSum = CcSumCode(files);
+  if (currentSum != m_lastSuccessfulCompileCodeSum) {
+    if (BuildProject()) {
+      m_runUploadAfterCompile = true;
+    }
+  } else {
+    UploadProject();
+  }
+}
+
+bool ArduinoEditorFrame::UploadProject() {
   if (arduinoCli) {
     if (CanPerformAction(upload)) {
       if (SaveAll()) {
         if (m_buildOutputCtrl) {
           m_buildOutputCtrl->Clear();
         }
+
         SetCurrentAction(upload);
         if (m_serialMonitor) {
           m_serialMonitor->Block();
         }
 
-        StartProcess(_("Uploading project..."), ID_PROCESS_CLI, ArduinoActivityState::Background);
+        StartProcess(_("Uploading project..."), ID_PROCESS_CLI, ArduinoActivityState::Background, /*canBeTerminated=*/true);
         arduinoCli->UploadAsync(this);
+        return true;
       }
     }
   }
+  return false;
 }
 
 void ArduinoEditorFrame::OnCmdLineOutput(wxCommandEvent &event) {
@@ -1446,14 +1506,6 @@ void ArduinoEditorFrame::OnCmdLineOutput(wxCommandEvent &event) {
   if (txt.StartsWith(wxT("[arduino-cli "))) {
     StopProcess(ID_PROCESS_CLI);
     FinalizeCurrentAction(true);
-
-    if (m_lastBottomNotebookSelectedPage != wxNOT_FOUND) {
-      if (m_returnBottomPageTimer.IsRunning()) {
-        m_returnBottomPageTimer.Stop();
-      }
-
-      m_returnBottomPageTimer.Start(1000, wxTIMER_ONE_SHOT);
-    }
   }
 }
 
@@ -1643,7 +1695,7 @@ void ArduinoEditorFrame::OnDiagnosticsUpdated(wxThreadEvent &WXUNUSED(evt)) {
     case completeProject:
       errors = completion->GetLastProjectErrors();
       break;
-    default: // noCompletion
+    default:
       m_firstInitCompleted = true;
       ShowSingleDiagMessage(_("Diagnostics turned off."));
       return;
@@ -1654,43 +1706,54 @@ void ArduinoEditorFrame::OnDiagnosticsUpdated(wxThreadEvent &WXUNUSED(evt)) {
   errorCount = errors.size();
   APP_DEBUG_LOG("FRM: OnDiagnosticsUpdated: %d diagnostics", errorCount);
 
-  for (const auto &e : errors) {
-    APP_DEBUG_LOG("FRM: OnDiag:  sev=%d %s:%u:%u: %s",
-                  (int)e.severity,
-                  e.file.c_str(),
-                  (unsigned)e.line,
-                  (unsigned)e.column,
-                  e.message.c_str());
-  }
-
   if (errors.empty()) {
     ShowSingleDiagMessage(_("No problems found."));
     return;
   }
 
+  std::vector<ArduinoParseError> dispDiagnostic;
+  for (auto &diag : errors) {
+    dispDiagnostic.push_back(diag);
+    for (auto &child : diag.childs) {
+      dispDiagnostic.push_back(child);
+    }
+  }
+
+  for (const auto &e : dispDiagnostic) {
+    APP_DEBUG_LOG("FRM: OnDiag:  %s", e.ToString().c_str());
+  }
+
+
   m_diagListCtrl->Freeze();
   m_diagListCtrl->DeleteAllItems();
 
-  // There are some errors -> we fill them normally
   std::string sketchRoot = arduinoCli->GetSketchPath();
 
   long row = 0;
-  for (size_t i = 0; i < errors.size(); ++i) {
-    const auto &e = errors[i];
+  for (size_t i = 0; i < dispDiagnostic.size(); ++i) {
+    const auto &e = dispDiagnostic[i];
 
-    wxString file = wxString::FromUTF8(StripFilename(sketchRoot, e.file));
+    wxString file = wxString::FromUTF8(DiagnosticsFilename(sketchRoot, e.file));
 
     wxString lineStr = wxString::Format(wxT("%u"), (unsigned)e.line);
     wxString colStr = wxString::Format(wxT("%u"), (unsigned)e.column);
     wxString msg = wxString::FromUTF8(e.message.c_str());
 
-    auto sev = static_cast<int>(e.severity);
-    int image = -1;
-    if (sev == static_cast<int>(CXDiagnostic_Error) ||
-        sev == static_cast<int>(CXDiagnostic_Fatal)) {
-      image = m_imgError;
-    } else if (sev == static_cast<int>(CXDiagnostic_Warning)) {
-      image = m_imgWarning;
+    int image;
+    switch (e.severity) {
+      case CXDiagnostic_Error:
+      case CXDiagnostic_Fatal:
+        image = m_imgError;
+        break;
+      case CXDiagnostic_Warning:
+        image = m_imgWarning;
+        break;
+      case CXDiagnostic_Note:
+        image = m_imgNote;
+        break;
+      default:
+        image = -1;
+        break;
     }
 
     long idx = m_diagListCtrl->InsertItem(row, wxEmptyString, image);
@@ -1732,7 +1795,7 @@ void ArduinoEditorFrame::OnDiagnosticsUpdated(wxThreadEvent &WXUNUSED(evt)) {
     ed->AddDiagnosticUnderline(e.line, e.column, isError);
   }
 
-  m_currentDiagErrors = errors;
+  m_currentDiagErrors = dispDiagnostic;
 
   CheckMissingHeadersInDiagnostics(errors);
 }
@@ -1988,8 +2051,9 @@ void ArduinoEditorFrame::OnLibrariesFound(wxThreadEvent &evt) {
             wxYES_NO | wxYES_DEFAULT | wxICON_QUESTION);
 
         if (res == wxID_YES) {
-          SaveAll();
-          CleanProject();
+          if (SaveAll()) {
+            CleanProject();
+          }
         }
         return;
       }
@@ -2072,6 +2136,9 @@ void ArduinoEditorFrame::OnInstalledLibrariesUpdated(wxThreadEvent &evt) {
   if (m_examplesFrame) {
     m_examplesFrame->RefreshLibraries();
   }
+
+  // Reset successful compile sum
+  m_lastSuccessfulCompileCodeSum = 0;
 
   if (m_clangSettings.resolveMode == compileCommandsResolver) {
     if (m_firstInitCompleted) {
@@ -2187,6 +2254,8 @@ void ArduinoEditorFrame::OnAvailableBoardsUpdated(wxThreadEvent &evt) {
 }
 
 void ArduinoEditorFrame::ResolveLibrariesOrDiagnostics() {
+  APP_DEBUG_LOG("FRM: ResolveLibrariesOrDiagnostics()");
+
   if (m_clangSettings.resolveMode == compileCommandsResolver) {
     // If the compile commands resolver is used, the libraries are
     // already evaluated in it, so we can start diagnostics straight away.
@@ -2194,7 +2263,6 @@ void ArduinoEditorFrame::ResolveLibrariesOrDiagnostics() {
     return;
   }
 
-  APP_DEBUG_LOG("FRM: ResolveLibrariesOrDiagnostics()");
   StartProcess(_("Resolving libraries..."), ID_PROCESS_RESOLVE_LIBRARIES, ArduinoActivityState::Background);
 
   std::vector<SketchFileBuffer> files;
@@ -2347,6 +2415,7 @@ void ArduinoEditorFrame::BindEvents() {
   Bind(EVT_CLANG_ARGS_READY, &ArduinoEditorFrame::OnClangArgsReady, this);
 
   m_statusBar->Bind(wxEVT_SIZE, &ArduinoEditorFrame::OnStatusBarSize, this);
+  m_statusBar->Bind(EVT_PROCESS_TERMINATE_REQUEST, &ArduinoEditorFrame::OnCliProcessKill, this);
   m_boardChoice->Bind(wxEVT_CHOICE, &ArduinoEditorFrame::OnBoardChoiceChanged, this);
   m_optionsButton->Bind(wxEVT_BUTTON, &ArduinoEditorFrame::OnChangeBoardOptions, this);
   m_optionsButton->Bind(wxEVT_BUTTON, &ArduinoEditorFrame::OnChangeBoardOptions, this);
@@ -2513,7 +2582,7 @@ wxMenuBar *ArduinoEditorFrame::CreateMenuBar() {
 #else
                      wxAEArt::Quit
 #endif
-);
+  );
 
   // Tools / Navigation menu
   wxMenu *navMenu = new wxMenu();
@@ -2719,7 +2788,7 @@ void ArduinoEditorFrame::InitComponents() {
 
   int widths[2] = {
       -1,
-      26};
+      32};
   m_statusBar->SetStatusWidths(2, widths);
 
   if (m_statusBar) {
@@ -2760,6 +2829,7 @@ void ArduinoEditorFrame::InitComponents() {
   addToolBmpBtn(m_optionsButton, wxAEArt::Settings, _("Development board options"));
   toolbarSizer->AddSpacer(5);
   addToolBmpBtn(m_buildButton, wxAEArt::Check, _("Build sketch (Ctrl+R)"));
+  toolbarSizer->AddSpacer(5);
   addToolBmpBtn(m_uploadButton, wxAEArt::Play, _("Upload sketch (Ctrl+U)"));
 
   m_portChoice = new wxChoice(toolbarPanel, wxID_ANY);
@@ -2815,9 +2885,11 @@ void ArduinoEditorFrame::InitComponents() {
   m_diagImageList = new wxImageList(fontSize, fontSize, false);
   wxBitmap bmpErr = ArduinoEditor::MakeCircleBitmap(fontSize, settings.GetColors().error, wxColour(0, 0, 0), 0);
   wxBitmap bmpWarning = ArduinoEditor::MakeCircleBitmap(fontSize, settings.GetColors().warning, wxColour(0, 0, 0), 0);
+  wxBitmap bmpNote = ArduinoEditor::MakeCircleBitmap(fontSize, settings.GetColors().note, wxColour(0, 0, 0), 0);
 
   m_imgError = m_diagImageList->Add(bmpErr);
   m_imgWarning = m_diagImageList->Add(bmpWarning);
+  m_imgNote = m_diagImageList->Add(bmpNote);
 
   m_diagListCtrl->AssignImageList(m_diagImageList, wxIMAGE_LIST_SMALL);
 
@@ -2977,7 +3049,6 @@ ArduinoEditor *ArduinoEditorFrame::FindEditorWithFile(const std::string &filenam
 
     std::string edfn = editor->GetFilePath();
     if (edfn == targetFile) {
-      APP_DEBUG_LOG("FRM: FindEditorWithFile() FOUND", edfn.c_str());
       return editor;
     }
   }
@@ -3826,31 +3897,35 @@ void ArduinoEditorFrame::OnSysColoursChanged(wxSysColourChangedEvent &evt) {
   m_refreshPortsButton->SetBitmap(AEGetArtBundle(wxAEArt::Refresh));
   m_serialMonitorButton->SetBitmap(AEGetArtBundle(wxAEArt::SerMon));
 
-
-  auto ReplaceMenuItemBitmap = [this](int id, const wxArtID& bitmapId) {
+  auto ReplaceMenuItemBitmap = [this](int id, const wxArtID &bitmapId) {
     auto bmp = AEGetArtBundle(bitmapId);
-    wxMenu* menu = nullptr;
-    wxMenuItem* item = m_menuBar->FindItem(id, &menu);
-    if (!item || !menu) return;
+    wxMenu *menu = nullptr;
+    wxMenuItem *item = m_menuBar->FindItem(id, &menu);
+    if (!item || !menu)
+      return;
 
     // find index (pos) of the item inside this menu
-    auto FindPos = [](wxMenu* m, int itemId) -> int {
-      if (!m) return wxNOT_FOUND;
-      const wxMenuItemList& items = m->GetMenuItems();
+    auto FindPos = [](wxMenu *m, int itemId) -> int {
+      if (!m)
+        return wxNOT_FOUND;
+      const wxMenuItemList &items = m->GetMenuItems();
       int pos = 0;
       for (auto node = items.GetFirst(); node; node = node->GetNext(), ++pos) {
-        wxMenuItem* it = node->GetData();
-        if (it && it->GetId() == itemId) return pos;
+        wxMenuItem *it = node->GetData();
+        if (it && it->GetId() == itemId)
+          return pos;
       }
       return wxNOT_FOUND;
     };
 
     int pos = FindPos(menu, id);
-    if (pos == wxNOT_FOUND) return;
+    if (pos == wxNOT_FOUND)
+      return;
 
     // Remove returns the item pointer; it does NOT delete it
-    wxMenuItem* removed = menu->Remove(id);
-    if (!removed) return;
+    wxMenuItem *removed = menu->Remove(id);
+    if (!removed)
+      return;
 
     removed->SetBitmap(bmp);
     menu->Insert(pos, removed);
@@ -4262,9 +4337,9 @@ void ArduinoEditorFrame::UpdateSketchesDir(const wxString &sketchDir) {
   RebuildSketchesDirMenu();
 }
 
-void ArduinoEditorFrame::StartProcess(const wxString &name, int id, ArduinoActivityState state) {
+void ArduinoEditorFrame::StartProcess(const wxString &name, int id, ArduinoActivityState state, bool canBeTerminated) {
   if (m_indic) {
-    m_indic->StartProcess(name, id, state);
+    m_indic->StartProcess(name, id, state, canBeTerminated);
   }
 }
 

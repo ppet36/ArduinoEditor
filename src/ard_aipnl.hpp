@@ -36,7 +36,6 @@ public:
 
   void Clear();
 
-
 private:
   wxConfigBase *m_config;
   ArduinoMarkdownPanel *m_historyPanel;

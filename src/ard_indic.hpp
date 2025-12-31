@@ -41,7 +41,7 @@ public:
   ArduinoActivityState GetState() const { return m_state; }
 
   void EnablePulse(bool enable);
-  void StartProcess(const wxString &name, int id, ArduinoActivityState state);
+  void StartProcess(const wxString &name, int id, ArduinoActivityState state, bool canBeTerminated = false);
   void StopProcess(int id);
   void StopAllProcesses();
 
@@ -51,6 +51,8 @@ private:
   void OnPaint(wxPaintEvent &event);
   void OnSize(wxSizeEvent &event);
   void OnTimer(wxTimerEvent &event);
+  void OnMouseClick(wxMouseEvent &event);
+  void OnPopupMenu(wxCommandEvent& event);
 
   void UpdateTooltip();
   wxString BuildTooltipText() const;
@@ -58,8 +60,9 @@ private:
   wxColour GetDotColour() const;
   int GetDotRadius() const;
 
-  void StartTimerIfNeeded();
-  void StopTimerIfNeeded();
+  bool ShouldPulse() const;
+  void AfterStateChanged();
+  void UpdatePulseTimer();
 
   void RecomputeStateFromProcesses();
 
@@ -67,6 +70,7 @@ private:
   struct ActivityProcess {
     int id{0};
     wxString name;
+    bool canBeTerminated{false};
     ArduinoActivityState state{ArduinoActivityState::Background};
   };
 

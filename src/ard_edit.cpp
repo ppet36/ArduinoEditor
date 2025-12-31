@@ -122,6 +122,116 @@ static wxString BuildCompletionList(const std::vector<CompletionItem> &completio
   return list;
 }
 
+// --- Identifier helpers used by symbol-highlight code ------------------------
+
+static inline bool AEIsSpaceChar(int c) {
+  return (c == ' ' || c == '\t' || c == '\r' || c == '\n');
+}
+
+static inline bool AEIsIdentStart(unsigned char c) {
+  return (c == '_') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+}
+
+static inline bool AEIsIdentChar(unsigned char c) {
+  return (c == '_') ||
+         (c >= 'A' && c <= 'Z') ||
+         (c >= 'a' && c <= 'z') ||
+         (c >= '0' && c <= '9');
+}
+
+struct AeIdentSpan {
+  int symPos = -1;  // position used for line/col (may be caret-1 if caret is just after identifier)
+  int start  = -1;  // identifier start
+  int end    = -1;  // identifier end (exclusive)
+};
+
+static bool AEValidateIdentifierSpan(wxStyledTextCtrl *ed, int start, int end, int textLen) {
+  if (!ed || start < 0 || end <= start || end > textLen) {
+    return false;
+  }
+
+  unsigned char c0 = (unsigned char)ed->GetCharAt(start);
+  if (!AEIsIdentStart(c0)) {
+    return false;
+  }
+
+  for (int p = start; p < end; ++p) {
+    if (!AEIsIdentChar((unsigned char)ed->GetCharAt(p))) {
+      return false;
+    }
+  }
+  return true;
+}
+
+// Extract a valid C/C++ identifier at/near caret.
+// - Reject whitespace.
+// - Allow caret just after identifier (e.g. "foo(|", "foo;|") by backing up one char.
+// - Uses STC WordStart/WordEnd but then *strictly validates* by AEIsIdent* rules.
+static bool AEExtractIdentifierAtOrBeforeCaret(wxStyledTextCtrl *ed,
+                                              int caretPos,
+                                              AeIdentSpan &out,
+                                              int textLen) {
+  if (!ed || textLen <= 0) {
+    return false;
+  }
+
+  int symPos = caretPos;
+  if (symPos < 0 || symPos >= textLen) {
+    return false;
+  }
+
+  const int c0 = ed->GetCharAt(symPos);
+
+  if (AEIsSpaceChar(c0)) {
+    return false;
+  }
+
+  // Allow caret just *after* identifier (e.g. foo(|, foo; foo) etc.)
+  if (!AEIsIdentChar((unsigned char)c0) && symPos > 0) {
+    const int cPrev = ed->GetCharAt(symPos - 1);
+    if (AEIsIdentChar((unsigned char)cPrev)) {
+      symPos--;
+    }
+  }
+
+  if (symPos < 0 || symPos >= textLen) {
+    return false;
+  }
+  if (!AEIsIdentChar((unsigned char)ed->GetCharAt(symPos))) {
+    return false;
+  }
+
+  const int wordStart = ed->WordStartPosition(symPos, true);
+  const int wordEnd   = ed->WordEndPosition(symPos, true);
+  if (!AEValidateIdentifierSpan(ed, wordStart, wordEnd, textLen)) {
+    return false;
+  }
+
+  out.symPos = symPos;
+  out.start  = wordStart;
+  out.end    = wordEnd;
+  return true;
+}
+
+// Clang JumpTarget for occurrences points to the *start* of the symbol.
+// So in OnSymbolOccurrencesReady we can compute length by scanning only forward.
+static int AEIdentifierLengthFrom(wxStyledTextCtrl *ed, int startPos, int textLen) {
+  if (!ed || startPos < 0 || startPos >= textLen) {
+    return 0;
+  }
+
+  unsigned char c0 = (unsigned char)ed->GetCharAt(startPos);
+  if (!AEIsIdentStart(c0)) {
+    return 0;
+  }
+
+  int p = startPos + 1;
+  while (p < textLen && AEIsIdentChar((unsigned char)ed->GetCharAt(p))) {
+    ++p;
+  }
+  return p - startPos;
+}
+
 } // namespace
 
 // -------------------------------------------------------------------------------
@@ -813,7 +923,6 @@ void ArduinoEditor::ShowUsagesPopup(const std::vector<JumpTarget> &usages) {
 void ArduinoEditor::OnAutoCompSelection(wxStyledTextEvent &evt) {
   auto *stc = static_cast<wxStyledTextCtrl *>(evt.GetEventObject());
 
-  // Ns zajm jen reim "usages"
   if (m_popupMode != PopupMode::Usages) {
     evt.Skip();
     return;
@@ -825,8 +934,7 @@ void ArduinoEditor::OnAutoCompSelection(wxStyledTextEvent &evt) {
   stc->AutoCompCancel();
   m_popupMode = PopupMode::None;
 
-  if (currentIndex < 0 ||
-      currentIndex >= (int)m_lastUsages.size()) {
+  if (currentIndex < 0 || currentIndex >= (int)m_lastUsages.size()) {
     return;
   }
 
@@ -843,6 +951,12 @@ void ArduinoEditor::OnAutoCompSelection(wxStyledTextEvent &evt) {
 void ArduinoEditor::OnAutoCompCancelled(wxStyledTextEvent &evt) {
   APP_DEBUG_LOG("EDIT: AUTOCOMP_CANCELLED (popupMode was %d)", (int)m_popupMode);
   m_popupMode = PopupMode::None;
+
+  ArduinoEditorFrame *frame = GetOwnerFrame();
+  if (frame && !m_clangSettings.resolveDiagOnlyAfterSave) {
+    frame->ScheduleDiagRefresh();
+  }
+
   evt.Skip();
 }
 
@@ -1950,7 +2064,9 @@ void ArduinoEditor::OnEditorUpdateUI(wxStyledTextEvent &event) {
     m_symbolTimer.Stop();
   }
 
-  m_symbolTimer.Start(500, wxTIMER_ONE_SHOT);
+  if (!m_editor->AutoCompActive()) {
+    m_symbolTimer.Start(500, wxTIMER_ONE_SHOT);
+  }
 
   if (m_symbolOverview) {
     m_symbolOverview->Refresh();
@@ -1962,39 +2078,43 @@ void ArduinoEditor::OnSymbolTimer(wxTimerEvent &WXUNUSED(event)) {
     return;
   }
 
-  // caret moves, ignore
-  int curPos = m_editor->GetCurrentPos();
+  const int textLen = m_editor->GetTextLength();
+
+  // caret moves, ignore (but also clear cached positions)
+  const int curPos = m_editor->GetCurrentPos();
   if (curPos != m_lastSymbolPos) {
     m_symbolOccPositions.clear();
     return;
   }
 
-  // if we stand on any of the highlighted occurrences, we will not redraw anything
+  if (!m_symbolHighlightEnabled || textLen == 0) {
+    ClearSymbolOccurrences();
+    return;
+  }
+
+  // ---- Fast "meaningful symbol under caret?" filter ----
+  AeIdentSpan id;
+  if (!AEExtractIdentifierAtOrBeforeCaret(m_editor, curPos, id, textLen)) {
+    ClearSymbolOccurrences();
+    return;
+  }
+
+  const int wordStart = id.start;
+  const int symPos    = id.symPos;
+
+  // ---- Reuse check: if caret is inside an already highlighted occurrence, don't re-query ----
+  // m_symbolOccPositions stores *start positions* of occurrences. So reuse should be based on current wordStart.
   if (!m_symbolOccPositions.empty()) {
-    auto it = std::find(m_symbolOccPositions.begin(),
-                        m_symbolOccPositions.end(),
-                        curPos);
+    auto it = std::find(m_symbolOccPositions.begin(), m_symbolOccPositions.end(), wordStart);
     if (it != m_symbolOccPositions.end()) {
-      APP_DEBUG_LOG("EDIT: SymbolHighlight: caret on existing occurrence -> reuse, no async query");
+      APP_DEBUG_LOG("EDIT: SymbolHighlight: caret in existing symbol -> reuse, no async query");
       return;
     }
   }
 
-  const int textLen = m_editor->GetTextLength();
-
-  if (!m_symbolHighlightEnabled) {
-    m_symbolOccPositions.clear();
-    return;
-  }
-
-  if (textLen == 0) {
-    m_symbolOccPositions.clear();
-    return;
-  }
-
-  int line = 0;
-  int column = 0;
-  GetCurrentCursor(line, column); // 1-based
+  // Build 1-based (line, column) from the symbol position (symPos), not necessarily caret pos.
+  const int line = m_editor->LineFromPosition(symPos) + 1;
+  const int column = m_editor->GetColumn(symPos) + 1;
 
   std::string code = wxToStd(m_editor->GetText());
 
@@ -2011,6 +2131,19 @@ void ArduinoEditor::OnSymbolTimer(wxTimerEvent &WXUNUSED(event)) {
                                          seq);
 }
 
+void ArduinoEditor::ClearSymbolOccurrences() {
+  const int textLen = m_editor->GetTextLength();
+
+  m_editor->SetIndicatorCurrent(STC_INDIC_SYMBOL_OCCURRENCE);
+  m_editor->IndicatorClearRange(0, textLen);
+
+  if (m_symbolOverview) {
+    m_symbolOverview->ClearMarker(ESM_SYMBOL);
+  }
+
+  m_symbolOccPositions.clear();
+}
+
 void ArduinoEditor::OnSymbolOccurrencesReady(wxThreadEvent &event) {
   uint64_t seq = (uint64_t)event.GetInt();
 
@@ -2023,43 +2156,37 @@ void ArduinoEditor::OnSymbolOccurrencesReady(wxThreadEvent &event) {
 
   const int textLen = m_editor->GetTextLength();
 
+  // If caret moved since we requested this async query, ignore the result.
+  const int curPos = m_editor->GetCurrentPos();
+  if (curPos != m_lastSymbolPos) {
+    APP_DEBUG_LOG("EDIT: SymbolHighlight: async result but caret moved -> ignore");
+    return;
+  }
+
+  // Same identifier-under-caret validation as in OnSymbolTimer.
+  AeIdentSpan caretId;
+  if (!AEExtractIdentifierAtOrBeforeCaret(m_editor, curPos, caretId, textLen)) {
+    ClearSymbolOccurrences();
+    APP_DEBUG_LOG("EDIT: SymbolHighlight: async result but caret not on identifier -> clear");
+    return;
+  }
+
   // If the editor is empty or highlight is turned off -> we just delete any old highlights
   if (!m_symbolHighlightEnabled || textLen == 0) {
-    m_editor->SetIndicatorCurrent(STC_INDIC_SYMBOL_OCCURRENCE);
-    m_editor->IndicatorClearRange(0, textLen);
-    if (m_symbolOverview) {
-      m_symbolOverview->ClearMarker(ESM_SYMBOL);
-    }
-    m_symbolOccPositions.clear();
-
+    ClearSymbolOccurrences();
     APP_DEBUG_LOG("EDIT: SymbolHighlight: disabled or empty editor");
     return;
   }
 
   // If there are no occurrences, we just clean it up too
   if (occurrences.empty()) {
-    m_editor->SetIndicatorCurrent(STC_INDIC_SYMBOL_OCCURRENCE);
-    m_editor->IndicatorClearRange(0, textLen);
-    if (m_symbolOverview) {
-      m_symbolOverview->ClearMarker(ESM_SYMBOL);
-    }
-    m_symbolOccPositions.clear();
-
+    ClearSymbolOccurrences();
     APP_DEBUG_LOG("EDIT: SymbolHighlight: no symbol occurrences for async result");
     return;
   }
 
   APP_DEBUG_LOG("EDIT: SymbolHighlight: %zu occurrences (async)",
                 occurrences.size());
-
-  auto isDelim = [this, textLen](int p) -> bool {
-    if (p < 0 || p >= textLen)
-      return true;
-    wxChar ch = m_editor->GetCharAt(p);
-    return wxIsspace(ch) || ch == '(' || ch == ')' || ch == '{' || ch == '}' ||
-           ch == ';' || ch == ',' || ch == '.' || ch == ':' || ch == '[' ||
-           ch == ']';
-  };
 
   int lineCount = m_editor->GetLineCount();
 
@@ -2108,16 +2235,7 @@ void ArduinoEditor::OnSymbolOccurrencesReady(wxThreadEvent &event) {
       pos = textLen - 1;
 
     int start = pos;
-    int end = pos;
-
-    while (start > 0 && !isDelim(start - 1)) {
-      --start;
-    }
-    while (end < textLen && !isDelim(end)) {
-      ++end;
-    }
-
-    int len = end - start;
+    int len = AEIdentifierLengthFrom(m_editor, start, textLen);
     if (len <= 0) {
       continue;
     }
@@ -2137,13 +2255,7 @@ void ArduinoEditor::OnSymbolOccurrencesReady(wxThreadEvent &event) {
 
   // It could be that all occurrences were in different files
   if (ranges.empty()) {
-    m_editor->SetIndicatorCurrent(STC_INDIC_SYMBOL_OCCURRENCE);
-    m_editor->IndicatorClearRange(0, textLen);
-    if (m_symbolOverview) {
-      m_symbolOverview->ClearMarker(ESM_SYMBOL);
-    }
-    m_symbolOccPositions.clear();
-
+    ClearSymbolOccurrences();
     APP_DEBUG_LOG("EDIT: SymbolHighlight: no occurrences in this file");
     return;
   }

@@ -252,6 +252,11 @@ wxBitmapBundle ArduinoArtProvider::CreateBitmapBundle(const wxArtID &id, const w
     x20 = dark ? mdi_update_dark_20 : mdi_update_light_20;
     x24 = dark ? mdi_update_dark_24 : mdi_update_light_24;
     x32 = dark ? mdi_update_dark_32 : mdi_update_light_32;
+  } else if (id == wxAEArt::Close) {
+    x16 = dark ? mdi_close_dark_16 : mdi_close_light_16;
+    x20 = dark ? mdi_close_dark_20 : mdi_close_light_20;
+    x24 = dark ? mdi_close_dark_24 : mdi_close_light_24;
+    x32 = dark ? mdi_close_dark_32 : mdi_close_light_32;
   }
 
   if (!x16 || !x32 || !x24 || !x20)

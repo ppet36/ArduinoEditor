@@ -43,6 +43,8 @@ struct CompletionItem {
 
   std::string file;
   bool fromSketch = false;
+
+  std::vector<CompletionItem> overloads;
 };
 
 struct ArduinoParseError {
@@ -51,6 +53,7 @@ struct ArduinoParseError {
   unsigned column;
   std::string message;
   CXDiagnosticSeverity severity;
+  std::vector<ArduinoParseError> childs; // clang notes for main error/warning
 
   std::string ToString() const;
 };
@@ -256,7 +259,7 @@ private:
 
   std::size_t DiagHashLocked(const std::vector<ArduinoParseError> &errs, const std::string &sketchDir) const;
   std::vector<ArduinoParseError> CollectDiagnosticsLocked(CXTranslationUnit tu) const;
-  static std::size_t ComputeDiagHash(const std::vector<ArduinoParseError> &errs, const std::string &sketchDir);
+  static std::size_t ComputeDiagHash(const std::vector<ArduinoParseError> &errs);
   void NotifyDiagnosticsChangedLocked(const std::vector<ArduinoParseError> &errs);
 
   bool FindSiblingFunctionDefinition(CXCursor declCursor, JumpTarget &out);
@@ -271,6 +274,8 @@ private:
   bool TryCollectSketchFiles(std::vector<SketchFileBuffer> &outFiles) const;
   std::vector<std::string> GetCompilerArgs(const std::vector<SketchFileBuffer> &files) const;
   std::vector<std::string> GetCompilerArgs() const;
+
+  void AeGetBestDiagLocation(CXSourceLocation loc, CXFile *out_file, unsigned *out_line, unsigned *out_column, unsigned *out_offset) const;
 
 public:
   ArduinoCodeCompletion(ArduinoCli *ardCli, const ClangSettings &clangSettings, wxEvtHandler *eventHandler);

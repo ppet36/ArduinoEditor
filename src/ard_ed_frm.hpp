@@ -113,12 +113,16 @@ private:
   SketchFilesPanel *m_filesPanel = nullptr;
   ArduinoAiChatPanel *m_aiPanel = nullptr;
 
+  // Kill async cli stream
+  void OnCliProcessKill(wxCommandEvent &);
+
   std::vector<wxString> m_sketchesPaths;
   std::vector<wxString> m_recentSketches;
   wxMenu *m_recentMenu = nullptr;
 
   int m_imgError = -1;
   int m_imgWarning = -1;
+  int m_imgNote = -1;
 
   wxTimer m_diagTimer;
 
@@ -126,6 +130,9 @@ private:
   void OnReturnBottomPageTimer(wxTimerEvent &);
 
   std::vector<ArduinoParseError> m_currentDiagErrors;
+
+  uint64_t m_lastSuccessfulCompileCodeSum = 0;
+  bool m_runUploadAfterCompile = false;
 
   CurrentAction m_action = none;
 
@@ -198,7 +205,9 @@ private:
   // Project menu
   void OnProjectClean(wxCommandEvent &event);
   void CleanProjectIfFqbnChanged(const std::string &newFqbn);
+  bool BuildProject();
   void OnProjectBuild(wxCommandEvent &event);
+  bool UploadProject();
   void OnProjectUpload(wxCommandEvent &event);
   void OnCmdLineOutput(wxCommandEvent &event);
 
@@ -313,7 +322,7 @@ public:
   bool IsProjectFile(const std::string &filePath);
 
   // Progress inication
-  void StartProcess(const wxString &name, int id, ArduinoActivityState state);
+  void StartProcess(const wxString &name, int id, ArduinoActivityState state, bool canBeTerminated = false);
   void StopProcess(int id);
 
   // Rebuild project

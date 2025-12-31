@@ -87,6 +87,7 @@ struct EditorColorScheme {
   wxColour calltipBackground;
   wxColour error;
   wxColour warning;
+  wxColour note;
   wxColour symbolHighlight;
   wxColour aiUserBg;
   wxColour aiAssistantBg;
@@ -252,6 +253,7 @@ private:
   wxColourPickerCtrl *m_calltipBackground = nullptr;
   wxColourPickerCtrl *m_error = nullptr;
   wxColourPickerCtrl *m_warning = nullptr;
+  wxColourPickerCtrl *m_note = nullptr;
   wxColourPickerCtrl *m_symbolHighlight = nullptr;
 
   // Dark theme colors
@@ -269,6 +271,7 @@ private:
   wxColourPickerCtrl *m_calltipBackgroundDark{nullptr};
   wxColourPickerCtrl *m_errorDark{nullptr};
   wxColourPickerCtrl *m_warningDark{nullptr};
+  wxColourPickerCtrl *m_noteDark{nullptr};
   wxColourPickerCtrl *m_symbolHighlightDark{nullptr};
   wxColourPickerCtrl *m_textDark{nullptr};
   wxColourPickerCtrl *m_backgroundDark{nullptr};
@@ -344,7 +347,7 @@ private:
 
   void UpdateAiControlsEnabled();
 
-  void OnSysColourChanged(wxSysColourChangedEvent& event);
+  void OnSysColourChanged(wxSysColourChangedEvent &event);
 
   void EndModal(int retCode) override;
 

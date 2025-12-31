@@ -103,6 +103,7 @@ private:
   uint64_t m_symbolHighlightPendingSeq = 0;
   void OnSymbolTimer(wxTimerEvent &event);
   void OnSymbolOccurrencesReady(wxThreadEvent &event);
+  void ClearSymbolOccurrences();
 
   // Handlers of the Find/Replace dialog
   void OpenFindDialog(bool replace);

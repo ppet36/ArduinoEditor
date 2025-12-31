@@ -1125,22 +1125,44 @@ static std::string InjectParameterNamesIntoSignature(const std::string &sig, con
 // -------------------------------------------------------------------------------
 
 std::string ArduinoParseError::ToString() const {
+  auto sevLabel = [](CXDiagnosticSeverity s) -> const char * {
+    switch (s) {
+      case CXDiagnostic_Fatal:   return "Fatal";
+      case CXDiagnostic_Error:   return "Error";
+      case CXDiagnostic_Warning: return "Warning";
+      case CXDiagnostic_Note:    return "Note";
+      case CXDiagnostic_Ignored: return "Ignored";
+      default:                  return "";
+    }
+  };
+
   std::ostringstream oss;
 
-  switch (severity) {
-    case CXDiagnostic_Error:
-      oss << "Error:";
-      break;
-    case CXDiagnostic_Warning:
-      oss << "Warning:";
-      break;
-    default:
-      break;
-  }
+  auto dump = [&](auto &&self, const ArduinoParseError &e, int indent) -> void {
+    if (indent > 0) {
+      oss << std::string((size_t)indent, ' ');
+    }
 
-  oss << file << ":" << line << ":" << column << ":" << message;
+    const char *lbl = sevLabel(e.severity);
+    if (lbl && *lbl) {
+      oss << lbl << ": ";
+    }
+
+    if (!e.file.empty() && e.line > 0) {
+      oss << e.file << ":" << e.line << ":" << e.column << ": ";
+    }
+    oss << e.message;
+
+    for (const auto &ch : e.childs) {
+      oss << "\n";
+      self(self, ch, indent + 2);
+    }
+  };
+
+  dump(dump, *this, 0);
   return oss.str();
 }
+
 
 std::string HoverInfo::ToHoverString() {
   std::string tooltip;
@@ -2084,6 +2106,97 @@ std::size_t ArduinoCodeCompletion::HashCode(const std::string &code) {
   return h;
 }
 
+// Prefer expansion/presumed location if it points into sketch dir, otherwise keep spelling location.
+// Drop-in replacement for clang_getSpellingLocation used only for diagnostics mapping.
+void ArduinoCodeCompletion::AeGetBestDiagLocation(CXSourceLocation loc,
+                                                  CXFile *out_file,
+                                                  unsigned *out_line,
+                                                  unsigned *out_column,
+                                                  unsigned *out_offset) const {
+  if (!out_file || !out_line || !out_column || !out_offset) {
+    return;
+  }
+
+  auto cxFilePath = [](CXFile f) -> std::string {
+    if (!f)
+      return {};
+    CXString s = clang_getFileName(f);
+    return cxStringToStd(s);
+  };
+
+  // 1) Get spelling (fallback/default)
+  CXFile spFile = nullptr;
+  unsigned spLine = 0, spCol = 0, spOff = 0;
+  clang_getSpellingLocation(loc, &spFile, &spLine, &spCol, &spOff);
+
+  // 2) Get expansion
+  CXFile exFile = nullptr;
+  unsigned exLine = 0, exCol = 0, exOff = 0;
+  clang_getExpansionLocation(loc, &exFile, &exLine, &exCol, &exOff);
+
+  // 3) Get presumed (note: returns filename as CXString, not CXFile)
+  CXString presName;
+  unsigned prLine = 0, prCol = 0;
+  clang_getPresumedLocation(loc, &presName, &prLine, &prCol);
+  std::string presPath = cxStringToStd(presName);
+
+  const std::string sketchDir = arduinoCli->GetSketchPath();
+
+  auto pathOf = [&](CXFile f) -> std::string { return cxFilePath(f); };
+
+  // Candidate validity
+  const bool expOk = exFile && exLine > 0;
+  const bool splOk = spFile && spLine > 0;
+  const bool preOk = !presPath.empty() && prLine > 0;
+
+  // Prefer a location inside sketch dir: Expansion > Spelling > Presumed.
+  // If none are in sketch, keep original Spelling (fallback), otherwise Expansion, otherwise Presumed.
+  enum Pick { PickSpelling,
+              PickExpansion,
+              PickPresumed };
+  Pick pick = PickSpelling;
+
+  if (expOk && IsInSketchDir(sketchDir, pathOf(exFile))) {
+    pick = PickExpansion;
+  } else if (splOk && IsInSketchDir(sketchDir, pathOf(spFile))) {
+    pick = PickSpelling;
+  } else if (preOk && IsInSketchDir(sketchDir, presPath)) {
+    pick = PickPresumed;
+  } else if (splOk) {
+    pick = PickSpelling;
+  } else if (expOk) {
+    pick = PickExpansion;
+  } else if (preOk) {
+    pick = PickPresumed;
+  }
+
+  // Apply pick
+  switch (pick) {
+    case PickExpansion:
+      *out_file = exFile;
+      *out_line = exLine;
+      *out_column = exCol;
+      *out_offset = exOff;
+      break;
+
+    case PickPresumed:
+      // We don't have CXFile for presumed reliably; keep best available file handle.
+      *out_file = spFile ? spFile : exFile;
+      *out_line = prLine;
+      *out_column = prCol;
+      *out_offset = 0;
+      break;
+
+    case PickSpelling:
+    default:
+      *out_file = spFile;
+      *out_line = spLine;
+      *out_column = spCol;
+      *out_offset = spOff;
+      break;
+  }
+}
+
 std::vector<ArduinoParseError> ArduinoCodeCompletion::CollectDiagnosticsLocked(CXTranslationUnit tu) const {
   std::vector<ArduinoParseError> errors;
 
@@ -2099,52 +2212,117 @@ std::vector<ArduinoParseError> ArduinoCodeCompletion::CollectDiagnosticsLocked(C
 
   std::string sketchDir = arduinoCli->GetSketchPath();
 
-  for (unsigned i = 0; i < numDiags; ++i) {
-    CXDiagnostic diag = clang_getDiagnostic(tu, i);
+  auto makeParseErrorFromDiag = [&](CXDiagnostic d) -> ArduinoParseError {
+    ArduinoParseError out;
 
-    CXDiagnosticSeverity severity = clang_getDiagnosticSeverity(diag);
+    out.severity = clang_getDiagnosticSeverity(d);
 
-    CXString spellingStr = clang_getDiagnosticSpelling(diag);
-    const char *spellingCStr = clang_getCString(spellingStr);
+    // message
+    CXString spellingStr = clang_getDiagnosticSpelling(d);
+    out.message = cxStringToStd(spellingStr);
 
-    CXSourceLocation loc = clang_getDiagnosticLocation(diag);
-    CXFile file;
-    unsigned line = 0, column = 0, offset = 0;
-    clang_getSpellingLocation(loc, &file, &line, &column, &offset);
+    // location
+    CXSourceLocation loc = clang_getDiagnosticLocation(d);
+    CXFile f;
+    unsigned l = 0, c = 0, off = 0;
+    AeGetBestDiagLocation(loc, &f, &l, &c, &off);
 
-    std::string fileName;
-    if (file) {
-      CXString fileNameStr = clang_getFileName(file);
-      if (const char *fn = clang_getCString(fileNameStr)) {
-        fileName = fn;
-      }
-      clang_disposeString(fileNameStr);
+    out.line = l;
+    out.column = c;
+
+    if (f) {
+      CXString fnStr = clang_getFileName(f);
+      out.file = cxStringToStd(fnStr);
     }
 
-    ArduinoParseError e;
-    e.file = fileName;
-    e.line = line;
-    e.column = column;
-    e.message = spellingCStr ? spellingCStr : "";
-    e.severity = severity;
+    return out;
+  };
 
-    clang_disposeString(spellingStr);
+  auto noteKey = [](const ArduinoParseError &e) -> std::string {
+    // key pro deduplikaci notes (stačí na praktické případy)
+    std::ostringstream os;
+    os << e.file << ":" << e.line << ":" << e.column << ":" << e.message;
+    return os.str();
+  };
+
+  unsigned i = 0;
+  while (i < numDiags) {
+    CXDiagnostic diag = clang_getDiagnostic(tu, i);
+    CXDiagnosticSeverity severity = clang_getDiagnosticSeverity(diag);
+
+    // notes samotné přeskočíme (obvykle je přilepíme k předchozímu error/warning)
+    if (severity == CXDiagnostic_Note || severity == CXDiagnostic_Ignored) {
+      clang_disposeDiagnostic(diag);
+      ++i;
+      continue;
+    }
+
+    // parent
+    ArduinoParseError e = makeParseErrorFromDiag(diag);
+
+    // ---- NOTES: child diagnostics + sequential notes (dedup) ----
+    std::unordered_set<std::string> seenNotes;
+    seenNotes.reserve(16);
+
+    // 1) child diagnostics (clang_getChildDiagnostics)
+    {
+      CXDiagnosticSet childSet = clang_getChildDiagnostics(diag);
+      unsigned n = clang_getNumDiagnosticsInSet(childSet);
+      for (unsigned k = 0; k < n; ++k) {
+        CXDiagnostic child = clang_getDiagnosticInSet(childSet, k);
+        if (clang_getDiagnosticSeverity(child) == CXDiagnostic_Note) {
+          ArduinoParseError ch = makeParseErrorFromDiag(child);
+          std::string key = noteKey(ch);
+          if (seenNotes.insert(key).second) {
+            e.childs.push_back(std::move(ch));
+          }
+        }
+        clang_disposeDiagnostic(child);
+      }
+      clang_disposeDiagnosticSet(childSet);
+    }
+
+    // 2) sequential notes (lookahead)
+    unsigned j = i + 1;
+    while (j < numDiags) {
+      CXDiagnostic next = clang_getDiagnostic(tu, j);
+      CXDiagnosticSeverity ns = clang_getDiagnosticSeverity(next);
+
+      if (ns != CXDiagnostic_Note) {
+        clang_disposeDiagnostic(next);
+        break;
+      }
+
+      ArduinoParseError ch = makeParseErrorFromDiag(next);
+      std::string key = noteKey(ch);
+      if (seenNotes.insert(key).second) {
+        e.childs.push_back(std::move(ch));
+      }
+
+      clang_disposeDiagnostic(next);
+      ++j;
+    }
+
     clang_disposeDiagnostic(diag);
 
-    // ---------- FILTERING ----------
-
-    if (e.file.empty())
+    // ---------- FILTERING (jen parent) ----------
+    if (e.file.empty()) {
+      i = j;
       continue;
+    }
 
     bool fromSketch = (e.file.rfind(sketchDir, 0) == 0);
-    if (!fromSketch)
+    if (!fromSketch) {
+      i = j;
       continue;
+    }
 
     if (e.severity != CXDiagnostic_Warning &&
         e.severity != CXDiagnostic_Error &&
-        e.severity != CXDiagnostic_Fatal)
+        e.severity != CXDiagnostic_Fatal) {
+      i = j;
       continue;
-
+    }
     // ---------- END OF FILTERING ----------
 
     APP_TRACE_LOG("CC: collected:  sev=%d %s:%u:%u: %s",
@@ -2154,18 +2332,29 @@ std::vector<ArduinoParseError> ArduinoCodeCompletion::CollectDiagnosticsLocked(C
                   (unsigned)e.column,
                   e.message.c_str());
 
+    if (!e.childs.empty()) {
+      for (const auto &ch : e.childs) {
+        APP_TRACE_LOG("CC: note: sev=%d %s:%u:%u: %s",
+                      (int)ch.severity,
+                      ch.file.c_str(),
+                      (unsigned)ch.line,
+                      (unsigned)ch.column,
+                      ch.message.c_str());
+      }
+    }
+
     errors.push_back(std::move(e));
+    i = j;
   }
 
   // ------ SORTING BY SEVERITY + FILE/LINE/COL ------
-
   auto severityRank = [](CXDiagnosticSeverity s) {
     switch (s) {
       case CXDiagnostic_Error:
       case CXDiagnostic_Fatal:
-        return 0; // errors up
+        return 0;
       case CXDiagnostic_Warning:
-        return 1; // warnings behind them
+        return 1;
       default:
         return 2;
     }
@@ -2188,7 +2377,7 @@ std::vector<ArduinoParseError> ArduinoCodeCompletion::CollectDiagnosticsLocked(C
   return errors;
 }
 
-std::size_t ArduinoCodeCompletion::ComputeDiagHash(const std::vector<ArduinoParseError> &errs, const std::string &sketchDir) {
+std::size_t ArduinoCodeCompletion::ComputeDiagHash(const std::vector<ArduinoParseError> &errs) {
   // simple FNV-1a
   std::size_t h = 1469598103934665603ull;
 
@@ -2198,13 +2387,6 @@ std::size_t ArduinoCodeCompletion::ComputeDiagHash(const std::vector<ArduinoPars
   };
 
   for (const auto &e : errs) {
-    // we only take files from the current sketch dir (prefix match)
-    if (!sketchDir.empty() &&
-        !e.file.empty() &&
-        e.file.rfind(sketchDir, 0) != 0) {
-      continue;
-    }
-
     for (char c : e.file)
       fnvMix((unsigned char)c);
     for (char c : e.message)
@@ -2221,9 +2403,7 @@ std::size_t ArduinoCodeCompletion::ComputeDiagHash(const std::vector<ArduinoPars
 }
 
 void ArduinoCodeCompletion::NotifyDiagnosticsChangedLocked(const std::vector<ArduinoParseError> &errs) {
-  std::string sketchDir = arduinoCli->GetSketchPath();
-
-  std::size_t newHash = ComputeDiagHash(errs, sketchDir);
+  std::size_t newHash = ComputeDiagHash(errs);
   if ((m_lastDiagHash != 0) && (newHash == m_lastDiagHash)) {
     APP_DEBUG_LOG("No diagnostics errors changed; skipping event.");
     return;
@@ -2290,7 +2470,9 @@ std::vector<CompletionItem> ArduinoCodeCompletion::GetCompletions(const std::str
   ClangUnsavedFiles uf = CreateClangUnsavedFiles(filename, code);
   int addedLines = uf.hppAddedLines;
 
-  unsigned options = CXCodeComplete_IncludeBriefComments;
+  unsigned options = clang_defaultCodeCompleteOptions();
+  options |= CXCodeComplete_IncludeMacros;
+
   auto start = Clock::now();
 
   CXCodeCompleteResults *results = clang_codeCompleteAt(
@@ -2443,6 +2625,49 @@ void ArduinoCodeCompletion::FilterAndSortCompletionsWithPrefix(const std::string
 
               return ta < tb;
             });
+
+  // --- Collapse overloads by inserted text, keep them prepared in CompletionItem::overloads ---
+  {
+    std::unordered_set<std::string> seen;
+    seen.reserve(inOutCompletions.size());
+
+    auto outIt = inOutCompletions.begin();
+
+    for (auto it = inOutCompletions.begin(); it != inOutCompletions.end(); ++it) {
+      if (it->text.empty())
+        continue;
+
+      const std::string &key = it->text;
+
+      if (seen.insert(key).second) {
+        // First occurrence => representative item
+        if (outIt != it)
+          *outIt = std::move(*it);
+        ++outIt;
+      } else {
+        // Another overload => append to representative's overloads
+        // Representative is guaranteed to be the first one we kept for this key.
+        // It's somewhere in [begin, outIt).
+        for (auto rep = inOutCompletions.begin(); rep != outIt; ++rep) {
+          if (rep->text == key) {
+            rep->overloads.push_back(std::move(*it));
+            break;
+          }
+        }
+      }
+    }
+
+    // Now annotate labels (only for those that actually have overloads)
+    for (auto it = inOutCompletions.begin(); it != outIt; ++it) {
+      if (!it->overloads.empty()) {
+        const int total = 1 + static_cast<int>(it->overloads.size());
+        // keep label short; avoid long signatures drowning UI
+        it->label = it->text + "(...) - " + std::to_string(total) + " overloads";
+      }
+    }
+
+    inOutCompletions.erase(outIt, inOutCompletions.end());
+  }
 
   constexpr std::size_t MAX_ITEMS = 256;
   if (inOutCompletions.size() > MAX_ITEMS) {
@@ -3290,8 +3515,7 @@ bool ArduinoCodeCompletion::FindSiblingFunctionDefinition(const std::string &fil
           nullptr,
           0,
           CXTranslationUnit_KeepGoing |
-              CXTranslationUnit_IncludeBriefCommentsInCodeCompletion |
-              CXTranslationUnit_LimitSkipFunctionBodiesToPreamble,
+              CXTranslationUnit_IncludeBriefCommentsInCodeCompletion,
           &htu);
 
       if (err != CXError_Success || !htu) {
@@ -4880,8 +5104,6 @@ std::vector<ArduinoParseError> ArduinoCodeCompletion::GetLastProjectErrors() con
 }
 
 void ArduinoCodeCompletion::NotifyProjectDiagnosticsChangedLocked(const std::vector<ArduinoParseError> &errs) {
-  std::string sketchDir = arduinoCli->GetSketchPath();
-
   // It only sends an event if something changes, so we need to terminate the process from here.
   ArduinoEditorFrame *frame = wxDynamicCast(m_eventHandler, ArduinoEditorFrame);
   if (frame) {
@@ -4890,7 +5112,7 @@ void ArduinoCodeCompletion::NotifyProjectDiagnosticsChangedLocked(const std::vec
     QueueUiEvent(frame, ev.Clone());
   }
 
-  std::size_t newHash = ComputeDiagHash(errs, sketchDir);
+  std::size_t newHash = ComputeDiagHash(errs);
   if (newHash == m_lastDiagHash) {
     APP_DEBUG_LOG("No diagnostics errors changed. Skipping event.");
     return;

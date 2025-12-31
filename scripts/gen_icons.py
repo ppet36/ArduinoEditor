@@ -55,6 +55,7 @@ VARIANTS = {
 }
 
 ICONS_DEFAULT = [
+    "close",
     "sync",
     "delete",
     "note_add",

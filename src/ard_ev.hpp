@@ -65,3 +65,6 @@ wxDECLARE_EVENT(wxEVT_AI_SUMMARIZATION_UPDATED, wxThreadEvent);
 
 // Async process stopping
 wxDECLARE_EVENT(EVT_STOP_PROCESS, wxThreadEvent);
+
+wxDECLARE_EVENT(EVT_PROCESS_TERMINATE_REQUEST, wxCommandEvent);
+

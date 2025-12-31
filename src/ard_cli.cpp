@@ -37,6 +37,7 @@
 #include <wx/app.h>
 
 #if defined(__WXGTK__) || defined(__WXMAC__)
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #else
@@ -114,7 +115,7 @@ static std::string NormalizeStdFlag(const std::string &a) {
   std::string val = a.substr(5);
   if (val == "gnu++2b" || val == "c++2b" ||
       val == "gnu++2a" || val == "c++2a") {
-    return "-std=gnu++17"; // or c++20 depending on what libclang supports
+    return "-std=gnu++17";
   }
   return a;
 }
@@ -621,6 +622,28 @@ int ArduinoCli::ExecuteCommand(const std::string &cmd, std::string &output) {
 #endif
 }
 
+bool ArduinoCli::CancelRunning() {
+  std::lock_guard<std::mutex> lk(m_cancelMtx);
+
+  m_cancelRequested.store(true);
+
+#if defined(__WXMSW__)
+  if (m_runningProcess) {
+    TerminateProcess(m_runningProcess, 1);
+    return true;
+  }
+  m_cancelRequested.store(false);
+  return false;
+#else
+  if (m_runningPid > 0) {
+    kill(m_runningPid, SIGTERM);
+    return true;
+  }
+  m_cancelRequested.store(false);
+  return false;
+#endif
+}
+
 /**
  * Asynchronous execution of command.
  */
@@ -628,6 +651,8 @@ int ArduinoCli::RunCliStreaming(const std::string &args, const wxWeakRef<wxEvtHa
   unsigned int index = (g_execCounter++);
 
   int rc = -1;
+
+  m_cancelRequested.store(false);
 
 #if defined(__WXMSW__)
   std::string cmd = GetCliBaseCommand() + " " + args;
@@ -716,6 +741,11 @@ int ArduinoCli::RunCliStreaming(const std::string &args, const wxWeakRef<wxEvtHa
     return -1;
   }
 
+  {
+    std::lock_guard<std::mutex> lk(m_cancelMtx);
+    m_runningProcess = pi.hProcess;
+  }
+
   std::string partial;
   char buffer[256];
   DWORD bytesRead = 0;
@@ -736,6 +766,11 @@ int ArduinoCli::RunCliStreaming(const std::string &args, const wxWeakRef<wxEvtHa
       // Strip '\r'
       if (!line.empty() && line.back() == '\r') {
         line.pop_back();
+      }
+
+      if (m_cancelRequested.load()) {
+        TerminateProcess(pi.hProcess, 1);
+        break;
       }
 
       wxCommandEvent evt(EVT_COMMANDLINE_OUTPUT_MSG);
@@ -771,10 +806,20 @@ int ArduinoCli::RunCliStreaming(const std::string &args, const wxWeakRef<wxEvtHa
   CloseHandle(pi.hProcess);
   CloseHandle(pi.hThread);
 
+  {
+    std::lock_guard<std::mutex> lk(m_cancelMtx);
+    if (m_runningProcess) {
+      m_runningProcess = NULL;
+    }
+    m_cancelRequested.store(false);
+  }
+
   rc = static_cast<int>(exitCode);
 #else
+  const std::string marker = "__AE_PID__=";
+
   // Binary + args + redirect stderr->stdout
-  std::string cmd = GetCliBaseCommand() + " " + args + " 2>&1";
+  std::string cmd = "echo " + marker + "$$; exec " + GetCliBaseCommand() + " " + args + " 2>&1";
   APP_DEBUG_LOG("CLI: %04u STREAM EXEC: %s", index, cmd.c_str());
 
   using PipeCloser = int (*)(FILE *);
@@ -795,6 +840,8 @@ int ArduinoCli::RunCliStreaming(const std::string &args, const wxWeakRef<wxEvtHa
   std::array<char, 256> buffer{};
   std::string partial;
 
+  bool pidCaptured = false;
+
   while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
     partial.append(buffer.data());
 
@@ -809,6 +856,20 @@ int ArduinoCli::RunCliStreaming(const std::string &args, const wxWeakRef<wxEvtHa
 
       if (!line.empty() && line.back() == '\r') {
         line.pop_back();
+      }
+
+      if (!pidCaptured && line.rfind(marker, 0) == 0) {
+        pidCaptured = true;
+        pid_t pid = (pid_t)std::strtol(line.c_str() + marker.size(), nullptr, 10);
+        std::lock_guard<std::mutex> lk(m_cancelMtx);
+        m_runningPid = pid;
+
+        APP_DEBUG_LOG("CLI: stream has pid %d", m_runningPid);
+
+        if (m_cancelRequested.load() && m_runningPid > 0) {
+          kill(m_runningPid, SIGTERM);
+        }
+        continue;
       }
 
       wxCommandEvent evt(EVT_COMMANDLINE_OUTPUT_MSG);
@@ -845,6 +906,12 @@ int ArduinoCli::RunCliStreaming(const std::string &args, const wxWeakRef<wxEvtHa
 #else
   rc = status; // fallback
 #endif
+
+  {
+    std::lock_guard<std::mutex> lk(m_cancelMtx);
+    m_runningPid = -1;
+    m_cancelRequested.store(false);
+  }
 
 #endif // __WXMSW__
 
@@ -1013,6 +1080,8 @@ std::string ArduinoCli::DetectClangTarget(const std::string &compilerPath) const
 
 std::vector<std::string> ArduinoCli::BuildClangArgsFromBoardDetails(const nlohmann::json &j) {
   std::vector<std::string> result;
+
+  m_initializedFromCompileCommands = false;
 
   if (!j.contains("build_properties") || !j["build_properties"].is_array()) {
     return result;
@@ -1201,6 +1270,8 @@ std::vector<std::string> ArduinoCli::BuildClangArgsFromBoardDetails(const nlohma
 
 std::vector<std::string> ArduinoCli::BuildClangArgsFromCompileCommands(const std::string &inoBaseName) {
   std::vector<std::string> result;
+
+  m_initializedFromCompileCommands = true;
 
   // reset cache resolved libs for this build
   m_compileCommandsResolvedLibraries.clear();
@@ -2829,7 +2900,7 @@ void ArduinoCli::CompileAsync(wxEvtHandler *handler) {
   // args without binary (this is handled by RunCliStreaming)
   std::string args = "-v --no-color compile";
   args += " -b " + ShellQuote(fqbn);
-  args += " --build-cache-path " + ShellQuote(cachePath.string());
+  args += " --build-path " + ShellQuote(cachePath.string());
   args += " --output-dir " + ShellQuote(buildPath.string());
   args += " " + ShellQuote(sketchPath);
 

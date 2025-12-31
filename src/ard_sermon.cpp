@@ -760,7 +760,7 @@ void ArduinoSerialMonitorFrame::Unblock() {
   }
 }
 
-void ArduinoSerialMonitorFrame::OnSysColourChanged(wxSysColourChangedEvent& event) {
+void ArduinoSerialMonitorFrame::OnSysColourChanged(wxSysColourChangedEvent &event) {
   m_sendButton->SetBitmap(AEGetArtBundle(wxAEArt::GoForward));
   Layout();
   event.Skip();

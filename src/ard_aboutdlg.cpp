@@ -183,65 +183,136 @@ static wxString GetLicensesHtml() {
   wxColour bg = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE);
   wxString bgHex = ColorToHex(bg);
 
-  wxString lpl = _(R"(
-<html>
-<body bgcolor="%s">
-  <h3>Arduino Editor License (GPLv3)</h3>
-  <p>
-    Arduino Editor is free software: you can redistribute it and/or modify it
-    under the terms of the GNU General Public License version 3 (GPLv3).
-  </p>
-  <p>
-    For the full license text see:<br>
-    <a href="https://www.gnu.org/licenses/gpl-3.0.html#license-text">
-      https://www.gnu.org/licenses/gpl-3.0.html
-    </a>
-  </p>
+  // Keep each license section in its own translatable block to make localization easier.
+  const wxString kHtmlHeader = wxT(""
+                                "<html>\n"
+                                "<body bgcolor=\"%s\">\n");
+  const wxString kHtmlFooter = wxT(""
+                                "</body>\n"
+                                "</html>\n");
 
-  <hr>
+  const wxString kLicArduinoEditor = _(""
+                                       "  <h3>Arduino Editor License (GPLv3)</h3>\n"
+                                       "  <p>\n"
+                                       "    Arduino Editor is free software: you can redistribute it and/or modify it\n"
+                                       "    under the terms of the GNU General Public License version 3 (GPLv3).\n"
+                                       "  </p>\n"
+                                       "  <p>\n"
+                                       "    For the full license text see:<br>\n"
+                                       "    <a href=\"https://www.gnu.org/licenses/gpl-3.0.html#license-text\">\n"
+                                       "      https://www.gnu.org/licenses/gpl-3.0.html\n"
+                                       "    </a>\n"
+                                       "  </p>\n");
 
-  <h3>wxWidgets License</h3>
-  <p>
-    wxWidgets is distributed under the wxWidgets License.
-  </p>
-  <p>
-    For details see:<br>
-    <a href="https://www.wxwidgets.org/about/licence/">
-      https://www.wxwidgets.org/about/licence/
-    </a>
-  </p>
+  const wxString kLicWxWidgets = _(""
+                                  "  <hr>\n"
+                                  "  <h3>wxWidgets License</h3>\n"
+                                  "  <p>\n"
+                                  "    wxWidgets is distributed under the wxWidgets License.\n"
+                                  "  </p>\n"
+                                  "  <p>\n"
+                                  "    For details see:<br>\n"
+                                  "    <a href=\"https://www.wxwidgets.org/about/licence/\">\n"
+                                  "      https://www.wxwidgets.org/about/licence/\n"
+                                  "    </a>\n"
+                                  "  </p>\n");
 
-  <hr>
+  const wxString kLicClangLlvm = _(""
+                                  "  <hr>\n"
+                                  "  <h3>Clang/LLVM License</h3>\n"
+                                  "  <p>\n"
+                                  "    Clang and LLVM are distributed under the Apache License v2.0\n"
+                                  "    with LLVM exceptions.\n"
+                                  "  </p>\n"
+                                  "  <p>\n"
+                                  "    For details see:<br>\n"
+                                  "    <a href=\"https://llvm.org/docs/DeveloperPolicy.html#license\">\n"
+                                  "      https://llvm.org/docs/DeveloperPolicy.html#license\n"
+                                  "    </a>\n"
+                                  "  </p>\n");
 
-  <h3>Clang/LLVM License</h3>
-  <p>
-    Clang and LLVM are distributed under the Apache License v2.0
-    with LLVM exceptions.
-  </p>
-  <p>
-    For details see:<br>
-    <a href="https://llvm.org/docs/DeveloperPolicy.html#license">
-      https://llvm.org/docs/DeveloperPolicy.html#license
-    </a>
-  </p>
+  const wxString kLicCurl = _(""
+                             "  <hr>\n"
+                             "  <h3>cURL / libcurl License</h3>\n"
+                             "  <p>\n"
+                             "    This application uses libcurl (cURL) for network communication.\n"
+                             "  </p>\n"
+                             "  <p>\n"
+                             "    curl and libcurl are distributed under a permissive MIT/X derivative license.\n"
+                             "  </p>\n"
+                             "  <p>\n"
+                             "    For details see:<br>\n"
+                             "    <a href=\"https://curl.se/docs/copyright.html\">\n"
+                             "      https://curl.se/docs/copyright.html\n"
+                             "    </a>\n"
+                             "  </p>\n");
 
-  <hr>
+  const wxString kLicMaddy = _(""
+                              "  <hr>\n"
+                              "  <h3>maddy Markdown Parser (MIT)</h3>\n"
+                              "  <p>\n"
+                              "    This application includes maddy, a C++ Markdown to HTML header-only parser library,\n"
+                              "    distributed under the MIT License.\n"
+                              "  </p>\n"
+                              "  <p>\n"
+                              "    Project home:<br>\n"
+                              "    <a href=\"https://github.com/progsource/maddy\">\n"
+                              "      https://github.com/progsource/maddy\n"
+                              "    </a>\n"
+                              "  </p>\n"
+                              "  <p>\n"
+                              "    License text:<br>\n"
+                              "    <a href=\"https://github.com/progsource/maddy/blob/master/LICENSE\">\n"
+                              "      https://github.com/progsource/maddy/blob/master/LICENSE\n"
+                              "    </a>\n"
+                              "  </p>\n");
 
-  <h3>arduino-cli License (GPLv3)</h3>
-  <p>
-    arduino-cli is distributed under the terms of the GNU General Public License
-    version 3 (GPLv3).
-  </p>
-  <p>
-    For the full license text see:<br>
-    <a href="https://github.com/arduino/arduino-cli/blob/master/LICENSE.txt">
-      https://github.com/arduino/arduino-cli/blob/master/LICENSE.txt
-    </a>
-  </p>
-</body>
-</html>
-)");
-  return wxString::Format(lpl, bgHex);
+const wxString kLicArduinoCli = _(""
+                                 "  <hr>\n"
+                                 "  <h3>arduino-cli License (GPLv3)</h3>\n"
+                                 "  <p>\n"
+                                 "    This product bundles the <strong>arduino-cli</strong> executable in binary form.\n"
+                                 "    arduino-cli is distributed under the terms of the GNU General Public License\n"
+                                 "    version 3 (GPLv3).\n"
+                                 "  </p>\n"
+                                 "  <p>\n"
+                                 "    For the full license text see:<br>\n"
+                                 "    <a href=\"https://github.com/arduino/arduino-cli/blob/master/LICENSE.txt\">\n"
+                                 "      https://github.com/arduino/arduino-cli/blob/master/LICENSE.txt\n"
+                                 "    </a>\n"
+                                 "  </p>\n");
+
+
+  const wxString kLicNlohmannJson = _(""
+                                     "  <hr>\n"
+                                     "  <h3>nlohmann/json (MIT)</h3>\n"
+                                     "  <p>\n"
+                                     "    This application includes nlohmann/json, a single-header JSON library for Modern C++,\n"
+                                     "    distributed under the MIT License.\n"
+                                     "  </p>\n"
+                                     "  <p>\n"
+                                     "    Project home:<br>\n"
+                                     "    <a href=\"https://github.com/nlohmann/json\">\n"
+                                     "      https://github.com/nlohmann/json\n"
+                                     "    </a>\n"
+                                     "  </p>\n"
+                                     "  <p>\n"
+                                     "    License text:<br>\n"
+                                     "    <a href=\"https://github.com/nlohmann/json/blob/develop/LICENSE.MIT\">\n"
+                                     "      https://github.com/nlohmann/json/blob/develop/LICENSE.MIT\n"
+                                     "    </a>\n"
+                                     "  </p>\n");
+
+  wxString out = wxString::Format(kHtmlHeader, bgHex);
+  out += kLicArduinoEditor;
+  out += kLicWxWidgets;
+  out += kLicClangLlvm;
+  out += kLicArduinoCli;
+  out += kLicNlohmannJson;
+  out += kLicCurl;
+  out += kLicMaddy;
+  out += kHtmlFooter;
+  return out;
 }
 
 ArduinoAboutDialog::ArduinoAboutDialog(wxWindow *parent)
@@ -282,10 +353,10 @@ ArduinoAboutDialog::ArduinoAboutDialog(wxWindow *parent)
   auto *aboutSizer = new wxBoxSizer(wxVERTICAL);
 
   m_html = new wxHtmlWindow(aboutPanel,
-                                wxID_ANY,
-                                wxDefaultPosition,
-                                wxDefaultSize,
-                                wxHW_SCROLLBAR_AUTO);
+                            wxID_ANY,
+                            wxDefaultPosition,
+                            wxDefaultSize,
+                            wxHW_SCROLLBAR_AUTO);
 
   setupHtmlFonts(m_html);
 
@@ -303,10 +374,10 @@ ArduinoAboutDialog::ArduinoAboutDialog(wxWindow *parent)
   auto *licSizer = new wxBoxSizer(wxVERTICAL);
 
   m_licHtml = new wxHtmlWindow(licPanel,
-                                   wxID_ANY,
-                                   wxDefaultPosition,
-                                   wxDefaultSize,
-                                   wxHW_SCROLLBAR_AUTO);
+                               wxID_ANY,
+                               wxDefaultPosition,
+                               wxDefaultSize,
+                               wxHW_SCROLLBAR_AUTO);
   setupHtmlFonts(m_licHtml);
 
   m_licHtml->SetPage(GetLicensesHtml());

@@ -51,7 +51,6 @@ public:
 
   void SelectPath(const wxString &fullPath);
 
-
 private:
   struct SketchTreeItemData : public wxTreeItemData {
     wxString path;

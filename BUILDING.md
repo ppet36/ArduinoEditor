@@ -13,7 +13,6 @@ Most builds are expected to be run on the target platform, with one exception:
 src/        Application source code
 build/      Makefiles and platform-specific build logic (run builds from here)
 resources/  Icons and bundled assets
-doc/        Documentation and design notes
 ```
 
 ## General notes
@@ -42,7 +41,7 @@ brew install wxwidgets llvm curl nlohmann-json
 Notes:
 
 * wxWidgets 3.3.x is provided by `brew install wxwidgets`
-* LLVM/clang is provided by `brew install llvm`
+* LLVM/clang 21.x.y is provided by `brew install llvm`
 * libcurl is provided by `brew install curl`
 * nlohmann-json is provided by `brew install nlohmann-json`
 

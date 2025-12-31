@@ -32,6 +32,7 @@
 #include <wx/filename.h>
 #include <wx/statline.h>
 #include <wx/stdpaths.h>
+#include <system_error>
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -1008,20 +1009,16 @@ bool LooksLikeIdentifier(const std::string &str) {
   return true;
 }
 
-std::string NormalizeFilename(const std::string &sketchPath,
-                              const std::string &filename) {
-  namespace fs = std::filesystem;
-
-  // 1) Replace ".ino.cpp" suffix with ".ino"
-  std::string cleaned = filename;
-  constexpr const char inoCppSuffix[] = ".ino.cpp";
-  constexpr std::size_t inoCppLen = sizeof(inoCppSuffix) - 1; // length without null terminator
-
-  if (cleaned.size() >= inoCppLen &&
-      cleaned.compare(cleaned.size() - inoCppLen, inoCppLen, inoCppSuffix) == 0) {
-    // Remove only the trailing ".cpp" part → ".ino.cpp" becomes ".ino"
-    cleaned.erase(cleaned.size() - 4);
+std::string StripInoGeneratedSuffix(const std::string& filename) {
+  if (hasSuffix(filename, ".ino.cpp") || hasSuffix(filename, ".ino.hpp")) {
+    return filename.substr(0, filename.size() - 4);
   }
+  return filename;
+}
+
+std::string NormalizeFilename(const std::string &sketchPath, const std::string &filename) {
+  // 1) Replace ".ino.cpp" suffix with ".ino"
+  std::string cleaned = StripInoGeneratedSuffix(filename);
 
   // 2) Convert to filesystem path
   fs::path p(cleaned);
@@ -1049,17 +1046,84 @@ std::string StripFilename(const std::string &sketchPath, const std::string &file
     }
   }
 
-  const std::string ext1 = ".ino.cpp";
-  const std::string ext2 = ".ino.hpp";
+  return StripInoGeneratedSuffix(f);
+}
 
-  if (f.size() >= ext1.size() && f.compare(f.size() - ext1.size(), ext1.size(), ext1) == 0) {
-    f.erase(f.size() - ext1.size() + 4); // keep ".ino"
-  } else if (f.size() >= ext2.size() && f.compare(f.size() - ext2.size(), ext2.size(), ext2) == 0) {
-    f.erase(f.size() - ext2.size() + 4); // keep ".ino"
+
+// Normalize + keep last N path components, BUT:
+// - If input is inside sketchPath => return path relative to sketchPath (no "...").
+// - If filename ends with .ino.cpp or .ino.hpp => replace with .ino.
+std::string DiagnosticsFilename(const std::string& sketchPath, const std::string& input, std::size_t keepParts) {
+
+  auto Normalize = [](fs::path p) -> fs::path {
+    fs::path norm = p.lexically_normal();
+    std::error_code ec;
+    fs::path can = fs::weakly_canonical(norm, ec);
+    if (!ec) norm = std::move(can);
+    return norm;
+  };
+
+  fs::path in = Normalize(fs::u8path(input));
+
+  // If we have a sketchPath, try to return relative path when input is inside it.
+  if (!sketchPath.empty()) {
+    fs::path base = Normalize(fs::u8path(sketchPath));
+
+    // Purely lexical check: if relative path doesn't start with "..", it's inside.
+    fs::path rel = in.lexically_relative(base);
+
+    bool inside = false;
+    if (!rel.empty() && rel.is_relative()) {
+      auto it = rel.begin();
+      if (it != rel.end() && *it != "..") {
+        inside = true;
+      } else if (rel == ".") {
+        // input == sketchPath (unlikely for a file); treat as inside anyway
+        inside = true;
+        rel.clear();
+      }
+    }
+
+    if (inside) {
+      std::string out = rel.generic_string();
+      if (out.empty()) out = fs::path(in.filename()).generic_string();
+      return StripInoGeneratedSuffix(out);
+    }
   }
 
-  return f;
+  // --- Outside sketch: keep last N components with optional ".../" prefix ---
+
+  // Drop root ("/" or "C:\") so we only count real components.
+  fs::path relNoRoot = in.relative_path();
+
+  std::vector<fs::path> parts;
+  parts.reserve(16);
+  for (const auto& part : relNoRoot) {
+    if (part.empty() || part == ".") continue;
+    parts.push_back(part);
+  }
+
+  if (parts.empty()) {
+    return std::string("...");
+  }
+
+  const std::size_t n = (keepParts == 0) ? 0 : keepParts;
+  const std::size_t start = (n == 0 || parts.size() <= n) ? 0 : (parts.size() - n);
+
+  fs::path tail;
+  for (std::size_t i = start; i < parts.size(); ++i) {
+    tail /= parts[i];
+  }
+
+  const bool trimmed = (start != 0);
+
+  std::string out = trimmed
+      ? (std::string(".../") + tail.generic_string())
+      : tail.generic_string();
+
+  return StripInoGeneratedSuffix(out);
 }
+
 
 static std::string NormalizeForCompare(const std::filesystem::path &p) {
   // generic_string() uses '/' even on Windows

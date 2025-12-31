@@ -21,14 +21,23 @@
 #include <algorithm>
 #include <cmath>
 #include <wx/dcbuffer.h>
+#include <wx/dcgraph.h>
+#include "ard_ev.hpp"
 
 namespace {
 
-constexpr int ACTIVITY_TIMER_INTERVAL_MS = 150;
+static constexpr int kPulseIntervalMs = 50;
 
 constexpr int MIN_CONTROL_SIZE = 14;
 
 } // namespace
+
+
+enum {
+  ID_MENU_TERMINATE_PROCESS = wxID_HIGHEST + 500,
+  ID_PULSE_TIMER
+};
+
 
 ArduinoActivityDotCtrl::ArduinoActivityDotCtrl(wxWindow *parent,
                                                wxWindowID id,
@@ -36,7 +45,7 @@ ArduinoActivityDotCtrl::ArduinoActivityDotCtrl(wxWindow *parent,
                                                const wxSize &size,
                                                long style)
     : wxControl(parent, id, pos, size, style | wxBORDER_NONE),
-      m_timer(this) {
+      m_timer(this, ID_PULSE_TIMER) {
   SetBackgroundStyle(wxBG_STYLE_PAINT);
 
   if (!size.IsFullySpecified()) {
@@ -48,10 +57,14 @@ ArduinoActivityDotCtrl::ArduinoActivityDotCtrl(wxWindow *parent,
   // Event binding
   Bind(wxEVT_PAINT, &ArduinoActivityDotCtrl::OnPaint, this);
   Bind(wxEVT_SIZE, &ArduinoActivityDotCtrl::OnSize, this);
-  m_timer.Bind(wxEVT_TIMER, &ArduinoActivityDotCtrl::OnTimer, this);
+  Bind(wxEVT_TIMER, &ArduinoActivityDotCtrl::OnTimer, this, ID_PULSE_TIMER);
+  Bind(wxEVT_LEFT_UP, &ArduinoActivityDotCtrl::OnMouseClick, this);
+  Bind(wxEVT_RIGHT_UP, &ArduinoActivityDotCtrl::OnMouseClick, this);
+
+  SetBackgroundStyle(wxBG_STYLE_PAINT);
 
   UpdateTooltip();
-  StartTimerIfNeeded();
+  UpdatePulseTimer();
 }
 
 void ArduinoActivityDotCtrl::SetState(ArduinoActivityState state) {
@@ -60,18 +73,14 @@ void ArduinoActivityDotCtrl::SetState(ArduinoActivityState state) {
 
   m_state = state;
   m_pulsePhase = 0;
-  UpdateTooltip();
-  StartTimerIfNeeded();
-  Refresh();
-  Update();
+  AfterStateChanged();
 }
 
 // ----------------------------------------------------------
 // Process management
 // ----------------------------------------------------------
 
-void ArduinoActivityDotCtrl::StartProcess(const wxString &name, int id,
-                                          ArduinoActivityState state) {
+void ArduinoActivityDotCtrl::StartProcess(const wxString &name, int id, ArduinoActivityState state, bool canBeTerminated) {
   // It makes no sense to run an "Idle" task -> remap it to Background
   if (state == ArduinoActivityState::Idle) {
     state = ArduinoActivityState::Background;
@@ -81,11 +90,13 @@ void ArduinoActivityDotCtrl::StartProcess(const wxString &name, int id,
   p.id = id;
   p.name = name;
   p.state = state;
+  p.canBeTerminated = canBeTerminated;
 
   APP_DEBUG_LOG("INDIC: START: (%d) %s", id, wxToStd(name).c_str());
 
   m_processes.push_back(p);
   RecomputeStateFromProcesses();
+  AfterStateChanged();
 }
 
 void ArduinoActivityDotCtrl::StopProcess(int id) {
@@ -110,8 +121,10 @@ void ArduinoActivityDotCtrl::StopProcess(int id) {
 
   if (it != m_processes.end()) {
     m_processes.erase(it, m_processes.end());
-    RecomputeStateFromProcesses();
   }
+
+  RecomputeStateFromProcesses();
+  AfterStateChanged();
 }
 
 void ArduinoActivityDotCtrl::StopAllProcesses() {
@@ -122,97 +135,100 @@ void ArduinoActivityDotCtrl::StopAllProcesses() {
   RecomputeStateFromProcesses();
 }
 
-void ArduinoActivityDotCtrl::ApplySettings(const EditorSettings &settings) {
-  m_settings = settings;
-  Refresh();
+bool ArduinoActivityDotCtrl::ShouldPulse() const {
+  return m_pulseEnabled && (m_state == ArduinoActivityState::Busy);
+}
+
+void ArduinoActivityDotCtrl::UpdatePulseTimer() {
+  const bool want = ShouldPulse();
+
+  if (want) {
+    if (!m_timer.IsRunning()) {
+      m_pulsePhase = 0;
+      m_timer.Start(kPulseIntervalMs);
+    }
+  } else {
+    if (m_timer.IsRunning()) m_timer.Stop();
+    m_pulsePhase = 0;
+  }
+}
+
+void ArduinoActivityDotCtrl::AfterStateChanged() {
+  UpdateTooltip();
+  UpdatePulseTimer();
+  Refresh(false);
 }
 
 void ArduinoActivityDotCtrl::RecomputeStateFromProcesses() {
-  // We derive the "worst case" state from running processes.
   ArduinoActivityState newState = ArduinoActivityState::Idle;
-
   bool hasBackground = false;
   bool hasBusy = false;
 
-  for (const auto &p : m_processes) {
-    if (p.state == ArduinoActivityState::Busy) {
-      hasBusy = true;
-    } else if (p.state == ArduinoActivityState::Background) {
-      hasBackground = true;
-    }
+  for (const auto& p : m_processes) {
+    if (p.state == ArduinoActivityState::Busy) hasBusy = true;
+    else if (p.state == ArduinoActivityState::Background) hasBackground = true;
   }
 
-  if (hasBusy) {
-    newState = ArduinoActivityState::Busy;
-  } else if (hasBackground) {
-    newState = ArduinoActivityState::Background;
-  } else {
-    newState = ArduinoActivityState::Idle;
-  }
+  if (hasBusy) newState = ArduinoActivityState::Busy;
+  else if (hasBackground) newState = ArduinoActivityState::Background;
+  else newState = ArduinoActivityState::Idle;
 
   if (newState != m_state) {
     m_state = newState;
     m_pulsePhase = 0;
   }
-
-  UpdateTooltip();
-  StartTimerIfNeeded();
-  Refresh();
-  Update();
 }
 
 void ArduinoActivityDotCtrl::EnablePulse(bool enable) {
-  if (m_pulseEnabled == enable)
-    return;
-
+  if (m_pulseEnabled == enable) return;
   m_pulseEnabled = enable;
-  StartTimerIfNeeded();
-  Refresh();
+  AfterStateChanged();
+}
+
+void ArduinoActivityDotCtrl::ApplySettings(const EditorSettings& settings) {
+  m_settings = settings;
+  AfterStateChanged();
 }
 
 void ArduinoActivityDotCtrl::OnPaint(wxPaintEvent &WXUNUSED(event)) {
-  wxAutoBufferedPaintDC dc(this);
+  wxAutoBufferedPaintDC pdc(this);
 
-#ifdef __WXMSW__
-  dc.SetBackground(wxBrush(GetBackgroundColour()));
+  // Na GTK/mac je transparentní background často zabiják pro alpha animace.
+  pdc.SetBackground(wxBrush(GetBackgroundColour()));
+  pdc.Clear();
+
+#if wxUSE_GRAPHICS_CONTEXT
+  wxGCDC dc(pdc);  // zajistí správné alpha blending
 #else
-  dc.SetBackground(*wxTRANSPARENT_BRUSH);
+  wxDC& dc = pdc;  // fallback
 #endif
-
-  dc.Clear();
 
   const wxSize size = GetClientSize();
   const int w = size.GetWidth();
   const int h = size.GetHeight();
-  if (w <= 0 || h <= 0)
-    return;
+  if (w <= 0 || h <= 0) return;
 
-  const int radius = GetDotRadius();
+  const int baseRadius = GetDotRadius();
   const int cx = w / 2;
   const int cy = h / 2;
 
   wxColour baseColour = GetDotColour();
 
   unsigned char alpha = 255;
-  if (m_pulseEnabled && m_state != ArduinoActivityState::Idle) {
+  int radius = baseRadius;
+
+  if (m_pulseEnabled) {
     const double t = (m_pulsePhase % 20) / 20.0; // 0..1
-    const double s = 0.6 + 0.4 * std::sin(t * 2.0 * M_PI);
-    alpha = static_cast<unsigned char>(255 * s);
+    const double s = 0.6 + 0.4 * std::sin(t * 2.0 * M_PI); // 0.2..1.0-ish
+
+    alpha = static_cast<unsigned char>(160 + 95 * s);
+    radius = baseRadius + static_cast<int>(std::lround(2.0*s));
   }
 
-  wxBrush brush(baseColour);
-  brush.SetStyle(wxBRUSHSTYLE_SOLID);
+  wxColour c(baseColour.Red(), baseColour.Green(), baseColour.Blue(), alpha);
 
   dc.SetPen(*wxTRANSPARENT_PEN);
-  dc.SetBrush(brush);
-
-#if wxCHECK_VERSION(3, 1, 0)
-  dc.SetBrush(wxBrush(wxColour(baseColour.Red(),
-                               baseColour.Green(),
-                               baseColour.Blue(),
-                               alpha)));
-#endif
-
+  dc.SetBrush(wxBrush(c));
   dc.DrawCircle(cx, cy, radius);
 }
 
@@ -222,8 +238,9 @@ void ArduinoActivityDotCtrl::OnSize(wxSizeEvent &event) {
 }
 
 void ArduinoActivityDotCtrl::OnTimer(wxTimerEvent &WXUNUSED(event)) {
+  APP_DEBUG_LOG("INDIC: Pulse tick phase=%d", (int)m_pulsePhase);
+
   if (!m_pulseEnabled || m_state == ArduinoActivityState::Idle) {
-    StopTimerIfNeeded();
     return;
   }
 
@@ -233,6 +250,40 @@ void ArduinoActivityDotCtrl::OnTimer(wxTimerEvent &WXUNUSED(event)) {
   }
 
   Refresh(false);
+}
+
+void ArduinoActivityDotCtrl::OnMouseClick(wxMouseEvent &event) {
+  const bool showPopup = std::any_of(
+    m_processes.begin(), m_processes.end(),
+    [](const ActivityProcess& p) { return p.canBeTerminated; });
+
+  if (!showPopup) {
+    event.Skip();
+    return;
+  }
+ 
+  wxMenu menu;
+  menu.Append(ID_MENU_TERMINATE_PROCESS, _("Terminate current process"));
+
+  Bind(wxEVT_MENU, &ArduinoActivityDotCtrl::OnPopupMenu, this);
+
+  PopupMenu(&menu, event.GetPosition());
+
+  Unbind(wxEVT_MENU, &ArduinoActivityDotCtrl::OnPopupMenu, this);
+  event.Skip();
+}
+
+void ArduinoActivityDotCtrl::OnPopupMenu(wxCommandEvent& event) {
+  switch (event.GetId()) {
+    case ID_MENU_TERMINATE_PROCESS: {
+      wxCommandEvent evt(EVT_PROCESS_TERMINATE_REQUEST);
+      wxPostEvent(GetParent(), evt);
+      break;
+    }
+
+    default :
+      break;
+  }
 }
 
 // ----------------------------------------------------------
@@ -293,7 +344,7 @@ wxColour ArduinoActivityDotCtrl::GetDotColour() const {
 
   switch (m_state) {
     case ArduinoActivityState::Idle:
-      return cs.symbolHighlight;
+      return cs.note;
     case ArduinoActivityState::Background:
       return cs.warning;
     case ArduinoActivityState::Busy:
@@ -308,28 +359,6 @@ int ArduinoActivityDotCtrl::GetDotRadius() const {
   const int d = std::min(size.GetWidth(), size.GetHeight());
   // Small margin from borders
   return std::max(2, (d - 4) / 2);
-}
-
-void ArduinoActivityDotCtrl::StartTimerIfNeeded() {
-  if (!m_pulseEnabled) {
-    StopTimerIfNeeded();
-    return;
-  }
-
-  if (m_state == ArduinoActivityState::Idle) {
-    StopTimerIfNeeded();
-    return;
-  }
-
-  if (!m_timer.IsRunning()) {
-    m_timer.Start(ACTIVITY_TIMER_INTERVAL_MS);
-  }
-}
-
-void ArduinoActivityDotCtrl::StopTimerIfNeeded() {
-  if (m_timer.IsRunning()) {
-    m_timer.Stop();
-  }
 }
 
 // ----------------------------------------------------------

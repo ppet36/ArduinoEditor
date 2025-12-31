@@ -29,6 +29,6 @@ private:
   wxHtmlWindow *m_html;
   wxHtmlWindow *m_licHtml;
 
-  void OnSysColourChanged(wxSysColourChangedEvent& event);
+  void OnSysColourChanged(wxSysColourChangedEvent &event);
   void OnHtmlLink(wxHtmlLinkEvent &event);
 };

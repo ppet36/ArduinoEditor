@@ -74,7 +74,6 @@ public:
   bool IsBlocked() const { return m_isBlocked; }
   void Close();
 
-
 private:
   void CreateControls();
   void StartWorker();
@@ -91,7 +90,7 @@ private:
   void OnClear(wxCommandEvent &event);
   void OnPause(wxCommandEvent &event);
 
-  void OnSysColourChanged(wxSysColourChangedEvent& event);
+  void OnSysColourChanged(wxSysColourChangedEvent &event);
 
   wxConfigBase *m_config{nullptr};
   wxString m_portName;
