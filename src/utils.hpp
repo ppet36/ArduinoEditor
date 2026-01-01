@@ -34,7 +34,7 @@
 #include <wx/imaglist.h>
 #include <wx/log.h>
 #include <wx/menu.h>
-#include <wx/stc/stc.h>
+
 #include <wx/string.h>
 
 #define IMLI_TREECTRL_ARROW_NONE -1
@@ -51,6 +51,8 @@
 using Clock = std::chrono::steady_clock;
 
 struct EditorSettings;
+class wxHtmlWindow;
+class wxStyledTextCtrl;
 
 void AppDebugLog(const char *fmt, ...);
 void AppTraceLog(const char *fmt, ...);
@@ -105,6 +107,10 @@ std::string Trim(const std::string &s);
 
 void TrimInPlace(std::string &s);
 
+void LeftTrimInPlace(std::string &s);
+
+void RightTrimInPlace(std::string &s);
+
 std::string TrimCopy(std::string s);
 
 wxString TrimCopy(wxString s);
@@ -117,8 +123,11 @@ wxMenuItem *AddMenuItemWithArt(wxMenu *menu, int id, const wxString &text, const
 void SetupStyledTextCtrl(wxStyledTextCtrl *stc, wxConfigBase *config);
 void ApplyStyledTextCtrlSettings(wxStyledTextCtrl *stc, const EditorSettings &s);
 
+void SetupHtmlWindow (wxHtmlWindow *w);
+
 bool LoadFileToString(const std::string &path, std::string &out);
 bool SaveFileFromString(const std::string &pathUtf8, const std::string &data);
+bool WriteTextFile(const wxString &path, const wxString &text);
 
 std::string Unquote(const std::string &s);
 void SplitWhitespace(const std::string &content, std::vector<std::string> &out);
@@ -150,6 +159,8 @@ bool isHeaderFile(const std::string &name);
 
 bool isHeaderExt(const std::string &ext);
 
+uint64_t Fnv1a64(const uint8_t *data, size_t len);
+
 std::string wxToStd(const wxString &str);
 
 wxImageList *CreateListCtrlSortIndicatorImageList(const wxColour &color);
@@ -179,11 +190,11 @@ uint64_t CcSumCode(const std::vector<SketchFileBuffer> &files);
 uint64_t CcSumIncludes(const std::vector<SketchFileBuffer> &files);
 uint64_t CcSumDecls(std::string_view filename, std::string_view code);
 
-#include <algorithm>
-#include <cstddef>
-#include <limits>
-#include <string>
-#include <string_view>
-#include <vector>
 
 std::string NormalizeIndent(std::string_view code, size_t indent);
+
+std::string ExtractCommentBlockAboveLine(const std::string &fileText, int declLine);
+std::string ExtractBodySnippetFromText(const std::string &fileText, unsigned fromLine, unsigned toLine);
+
+void DedupArgs(std::vector<std::string> &argv);
+

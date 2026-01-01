@@ -323,25 +323,7 @@ ArduinoAboutDialog::ArduinoAboutDialog(wxWindow *parent)
                wxDefaultSize,
                wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER) {
 
-  wxConfigBase *config = wxConfigBase::Get();
-  EditorSettings settings;
-  settings.Load(config);
-  int pointSize = settings.GetFont().GetPointSize();
-
   Bind(wxEVT_SYS_COLOUR_CHANGED, &ArduinoAboutDialog::OnSysColourChanged, this);
-
-  auto setupHtmlFonts = [&](wxHtmlWindow *w) {
-#ifdef __WXMAC__
-    w->SetFonts(wxT("Helvetica Neue"), wxT("Menlo"), nullptr);
-#elif defined(__WXMSW__)
-    w->SetFonts(wxT("Segoe UI"), wxT("Consolas"), nullptr);
-#else
-    w->SetFonts(wxT("DejaVu Sans"), wxT("DejaVu Sans Mono"), nullptr);
-#endif
-
-    static const int sizes[] = {pointSize, pointSize + 1, pointSize + 2, pointSize + 3, pointSize + 4, pointSize + 5, pointSize + 6};
-    w->SetFonts(wxEmptyString, wxEmptyString, sizes);
-  };
 
   auto *topSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -358,10 +340,10 @@ ArduinoAboutDialog::ArduinoAboutDialog(wxWindow *parent)
                             wxDefaultSize,
                             wxHW_SCROLLBAR_AUTO);
 
-  setupHtmlFonts(m_html);
+  SetupHtmlWindow(m_html);
 
-  wxString aboutHtml = GetAboutHtml();
-  m_html->SetPage(aboutHtml);
+  m_html->SetPage(GetAboutHtml());
+
   m_html->Bind(wxEVT_HTML_LINK_CLICKED, &ArduinoAboutDialog::OnHtmlLink, this);
 
   aboutSizer->Add(m_html, 1, wxEXPAND | wxALL, 10);
@@ -378,9 +360,11 @@ ArduinoAboutDialog::ArduinoAboutDialog(wxWindow *parent)
                                wxDefaultPosition,
                                wxDefaultSize,
                                wxHW_SCROLLBAR_AUTO);
-  setupHtmlFonts(m_licHtml);
+
+  SetupHtmlWindow(m_licHtml);
 
   m_licHtml->SetPage(GetLicensesHtml());
+
   m_licHtml->Bind(wxEVT_HTML_LINK_CLICKED, &ArduinoAboutDialog::OnHtmlLink, this);
 
   licSizer->Add(m_licHtml, 1, wxEXPAND | wxALL, 10);

@@ -407,9 +407,7 @@ void ArduinoAiChatPanel::SendCurrentInput() {
   if (!m_inputCtrl || m_isBusy)
     return;
 
-  wxString userText = m_inputCtrl->GetValue();
-  wxString trimmed = userText;
-  trimmed.Trim(true).Trim(false);
+  wxString trimmed = TrimCopy(m_inputCtrl->GetValue());
 
   if (trimmed.IsEmpty()) {
     return;
@@ -520,15 +518,13 @@ void ArduinoAiChatPanel::OnSessionTitleUpdated(wxThreadEvent &event) {
   if (!m_sessionChoice)
     return;
 
-  wxString payload = event.GetString();
-  payload.Trim(true).Trim(false);
+  wxString payload = TrimCopy(event.GetString());
+
   if (payload.IsEmpty())
     return;
 
-  wxString sessionLine = payload.BeforeFirst('\n');
-  wxString titleLine = payload.AfterFirst('\n');
-  sessionLine.Trim(true).Trim(false);
-  titleLine.Trim(true).Trim(false);
+  wxString sessionLine = TrimCopy(payload.BeforeFirst('\n'));
+  wxString titleLine = TrimCopy(payload.AfterFirst('\n'));
 
   if (sessionLine.IsEmpty() || titleLine.IsEmpty())
     return;

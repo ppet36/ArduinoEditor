@@ -33,6 +33,10 @@
 #include <wx/statline.h>
 #include <wx/stdpaths.h>
 #include <system_error>
+#include <wx/html/htmlwin.h>
+#include <wx/stc/stc.h>
+#include <wx/wfstream.h>
+#include <wx/sstream.h>
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -339,6 +343,18 @@ void TrimInPlace(std::string &s) {
   s.erase(std::find_if(s.rbegin(), s.rend(), notSpace).base(), s.end());
 }
 
+void LeftTrimInPlace(std::string &s) {
+  size_t i = 0;
+  while (i < s.size() && (s[i] == ' ' || s[i] == '\t' || s[i] == '\r'))
+    ++i;
+  s.erase(0, i);
+}
+
+void RightTrimInPlace(std::string &s) {
+  while (!s.empty() && (s.back() == ' ' || s.back() == '\t' || s.back() == '\r'))
+    s.pop_back();
+}
+
 std::string TrimCopy(std::string s) {
   auto notSpace = [](unsigned char c) { return !std::isspace(c); };
   s.erase(s.begin(), std::find_if(s.begin(), s.end(), notSpace));
@@ -423,6 +439,15 @@ bool SaveFileFromString(const std::string &pathUtf8, const std::string &data) {
   }
 
   return ofs.good();
+}
+
+bool WriteTextFile(const wxString &path, const wxString &text) {
+  wxFileOutputStream os(path);
+  if (!os.IsOk())
+    return false;
+  wxStringInputStream is(text);
+  os.Write(is);
+  return os.IsOk();
 }
 
 std::string Unquote(const std::string &s) {
@@ -697,6 +722,26 @@ void ApplyStyledTextCtrlSettings(wxStyledTextCtrl *stc, const EditorSettings &s)
   stc->CallTipSetBackground(c.calltipBackground);
 }
 
+void SetupHtmlWindow (wxHtmlWindow *w) {
+  wxConfigBase *config = wxConfigBase::Get();
+  EditorSettings settings;
+  settings.Load(config);
+
+  int pointSize = settings.GetFont().GetPointSize();
+
+#ifdef __WXMAC__
+  w->SetFonts(wxT("Helvetica Neue"), wxT("Menlo"), nullptr);
+#elif defined(__WXMSW__)
+  w->SetFonts(wxT("Segoe UI"), wxT("Consolas"), nullptr);
+#else
+  w->SetFonts(wxT("DejaVu Sans"), wxT("DejaVu Sans Mono"), nullptr);
+#endif
+
+  static const int sizes[] = {pointSize, pointSize + 1, pointSize + 2, pointSize + 3, pointSize + 4, pointSize + 5, pointSize + 6};
+  w->SetFonts(wxEmptyString, wxEmptyString, sizes);
+}
+
+
 bool isIno(const std::string &name) {
   return hasSuffix(name, ".ino");
 }
@@ -721,6 +766,15 @@ bool isHeaderFile(const std::string &name) {
 
 bool isHeaderExt(const std::string &ext) {
   return (ext == "h" || ext == "hpp" || ext == "hh");
+}
+
+uint64_t Fnv1a64(const uint8_t *data, size_t len) {
+  uint64_t h = 1469598103934665603ULL;
+  for (size_t i = 0; i < len; ++i) {
+    h ^= (uint64_t)data[i];
+    h *= 1099511628211ULL;
+  }
+  return h;
 }
 
 std::string wxToStd(const wxString &str) {
@@ -1664,3 +1718,356 @@ std::string NormalizeIndent(std::string_view code, size_t indent) {
 
   return out;
 }
+
+
+// declLine is 1-based (clang line).
+std::string ExtractCommentBlockAboveLine(const std::string &fileText, int declLine) {
+  if (declLine <= 1)
+    return {};
+
+  // index of lines beginning
+  std::vector<size_t> starts;
+  starts.reserve(4096);
+  starts.push_back(0);
+  for (size_t i = 0; i < fileText.size(); ++i) {
+    if (fileText[i] == '\n')
+      starts.push_back(i + 1);
+  }
+  int lineCount = (int)starts.size();
+  if (declLine > lineCount)
+    declLine = lineCount;
+
+  auto getLine = [&](int line1) -> std::string {
+    if (line1 < 1 || line1 > lineCount)
+      return {};
+    size_t b = starts[(size_t)(line1 - 1)];
+    size_t e = (line1 < lineCount) ? starts[(size_t)line1] : fileText.size();
+    // strip trailing '\n'
+    if (e > b && fileText[e - 1] == '\n')
+      --e;
+    return fileText.substr(b, e - b);
+  };
+
+  std::vector<std::string> collected;
+  collected.reserve(32);
+
+  bool inBlock = false;
+  int safety = 0;
+
+  // start: line above declaration
+  for (int ln = declLine - 1; ln >= 1 && safety++ < 1000; --ln) {
+    std::string raw = getLine(ln);
+    std::string t = raw;
+    TrimInPlace(t);
+
+    if (!inBlock) {
+      if (t.empty()) {
+        break; // empty line = end of doc block
+      }
+
+      // line comments //
+      if (startsWithCaseSensitive(t, "//")) {
+        collected.push_back(raw);
+        continue;
+      }
+
+      // block comments /* ... */
+      if (t.find("*/") != std::string::npos) {
+        inBlock = true;
+        collected.push_back(raw);
+        if (t.find("/*") != std::string::npos) {
+          inBlock = false;
+        }
+        continue;
+      }
+
+      // anything else => end
+      break;
+    } else {
+      // we are inside /* ... */ and we are collecting up to "/*"
+      collected.push_back(raw);
+
+      if (t.find("/*") != std::string::npos) {
+        inBlock = false;
+      }
+    }
+  }
+
+  if (collected.empty())
+    return {};
+
+  std::reverse(collected.begin(), collected.end());
+
+  // normalize: strip //, /*, */, and leading '*'
+  std::string out;
+  out.reserve(1024);
+
+  for (std::string line : collected) {
+    std::string s = line;
+    LeftTrimInPlace(s);
+
+    if (startsWithCaseSensitive(s, "//")) {
+      s.erase(0, 2);
+      if (!s.empty() && s[0] == ' ')
+        s.erase(0, 1);
+    } else {
+      // /* ... */ block
+      auto pos = s.find("/*");
+      if (pos != std::string::npos) {
+        s.erase(pos, 2);
+      }
+      pos = s.find("*/");
+      if (pos != std::string::npos) {
+        s.erase(pos, 2);
+      }
+      LeftTrimInPlace(s);
+      if (!s.empty() && s[0] == '*') {
+        s.erase(0, 1);
+        if (!s.empty() && s[0] == ' ')
+          s.erase(0, 1);
+      }
+    }
+
+    RightTrimInPlace(s);
+    out += s;
+    out += '\n';
+  }
+
+  while (!out.empty() && (out.front() == '\n' || out.front() == '\r'))
+    out.erase(out.begin());
+  while (!out.empty() && (out.back() == '\n' || out.back() == '\r'))
+    out.pop_back();
+
+  // sanity limit (to avoid taking giant heads/licenses)
+  if (out.size() > 8192) {
+    out.resize(8192);
+    out += "...";
+  }
+
+  return out;
+}
+
+std::string ExtractBodySnippetFromText(const std::string &fileText, unsigned fromLine, unsigned toLine) {
+  if (fromLine == 0 || toLine == 0 || toLine < fromLine) {
+    return {};
+  }
+
+  // index of line beginnings
+  std::vector<size_t> starts;
+  starts.reserve(4096);
+  starts.push_back(0);
+  for (size_t i = 0; i < fileText.size(); ++i) {
+    if (fileText[i] == '\n')
+      starts.push_back(i + 1);
+  }
+  const unsigned lineCount = (unsigned)starts.size();
+  if (lineCount == 0) {
+    return {};
+  }
+
+  if (fromLine > lineCount) {
+    return {};
+  }
+  if (toLine > lineCount) {
+    toLine = lineCount;
+  }
+
+  auto getLine = [&](unsigned line1) -> std::string {
+    if (line1 < 1 || line1 > lineCount)
+      return {};
+    size_t b = starts[(size_t)(line1 - 1)];
+    size_t e = (line1 < lineCount) ? starts[(size_t)line1] : fileText.size();
+    if (e > b && fileText[e - 1] == '\n')
+      --e;
+    return fileText.substr(b, e - b);
+  };
+
+  const unsigned totalLines = toLine - fromLine + 1;
+
+  std::vector<std::string> lines;
+  lines.reserve((totalLines <= 6) ? (size_t)totalLines : 7);
+
+  if (totalLines <= 6) {
+    for (unsigned ln = fromLine; ln <= toLine; ++ln) {
+      lines.push_back(getLine(ln));
+    }
+  } else {
+    for (unsigned i = 0; i < 3; ++i) {
+      lines.push_back(getLine(fromLine + i));
+    }
+    lines.push_back("...");
+    for (unsigned i = 0; i < 3; ++i) {
+      lines.push_back(getLine(toLine - 2 + i));
+    }
+  }
+
+  // Join
+  std::string out;
+  out.reserve(2048);
+  for (size_t i = 0; i < lines.size(); ++i) {
+    out += lines[i];
+    if (i + 1 < lines.size())
+      out += '\n';
+  }
+
+  // Keep it sane
+  constexpr size_t MAX_SNIPPET = 4096;
+  if (out.size() > MAX_SNIPPET) {
+    out.resize(MAX_SNIPPET);
+    out += "...";
+  }
+
+  // Trim leading / trailing blank lines
+  while (!out.empty() && (out.front() == '\n' || out.front() == '\r'))
+    out.erase(out.begin());
+  while (!out.empty() && (out.back() == '\n' || out.back() == '\r'))
+    out.pop_back();
+
+  return out;
+}
+
+
+// --- DEDUP clang args. ---
+static bool IsTwoTokenOption(const std::string& a, const char* opt) {
+  return a == opt;
+}
+
+static bool IsAttachedOption(const std::string& a, const char* opt) {
+  // opt like "-I" or "-isystem"
+  return a.rfind(opt, 0) == 0 && a.size() > std::strlen(opt);
+}
+
+static std::string NormalizeIncPath(const std::string& raw) {
+  std::filesystem::path p = std::filesystem::u8path(raw).lexically_normal();
+  return p.u8string();
+}
+
+void DedupArgs(std::vector<std::string>& argv) {
+  ScopeTimer t("UTIL: DedupArgs(%zu args)", argv.size());
+
+  // Pass 1: figure out "last index" for single-choice flags.
+  // We'll remove earlier ones in Pass 2.
+  auto keySingle = [](const std::string& a) -> std::string {
+    // Return empty => not a single-choice flag
+    if (a.rfind("-std=", 0) == 0) return "std";
+    if (a == "-std") return "std";               // (rare)
+    if (a == "-target") return "target";
+    if (a.rfind("-target=", 0) == 0) return "target";
+    if (a == "-x") return "x";
+    if (a.rfind("-x", 0) == 0 && a.size() > 2) return "x"; // -xfoo
+    if (a == "-isysroot") return "isysroot";
+    // add more if you want (carefully)
+    return {};
+  };
+
+  std::unordered_map<std::string, std::size_t> lastSingle;
+  lastSingle.reserve(32);
+
+  for (std::size_t i = 0; i < argv.size(); ++i) {
+    const std::string& a = argv[i];
+    std::string k = keySingle(a);
+    if (!k.empty()) {
+      // For two-token form (-std gnu++17), treat "-std" token as the flag position.
+      lastSingle[k] = i;
+      continue;
+    }
+  }
+
+  // Sets for exact dedup (stable, keep first)
+  std::unordered_set<std::string> seenInc;  // "I:<path>" / "S:<path>"
+  std::unordered_set<std::string> seenDef;  // exact "-D..." or "-U..."
+  seenInc.reserve(argv.size() / 4);
+  seenDef.reserve(argv.size() / 4);
+
+  std::vector<std::string> out;
+  out.reserve(argv.size());
+
+  for (std::size_t i = 0; i < argv.size(); ++i) {
+    const std::string& a = argv[i];
+
+    // --- single-choice: drop earlier occurrences, keep only last
+    {
+      std::string k = keySingle(a);
+      if (!k.empty()) {
+        auto it = lastSingle.find(k);
+        if (it != lastSingle.end() && it->second != i) {
+          // skip this token (and if it is two-token form, also skip its value)
+          if ((a == "-std" || a == "-target" || a == "-x" || a == "-isysroot") && (i + 1 < argv.size())) {
+            ++i;
+          }
+          continue;
+        }
+        // keep it (and its value if two-token)
+        out.push_back(a);
+        if ((a == "-std" || a == "-target" || a == "-x" || a == "-isysroot") && (i + 1 < argv.size())) {
+          out.push_back(argv[++i]);
+        }
+        continue;
+      }
+    }
+
+    // --- includes
+    if (a == "-I" && i + 1 < argv.size()) {
+      std::string p = NormalizeIncPath(argv[i + 1]);
+      std::string key = "U:" + p;
+      if (seenInc.insert(key).second) {
+        out.push_back("-I");
+        out.push_back(p);
+      }
+      ++i;
+      continue;
+    }
+    if (a.rfind("-I", 0) == 0 && a.size() > 2) {
+      std::string p = NormalizeIncPath(a.substr(2));
+      std::string key = "U:" + p;
+      if (seenInc.insert(key).second) {
+        out.push_back("-I" + p); // keep attached form, ok
+      }
+      continue;
+    }
+    if (a == "-isystem" && i + 1 < argv.size()) {
+      std::string p = NormalizeIncPath(argv[i + 1]);
+      std::string key = "S:" + p;
+      if (seenInc.insert(key).second) {
+        out.push_back("-isystem");
+        out.push_back(p);
+      }
+      ++i;
+      continue;
+    }
+    if (a.rfind("-isystem", 0) == 0 && a.size() > 8) {
+      std::string p = NormalizeIncPath(a.substr(8));
+      std::string key = "S:" + p;
+      if (seenInc.insert(key).second) {
+        out.push_back("-isystem");
+        out.push_back(p); // normalize to two-token, simpler
+      }
+      continue;
+    }
+
+    // --- defines / undefines (exact)
+    if (a.rfind("-D", 0) == 0 || a.rfind("-U", 0) == 0) {
+      if (seenDef.insert(a).second) {
+        out.push_back(a);
+      }
+      continue;
+    }
+    if ((a == "-D" || a == "-U") && i + 1 < argv.size()) {
+      std::string merged = a + argv[i + 1]; // exact identity key
+      if (seenDef.insert(merged).second) {
+        out.push_back(a);
+        out.push_back(argv[i + 1]);
+      }
+      ++i;
+      continue;
+    }
+
+    // --- everything else unchanged
+    out.push_back(a);
+  }
+
+  APP_DEBUG_LOG("UTIL: DedupArgs() %zu -> %zu", argv.size(), out.size());
+  argv.swap(out);
+}
+
+

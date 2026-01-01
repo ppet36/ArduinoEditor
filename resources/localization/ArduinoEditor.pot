@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-31 21:08+0100\n"
+"POT-Creation-Date: 2026-01-01 12:33+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,70 +17,70 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../src/ai_client.cpp:75
+#: ../src/ai_client.cpp:74
 msgid ""
 "Extra JSON request parameters must be a JSON object (e.g. {\"temperature"
 "\":0.2})."
 msgstr ""
 
-#: ../src/ai_client.cpp:83
+#: ../src/ai_client.cpp:82
 #, c-format
 msgid "Invalid extra request JSON: %s"
 msgstr ""
 
-#: ../src/ai_client.cpp:122
+#: ../src/ai_client.cpp:121
 msgid "Failed to initialize HTTP client (cURL)."
 msgstr ""
 
-#: ../src/ai_client.cpp:228
+#: ../src/ai_client.cpp:227
 msgid "HTTP request failed: "
 msgstr ""
 
-#: ../src/ai_client.cpp:256
+#: ../src/ai_client.cpp:255
 #, c-format
 msgid "HTTP error %ld from AI endpoint: %s"
 msgstr ""
 
-#: ../src/ai_client.cpp:265
+#: ../src/ai_client.cpp:264
 #, c-format
 msgid ""
 "HTTP error %ld from AI endpoint. Response body:\n"
 "%s"
 msgstr ""
 
-#: ../src/ai_client.cpp:337
+#: ../src/ai_client.cpp:336
 msgid "No API key found in the system secret store or OPENAI_API_KEY."
 msgstr ""
 
-#: ../src/ai_client.cpp:345 ../src/ai_client.cpp:365 ../src/ai_client.cpp:439
+#: ../src/ai_client.cpp:344 ../src/ai_client.cpp:364 ../src/ai_client.cpp:438
 msgid "AI is not enabled or not configured."
 msgstr ""
 
-#: ../src/ai_client.cpp:416
+#: ../src/ai_client.cpp:415
 msgid "Could not extract assistant text."
 msgstr ""
 
-#: ../src/ai_client.cpp:491
+#: ../src/ai_client.cpp:490
 msgid "HTTP request failed."
 msgstr ""
 
-#: ../src/ai_client.cpp:509
+#: ../src/ai_client.cpp:508
 msgid "Could not extract assistant text from AI response."
 msgstr ""
 
-#: ../src/ai_client.cpp:736
+#: ../src/ai_client.cpp:735
 msgid ""
 "Could not extract assistant text from AI response.\n"
 "Raw JSON (truncated):\n"
 msgstr ""
 
-#: ../src/ai_client.cpp:817
+#: ../src/ai_client.cpp:816
 msgid ""
 "Could not extract assistant text from AI response.\n"
 "Raw response (truncated):\n"
 msgstr ""
 
-#: ../src/ai_client.cpp:822
+#: ../src/ai_client.cpp:821
 #, c-format
 msgid "Failed to parse AI response: %s"
 msgstr ""
@@ -394,72 +394,72 @@ msgstr ""
 msgid "About Arduino Editor"
 msgstr ""
 
-#: ../src/ard_aboutdlg.cpp:370
+#: ../src/ard_aboutdlg.cpp:352
 msgid "About"
 msgstr ""
 
-#: ../src/ard_aboutdlg.cpp:389
+#: ../src/ard_aboutdlg.cpp:373
 msgid "Licenses"
 msgstr ""
 
-#: ../src/ard_ai.cpp:669 ../src/ard_aipnl.cpp:476
+#: ../src/ard_ai.cpp:658 ../src/ard_aipnl.cpp:474
 #, c-format
 msgid "%s (in: %d, out: %d, tot: %d) tokens"
 msgstr ""
 
-#: ../src/ard_ai.cpp:723
+#: ../src/ard_ai.cpp:712
 msgid "Another AI action is running."
 msgstr ""
 
-#: ../src/ard_ai.cpp:724 ../src/ard_ai.cpp:731 ../src/ard_ai.cpp:2855
-#: ../src/ard_ai.cpp:3165 ../src/ard_ai.cpp:3188 ../src/ard_ai.cpp:3484
-#: ../src/ard_ai.cpp:3553
+#: ../src/ard_ai.cpp:713 ../src/ard_ai.cpp:720 ../src/ard_ai.cpp:2845
+#: ../src/ard_ai.cpp:3155 ../src/ard_ai.cpp:3178 ../src/ard_ai.cpp:3474
+#: ../src/ard_ai.cpp:3543
 msgid "Arduino Editor AI"
 msgstr ""
 
-#: ../src/ard_ai.cpp:730
+#: ../src/ard_ai.cpp:719
 msgid "AI is disabled. Enable it in Settings -> AI."
 msgstr ""
 
-#: ../src/ard_ai.cpp:765
+#: ../src/ard_ai.cpp:754
 msgid "Please select some code you want to explain."
 msgstr ""
 
-#: ../src/ard_ai.cpp:766 ../src/ard_ai.cpp:778 ../src/ard_ai.cpp:800
-#: ../src/ard_ai.cpp:3508
+#: ../src/ard_ai.cpp:755 ../src/ard_ai.cpp:767 ../src/ard_ai.cpp:789
+#: ../src/ard_ai.cpp:3498
 msgid "AI explain selection"
 msgstr ""
 
-#: ../src/ard_ai.cpp:777
+#: ../src/ard_ai.cpp:766
 msgid "The selected text is empty or whitespace only."
 msgstr ""
 
-#: ../src/ard_ai.cpp:785
+#: ../src/ard_ai.cpp:774
 msgid ""
 "You are an expert Arduino/C++ assistant integrated into an IDE. Explain the "
 "selected code snippet in a clear and concise way. Focus on what it does, "
 "important details, side-effects and possible pitfalls. Answer in English."
 msgstr ""
 
-#: ../src/ard_ai.cpp:791
+#: ../src/ard_ai.cpp:780
 msgid ""
 "Please explain the following C++/Arduino code snippet:\n"
 "\n"
 "```cpp\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:793 ../src/ard_ai.cpp:867
+#: ../src/ard_ai.cpp:782 ../src/ard_ai.cpp:856
 msgid ""
 "\n"
 "```"
 msgstr ""
 
-#: ../src/ard_ai.cpp:799 ../src/ard_ai.cpp:1188 ../src/ard_ai.cpp:1301
-#: ../src/ard_ai.cpp:1422 ../src/ard_ai.cpp:1496 ../src/ard_ai.cpp:1783
+#: ../src/ard_ai.cpp:788 ../src/ard_ai.cpp:1177 ../src/ard_ai.cpp:1290
+#: ../src/ard_ai.cpp:1411 ../src/ard_ai.cpp:1485 ../src/ard_ai.cpp:1773
 msgid "Failed to start AI request."
 msgstr ""
 
-#: ../src/ard_ai.cpp:850
+#: ../src/ard_ai.cpp:839
 msgid ""
 "You are an expert C++/Arduino assistant integrated into an IDE.\n"
 "You will receive:\n"
@@ -476,7 +476,7 @@ msgid ""
 "- Do not add any text outside the comment block."
 msgstr ""
 
-#: ../src/ard_ai.cpp:864
+#: ../src/ard_ai.cpp:853
 #, c-format
 msgid ""
 "Generate a documentation comment for the symbol %s in the following C++/"
@@ -485,97 +485,97 @@ msgid ""
 "```cpp\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:898
+#: ../src/ard_ai.cpp:887
 msgid "This symbol is already documented."
 msgstr ""
 
-#: ../src/ard_ai.cpp:898 ../src/ard_ai.cpp:907 ../src/ard_ai.cpp:917
-#: ../src/ard_ai.cpp:979 ../src/ard_ai.cpp:1061 ../src/ard_ai.cpp:1117
-#: ../src/ard_ai.cpp:1178 ../src/ard_ai.cpp:1189 ../src/ard_ai.cpp:1217
-#: ../src/ard_ai.cpp:1228 ../src/ard_ai.cpp:1237 ../src/ard_ai.cpp:1292
-#: ../src/ard_ai.cpp:1302 ../src/ard_ai.cpp:3453 ../src/ard_ai.cpp:3514
-#: ../src/ard_ai.cpp:3540
+#: ../src/ard_ai.cpp:887 ../src/ard_ai.cpp:896 ../src/ard_ai.cpp:906
+#: ../src/ard_ai.cpp:968 ../src/ard_ai.cpp:1050 ../src/ard_ai.cpp:1106
+#: ../src/ard_ai.cpp:1167 ../src/ard_ai.cpp:1178 ../src/ard_ai.cpp:1206
+#: ../src/ard_ai.cpp:1217 ../src/ard_ai.cpp:1226 ../src/ard_ai.cpp:1281
+#: ../src/ard_ai.cpp:1291 ../src/ard_ai.cpp:3443 ../src/ard_ai.cpp:3504
+#: ../src/ard_ai.cpp:3530
 msgid "AI generate documentation"
 msgstr ""
 
-#: ../src/ard_ai.cpp:906 ../src/ard_ai.cpp:1216 ../src/ard_ai.cpp:1341
+#: ../src/ard_ai.cpp:895 ../src/ard_ai.cpp:1205 ../src/ard_ai.cpp:1330
 #: ../src/ard_refactor.cpp:656 ../src/ard_refactor.cpp:915
 #: ../src/ard_refactor.cpp:1127
 msgid "No symbol under the cursor."
 msgstr ""
 
-#: ../src/ard_ai.cpp:916
+#: ../src/ard_ai.cpp:905
 msgid "No suitable type or context for documentation at the cursor."
 msgstr ""
 
-#: ../src/ard_ai.cpp:978
+#: ../src/ard_ai.cpp:967
 msgid "No documentation comments to insert."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1057
+#: ../src/ard_ai.cpp:1046
 #, c-format
 msgid ""
 "Documentation was generated, but no suitable insertion points were found "
 "(%zu symbol(s))."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1114
+#: ../src/ard_ai.cpp:1103
 #, c-format
 msgid "Documentation generated for %zu symbol(s)."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1177
+#: ../src/ard_ai.cpp:1166
 msgid "No functions or methods found that need documentation."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1227
+#: ../src/ard_ai.cpp:1216
 msgid "Cursor is not on a class or struct declaration."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1236
+#: ../src/ard_ai.cpp:1225
 msgid "Class body range is not available."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1291
+#: ../src/ard_ai.cpp:1280
 msgid "No methods found in the current class that need documentation."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1342 ../src/ard_ai.cpp:1358 ../src/ard_ai.cpp:1367
-#: ../src/ard_ai.cpp:1423 ../src/ard_ai.cpp:3546
+#: ../src/ard_ai.cpp:1331 ../src/ard_ai.cpp:1347 ../src/ard_ai.cpp:1356
+#: ../src/ard_ai.cpp:1412 ../src/ard_ai.cpp:3536
 msgid "AI optimize function or method"
 msgstr ""
 
-#: ../src/ard_ai.cpp:1357
+#: ../src/ard_ai.cpp:1346
 msgid "Cursor is not on a function or method declaration."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1366
+#: ../src/ard_ai.cpp:1355
 msgid "Function or method body range is not available."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1497 ../src/ard_ai.cpp:3520
+#: ../src/ard_ai.cpp:1486 ../src/ard_ai.cpp:3510
 msgid "AI solve project errors"
 msgstr ""
 
-#: ../src/ard_ai.cpp:1560
+#: ../src/ard_ai.cpp:1549
 msgid "please "
 msgstr ""
 
-#: ../src/ard_ai.cpp:1562
+#: ../src/ard_ai.cpp:1551
 msgid "pls "
 msgstr ""
 
-#: ../src/ard_ai.cpp:1784 ../src/ard_ai.cpp:3532
+#: ../src/ard_ai.cpp:1774 ../src/ard_ai.cpp:3522
 msgid "AI interactive chat"
 msgstr ""
 
-#: ../src/ard_ai.cpp:1927
+#: ../src/ard_ai.cpp:1917
 msgid ""
 "(Loaded previous session context.)\n"
 "\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:2034
+#: ../src/ard_ai.cpp:2024
 #, c-format
 msgid ""
 "\n"
@@ -583,7 +583,7 @@ msgid ""
 "<patch into file %s (%d-%d)>\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:2041
+#: ../src/ard_ai.cpp:2031
 #, c-format
 msgid ""
 "\n"
@@ -591,33 +591,33 @@ msgid ""
 "<info with type %s requested>\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:2842
+#: ../src/ard_ai.cpp:2832
 msgid ""
 "\n"
 "\n"
 "<patch rejected: file_range required>\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:2854
+#: ../src/ard_ai.cpp:2844
 msgid "AI requested more information too many times."
 msgstr ""
 
-#: ../src/ard_ai.cpp:3139
+#: ../src/ard_ai.cpp:3129
 msgid ""
 "\n"
 "\n"
 "<patch rejected>"
 msgstr ""
 
-#: ../src/ard_ai.cpp:3165
+#: ../src/ard_ai.cpp:3155
 msgid "New sketch file can not be created!"
 msgstr ""
 
-#: ../src/ard_ai.cpp:3187
+#: ../src/ard_ai.cpp:3177
 msgid "AI patch does not apply to the current file."
 msgstr ""
 
-#: ../src/ard_ai.cpp:3195
+#: ../src/ard_ai.cpp:3185
 #, c-format
 msgid ""
 "\n"
@@ -625,163 +625,163 @@ msgid ""
 "<patch applied into file %s>\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:3246
+#: ../src/ard_ai.cpp:3236
 #, c-format
 msgid "<info with type %s requested>\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:3452
+#: ../src/ard_ai.cpp:3442
 msgid "Failed to start AI request for next symbol."
 msgstr ""
 
-#: ../src/ard_ai.cpp:3498
+#: ../src/ard_ai.cpp:3488
 msgid "Unknown AI error."
 msgstr ""
 
-#: ../src/ard_ai.cpp:3507 ../src/ard_ai.cpp:3513 ../src/ard_ai.cpp:3519
-#: ../src/ard_ai.cpp:3531 ../src/ard_ai.cpp:3539 ../src/ard_ai.cpp:3545
-#: ../src/ard_ai.cpp:3552
+#: ../src/ard_ai.cpp:3497 ../src/ard_ai.cpp:3503 ../src/ard_ai.cpp:3509
+#: ../src/ard_ai.cpp:3521 ../src/ard_ai.cpp:3529 ../src/ard_ai.cpp:3535
+#: ../src/ard_ai.cpp:3542
 msgid "AI request failed:\n"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:68
+#: ../src/ard_aimdldlg.cpp:57
 msgid "AI model"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:99
+#: ../src/ard_aimdldlg.cpp:88
 msgid "Name:"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:103
+#: ../src/ard_aimdldlg.cpp:92
 msgid "Endpoint URL:"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:107
+#: ../src/ard_aimdldlg.cpp:96
 msgid "Model:"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:111
+#: ../src/ard_aimdldlg.cpp:100
 msgid "Maximum AI iterations:"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:117
+#: ../src/ard_aimdldlg.cpp:106
 msgid "Request timeout (seconds, 0 = no limit):"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:124
+#: ../src/ard_aimdldlg.cpp:113
 msgid "Force file_range policy (AI must inspect files before PATCH)"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:128
+#: ../src/ard_aimdldlg.cpp:117
 msgid "Keep full AI context (include all requested code and info)"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:132
+#: ../src/ard_aimdldlg.cpp:121
 msgid "Limit AI context to last applied change (floating window)"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:137
+#: ../src/ard_aimdldlg.cpp:126
 msgid "Authentication"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:138
+#: ../src/ard_aimdldlg.cpp:127
 msgid "This endpoint requires an API key"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:143
+#: ../src/ard_aimdldlg.cpp:132
 msgid "API key:"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:148
+#: ../src/ard_aimdldlg.cpp:137
 msgid "Clear stored key"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:154
+#: ../src/ard_aimdldlg.cpp:143
 msgid "The API key is stored using the system's secure keychain."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:160
+#: ../src/ard_aimdldlg.cpp:149
 msgid "Extra request JSON"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:184 ../src/ard_ed_frm.cpp:4077
+#: ../src/ard_aimdldlg.cpp:173 ../src/ard_ed_frm.cpp:4077
 msgid "Delete"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:185
+#: ../src/ard_aimdldlg.cpp:174
 msgid "Export..."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:186
+#: ../src/ard_aimdldlg.cpp:175
 msgid "Test"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:194 ../src/ard_boptdlg.cpp:76
-#: ../src/ard_fmtdlg.cpp:187 ../src/utils.cpp:961
+#: ../src/ard_aimdldlg.cpp:183 ../src/ard_boptdlg.cpp:76
+#: ../src/ard_fmtdlg.cpp:187 ../src/utils.cpp:1015
 msgid "OK"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:195 ../src/ard_boptdlg.cpp:77
+#: ../src/ard_aimdldlg.cpp:184 ../src/ard_boptdlg.cpp:77
 #: ../src/ard_diff.cpp:126 ../src/ard_ed_frm.cpp:2362 ../src/ard_fmtdlg.cpp:188
-#: ../src/utils.cpp:962
+#: ../src/utils.cpp:1016
 msgid "Cancel"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:254
+#: ../src/ard_aimdldlg.cpp:243
 msgid "A key is already stored. Leave empty to keep it."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:256
+#: ../src/ard_aimdldlg.cpp:245
 msgid "Enter your API key (will be stored securely)."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:292
+#: ../src/ard_aimdldlg.cpp:281
 msgid "Export model to JSON"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:293 ../src/ard_setdlg.cpp:1760
+#: ../src/ard_aimdldlg.cpp:282 ../src/ard_setdlg.cpp:1760
 msgid "JSON files (*.json)|*.json|All files|*.*"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:299
+#: ../src/ard_aimdldlg.cpp:288
 msgid "Failed to write file."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:299
+#: ../src/ard_aimdldlg.cpp:288
 msgid "Export"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:313 ../src/ard_aimdldlg.cpp:428
+#: ../src/ard_aimdldlg.cpp:302 ../src/ard_aimdldlg.cpp:417
 msgid "Invalid JSON"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:339 ../src/ard_aimdldlg.cpp:436
+#: ../src/ard_aimdldlg.cpp:328 ../src/ard_aimdldlg.cpp:425
 msgid "Endpoint URL is empty."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:339 ../src/ard_aimdldlg.cpp:361
-#: ../src/ard_aimdldlg.cpp:436
+#: ../src/ard_aimdldlg.cpp:328 ../src/ard_aimdldlg.cpp:350
+#: ../src/ard_aimdldlg.cpp:425
 msgid "Validation"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:361
+#: ../src/ard_aimdldlg.cpp:350
 msgid ""
 "API key is required for this endpoint (no key provided and none stored)."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:405
+#: ../src/ard_aimdldlg.cpp:394
 msgid "Connection test succeeded."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:405 ../src/ard_aimdldlg.cpp:407
+#: ../src/ard_aimdldlg.cpp:394 ../src/ard_aimdldlg.cpp:396
 msgid "AI Test"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:407
+#: ../src/ard_aimdldlg.cpp:396
 msgid "Connection test failed."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:463
+#: ../src/ard_aimdldlg.cpp:452
 msgid ""
 "System keyring (Secret Service) is not available in this session.\n"
 "\n"
@@ -793,11 +793,11 @@ msgid ""
 "running."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:467
+#: ../src/ard_aimdldlg.cpp:456
 msgid "API key not saved"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:505
+#: ../src/ard_aimdldlg.cpp:494
 msgid "Failed to save AI API key to the system secret store."
 msgstr ""
 
@@ -822,19 +822,19 @@ msgstr ""
 msgid "[AI] Failed to load saved session."
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:435
+#: ../src/ard_aipnl.cpp:433
 msgid "[AI] Interactive actions are not available."
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:451
+#: ../src/ard_aipnl.cpp:449
 msgid "[AI] Failed to start interactive chat request."
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:504
+#: ../src/ard_aipnl.cpp:502
 msgid "[AI ERROR] Unknown error"
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:506
+#: ../src/ard_aipnl.cpp:504
 #, c-format
 msgid "[AI ERROR] %s"
 msgstr ""
@@ -884,11 +884,11 @@ msgstr ""
 msgid "<default>"
 msgstr ""
 
-#: ../src/ard_cc.cpp:3061
+#: ../src/ard_cc.cpp:2843
 msgid "Declaration:"
 msgstr ""
 
-#: ../src/ard_cli.cpp:2922
+#: ../src/ard_cli.cpp:2957
 msgid "Serial port is not set. Cannot upload sketch.\n"
 msgstr ""
 

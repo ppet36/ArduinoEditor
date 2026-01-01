@@ -49,242 +49,16 @@ struct CcFilesSnapshotGuard {
   }
 };
 
-// non doxygen doc extract
-static inline void ltrim_inplace(std::string &s) {
-  size_t i = 0;
-  while (i < s.size() && (s[i] == ' ' || s[i] == '\t' || s[i] == '\r'))
-    ++i;
-  s.erase(0, i);
-}
-
-static inline void rtrim_inplace(std::string &s) {
-  while (!s.empty() && (s.back() == ' ' || s.back() == '\t' || s.back() == '\r'))
-    s.pop_back();
-}
-
-static inline bool starts_with(const std::string &s, const char *pfx) {
-  size_t n = std::strlen(pfx);
-  return s.size() >= n && s.compare(0, n, pfx) == 0;
-}
-
-// declLine je 1-based (clang line).
-static std::string ExtractCommentBlockAboveLine(const std::string &fileText, int declLine) {
-  if (declLine <= 1)
-    return {};
-
-  // index of lines beginning
-  std::vector<size_t> starts;
-  starts.reserve(4096);
-  starts.push_back(0);
-  for (size_t i = 0; i < fileText.size(); ++i) {
-    if (fileText[i] == '\n')
-      starts.push_back(i + 1);
-  }
-  int lineCount = (int)starts.size();
-  if (declLine > lineCount)
-    declLine = lineCount;
-
-  auto getLine = [&](int line1) -> std::string {
-    if (line1 < 1 || line1 > lineCount)
-      return {};
-    size_t b = starts[(size_t)(line1 - 1)];
-    size_t e = (line1 < lineCount) ? starts[(size_t)line1] : fileText.size();
-    // strip trailing '\n'
-    if (e > b && fileText[e - 1] == '\n')
-      --e;
-    return fileText.substr(b, e - b);
-  };
-
-  std::vector<std::string> collected;
-  collected.reserve(32);
-
-  bool inBlock = false;
-  int safety = 0;
-
-  // start: line above declaration
-  for (int ln = declLine - 1; ln >= 1 && safety++ < 1000; --ln) {
-    std::string raw = getLine(ln);
-    std::string t = raw;
-    ltrim_inplace(t);
-    rtrim_inplace(t);
-
-    if (!inBlock) {
-      if (t.empty()) {
-        break; // empty line = end of doc block
-      }
-
-      // line comments //
-      if (starts_with(t, "//")) {
-        collected.push_back(raw);
-        continue;
-      }
-
-      // block comments /* ... */
-      if (t.find("*/") != std::string::npos) {
-        inBlock = true;
-        collected.push_back(raw);
-        if (t.find("/*") != std::string::npos) {
-          inBlock = false;
-        }
-        continue;
-      }
-
-      // anything else => end
-      break;
-    } else {
-      // we are inside /* ... */ and we are collecting up to "/*"
-      collected.push_back(raw);
-
-      if (t.find("/*") != std::string::npos) {
-        inBlock = false;
-      }
-    }
-  }
-
-  if (collected.empty())
-    return {};
-
-  std::reverse(collected.begin(), collected.end());
-
-  // normalize: strip //, /*, */, and leading '*'
-  std::string out;
-  out.reserve(1024);
-
-  for (std::string line : collected) {
-    std::string s = line;
-    ltrim_inplace(s);
-
-    if (starts_with(s, "//")) {
-      s.erase(0, 2);
-      if (!s.empty() && s[0] == ' ')
-        s.erase(0, 1);
-    } else {
-      // /* ... */ block
-      auto pos = s.find("/*");
-      if (pos != std::string::npos) {
-        s.erase(pos, 2);
-      }
-      pos = s.find("*/");
-      if (pos != std::string::npos) {
-        s.erase(pos, 2);
-      }
-      ltrim_inplace(s);
-      if (!s.empty() && s[0] == '*') {
-        s.erase(0, 1);
-        if (!s.empty() && s[0] == ' ')
-          s.erase(0, 1);
-      }
-    }
-
-    rtrim_inplace(s);
-    out += s;
-    out += '\n';
-  }
-
-  while (!out.empty() && (out.front() == '\n' || out.front() == '\r'))
-    out.erase(out.begin());
-  while (!out.empty() && (out.back() == '\n' || out.back() == '\r'))
-    out.pop_back();
-
-  // sanity limit (to avoid taking giant heads/licenses)
-  if (out.size() > 8192) {
-    out.resize(8192);
-    out += "...";
-  }
-
-  return out;
-}
 
 static std::string MakeBriefFromFull(const std::string &full) {
   // first non-empty line / paragraph as a brief
   std::string s = full;
   size_t pos = s.find('\n');
   std::string first = (pos == std::string::npos) ? s : s.substr(0, pos);
-  rtrim_inplace(first);
-  ltrim_inplace(first);
+  TrimInPlace(first);
   return first;
 }
 
-static std::string ExtractBodySnippetFromText(const std::string &fileText,
-                                              unsigned fromLine,
-                                              unsigned toLine) {
-  if (fromLine == 0 || toLine == 0 || toLine < fromLine) {
-    return {};
-  }
-
-  // index of line beginnings
-  std::vector<size_t> starts;
-  starts.reserve(4096);
-  starts.push_back(0);
-  for (size_t i = 0; i < fileText.size(); ++i) {
-    if (fileText[i] == '\n')
-      starts.push_back(i + 1);
-  }
-  const unsigned lineCount = (unsigned)starts.size();
-  if (lineCount == 0) {
-    return {};
-  }
-
-  if (fromLine > lineCount) {
-    return {};
-  }
-  if (toLine > lineCount) {
-    toLine = lineCount;
-  }
-
-  auto getLine = [&](unsigned line1) -> std::string {
-    if (line1 < 1 || line1 > lineCount)
-      return {};
-    size_t b = starts[(size_t)(line1 - 1)];
-    size_t e = (line1 < lineCount) ? starts[(size_t)line1] : fileText.size();
-    if (e > b && fileText[e - 1] == '\n')
-      --e;
-    return fileText.substr(b, e - b);
-  };
-
-  const unsigned totalLines = toLine - fromLine + 1;
-
-  std::vector<std::string> lines;
-  lines.reserve((totalLines <= 6) ? (size_t)totalLines : 7);
-
-  if (totalLines <= 6) {
-    for (unsigned ln = fromLine; ln <= toLine; ++ln) {
-      lines.push_back(getLine(ln));
-    }
-  } else {
-    for (unsigned i = 0; i < 3; ++i) {
-      lines.push_back(getLine(fromLine + i));
-    }
-    lines.push_back("...");
-    for (unsigned i = 0; i < 3; ++i) {
-      lines.push_back(getLine(toLine - 2 + i));
-    }
-  }
-
-  // Join
-  std::string out;
-  out.reserve(2048);
-  for (size_t i = 0; i < lines.size(); ++i) {
-    out += lines[i];
-    if (i + 1 < lines.size())
-      out += '\n';
-  }
-
-  // Keep it sane
-  constexpr size_t MAX_SNIPPET = 4096;
-  if (out.size() > MAX_SNIPPET) {
-    out.resize(MAX_SNIPPET);
-    out += "...";
-  }
-
-  // Trim leading / trailing blank lines
-  while (!out.empty() && (out.front() == '\n' || out.front() == '\r'))
-    out.erase(out.begin());
-  while (!out.empty() && (out.back() == '\n' || out.back() == '\r'))
-    out.pop_back();
-
-  return out;
-}
 
 static const char *ClangErrorToString(CXErrorCode err) {
   switch (err) {
@@ -2718,6 +2492,7 @@ std::vector<std::string> ArduinoCodeCompletion::GetCompilerArgs(const std::vecto
     std::vector<std::string> libsIncludes = ResolveLibrariesIncludes(files);
 
     if (!libsIncludes.empty()) {
+      std::string platformPath = arduinoCli->GetPlatformPath();
       std::vector<std::string> merged;
       merged.reserve(compArgs.size() + libsIncludes.size());
       bool injected = false;
@@ -2726,6 +2501,12 @@ std::vector<std::string> ArduinoCodeCompletion::GetCompilerArgs(const std::vecto
         merged.push_back(a);
         if (!injected && a.size() >= 2 && a[0] == '-' && a[1] == 'I') {
           for (const auto &dir : libsIncludes) {
+            if (!platformPath.empty() && (dir.find(platformPath, 0) == 0)) {
+              merged.push_back("-isystem");
+              merged.push_back(dir);
+              continue;
+            }
+
             merged.push_back("-I" + dir);
           }
           injected = true;
@@ -5178,8 +4959,10 @@ bool ArduinoCodeCompletion::IsClangTargetSupported(const std::string &target) {
     ok = false;
   }
 
-  if (tu)
+  if (tu) {
     clang_disposeTranslationUnit(tu);
+  }
+
   clang_disposeIndex(index);
 
   cache[target] = ok;

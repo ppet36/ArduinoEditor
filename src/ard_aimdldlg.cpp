@@ -30,23 +30,12 @@
 #include <wx/secretstore.h>
 #include <wx/sizer.h>
 #include <wx/spinctrl.h>
-#include <wx/sstream.h>
 #include <wx/stattext.h>
 #include <wx/stc/stc.h>
 #include <wx/textctrl.h>
-#include <wx/wfstream.h>
 #include <thread>
 
 #include <nlohmann/json.hpp>
-
-static bool WriteTextFile(const wxString &path, const wxString &text) {
-  wxFileOutputStream os(path);
-  if (!os.IsOk())
-    return false;
-  wxStringInputStream is(text);
-  os.Write(is);
-  return os.IsOk();
-}
 
 static nlohmann::json AiModelToJson(const AiModelSettings &m) {
   nlohmann::json j;

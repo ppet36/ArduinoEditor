@@ -62,8 +62,7 @@ size_t CurlWriteCallback(char *ptr, size_t size, size_t nmemb, void *userdata) {
 static bool ParseExtraJsonObject(const wxString &s, json &out, wxString *errOut) {
   out = json::object();
 
-  wxString t = s;
-  t.Trim(true).Trim(false);
+  wxString t = TrimCopy(s);
 
   if (t.IsEmpty())
     return true; // empty is OK

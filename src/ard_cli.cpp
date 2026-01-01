@@ -374,9 +374,19 @@ static void ExpandResponseFileSanitized(const std::string &atArg, std::vector<st
           full += '/';
         full += token;
 
-        out.push_back("-I" + full);
+        out.push_back("-isystem");
+        out.push_back(full);
       }
       continue;
+    }
+
+    if (hasPrefix(token, "-I")) {
+      std::string incl = token.substr(2);
+      if (!incl.empty()) {
+        out.push_back("-isystem");
+        out.push_back(incl);
+        continue;
+      }
     }
 
     // common interesting flags
@@ -999,7 +1009,8 @@ std::vector<std::string> ArduinoCli::GetSystemIncludeArgsForCompiler(const std::
 
         // we also accept C:\... and similar, not just Unix /
         if (!path.empty()) {
-          result.push_back("-I" + path);
+          result.push_back("-isystem");
+          result.push_back(path);
           APP_DEBUG_LOG("CLI: Added compiler include %s", path.c_str());
         }
       }
@@ -1112,12 +1123,16 @@ std::vector<std::string> ArduinoCli::BuildClangArgsFromBoardDetails(const nlohma
     m_platformPath.clear();
   }
 
+  APP_TRACE_LOG("CLI: platform path is %s", m_platformPath.c_str());
+
   auto itCorePlat = props.find("build.core.platform.path");
   if (itCorePlat != props.end()) {
     m_corePlatformPath = itCorePlat->second;
   } else {
     m_corePlatformPath.clear();
   }
+
+  APP_TRACE_LOG("CLI: core platform path is %s", m_corePlatformPath.c_str());
 
   // ---- compilerPath: from recipe.cpp.o.pattern ----
   std::string compilerPath;
@@ -1159,11 +1174,14 @@ std::vector<std::string> ArduinoCli::BuildClangArgsFromBoardDetails(const nlohma
     return result;
   }
 
+  APP_TRACE_LOG("CLI: detected compiler path %s", compilerPath.c_str());
+
   result.push_back("-I" + sketchPath);
 
   auto itBuildCorePath = props.find("build.core.path");
   if (itBuildCorePath != props.end()) {
-    result.push_back("-I" + itBuildCorePath->second);
+    result.push_back("-isystem");
+    result.push_back(itBuildCorePath->second);
   }
 
   // Errors that are outside the sketch are ignored.
@@ -1176,12 +1194,17 @@ std::vector<std::string> ArduinoCli::BuildClangArgsFromBoardDetails(const nlohma
 
   auto appendFlagsFromProp = [&](const char *key) {
     auto it = props.find(key);
-    if (it == props.end())
+    if (it == props.end()) {
       return;
-    std::string valueExpanded =
-        ExpandPropertiesInString(it->second, props, sketchPath);
+    }
+
+    std::string valueExpanded = ExpandPropertiesInString(it->second, props, sketchPath);
     auto tokens = SplitArgsKeepingQuotes(valueExpanded);
-    rawFlags.insert(rawFlags.end(), tokens.begin(), tokens.end());
+
+    for (auto &token : tokens) {
+      APP_TRACE_LOG("CLI: %s -> %s", key, token.c_str());
+      rawFlags.push_back(token);
+    }
   };
 
   appendFlagsFromProp("compiler.cpreprocessor.flags");
@@ -1226,6 +1249,15 @@ std::vector<std::string> ArduinoCli::BuildClangArgsFromBoardDetails(const nlohma
       continue;
     }
 
+    if (a.rfind("-I", 0) == 0) {
+      std::string inclPath = a.substr(2);
+      if (inclPath.rfind(sketchPath, 0) != 0) {
+        result.push_back("-isystem");
+        result.push_back(inclPath);
+        continue;
+      }
+    }
+
     if (IsInterestingFlag(a)) {
       if (a.compare(0, 5, "-std=") == 0) {
         a = NormalizeStdFlag(a);
@@ -1248,7 +1280,8 @@ std::vector<std::string> ArduinoCli::BuildClangArgsFromBoardDetails(const nlohma
     std::string vpath =
         ExpandPropertiesInString(itVariantPath->second, props, sketchPath);
     if (!vpath.empty()) {
-      result.push_back("-I" + vpath);
+      result.push_back("-I"); // keep variant includes as -I
+      result.push_back(vpath);
     }
   }
 
@@ -1264,6 +1297,8 @@ std::vector<std::string> ArduinoCli::BuildClangArgsFromBoardDetails(const nlohma
   if (!foundCoreBuild) {
     result.push_back("-DARDUINO_CORE_BUILD");
   }
+
+  DedupArgs(result);
 
   return result;
 }

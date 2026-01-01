@@ -384,8 +384,7 @@ static bool HasComment(wxStyledTextCtrl *stc, int declarationLine) {
   // 1) trailing Doxygen comment on the same line as the declaration (e.g. "///<")
   {
     wxString declLine = stc->GetLine(decl0);
-    wxString trimmed = declLine;
-    trimmed.Trim(true).Trim(false);
+    wxString trimmed = TrimCopy(declLine);
     if (trimmed.Contains(wxT("///<")) || trimmed.Contains(wxT("//!<"))) {
       return true;
     }
@@ -398,8 +397,7 @@ static bool HasComment(wxStyledTextCtrl *stc, int declarationLine) {
 
   while (line >= 0 && maxLookbackLines-- > 0) {
     wxString raw = stc->GetLine(line);
-    wxString trimmed = raw;
-    trimmed.Trim(true).Trim(false);
+    wxString trimmed = TrimCopy(raw);
 
     if (trimmed.IsEmpty()) {
       break;
@@ -457,15 +455,6 @@ static bool HasComment(wxStyledTextCtrl *stc, int declarationLine) {
   }
 
   return false;
-}
-
-static uint64_t Fnv1a64(const uint8_t *data, size_t len) {
-  uint64_t h = 1469598103934665603ULL;
-  for (size_t i = 0; i < len; ++i) {
-    h ^= (uint64_t)data[i];
-    h *= 1099511628211ULL;
-  }
-  return h;
 }
 
 static std::string CanonicalizeForChecksum(const std::string &s) {
@@ -1596,10 +1585,11 @@ wxString ArduinoAiActions::GenerateSessionTitleIfRequested(const wxString &userT
 
   std::thread([this, st, sketchRoot, sessionId, textForAi]() mutable {
     // Build a short prompt
-    wxString systemPrompt =
-        wxT("You are an assistant embedded in an IDE. ")
-            wxT("Generate a short, descriptive chat session title based ONLY on the user's first message. ")
-                wxT("Rules: output ONLY the title, no quotes, no punctuation at the end, max 60 characters.");
+    wxString systemPrompt = wxT(
+        "You are an assistant embedded in an IDE. "
+        "Generate a short, descriptive chat session title based ONLY on the user's first message. "
+        "Rules: output ONLY the title, no quotes, no punctuation at the end, max 60 characters."
+    );
 
     wxString userPrompt;
     userPrompt << wxT("USER_FIRST_MESSAGE:\n") << textForAi;
