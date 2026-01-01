@@ -55,6 +55,7 @@ VARIANTS = {
 }
 
 ICONS_DEFAULT = [
+    "123",
     "close",
     "sync",
     "delete",
@@ -99,7 +100,7 @@ ICONS_DEFAULT = [
     "format_align_justify",
     "settings",
     "select_all",
-    "update",
+    "update"
 ]
 
 

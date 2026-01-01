@@ -2607,13 +2607,13 @@ wxMenuBar *ArduinoEditorFrame::CreateMenuBar() {
 
   AddMenuItemWithArt(navMenu,
                      ID_MENU_LIBRARY_MANAGER,
-                     _("Library manager...\tCtrl+L"),
+                     _("Library manager...\tCtrl+Shift+L"),
                      _("Manage Arduino libraries"),
                      wxAEArt::ListView);
 
   AddMenuItemWithArt(navMenu,
                      ID_MENU_CORE_MANAGER,
-                     _("Core manager..."),
+                     _("Boards manager...\tCtrl+Shift+B"),
                      _("Manage Arduino boards (cores)"),
                      wxAEArt::DevBoard);
 

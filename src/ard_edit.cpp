@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <wx/artprov.h>
 #include <wx/notebook.h>
+#include <wx/numdlg.h>
 #include <wx/richmsgdlg.h>
 
 enum {
@@ -49,7 +50,8 @@ enum {
   ID_MENU_NAV_PREV_OCCURRENCE,
   ID_MENU_NAV_NEXT_OCCURRENCE,
   ID_MENU_NAV_SYM_OCCURRENCE,
-  ID_MENU_NAV_GOTO_DEFINITION
+  ID_MENU_NAV_GOTO_DEFINITION,
+  ID_MENU_NAV_GOTO_LINE
 };
 
 enum {
@@ -586,19 +588,45 @@ void ArduinoEditor::OnCharHook(wxKeyEvent &event) {
     return;
   }
 
-  // ---- FIND NEXT (Cmd/Ctrl + G) ----
+// ---- FIND NEXT / PREV / GOTO LINE platform mapping ----
+
+// Windows/Linux: Ctrl+G = Go to line
+#if !defined(__WXMAC__)
+  // ---- GOTO LINE (Ctrl + G) ----
   if (primary && !alt && !shift && (key == 'G' || key == 'g')) {
-    if (m_findData)
+    GotoLine();
+    return;
+  }
+#endif
+
+// macOS: Cmd+G / Shift+Cmd+G = Find next/prev (Cocoa habit)
+#if defined(__WXMAC__)
+  // ---- FIND NEXT (Cmd + G) ----
+  if (primary && !alt && !shift && (key == 'G' || key == 'g')) {
+    if (m_findData && !m_findData->GetFindString().IsEmpty()) {
       DoFind(m_findData->GetFindString(), m_findData->GetFlags(), false);
+    } else {
+      OpenFindDialog(false);
+    }
     return;
   }
 
-  // ---- FIND PREVIOUS (Cmd/Ctrl + Shift + G) ----
+  // ---- FIND PREVIOUS (Cmd + Shift + G) ----
   if (primary && !alt && shift && (key == 'G' || key == 'g')) {
-    if (m_findData) {
+    if (m_findData && !m_findData->GetFindString().IsEmpty()) {
       int flags = m_findData->GetFlags() ^ wxFR_DOWN;
       DoFind(m_findData->GetFindString(), flags, false);
+    } else {
+      OpenFindDialog(false);
     }
+    return;
+  }
+#endif
+
+  // Go to line on macOS stays Cmd+L; on Win/Linux it can also stay Ctrl+L as a secondary
+  // ---- GOTO LINE (Cmd/Ctrl + L) ----
+  if (primary && !alt && !shift && (key == 'L' || key == 'l')) {
+    GotoLine();
     return;
   }
 
@@ -634,6 +662,12 @@ void ArduinoEditor::OnCharHook(wxKeyEvent &event) {
       }
     }
     return;
+  }
+
+  if (rawCtrl && !alt && !shift) {
+    if ((key >= 'A' && key <= 'Z') || (key >= 'a' && key <= 'z')) {
+      return;
+    }
   }
 
   event.Skip();
@@ -1038,6 +1072,26 @@ bool ArduinoEditor::DoFind(const wxString &what, int flags, bool fromStart) {
   return true;
 }
 
+void ArduinoEditor::GotoLine() {
+  const long curLine1 = m_editor->GetCurrentLine() + 1;
+  const long maxLine1 = std::max(1L, (long)m_editor->GetLineCount());
+
+  long line1 = wxGetNumberFromUser(
+      _("Line number:"), // prompt
+      _("Line:"),        // caption for the field
+      _("Go to line"),   // dialog title
+      curLine1,          // initial value
+      1,                 // min
+      maxLine1,          // max
+      this);
+
+  if (line1 < 0) {
+    return;
+  }
+
+  Goto(line1, 1);
+}
+
 void ArduinoEditor::OnFind(wxFindDialogEvent &event) {
   DoFind(event.GetFindString(), event.GetFlags(), false);
 }
@@ -1219,12 +1273,22 @@ void ArduinoEditor::OnContextMenu(wxContextMenuEvent &event) {
   AddMenuItemWithArt(navMenu,
                      ID_MENU_NAV_GOTO_DEFINITION,
 #ifdef __WXMAC__
-                     _("Go to definition (Cmd+Click)"),
+                     _("Go to definition (Ctrl+Click)"),
 #else
                      _("Go to definition\tCtrl+Click"),
 #endif
                      _("Jump to the definition of the symbol under the cursor."),
                      wxAEArt::GoToParent);
+
+  AddMenuItemWithArt(navMenu,
+                     ID_MENU_NAV_GOTO_LINE,
+#ifdef __WXMAC__
+                     _("Go to line\tCtrl+L"),
+#else
+                     _("Go to line\tCtrl+G"),
+#endif
+                     _("Jump to specific line in the current file."),
+                     wxAEArt::GotoLine);
 
   navMenu->AppendSeparator();
 
@@ -1541,6 +1605,10 @@ void ArduinoEditor::OnPopupMenu(wxCommandEvent &event) {
 
     case ID_MENU_NAV_GOTO_DEFINITION:
       GotoSymbolDefinition();
+      break;
+
+    case ID_MENU_NAV_GOTO_LINE:
+      GotoLine();
       break;
 
     case ID_MENU_NAV_PREV_OCCURRENCE:

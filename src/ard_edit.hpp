@@ -130,6 +130,7 @@ private:
 
   // Custom search in the editor
   bool DoFind(const wxString &what, int flags, bool fromStart = false);
+  void GotoLine();
 
   // Hover
   void OnDwellStart(wxStyledTextEvent &event);

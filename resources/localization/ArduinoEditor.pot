@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-01 16:52+0100\n"
+"POT-Creation-Date: 2026-01-01 18:28+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1842,7 +1842,7 @@ msgid "Find and navigate to any symbol in the current sketch"
 msgstr ""
 
 #: ../src/ard_ed_frm.cpp:2610
-msgid "Library manager...\tCtrl+L"
+msgid "Library manager...\tCtrl+Shift+L"
 msgstr ""
 
 #: ../src/ard_ed_frm.cpp:2611
@@ -1850,7 +1850,7 @@ msgid "Manage Arduino libraries"
 msgstr ""
 
 #: ../src/ard_ed_frm.cpp:2616
-msgid "Core manager..."
+msgid "Boards manager...\tCtrl+Shift+B"
 msgstr ""
 
 #: ../src/ard_ed_frm.cpp:2617
@@ -2189,112 +2189,136 @@ msgstr ""
 msgid "Renamed %d occurrences."
 msgstr ""
 
-#: ../src/ard_edit.cpp:354
+#: ../src/ard_edit.cpp:356
 #, c-format
 msgid "Unable to load file %s."
 msgstr ""
 
-#: ../src/ard_edit.cpp:452
+#: ../src/ard_edit.cpp:454
 msgid "Find and Replace"
 msgstr ""
 
-#: ../src/ard_edit.cpp:452
+#: ../src/ard_edit.cpp:454
 msgid "Find"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1196
+#: ../src/ard_edit.cpp:1080
+msgid "Line number:"
+msgstr ""
+
+#: ../src/ard_edit.cpp:1081
+msgid "Line:"
+msgstr ""
+
+#: ../src/ard_edit.cpp:1082
+msgid "Go to line"
+msgstr ""
+
+#: ../src/ard_edit.cpp:1250
 msgid "&Undo\tCtrl+Z"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1197
+#: ../src/ard_edit.cpp:1251
 msgid "&Redo\tCtrl+Y"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1200
+#: ../src/ard_edit.cpp:1254
 msgid "Cu&t\tCtrl+X"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1201
+#: ../src/ard_edit.cpp:1255
 msgid "&Copy\tCtrl+C"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1202
+#: ../src/ard_edit.cpp:1256
 msgid "&Paste\tCtrl+V"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1203
+#: ../src/ard_edit.cpp:1257
 msgid "&Delete\tDel"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1206
+#: ../src/ard_edit.cpp:1260
 msgid "Select &All\tCtrl+A"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1211
+#: ../src/ard_edit.cpp:1265
 msgid "&Find...\tCtrl+F"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1212
+#: ../src/ard_edit.cpp:1266
 msgid "R&eplace...\tCtrl+Alt+F"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1222
-msgid "Go to definition (Cmd+Click)"
+#: ../src/ard_edit.cpp:1276
+msgid "Go to definition (Ctrl+Click)"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1224
+#: ../src/ard_edit.cpp:1278
 msgid "Go to definition\tCtrl+Click"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1226
+#: ../src/ard_edit.cpp:1280
 msgid "Jump to the definition of the symbol under the cursor."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1233
+#: ../src/ard_edit.cpp:1286
+msgid "Go to line\tCtrl+L"
+msgstr ""
+
+#: ../src/ard_edit.cpp:1288
+msgid "Go to line\tCtrl+G"
+msgstr ""
+
+#: ../src/ard_edit.cpp:1290
+msgid "Jump to specific line in the current file."
+msgstr ""
+
+#: ../src/ard_edit.cpp:1297
 msgid "Previous symbol occurrence\tCtrl+Up"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1234
+#: ../src/ard_edit.cpp:1298
 msgid "Jump to the previous symbol occurrence in the current file."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1239
+#: ../src/ard_edit.cpp:1303
 msgid "Next symbol occurrence\tCtrl+Down"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1240
+#: ../src/ard_edit.cpp:1304
 msgid "Jump to the next symbol occurrence in the current file."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1247
+#: ../src/ard_edit.cpp:1311
 msgid "Show symbol occurrences\tShift+F12"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1248
+#: ../src/ard_edit.cpp:1312
 msgid "Shows list of all project-wide symbol occurrences."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1251
+#: ../src/ard_edit.cpp:1315
 msgid "Navigate"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1257
+#: ../src/ard_edit.cpp:1321
 msgid "Rename symbol..."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1258
+#: ../src/ard_edit.cpp:1322
 msgid "Rename the selected symbol across the project."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1263
+#: ../src/ard_edit.cpp:1327
 msgid "Introduce variable..."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1264
+#: ../src/ard_edit.cpp:1328
 msgid "Extract the selected expression into a new local variable."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1269 ../src/ard_refactor.cpp:640
+#: ../src/ard_edit.cpp:1333 ../src/ard_refactor.cpp:640
 #: ../src/ard_refactor.cpp:657 ../src/ard_refactor.cpp:665
 #: ../src/ard_refactor.cpp:672 ../src/ard_refactor.cpp:683
 #: ../src/ard_refactor.cpp:690 ../src/ard_refactor.cpp:701
@@ -2304,117 +2328,117 @@ msgstr ""
 msgid "Inline variable"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1270
+#: ../src/ard_edit.cpp:1334
 msgid "Replace all usages of the variable with its initializer."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1275
+#: ../src/ard_edit.cpp:1339
 msgid "Generate function implementation..."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1276
+#: ../src/ard_edit.cpp:1340
 msgid "Insert an implementation stub for the selected function."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1281
+#: ../src/ard_edit.cpp:1345
 msgid "Create declaration in header..."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1282
+#: ../src/ard_edit.cpp:1346
 msgid "Add a missing function declaration to the appropriate header file."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1287
+#: ../src/ard_edit.cpp:1351
 msgid "Organize includes..."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1288
+#: ../src/ard_edit.cpp:1352
 msgid "Detect and clean up unused or duplicate #include directives."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1293
+#: ../src/ard_edit.cpp:1357
 msgid "Extract function..."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1294
+#: ../src/ard_edit.cpp:1358
 msgid "Create a new function from the selected block of code."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1301
+#: ../src/ard_edit.cpp:1365
 msgid "Format Selection"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1302
+#: ../src/ard_edit.cpp:1366
 msgid "Format the selected text using clang-format."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1307
+#: ../src/ard_edit.cpp:1371
 msgid "Format File"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1308
+#: ../src/ard_edit.cpp:1372
 msgid "Format the current file using clang-format."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1311 ../src/ard_refactor.cpp:1643
+#: ../src/ard_edit.cpp:1375 ../src/ard_refactor.cpp:1643
 msgid "Refactor"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1320
+#: ../src/ard_edit.cpp:1384
 msgid "Explain selection"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1321
+#: ../src/ard_edit.cpp:1385
 msgid "AI explains the meaning and behavior of the selected code."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1326
+#: ../src/ard_edit.cpp:1390
 msgid "Generate documentation for Symbol"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1327
+#: ../src/ard_edit.cpp:1391
 msgid "AI generates a documentation comment for the symbol under the cursor."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1332
+#: ../src/ard_edit.cpp:1396
 msgid "Auto-Document All Functions in File"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1333
+#: ../src/ard_edit.cpp:1397
 msgid "AI generates documentation comments for all functions in this file."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1338
+#: ../src/ard_edit.cpp:1402
 msgid "Document All Methods in Class"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1339
+#: ../src/ard_edit.cpp:1403
 msgid "AI generates documentation for all methods of the selected class."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1344
+#: ../src/ard_edit.cpp:1408
 msgid "Optimize function or method"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1345
+#: ../src/ard_edit.cpp:1409
 msgid "AI optimizes function or method."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1348 ../src/ard_setdlg.cpp:1948
+#: ../src/ard_edit.cpp:1412 ../src/ard_setdlg.cpp:1948
 msgid "AI"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1683
+#: ../src/ard_edit.cpp:1751
 msgid ""
 "File is opened as read-only. Enable editing first if you want to save "
 "changes."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1684
+#: ../src/ard_edit.cpp:1752
 msgid "Read-only file"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1690
+#: ../src/ard_edit.cpp:1758
 #, c-format
 msgid "Unable to save file %s."
 msgstr ""
