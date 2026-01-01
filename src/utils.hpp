@@ -123,7 +123,7 @@ wxMenuItem *AddMenuItemWithArt(wxMenu *menu, int id, const wxString &text, const
 void SetupStyledTextCtrl(wxStyledTextCtrl *stc, wxConfigBase *config);
 void ApplyStyledTextCtrlSettings(wxStyledTextCtrl *stc, const EditorSettings &s);
 
-void SetupHtmlWindow (wxHtmlWindow *w);
+void SetupHtmlWindow(wxHtmlWindow *w);
 
 bool LoadFileToString(const std::string &path, std::string &out);
 bool SaveFileFromString(const std::string &pathUtf8, const std::string &data);
@@ -179,7 +179,7 @@ bool LooksLikeIdentifier(const std::string &str);
 std::string StripInoGeneratedSuffix(const std::string &filename);
 std::string NormalizeFilename(const std::string &sketchPath, const std::string &filename);
 std::string StripFilename(const std::string &sketchPath, const std::string &filename);
-std::string DiagnosticsFilename(const std::string& sketchPath, const std::string& input, std::size_t keepParts = 3);
+std::string DiagnosticsFilename(const std::string &sketchPath, const std::string &input, std::size_t keepParts = 3);
 
 bool IsInSketchDir(const std::string &sketchPath, const std::string &file);
 
@@ -190,11 +190,9 @@ uint64_t CcSumCode(const std::vector<SketchFileBuffer> &files);
 uint64_t CcSumIncludes(const std::vector<SketchFileBuffer> &files);
 uint64_t CcSumDecls(std::string_view filename, std::string_view code);
 
-
 std::string NormalizeIndent(std::string_view code, size_t indent);
 
 std::string ExtractCommentBlockAboveLine(const std::string &fileText, int declLine);
 std::string ExtractBodySnippetFromText(const std::string &fileText, unsigned fromLine, unsigned toLine);
 
 void DedupArgs(std::vector<std::string> &argv);
-

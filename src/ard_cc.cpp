@@ -49,7 +49,6 @@ struct CcFilesSnapshotGuard {
   }
 };
 
-
 static std::string MakeBriefFromFull(const std::string &full) {
   // first non-empty line / paragraph as a brief
   std::string s = full;
@@ -58,7 +57,6 @@ static std::string MakeBriefFromFull(const std::string &full) {
   TrimInPlace(first);
   return first;
 }
-
 
 static const char *ClangErrorToString(CXErrorCode err) {
   switch (err) {
@@ -896,12 +894,18 @@ static std::string InjectParameterNamesIntoSignature(const std::string &sig, con
 std::string ArduinoParseError::ToString() const {
   auto sevLabel = [](CXDiagnosticSeverity s) -> const char * {
     switch (s) {
-      case CXDiagnostic_Fatal:   return "Fatal";
-      case CXDiagnostic_Error:   return "Error";
-      case CXDiagnostic_Warning: return "Warning";
-      case CXDiagnostic_Note:    return "Note";
-      case CXDiagnostic_Ignored: return "Ignored";
-      default:                  return "";
+      case CXDiagnostic_Fatal:
+        return "Fatal";
+      case CXDiagnostic_Error:
+        return "Error";
+      case CXDiagnostic_Warning:
+        return "Warning";
+      case CXDiagnostic_Note:
+        return "Note";
+      case CXDiagnostic_Ignored:
+        return "Ignored";
+      default:
+        return "";
     }
   };
 
@@ -931,7 +935,6 @@ std::string ArduinoParseError::ToString() const {
   dump(dump, *this, 0);
   return oss.str();
 }
-
 
 std::string HoverInfo::ToHoverString() {
   std::string tooltip;

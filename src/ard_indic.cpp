@@ -18,11 +18,11 @@
 
 #include "ard_indic.hpp"
 
+#include "ard_ev.hpp"
 #include <algorithm>
 #include <cmath>
 #include <wx/dcbuffer.h>
 #include <wx/dcgraph.h>
-#include "ard_ev.hpp"
 
 namespace {
 
@@ -32,12 +32,10 @@ constexpr int MIN_CONTROL_SIZE = 14;
 
 } // namespace
 
-
 enum {
   ID_MENU_TERMINATE_PROCESS = wxID_HIGHEST + 500,
   ID_PULSE_TIMER
 };
-
 
 ArduinoActivityDotCtrl::ArduinoActivityDotCtrl(wxWindow *parent,
                                                wxWindowID id,
@@ -148,7 +146,8 @@ void ArduinoActivityDotCtrl::UpdatePulseTimer() {
       m_timer.Start(kPulseIntervalMs);
     }
   } else {
-    if (m_timer.IsRunning()) m_timer.Stop();
+    if (m_timer.IsRunning())
+      m_timer.Stop();
     m_pulsePhase = 0;
   }
 }
@@ -164,14 +163,19 @@ void ArduinoActivityDotCtrl::RecomputeStateFromProcesses() {
   bool hasBackground = false;
   bool hasBusy = false;
 
-  for (const auto& p : m_processes) {
-    if (p.state == ArduinoActivityState::Busy) hasBusy = true;
-    else if (p.state == ArduinoActivityState::Background) hasBackground = true;
+  for (const auto &p : m_processes) {
+    if (p.state == ArduinoActivityState::Busy)
+      hasBusy = true;
+    else if (p.state == ArduinoActivityState::Background)
+      hasBackground = true;
   }
 
-  if (hasBusy) newState = ArduinoActivityState::Busy;
-  else if (hasBackground) newState = ArduinoActivityState::Background;
-  else newState = ArduinoActivityState::Idle;
+  if (hasBusy)
+    newState = ArduinoActivityState::Busy;
+  else if (hasBackground)
+    newState = ArduinoActivityState::Background;
+  else
+    newState = ArduinoActivityState::Idle;
 
   if (newState != m_state) {
     m_state = newState;
@@ -180,12 +184,13 @@ void ArduinoActivityDotCtrl::RecomputeStateFromProcesses() {
 }
 
 void ArduinoActivityDotCtrl::EnablePulse(bool enable) {
-  if (m_pulseEnabled == enable) return;
+  if (m_pulseEnabled == enable)
+    return;
   m_pulseEnabled = enable;
   AfterStateChanged();
 }
 
-void ArduinoActivityDotCtrl::ApplySettings(const EditorSettings& settings) {
+void ArduinoActivityDotCtrl::ApplySettings(const EditorSettings &settings) {
   m_settings = settings;
   AfterStateChanged();
 }
@@ -198,15 +203,16 @@ void ArduinoActivityDotCtrl::OnPaint(wxPaintEvent &WXUNUSED(event)) {
   pdc.Clear();
 
 #if wxUSE_GRAPHICS_CONTEXT
-  wxGCDC dc(pdc);  // zajistí správné alpha blending
+  wxGCDC dc(pdc); // zajistí správné alpha blending
 #else
-  wxDC& dc = pdc;  // fallback
+  wxDC &dc = pdc; // fallback
 #endif
 
   const wxSize size = GetClientSize();
   const int w = size.GetWidth();
   const int h = size.GetHeight();
-  if (w <= 0 || h <= 0) return;
+  if (w <= 0 || h <= 0)
+    return;
 
   const int baseRadius = GetDotRadius();
   const int cx = w / 2;
@@ -218,11 +224,11 @@ void ArduinoActivityDotCtrl::OnPaint(wxPaintEvent &WXUNUSED(event)) {
   int radius = baseRadius;
 
   if (m_pulseEnabled) {
-    const double t = (m_pulsePhase % 20) / 20.0; // 0..1
+    const double t = (m_pulsePhase % 20) / 20.0;           // 0..1
     const double s = 0.6 + 0.4 * std::sin(t * 2.0 * M_PI); // 0.2..1.0-ish
 
     alpha = static_cast<unsigned char>(160 + 95 * s);
-    radius = baseRadius + static_cast<int>(std::lround(2.0*s));
+    radius = baseRadius + static_cast<int>(std::lround(2.0 * s));
   }
 
   wxColour c(baseColour.Red(), baseColour.Green(), baseColour.Blue(), alpha);
@@ -238,7 +244,7 @@ void ArduinoActivityDotCtrl::OnSize(wxSizeEvent &event) {
 }
 
 void ArduinoActivityDotCtrl::OnTimer(wxTimerEvent &WXUNUSED(event)) {
-  APP_DEBUG_LOG("INDIC: Pulse tick phase=%d", (int)m_pulsePhase);
+  APP_TRACE_LOG("INDIC: Pulse tick phase=%d", (int)m_pulsePhase);
 
   if (!m_pulseEnabled || m_state == ArduinoActivityState::Idle) {
     return;
@@ -254,14 +260,14 @@ void ArduinoActivityDotCtrl::OnTimer(wxTimerEvent &WXUNUSED(event)) {
 
 void ArduinoActivityDotCtrl::OnMouseClick(wxMouseEvent &event) {
   const bool showPopup = std::any_of(
-    m_processes.begin(), m_processes.end(),
-    [](const ActivityProcess& p) { return p.canBeTerminated; });
+      m_processes.begin(), m_processes.end(),
+      [](const ActivityProcess &p) { return p.canBeTerminated; });
 
   if (!showPopup) {
     event.Skip();
     return;
   }
- 
+
   wxMenu menu;
   menu.Append(ID_MENU_TERMINATE_PROCESS, _("Terminate current process"));
 
@@ -273,7 +279,7 @@ void ArduinoActivityDotCtrl::OnMouseClick(wxMouseEvent &event) {
   event.Skip();
 }
 
-void ArduinoActivityDotCtrl::OnPopupMenu(wxCommandEvent& event) {
+void ArduinoActivityDotCtrl::OnPopupMenu(wxCommandEvent &event) {
   switch (event.GetId()) {
     case ID_MENU_TERMINATE_PROCESS: {
       wxCommandEvent evt(EVT_PROCESS_TERMINATE_REQUEST);
@@ -281,7 +287,7 @@ void ArduinoActivityDotCtrl::OnPopupMenu(wxCommandEvent& event) {
       break;
     }
 
-    default :
+    default:
       break;
   }
 }

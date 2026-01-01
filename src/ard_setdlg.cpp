@@ -32,9 +32,11 @@
 #include <wx/filedlg.h>
 #include <wx/intl.h>
 #include <wx/menu.h>
+#include <wx/richmsgdlg.h>
 #include <wx/secretstore.h>
 #include <wx/sstream.h>
 #include <wx/stc/stc.h>
+#include <wx/tokenzr.h>
 #include <wx/wfstream.h>
 #include <wx/wx.h>
 
@@ -88,8 +90,46 @@ inline CStrListView GetWarningFlagsView(ClangWarningMode mode) {
       return {kArduinoLike, sizeof(kArduinoLike) / sizeof(kArduinoLike[0])};
     case ClangWarningMode::warningStrict:
       return {kStrict, sizeof(kStrict) / sizeof(kStrict[0])};
+    case ClangWarningMode::warningCustom:
+      return {kDefault, 0};
   }
   return {kDefault, 0};
+}
+
+static wxString WarningFlagsToMultilineText(ClangWarningMode mode) {
+  wxString out;
+  auto v = GetWarningFlagsView(mode);
+  for (std::size_t i = 0; i < v.size; ++i) {
+    if (!out.empty()) {
+      out += wxT("\n");
+    }
+    out += wxString::FromUTF8(v.data[i]);
+  }
+  return out;
+}
+
+static wxString JoinFlagsMultiline(const std::vector<std::string> &flags) {
+  wxString out;
+  for (const auto &s : flags) {
+    if (s.empty())
+      continue;
+    if (!out.empty())
+      out += wxT("\n");
+    out += wxString::FromUTF8(s.c_str());
+  }
+  return out;
+}
+
+static void SplitFlagsWhitespace(const wxString &text, std::vector<std::string> &out) {
+  out.clear();
+
+  wxStringTokenizer tok(text, wxT(" \t\r\n"), wxTOKEN_STRTOK);
+  while (tok.HasMoreTokens()) {
+    wxString t = TrimCopy(tok.GetNextToken());
+    if (!t.empty()) {
+      out.emplace_back(wxToStd(t));
+    }
+  }
 }
 
 static wxColour ReadEditorColour(wxConfigBase *cfg, const wxString &prefix, ThemeMode themeMode, const wxColour &defColor) {
@@ -328,10 +368,10 @@ void EditorColorScheme::Load(wxConfigBase *cfg, ThemeMode themeMode) {
           : wxColour(255, 160, 0));
 
   note = ReadEditorColour(
-    cfg, wxT("Note"), themeMode,
-    (themeMode == ThemeMode::AlwaysDark)
-        ? wxColour(86, 156, 214)  // Dark: info blue (#569CD6)
-        : wxColour(0, 102, 204)); // Light: calmer blue (#0066CC)
+      cfg, wxT("Note"), themeMode,
+      (themeMode == ThemeMode::AlwaysDark)
+          ? wxColour(86, 156, 214)  // Dark: info blue (#569CD6)
+          : wxColour(0, 102, 204)); // Light: calmer blue (#0066CC)
 
   symbolHighlight = ReadEditorColour(
       cfg, wxT("SymbolHighlight"), themeMode,
@@ -500,6 +540,18 @@ void ClangSettings::Load(wxConfigBase *cfg) {
   ConfigReadBool(cfg, wxT("Clang/ResolveOnlyAfterSave"), resolveDiagOnlyAfterSave, true);
   ConfigReadString(cfg, wxT("Clang/ExtSourceOpenCommand"), extSourceOpenCommand, wxEmptyString);
   ConfigReadBool(cfg, wxT("Clang/OpenSourceFilesInside"), openSourceFilesInside, true);
+
+  int i, wfc;
+  customWarningFlags.clear();
+
+  ConfigReadInt(cfg, wxT("Clang/CustomWarningFlagsCount"), wfc, 0);
+  for (i = 0; i < wfc; i++) {
+    wxString s;
+    ConfigReadString(cfg, wxString::Format(wxT("Clang/CustomWarningFlag%d"), i), s, wxEmptyString);
+    if (!s.IsEmpty()) {
+      customWarningFlags.push_back(wxToStd(s));
+    }
+  }
 }
 
 void ClangSettings::Save(wxConfigBase *cfg) const {
@@ -512,14 +564,22 @@ void ClangSettings::Save(wxConfigBase *cfg) const {
   cfg->Write(wxT("Clang/ResolveOnlyAfterSave"), resolveDiagOnlyAfterSave);
   cfg->Write(wxT("Clang/ExtSourceOpenCommand"), extSourceOpenCommand);
   cfg->Write(wxT("Clang/OpenSourceFilesInside"), openSourceFilesInside);
+
+  cfg->Write(wxT("Clang/CustomWarningFlagsCount"), (long)customWarningFlags.size());
+  int index = 0;
+  for (const auto &f : customWarningFlags) {
+    if (!f.empty()) {
+      cfg->Write(wxString::Format(wxT("Clang/CustomWarningFlag%d"), index), wxString::FromUTF8(f));
+      index++;
+    }
+  }
 }
 
 void ClangSettings::OpenExternalSourceFile(const wxString &filename, int line) {
   if (filename.empty())
     return;
 
-  wxString cmd = extSourceOpenCommand;
-  cmd.Trim(true).Trim(false);
+  wxString cmd = TrimCopy(extSourceOpenCommand);
 
   // 1) If the command is not set -> use the default OS application
   if (cmd.empty()) {
@@ -556,7 +616,15 @@ void ClangSettings::OpenExternalSourceFile(const wxString &filename, int line) {
   wxExecute(formatted, wxEXEC_ASYNC);
 }
 
-void ClangSettings::AppendWarningFlags(std::vector<const char *> &out) {
+void ClangSettings::AppendWarningFlags(std::vector<const char *> &out) const {
+  if (warningMode == warningCustom) {
+    out.reserve(out.size() + customWarningFlags.size());
+    for (const auto &s : customWarningFlags) {
+      out.push_back(s.c_str());
+    }
+    return;
+  }
+
   auto v = GetWarningFlagsView(warningMode);
   out.insert(out.end(), v.data, v.data + v.size);
 }
@@ -947,8 +1015,7 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
 
   m_cliPathBrowse->Bind(wxEVT_BUTTON,
                         [this](wxCommandEvent &) {
-                          wxString start = m_cliPathCtrl->GetValue();
-                          start.Trim(true).Trim(false);
+                          wxString start = TrimCopy(m_cliPathCtrl->GetValue());
                           if (start.empty())
                             start = wxEmptyString;
 
@@ -1540,6 +1607,9 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
   clangGrid->Add(m_clangResolveChoice, 1, wxEXPAND, 10);
 
   // --- Warning mode choice ---
+  clangGrid->AddSpacer(10);
+  clangGrid->AddSpacer(10);
+
   clangGrid->Add(new wxStaticText(
                      clangPage,
                      wxID_ANY,
@@ -1548,13 +1618,14 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
                        "- Default - uses Clang's default warning set.\n"
                        "- Arduino-like - enables a practical set of warnings for typical Arduino sketches.\n"
                        "- Strict - enables a very strict warning set (-Wall, -Wextra, -Wpedantic, etc.).")),
-                 0, wxALIGN_CENTER_VERTICAL);
+                 0, wxALIGN_CENTER_VERTICAL | wxALIGN_LEFT);
 
   wxArrayString wModeChoices;
   wModeChoices.Add(_("Off"));
   wModeChoices.Add(_("Default"));
   wModeChoices.Add(_("Arduino-like"));
   wModeChoices.Add(_("Strict"));
+  wModeChoices.Add(_("Custom"));
 
   m_clangWarnChoice = new wxChoice(
       clangPage,
@@ -1569,8 +1640,19 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
   }
   m_clangWarnChoice->SetSelection(wIndex);
 
-  clangGrid->Add(m_clangWarnChoice, 1, wxEXPAND);
+  m_btnEditCustomWarnings = new wxBitmapButton(
+      clangPage,
+      wxID_ANY,
+      AEGetArtBundle(wxAEArt::Edit).GetBitmapFor(clangPage));
 
+  auto *warnRow = new wxBoxSizer(wxHORIZONTAL);
+
+  warnRow->Add(m_clangWarnChoice, 1, wxEXPAND | wxRIGHT, 6);
+  warnRow->Add(m_btnEditCustomWarnings, 0, wxALIGN_CENTER_VERTICAL);
+
+  m_btnEditCustomWarnings->Bind(wxEVT_BUTTON, &ArduinoEditorSettingsDialog::OnEditCustomWarnings, this);
+
+  clangGrid->Add(warnRow, 1, wxEXPAND);
   clangBox->Add(clangGrid, 1, wxALL | wxEXPAND, 5);
   clangPageSizer->Add(clangBox, 0, wxALL | wxEXPAND, 10);
 
@@ -2049,8 +2131,7 @@ ArduinoCliConfig ArduinoEditorSettingsDialog::GetCliConfig() const {
   cfg.boardManagerEnableUnsafeInstall = m_cliUnsafe->GetValue();
 
   // Proxy
-  wxString proxy = m_cliProxy->GetValue();
-  proxy.Trim(true).Trim(false);
+  wxString proxy = TrimCopy(m_cliProxy->GetValue());
   cfg.networkProxy = std::string(proxy.utf8_str());
 
   // Timeout
@@ -2110,8 +2191,7 @@ ClangSettings ArduinoEditorSettingsDialog::GetClangSettings() const {
   }
 
   if (m_clangExtSourceCmd) {
-    wxString cmd = m_clangExtSourceCmd->GetValue();
-    cmd.Trim(true).Trim(false);
+    wxString cmd = TrimCopy(m_clangExtSourceCmd->GetValue());
     s.extSourceOpenCommand = cmd;
   }
 
@@ -2147,11 +2227,8 @@ AiSettings ArduinoEditorSettingsDialog::GetAiSettings() const {
   return s;
 }
 
-void ArduinoEditorSettingsDialog::OnBrowseSketchesDir(wxCommandEvent &evt) {
-  (void)evt;
-
-  wxString startDir = m_sketchesDirCtrl ? m_sketchesDirCtrl->GetValue() : wxString();
-  startDir.Trim(true).Trim(false);
+void ArduinoEditorSettingsDialog::OnBrowseSketchesDir(wxCommandEvent &WXUNUSED(evt)) {
+  wxString startDir = TrimCopy(m_sketchesDirCtrl->GetValue());
 
   if (startDir.empty() || !wxDirExists(startDir)) {
     startDir = wxGetHomeDir();
@@ -2169,11 +2246,8 @@ void ArduinoEditorSettingsDialog::OnBrowseSketchesDir(wxCommandEvent &evt) {
   }
 }
 
-void ArduinoEditorSettingsDialog::OnSetupClangFormatting(wxCommandEvent &evt) {
-  (void)evt;
-
-  wxString in = m_settings.clangFormatOverridesJson;
-  in.Trim(true).Trim(false);
+void ArduinoEditorSettingsDialog::OnSetupClangFormatting(wxCommandEvent &WXUNUSED(evt)) {
+  wxString in = TrimCopy(m_settings.clangFormatOverridesJson);
 
   if (in.IsEmpty()) {
     in = defaultClangFormat; // JSON starter pack defined at the top of the file
@@ -2181,8 +2255,7 @@ void ArduinoEditorSettingsDialog::OnSetupClangFormatting(wxCommandEvent &evt) {
 
   ArduinoClangFormatSettingsDialog dlg(this, in);
   if (dlg.ShowModal() == wxID_OK) {
-    wxString out = dlg.GetOverridesJson();
-    out.Trim(true).Trim(false);
+    wxString out = TrimCopy(dlg.GetOverridesJson());
 
     // Dialog returns "{}" when everything is default -> we can save empty (smaller config)
     if (out == wxT("{}")) {
@@ -2193,13 +2266,62 @@ void ArduinoEditorSettingsDialog::OnSetupClangFormatting(wxCommandEvent &evt) {
   }
 }
 
-void ArduinoEditorSettingsDialog::OnBrowseExtSourceCommand(wxCommandEvent &evt) {
-  (void)evt;
+void ArduinoEditorSettingsDialog::OnEditCustomWarnings(wxCommandEvent &WXUNUSED(evt)) {
+  if (!m_clangWarnChoice)
+    return;
 
+  int sel = m_clangWarnChoice->GetSelection();
+  if (sel < 0) {
+    sel = (int)ClangWarningMode::warningDefault;
+  }
+
+  ClangWarningMode mode = static_cast<ClangWarningMode>(sel);
+
+  wxString initial;
+  if (mode == ClangWarningMode::warningCustom) {
+    initial = JoinFlagsMultiline(m_clangSettings.customWarningFlags); // vector<string> -> wxString
+  } else {
+    if (!m_clangSettings.customWarningFlags.empty()) {
+      wxRichMessageDialog dlg(
+          this,
+          _("This will replace your current Custom warning flags with the selected preset.\n"
+            "Do you want to continue?"),
+          _("Confirmation"),
+          wxICON_QUESTION | wxYES_NO | wxNO_DEFAULT);
+
+      if (dlg.ShowModal() != wxID_YES) {
+        return;
+      }
+    }
+
+    initial = WarningFlagsToMultilineText(mode); // preset
+  }
+
+  wxTextEntryDialog dlg(
+      this,
+      _("Enter custom warning flags.\n"
+        "Tip: one flag per line is easiest to read (e.g. -Wall, -Wextra, -Wno-shadow, -Wformat=2)."),
+      _("Custom warning flags"),
+      initial,
+      wxOK | wxCANCEL | wxTE_MULTILINE);
+
+  dlg.SetSize(wxSize(400, 640));
+  dlg.CentreOnParent();
+
+  if (dlg.ShowModal() != wxID_OK) {
+    return;
+  }
+
+  m_clangWarnChoice->SetSelection(4); // Custom
+
+  // wxString -> vector<string>
+  SplitFlagsWhitespace(dlg.GetValue(), m_clangSettings.customWarningFlags);
+}
+
+void ArduinoEditorSettingsDialog::OnBrowseExtSourceCommand(wxCommandEvent &WXUNUSED(evt)) {
   wxString start;
   if (m_clangExtSourceCmd) {
-    start = m_clangExtSourceCmd->GetValue();
-    start.Trim(true).Trim(false);
+    start = TrimCopy(m_clangExtSourceCmd->GetValue());
   }
 
 #ifdef __WXMSW__
@@ -2224,16 +2346,14 @@ void ArduinoEditorSettingsDialog::OnBrowseExtSourceCommand(wxCommandEvent &evt) 
 wxString ArduinoEditorSettingsDialog::GetSketchesDir() const {
   if (!m_sketchesDirCtrl)
     return wxString();
-  wxString s = m_sketchesDirCtrl->GetValue();
-  s.Trim(true).Trim(false);
+  wxString s = TrimCopy(m_sketchesDirCtrl->GetValue());
   return s;
 }
 
 wxString ArduinoEditorSettingsDialog::GetCliPath() const {
   if (!m_cliPathCtrl)
     return wxString();
-  wxString s = m_cliPathCtrl->GetValue();
-  s.Trim(true).Trim(false);
+  wxString s = TrimCopy(m_cliPathCtrl->GetValue());
   return s;
 }
 

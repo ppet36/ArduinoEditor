@@ -208,7 +208,7 @@ void ArduinoEditorFrame::OnEditorSettings(wxCommandEvent &) {
     auto newClangSettings = dlg.GetClangSettings();
     bool diagModeChanged = (newClangSettings.diagnosticMode != m_clangSettings.diagnosticMode);
     bool resolveModeChanged = (newClangSettings.resolveMode != m_clangSettings.resolveMode);
-    bool warningModeChanged = (newClangSettings.warningMode != m_clangSettings.warningMode);
+    bool warningModeChanged = (newClangSettings.warningMode != m_clangSettings.warningMode) || (newClangSettings.customWarningFlags != m_clangSettings.customWarningFlags);
     m_clangSettings = newClangSettings;
     m_clangSettings.Save(config);
     ApplySettings(m_clangSettings);
@@ -1722,7 +1722,6 @@ void ArduinoEditorFrame::OnDiagnosticsUpdated(wxThreadEvent &WXUNUSED(evt)) {
   for (const auto &e : dispDiagnostic) {
     APP_DEBUG_LOG("FRM: OnDiag:  %s", e.ToString().c_str());
   }
-
 
   m_diagListCtrl->Freeze();
   m_diagListCtrl->DeleteAllItems();

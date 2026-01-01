@@ -28,15 +28,15 @@
 #include <limits>
 #include <regex>
 #include <sstream>
+#include <system_error>
 #include <wx/dir.h>
 #include <wx/filename.h>
-#include <wx/statline.h>
-#include <wx/stdpaths.h>
-#include <system_error>
 #include <wx/html/htmlwin.h>
-#include <wx/stc/stc.h>
-#include <wx/wfstream.h>
 #include <wx/sstream.h>
+#include <wx/statline.h>
+#include <wx/stc/stc.h>
+#include <wx/stdpaths.h>
+#include <wx/wfstream.h>
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -722,7 +722,7 @@ void ApplyStyledTextCtrlSettings(wxStyledTextCtrl *stc, const EditorSettings &s)
   stc->CallTipSetBackground(c.calltipBackground);
 }
 
-void SetupHtmlWindow (wxHtmlWindow *w) {
+void SetupHtmlWindow(wxHtmlWindow *w) {
   wxConfigBase *config = wxConfigBase::Get();
   EditorSettings settings;
   settings.Load(config);
@@ -740,7 +740,6 @@ void SetupHtmlWindow (wxHtmlWindow *w) {
   static const int sizes[] = {pointSize, pointSize + 1, pointSize + 2, pointSize + 3, pointSize + 4, pointSize + 5, pointSize + 6};
   w->SetFonts(wxEmptyString, wxEmptyString, sizes);
 }
-
 
 bool isIno(const std::string &name) {
   return hasSuffix(name, ".ino");
@@ -1063,7 +1062,7 @@ bool LooksLikeIdentifier(const std::string &str) {
   return true;
 }
 
-std::string StripInoGeneratedSuffix(const std::string& filename) {
+std::string StripInoGeneratedSuffix(const std::string &filename) {
   if (hasSuffix(filename, ".ino.cpp") || hasSuffix(filename, ".ino.hpp")) {
     return filename.substr(0, filename.size() - 4);
   }
@@ -1103,17 +1102,17 @@ std::string StripFilename(const std::string &sketchPath, const std::string &file
   return StripInoGeneratedSuffix(f);
 }
 
-
 // Normalize + keep last N path components, BUT:
 // - If input is inside sketchPath => return path relative to sketchPath (no "...").
 // - If filename ends with .ino.cpp or .ino.hpp => replace with .ino.
-std::string DiagnosticsFilename(const std::string& sketchPath, const std::string& input, std::size_t keepParts) {
+std::string DiagnosticsFilename(const std::string &sketchPath, const std::string &input, std::size_t keepParts) {
 
   auto Normalize = [](fs::path p) -> fs::path {
     fs::path norm = p.lexically_normal();
     std::error_code ec;
     fs::path can = fs::weakly_canonical(norm, ec);
-    if (!ec) norm = std::move(can);
+    if (!ec)
+      norm = std::move(can);
     return norm;
   };
 
@@ -1140,7 +1139,8 @@ std::string DiagnosticsFilename(const std::string& sketchPath, const std::string
 
     if (inside) {
       std::string out = rel.generic_string();
-      if (out.empty()) out = fs::path(in.filename()).generic_string();
+      if (out.empty())
+        out = fs::path(in.filename()).generic_string();
       return StripInoGeneratedSuffix(out);
     }
   }
@@ -1152,8 +1152,9 @@ std::string DiagnosticsFilename(const std::string& sketchPath, const std::string
 
   std::vector<fs::path> parts;
   parts.reserve(16);
-  for (const auto& part : relNoRoot) {
-    if (part.empty() || part == ".") continue;
+  for (const auto &part : relNoRoot) {
+    if (part.empty() || part == ".")
+      continue;
     parts.push_back(part);
   }
 
@@ -1172,12 +1173,11 @@ std::string DiagnosticsFilename(const std::string& sketchPath, const std::string
   const bool trimmed = (start != 0);
 
   std::string out = trimmed
-      ? (std::string(".../") + tail.generic_string())
-      : tail.generic_string();
+                        ? (std::string(".../") + tail.generic_string())
+                        : tail.generic_string();
 
   return StripInoGeneratedSuffix(out);
 }
-
 
 static std::string NormalizeForCompare(const std::filesystem::path &p) {
   // generic_string() uses '/' even on Windows
@@ -1719,7 +1719,6 @@ std::string NormalizeIndent(std::string_view code, size_t indent) {
   return out;
 }
 
-
 // declLine is 1-based (clang line).
 std::string ExtractCommentBlockAboveLine(const std::string &fileText, int declLine) {
   if (declLine <= 1)
@@ -1926,36 +1925,42 @@ std::string ExtractBodySnippetFromText(const std::string &fileText, unsigned fro
   return out;
 }
 
-
 // --- DEDUP clang args. ---
-static bool IsTwoTokenOption(const std::string& a, const char* opt) {
+static bool IsTwoTokenOption(const std::string &a, const char *opt) {
   return a == opt;
 }
 
-static bool IsAttachedOption(const std::string& a, const char* opt) {
+static bool IsAttachedOption(const std::string &a, const char *opt) {
   // opt like "-I" or "-isystem"
   return a.rfind(opt, 0) == 0 && a.size() > std::strlen(opt);
 }
 
-static std::string NormalizeIncPath(const std::string& raw) {
+static std::string NormalizeIncPath(const std::string &raw) {
   std::filesystem::path p = std::filesystem::u8path(raw).lexically_normal();
   return p.u8string();
 }
 
-void DedupArgs(std::vector<std::string>& argv) {
+void DedupArgs(std::vector<std::string> &argv) {
   ScopeTimer t("UTIL: DedupArgs(%zu args)", argv.size());
 
   // Pass 1: figure out "last index" for single-choice flags.
   // We'll remove earlier ones in Pass 2.
-  auto keySingle = [](const std::string& a) -> std::string {
+  auto keySingle = [](const std::string &a) -> std::string {
     // Return empty => not a single-choice flag
-    if (a.rfind("-std=", 0) == 0) return "std";
-    if (a == "-std") return "std";               // (rare)
-    if (a == "-target") return "target";
-    if (a.rfind("-target=", 0) == 0) return "target";
-    if (a == "-x") return "x";
-    if (a.rfind("-x", 0) == 0 && a.size() > 2) return "x"; // -xfoo
-    if (a == "-isysroot") return "isysroot";
+    if (a.rfind("-std=", 0) == 0)
+      return "std";
+    if (a == "-std")
+      return "std"; // (rare)
+    if (a == "-target")
+      return "target";
+    if (a.rfind("-target=", 0) == 0)
+      return "target";
+    if (a == "-x")
+      return "x";
+    if (a.rfind("-x", 0) == 0 && a.size() > 2)
+      return "x"; // -xfoo
+    if (a == "-isysroot")
+      return "isysroot";
     // add more if you want (carefully)
     return {};
   };
@@ -1964,7 +1969,7 @@ void DedupArgs(std::vector<std::string>& argv) {
   lastSingle.reserve(32);
 
   for (std::size_t i = 0; i < argv.size(); ++i) {
-    const std::string& a = argv[i];
+    const std::string &a = argv[i];
     std::string k = keySingle(a);
     if (!k.empty()) {
       // For two-token form (-std gnu++17), treat "-std" token as the flag position.
@@ -1974,8 +1979,8 @@ void DedupArgs(std::vector<std::string>& argv) {
   }
 
   // Sets for exact dedup (stable, keep first)
-  std::unordered_set<std::string> seenInc;  // "I:<path>" / "S:<path>"
-  std::unordered_set<std::string> seenDef;  // exact "-D..." or "-U..."
+  std::unordered_set<std::string> seenInc; // "I:<path>" / "S:<path>"
+  std::unordered_set<std::string> seenDef; // exact "-D..." or "-U..."
   seenInc.reserve(argv.size() / 4);
   seenDef.reserve(argv.size() / 4);
 
@@ -1983,7 +1988,7 @@ void DedupArgs(std::vector<std::string>& argv) {
   out.reserve(argv.size());
 
   for (std::size_t i = 0; i < argv.size(); ++i) {
-    const std::string& a = argv[i];
+    const std::string &a = argv[i];
 
     // --- single-choice: drop earlier occurrences, keep only last
     {
@@ -2069,5 +2074,3 @@ void DedupArgs(std::vector<std::string>& argv) {
   APP_DEBUG_LOG("UTIL: DedupArgs() %zu -> %zu", argv.size(), out.size());
   argv.swap(out);
 }
-
-

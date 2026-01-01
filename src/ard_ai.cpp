@@ -1588,8 +1588,7 @@ wxString ArduinoAiActions::GenerateSessionTitleIfRequested(const wxString &userT
     wxString systemPrompt = wxT(
         "You are an assistant embedded in an IDE. "
         "Generate a short, descriptive chat session title based ONLY on the user's first message. "
-        "Rules: output ONLY the title, no quotes, no punctuation at the end, max 60 characters."
-    );
+        "Rules: output ONLY the title, no quotes, no punctuation at the end, max 60 characters.");
 
     wxString userPrompt;
     userPrompt << wxT("USER_FIRST_MESSAGE:\n") << textForAi;

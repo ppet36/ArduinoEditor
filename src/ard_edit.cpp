@@ -140,9 +140,9 @@ static inline bool AEIsIdentChar(unsigned char c) {
 }
 
 struct AeIdentSpan {
-  int symPos = -1;  // position used for line/col (may be caret-1 if caret is just after identifier)
-  int start  = -1;  // identifier start
-  int end    = -1;  // identifier end (exclusive)
+  int symPos = -1; // position used for line/col (may be caret-1 if caret is just after identifier)
+  int start = -1;  // identifier start
+  int end = -1;    // identifier end (exclusive)
 };
 
 static bool AEValidateIdentifierSpan(wxStyledTextCtrl *ed, int start, int end, int textLen) {
@@ -168,9 +168,9 @@ static bool AEValidateIdentifierSpan(wxStyledTextCtrl *ed, int start, int end, i
 // - Allow caret just after identifier (e.g. "foo(|", "foo;|") by backing up one char.
 // - Uses STC WordStart/WordEnd but then *strictly validates* by AEIsIdent* rules.
 static bool AEExtractIdentifierAtOrBeforeCaret(wxStyledTextCtrl *ed,
-                                              int caretPos,
-                                              AeIdentSpan &out,
-                                              int textLen) {
+                                               int caretPos,
+                                               AeIdentSpan &out,
+                                               int textLen) {
   if (!ed || textLen <= 0) {
     return false;
   }
@@ -202,14 +202,14 @@ static bool AEExtractIdentifierAtOrBeforeCaret(wxStyledTextCtrl *ed,
   }
 
   const int wordStart = ed->WordStartPosition(symPos, true);
-  const int wordEnd   = ed->WordEndPosition(symPos, true);
+  const int wordEnd = ed->WordEndPosition(symPos, true);
   if (!AEValidateIdentifierSpan(ed, wordStart, wordEnd, textLen)) {
     return false;
   }
 
   out.symPos = symPos;
-  out.start  = wordStart;
-  out.end    = wordEnd;
+  out.start = wordStart;
+  out.end = wordEnd;
   return true;
 }
 
@@ -2100,7 +2100,7 @@ void ArduinoEditor::OnSymbolTimer(wxTimerEvent &WXUNUSED(event)) {
   }
 
   const int wordStart = id.start;
-  const int symPos    = id.symPos;
+  const int symPos = id.symPos;
 
   // ---- Reuse check: if caret is inside an already highlighted occurrence, don't re-query ----
   // m_symbolOccPositions stores *start positions* of occurrences. So reuse should be based on current wordStart.

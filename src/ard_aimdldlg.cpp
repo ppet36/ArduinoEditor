@@ -21,6 +21,7 @@
 #include "ai_client.hpp" // AiClient::CheckExtraRequestJson
 #include "utils.hpp"
 
+#include <thread>
 #include <wx/button.h>
 #include <wx/checkbox.h>
 #include <wx/config.h>
@@ -33,7 +34,6 @@
 #include <wx/stattext.h>
 #include <wx/stc/stc.h>
 #include <wx/textctrl.h>
-#include <thread>
 
 #include <nlohmann/json.hpp>
 

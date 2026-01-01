@@ -60,7 +60,8 @@ enum ClangWarningMode {
   warningOff = 0,
   warningDefault,
   warningArduinoLike,
-  warningStrict
+  warningStrict,
+  warningCustom
 };
 
 struct EditorColorScheme {
@@ -137,12 +138,14 @@ struct ClangSettings {
   bool openSourceFilesInside = true;
   wxString extSourceOpenCommand; // external editor for opening cpp/hpp/c/h source files
 
+  std::vector<std::string> customWarningFlags;
+
   void Load(wxConfigBase *cfg);
   void Save(wxConfigBase *cfg) const;
 
   void OpenExternalSourceFile(const wxString &file, int line);
 
-  void AppendWarningFlags(std::vector<const char *> &out);
+  void AppendWarningFlags(std::vector<const char *> &out) const;
 };
 
 enum AiSummarizationChatMode {
@@ -327,6 +330,7 @@ private:
   wxChoice *m_clangDiagChoice = nullptr;
   wxChoice *m_clangCompChoice = nullptr;
   wxChoice *m_clangWarnChoice = nullptr;
+  wxBitmapButton *m_btnEditCustomWarnings = nullptr;
   wxCheckBox *m_openSourceInside = nullptr;
   wxTextCtrl *m_clangExtSourceCmd = nullptr;
   wxButton *m_clangExtSourceBrowse = nullptr;
@@ -355,4 +359,5 @@ private:
   void OnBrowseSketchesDir(wxCommandEvent &evt);
   void OnBrowseExtSourceCommand(wxCommandEvent &evt);
   void OnSetupClangFormatting(wxCommandEvent &evt);
+  void OnEditCustomWarnings(wxCommandEvent &evt);
 };

@@ -52,7 +52,7 @@ private:
   void OnSize(wxSizeEvent &event);
   void OnTimer(wxTimerEvent &event);
   void OnMouseClick(wxMouseEvent &event);
-  void OnPopupMenu(wxCommandEvent& event);
+  void OnPopupMenu(wxCommandEvent &event);
 
   void UpdateTooltip();
   wxString BuildTooltipText() const;
