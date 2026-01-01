@@ -43,9 +43,11 @@ control, transparency, or performance.
 - **AI-assisted development**  
   Patch-based edits with diff preview and explicit confirmation before applying
   changes.
+  ![Arduino Editor – AI diff view](doc/diff.png)
 
 - **Configurable editor**  
   Fonts, colors, formatting, and editor behavior can be customized.
+  ![Arduino Editor – AI settings view](doc/settings.png)
 
 - **Arduino CLI integration**  
   Building, uploading, and toolchain management are handled via `arduino-cli`.
