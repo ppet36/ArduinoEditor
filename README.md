@@ -10,7 +10,7 @@
 
 *Fast code completion. Smart navigation. No nonsense.*
 
----
+![Arduino Editor – main window](doc/main.png)
 
 Arduino Editor is a modern development environment for Arduino projects built
 on the Clang toolchain. It provides fast and precise code completion, smart
