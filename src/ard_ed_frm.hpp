@@ -23,6 +23,7 @@
 #include "ard_boptdlg.hpp"
 #include "ard_cli.hpp"
 #include "ard_coreman.hpp"
+#include "ard_diagview.hpp"
 #include "ard_edit.hpp"
 #include "ard_examples.hpp"
 #include "ard_finsymdlg.hpp"
@@ -60,6 +61,7 @@ enum CurrentAction {
 };
 
 class SketchFilesPanel;
+class ArduinoCliDiagnosticsDialog;
 
 class ArduinoEditorFrame : public wxFrame {
 private:
@@ -102,9 +104,8 @@ private:
   wxNotebook *m_bottomNotebook = nullptr;
   int m_lastBottomNotebookSelectedPage = wxNOT_FOUND;
 
+  ArduinoDiagnosticsView *m_diagView = nullptr;
   wxTextCtrl *m_buildOutputCtrl = nullptr;
-  wxListCtrl *m_diagListCtrl = nullptr;
-  wxImageList *m_diagImageList = nullptr;
   wxBitmapButton *m_refreshPortsButton = nullptr;
   wxMenu *m_sketchesDirMenu = nullptr;
   wxBitmapButton *m_buildButton = nullptr;
@@ -120,16 +121,10 @@ private:
   std::vector<wxString> m_recentSketches;
   wxMenu *m_recentMenu = nullptr;
 
-  int m_imgError = -1;
-  int m_imgWarning = -1;
-  int m_imgNote = -1;
-
   wxTimer m_diagTimer;
 
   wxTimer m_returnBottomPageTimer;
   void OnReturnBottomPageTimer(wxTimerEvent &);
-
-  std::vector<ArduinoParseError> m_currentDiagErrors;
 
   uint64_t m_lastSuccessfulCompileCodeSum = 0;
   bool m_runUploadAfterCompile = false;
@@ -150,6 +145,7 @@ private:
   ArduinoExamplesFrame *m_examplesFrame = nullptr;
   ArduinoCoreManagerFrame *m_coreManager = nullptr;
   ArduinoSerialMonitorFrame *m_serialMonitor = nullptr;
+  ArduinoCliDiagnosticsDialog *m_cliDiagDialog = nullptr;
 
   int ModalMsgDialog(const wxString &message, const wxString &caption = _("Error"), int styles = wxOK | wxICON_ERROR);
   static bool IsSupportedExtension(const wxString &ext);
@@ -160,6 +156,9 @@ private:
 
   void OnStatusBarSize(wxSizeEvent &evt);
   void LayoutStatusBarIndicator();
+
+  void OnDiagJumpFromView(ArduinoDiagnosticsActionEvent &ev);
+  void OnDiagSolveAiFromView(ArduinoDiagnosticsActionEvent &ev);
 
   void ApplySettings(const EditorSettings &settings);
   void ApplySettings(const ClangSettings &settings);

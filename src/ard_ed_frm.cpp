@@ -21,7 +21,9 @@
 #include "ard_aboutdlg.hpp"
 #include "ard_ap.hpp"
 #include "ard_borsel.hpp"
+#include "ard_clidiag.hpp"
 #include "ard_cliinst.hpp"
+#include "ard_cliparse.hpp"
 #include "ard_ev.hpp"
 #include "ard_filestree.hpp"
 #include "ard_finsymdlg.hpp"
@@ -72,9 +74,6 @@ enum {
   ID_MENU_CORE_MANAGER,
   ID_MENU_SERIAL_MONITOR,
   ID_MENU_SKETCH_EXAMPLES,
-  ID_MENU_DIAG_COPY,
-  ID_MENU_DIAG_COPY_ALL,
-  ID_MENU_DIAG_SOLVE_AI,
   ID_MENU_CHECK_FOR_UPDATES,
   ID_TIMER_DIAGNOSTIC,
   ID_TIMER_BOTTOM_PAGE_RETURN,
@@ -93,6 +92,7 @@ enum {
   ID_PROCESS_RESOLVE_LIBRARIES,
   ID_PROCESS_CLI,
   ID_PROCESS_APP_INIT,
+  ID_PROCESS_ACTION,
 
   ID_MENU_OPEN_RECENT_CLEAR,
   ID_MENU_OPEN_RECENT_FIRST,
@@ -139,6 +139,10 @@ void ArduinoEditorFrame::ApplySettings(const EditorSettings &settings) {
   if (m_indic) {
     m_indic->ApplySettings(settings);
   }
+
+  if (m_diagView) {
+    m_diagView->ApplySettings(settings);
+  }
 }
 
 void ArduinoEditorFrame::ApplySettings(const ClangSettings &settings) {
@@ -156,6 +160,10 @@ void ArduinoEditorFrame::ApplySettings(const AiSettings &settings) {
 
   for (auto *ed : GetAllEditors()) {
     ed->ApplySettings(settings);
+  }
+
+  if (m_diagView) {
+    m_diagView->ApplySettings(settings);
   }
 
   APP_DEBUG_LOG("FRM: AiSettings, fullInfoRequest=%d, floatingWindow=%d", settings.fullInfoRequest, settings.floatingWindow);
@@ -1345,6 +1353,7 @@ void ArduinoEditorFrame::SetCurrentAction(CurrentAction action) {
   EnableUIActions(false);
 
   UpdateStatus(wxString::Format(_("%s started..."), GetCurrentActionName()));
+
   if (m_buildOutputCtrl) {
     m_buildOutputCtrl->Clear();
   }
@@ -1363,10 +1372,7 @@ void ArduinoEditorFrame::FinalizeCurrentAction(bool successful) {
 
   EnableUIActions();
 
-  if (!successful) {
-    ModalMsgDialog(wxString::Format(_("%s failed. See the CLI output for more information."), text));
-    return;
-  }
+  bool customFailureHandling = false;
 
   switch (endingAction) {
     case libupdateindex:
@@ -1386,6 +1392,30 @@ void ArduinoEditorFrame::FinalizeCurrentAction(bool successful) {
           UploadProject();
           return;
         }
+      } else {
+        if (m_buildOutputCtrl) {
+          wxString text = m_buildOutputCtrl->GetValue();
+          if (!text.IsEmpty()) {
+            std::vector<ArduinoParseError> cliErrors = ArduinoCliOutputParser::ParseCliOutput(wxToStd(text));
+
+            APP_DEBUG_LOG("FRM: CliParse: %zu errors", cliErrors.size());
+            for (auto &err : cliErrors) {
+              APP_DEBUG_LOG("FRM: CliParse: %s", err.ToString().c_str());
+            }
+
+            if (!cliErrors.empty()) {
+              if (!m_cliDiagDialog) {
+                m_cliDiagDialog = new ArduinoCliDiagnosticsDialog(this, config);
+                m_cliDiagDialog->SetSketchRoot(arduinoCli->GetSketchPath());
+              }
+
+              m_cliDiagDialog->SetDiagnostics(cliErrors);
+              m_cliDiagDialog->Show();
+
+              customFailureHandling = true;
+            }
+          }
+        }
       }
       m_runUploadAfterCompile = false;
       break;
@@ -1404,6 +1434,11 @@ void ArduinoEditorFrame::FinalizeCurrentAction(bool successful) {
 
     default:
       break;
+  }
+
+  if (!successful && !customFailureHandling) {
+    ModalMsgDialog(wxString::Format(_("%s failed. See the CLI output for more information."), text));
+    return;
   }
 
   if (successful) {
@@ -1623,25 +1658,9 @@ void ArduinoEditorFrame::RequestShowLibraries(const std::vector<ArduinoLibraryIn
 }
 
 void ArduinoEditorFrame::ShowSingleDiagMessage(const wxString &message) {
-  m_diagListCtrl->Freeze();
-  m_diagListCtrl->DeleteAllItems();
-
-  long idx = m_diagListCtrl->InsertItem(0, wxEmptyString, -1); // icon col
-
-  // 1 = File, 2 = Line, 3 = Column, 4 = Message
-  m_diagListCtrl->SetItem(idx, 1, wxEmptyString); // File
-  m_diagListCtrl->SetItem(idx, 2, wxEmptyString); // Line
-  m_diagListCtrl->SetItem(idx, 3, wxEmptyString); // Column
-  m_diagListCtrl->SetItem(idx, 4, message);       // Message
-  m_diagListCtrl->SetItemData(idx, -1);
-
-  m_diagListCtrl->SetColumnWidth(0, 24); // icon + space
-  m_diagListCtrl->SetColumnWidth(1, wxLIST_AUTOSIZE_USEHEADER);
-  m_diagListCtrl->SetColumnWidth(2, wxLIST_AUTOSIZE_USEHEADER);
-  m_diagListCtrl->SetColumnWidth(3, wxLIST_AUTOSIZE_USEHEADER);
-  m_diagListCtrl->SetColumnWidth(4, wxLIST_AUTOSIZE);
-
-  m_diagListCtrl->Thaw();
+  if (m_diagView) {
+    m_diagView->ShowMessage(message);
+  }
 
   for (auto *ed : GetAllEditors()) {
     ed->ClearDiagnosticsIndicators();
@@ -1651,13 +1670,11 @@ void ArduinoEditorFrame::ShowSingleDiagMessage(const wxString &message) {
 void ArduinoEditorFrame::OnDiagnosticsUpdated(wxThreadEvent &WXUNUSED(evt)) {
   StopProcess(ID_PROCESS_DIAG_EVAL);
 
-  m_currentDiagErrors.clear();
-
-  if (!completion || !m_diagListCtrl || !m_bottomNotebook) {
+  if (!completion || !m_diagView || !m_bottomNotebook) {
     return;
   }
 
-  int problemsPageIndex = m_bottomNotebook->FindPage(m_diagListCtrl);
+  int problemsPageIndex = m_bottomNotebook->FindPage(m_diagView);
   if (problemsPageIndex == wxNOT_FOUND) {
     return;
   }
@@ -1733,82 +1750,23 @@ void ArduinoEditorFrame::OnDiagnosticsUpdated(wxThreadEvent &WXUNUSED(evt)) {
     }
   }
 
-  for (const auto &e : dispDiagnostic) {
-    APP_DEBUG_LOG("FRM: OnDiag:  %s", e.ToString().c_str());
-  }
-
-  m_diagListCtrl->Freeze();
-  m_diagListCtrl->DeleteAllItems();
-
-  std::string sketchRoot = arduinoCli->GetSketchPath();
-
-  long row = 0;
-  for (size_t i = 0; i < dispDiagnostic.size(); ++i) {
-    const auto &e = dispDiagnostic[i];
-
-    wxString file = wxString::FromUTF8(DiagnosticsFilename(sketchRoot, e.file));
-
-    wxString lineStr = wxString::Format(wxT("%u"), (unsigned)e.line);
-    wxString colStr = wxString::Format(wxT("%u"), (unsigned)e.column);
-    wxString msg = wxString::FromUTF8(e.message.c_str());
-
-    int image;
-    switch (e.severity) {
-      case CXDiagnostic_Error:
-      case CXDiagnostic_Fatal:
-        image = m_imgError;
-        break;
-      case CXDiagnostic_Warning:
-        image = m_imgWarning;
-        break;
-      case CXDiagnostic_Note:
-        image = m_imgNote;
-        break;
-      default:
-        image = -1;
-        break;
-    }
-
-    long idx = m_diagListCtrl->InsertItem(row, wxEmptyString, image);
-
-    // 1 = File, 2 = Line, 3 = Column, 4 = Message
-    m_diagListCtrl->SetItem(idx, 1, file);
-    m_diagListCtrl->SetItem(idx, 2, lineStr);
-    m_diagListCtrl->SetItem(idx, 3, colStr);
-    m_diagListCtrl->SetItem(idx, 4, msg);
-
-    // save the error index for double-click
-    m_diagListCtrl->SetItemData(idx, (long)i);
-
-    ++row;
-  }
-
-  m_diagListCtrl->SetColumnWidth(0, 24);                        // icon
-  m_diagListCtrl->SetColumnWidth(1, wxLIST_AUTOSIZE);           // File
-  m_diagListCtrl->SetColumnWidth(2, wxLIST_AUTOSIZE_USEHEADER); // Line
-  m_diagListCtrl->SetColumnWidth(3, wxLIST_AUTOSIZE_USEHEADER); // Column
-  m_diagListCtrl->SetColumnWidth(4, wxLIST_AUTOSIZE);           // Message
-
-  m_diagListCtrl->Thaw();
+  m_diagView->SetSketchRoot(arduinoCli->GetSketchPath());
+  m_diagView->SetDiagnostics(dispDiagnostic);
 
   for (auto *ed : GetAllEditors()) {
     ed->ClearDiagnosticsIndicators();
   }
 
-  // Now for each error we find the editor and add an underline
   for (const auto &e : errors) {
     bool isError = (e.severity == CXDiagnostic_Error ||
                     e.severity == CXDiagnostic_Fatal);
 
     ArduinoEditor *ed = FindEditorWithFile(e.file);
-    if (!ed) {
+    if (!ed)
       continue;
-    }
 
     ed->AddDiagnosticUnderline(e.line, e.column, isError);
   }
-
-  m_currentDiagErrors = dispDiagnostic;
 
   CheckMissingHeadersInDiagnostics(errors);
 }
@@ -2204,6 +2162,7 @@ void ArduinoEditorFrame::OnShowLibraryManager(wxCommandEvent &WXUNUSED(evt)) {
 
 void ArduinoEditorFrame::OnInstalledCoresUpdated(wxThreadEvent &evt) {
   StopProcess(ID_PROCESS_LOAD_INSTALLED_CORES);
+  StopProcess(ID_PROCESS_INSTALL_CORE);
 
   bool ok = (evt.GetInt() == 1);
   if (!ok) {
@@ -2446,12 +2405,8 @@ void ArduinoEditorFrame::BindEvents() {
 
   m_auiManager.Bind(wxEVT_AUI_PANE_CLOSE, &ArduinoEditorFrame::OnAuiPaneClose, this);
 
-  m_diagListCtrl->Bind(wxEVT_LIST_ITEM_ACTIVATED, &ArduinoEditorFrame::OnDiagItemActivated, this);
-  m_diagListCtrl->Bind(wxEVT_CONTEXT_MENU, &ArduinoEditorFrame::OnDiagContextMenu, this);
-
-  Bind(wxEVT_MENU, &ArduinoEditorFrame::OnDiagCopySelected, this, ID_MENU_DIAG_COPY);
-  Bind(wxEVT_MENU, &ArduinoEditorFrame::OnDiagCopyAll, this, ID_MENU_DIAG_COPY_ALL);
-  Bind(wxEVT_MENU, &ArduinoEditorFrame::OnDiagSolveAi, this, ID_MENU_DIAG_SOLVE_AI);
+  Bind(EVT_ARD_DIAG_JUMP, &ArduinoEditorFrame::OnDiagJumpFromView, this);
+  Bind(EVT_ARD_DIAG_SOLVE_AI, &ArduinoEditorFrame::OnDiagSolveAiFromView, this);
 
   Bind(EVT_COMMANDLINE_OUTPUT_MSG, &ArduinoEditorFrame::OnCmdLineOutput, this);
 
@@ -2880,33 +2835,11 @@ void ArduinoEditorFrame::InitComponents() {
 
   // ------------------------------------------------------
   // BOTTOM NOTEBOOK (Diagnostics / Console) - still this child
+  // ------------------------------------------------------
   m_bottomNotebook = new wxNotebook(this, wxID_ANY);
 
-  m_diagListCtrl = new wxListCtrl(
-      m_bottomNotebook, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-      wxLC_REPORT | wxLC_SINGLE_SEL);
-
-  // 0 = column for icon only
-  m_diagListCtrl->InsertColumn(0, wxEmptyString);
-  m_diagListCtrl->InsertColumn(1, _("File"));
-  m_diagListCtrl->InsertColumn(2, _("Line"));
-  m_diagListCtrl->InsertColumn(3, _("Column"));
-  m_diagListCtrl->InsertColumn(4, _("Message"));
-
-  int fontSize = 15;
-
-  m_diagImageList = new wxImageList(fontSize, fontSize, false);
-  wxBitmap bmpErr = ArduinoEditor::MakeCircleBitmap(fontSize, settings.GetColors().error, wxColour(0, 0, 0), 0);
-  wxBitmap bmpWarning = ArduinoEditor::MakeCircleBitmap(fontSize, settings.GetColors().warning, wxColour(0, 0, 0), 0);
-  wxBitmap bmpNote = ArduinoEditor::MakeCircleBitmap(fontSize, settings.GetColors().note, wxColour(0, 0, 0), 0);
-
-  m_imgError = m_diagImageList->Add(bmpErr);
-  m_imgWarning = m_diagImageList->Add(bmpWarning);
-  m_imgNote = m_diagImageList->Add(bmpNote);
-
-  m_diagListCtrl->AssignImageList(m_diagImageList, wxIMAGE_LIST_SMALL);
-
-  m_diagListCtrl->SetColumnWidth(0, fontSize + 8);
+  // Diagnostics view (new)
+  m_diagView = new ArduinoDiagnosticsView(m_bottomNotebook, config);
 
   // Build / upload console
   m_buildOutputCtrl = new wxTextCtrl(
@@ -2916,7 +2849,7 @@ void ArduinoEditorFrame::InitComponents() {
 
   m_buildOutputCtrl->SetFont(settings.GetFont());
 
-  m_bottomNotebook->AddPage(m_diagListCtrl, _("Problems"));
+  m_bottomNotebook->AddPage(m_diagView, _("Problems"));
   m_bottomNotebook->AddPage(m_buildOutputCtrl, _("CLI"));
 
   m_lastBottomNotebookSelectedPage = wxNOT_FOUND;
@@ -3314,201 +3247,23 @@ void ArduinoEditorFrame::RestoreWindowPlacement() {
   }
 }
 
-void ArduinoEditorFrame::OnDiagItemActivated(wxListEvent &event) {
-  long row = event.GetIndex();
-  if (row < 0)
+void ArduinoEditorFrame::OnDiagJumpFromView(ArduinoDiagnosticsActionEvent &ev) {
+  if (!ev.HasJumpTarget())
     return;
-
-  // Assumption: in OnDiagnosticsUpdated you stored the error index into ItemData
-  long data = m_diagListCtrl->GetItemData(row);
-  if (data < 0)
-    return;
-
-  std::vector<ArduinoParseError> errors = m_currentDiagErrors;
-
-  size_t idx = static_cast<size_t>(data);
-  if (idx >= errors.size())
-    return;
-
-  const auto &e = errors[idx];
-
-  JumpTarget tgt;
-  tgt.file = e.file;
-  tgt.line = static_cast<int>(e.line);
-  tgt.column = static_cast<int>(e.column);
-
-  HandleGoToLocation(tgt);
+  HandleGoToLocation(ev.GetJumpTarget());
 }
 
-wxString ArduinoEditorFrame::GetDiagRowText(long row) const {
-  if (!m_diagListCtrl || row < 0 || row >= m_diagListCtrl->GetItemCount()) {
-    return wxEmptyString;
-  }
-
-  auto getCol = [this, row](int col) {
-    wxListItem info;
-    info.SetId(row);
-    info.SetColumn(col);
-    info.SetMask(wxLIST_MASK_TEXT);
-    if (m_diagListCtrl->GetItem(info)) {
-      return info.GetText();
-    }
-    return wxString();
-  };
-
-  wxString file = getCol(1);   // "File"
-  wxString line = getCol(2);   // "Line"
-  wxString column = getCol(3); // "Column"
-  wxString msg = getCol(4);    // "Message"
-
-  // For special lines like "No problems found." only Message is filled in.
-  if (file.IsEmpty() && line.IsEmpty() && column.IsEmpty()) {
-    return msg;
-  }
-
-  wxString text = file;
-
-  if (!line.IsEmpty()) {
-    text << wxT(":") << line;
-    if (!column.IsEmpty()) {
-      text << wxT(":") << column;
-    }
-  }
-
-  if (!msg.IsEmpty()) {
-    if (!text.IsEmpty()) {
-      text << wxT(": ");
-    }
-    text << msg;
-  }
-
-  return text;
-}
-
-void ArduinoEditorFrame::OnDiagContextMenu(wxContextMenuEvent &evt) {
-  if (!m_diagListCtrl) {
+void ArduinoEditorFrame::OnDiagSolveAiFromView(ArduinoDiagnosticsActionEvent &ev) {
+  if (!m_aiSettings.enabled)
     return;
-  }
-
-  wxPoint screenPt = evt.GetPosition();
-
-  if (screenPt == wxDefaultPosition) {
-    screenPt = m_diagListCtrl->GetScreenPosition();
-    wxSize size = m_diagListCtrl->GetSize();
-    screenPt.x += size.x / 2;
-    screenPt.y += size.y / 2;
-  }
-
-  wxPoint clientPt = m_diagListCtrl->ScreenToClient(screenPt);
-
-  bool hasSelection = (m_diagListCtrl->GetNextItem(-1,
-                                                   wxLIST_NEXT_ALL,
-                                                   wxLIST_STATE_SELECTED) != wxNOT_FOUND);
-
-  wxMenu menu;
-  wxMenuItem *copyItem = menu.Append(ID_MENU_DIAG_COPY, _("Copy problem"));
-  menu.Append(ID_MENU_DIAG_COPY_ALL, _("Copy all problems"));
-
-  if (!hasSelection && copyItem) {
-    copyItem->Enable(false);
-  }
-
-  if (m_aiSettings.enabled) {
-    menu.AppendSeparator();
-    menu.Append(ID_MENU_DIAG_SOLVE_AI, _("Solve error with AI"));
-  }
-
-  m_diagListCtrl->PopupMenu(&menu, clientPt);
-}
-
-void ArduinoEditorFrame::OnDiagCopySelected(wxCommandEvent &WXUNUSED(evt)) {
-  if (!m_diagListCtrl) {
-    return;
-  }
-
-  long sel = m_diagListCtrl->GetNextItem(
-      -1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-
-  if (sel == wxNOT_FOUND) {
-    return;
-  }
-
-  wxString text = GetDiagRowText(sel);
-  if (text.IsEmpty()) {
-    return;
-  }
-
-  if (wxTheClipboard->Open()) {
-    wxTheClipboard->SetData(new wxTextDataObject(text));
-    wxTheClipboard->Close();
-  }
-}
-
-void ArduinoEditorFrame::OnDiagCopyAll(wxCommandEvent &WXUNUSED(evt)) {
-  if (!m_diagListCtrl) {
-    return;
-  }
-
-  int count = m_diagListCtrl->GetItemCount();
-  if (count <= 0) {
-    return;
-  }
-
-  wxString all;
-
-  for (int i = 0; i < count; ++i) {
-    wxString rowText = GetDiagRowText(i);
-    if (!rowText.IsEmpty()) {
-      all << rowText << wxT("\n");
-    }
-  }
-
-  all.Trim(true).Trim(false);
-
-  if (all.IsEmpty()) {
-    return;
-  }
-
-  if (wxTheClipboard->Open()) {
-    wxTheClipboard->SetData(new wxTextDataObject(all));
-    wxTheClipboard->Close();
-  }
-}
-
-void ArduinoEditorFrame::OnDiagSolveAi(wxCommandEvent &WXUNUSED(evt)) {
-  if (!m_diagListCtrl || !m_aiSettings.enabled) {
-    return;
-  }
-
-  long row = m_diagListCtrl->GetNextItem(
-      -1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-
-  if (row == wxNOT_FOUND) {
-    return;
-  }
-
-  long data = m_diagListCtrl->GetItemData(row);
-  if (data < 0)
+  if (!ev.HasJumpTarget() || !ev.HasDiagnostic())
     return;
 
-  std::vector<ArduinoParseError> errors = m_currentDiagErrors;
-
-  size_t idx = static_cast<size_t>(data);
-  if (idx >= errors.size())
-    return;
-
-  const auto &e = errors[idx];
-
-  JumpTarget tgt;
-  tgt.file = e.file;
-  tgt.line = static_cast<int>(e.line);
-  tgt.column = static_cast<int>(e.column);
-
-  HandleGoToLocation(tgt);
+  HandleGoToLocation(ev.GetJumpTarget());
 
   ArduinoEditor *ed = GetCurrentEditor();
   if (ed) {
-    ed->AiSolveError(e);
+    ed->AiSolveError(ev.GetDiagnostic());
   }
 }
 

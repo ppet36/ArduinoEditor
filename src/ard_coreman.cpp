@@ -409,18 +409,15 @@ void ArduinoCoreManagerFrame::OnClose(wxCloseEvent &evt) {
   evt.Veto();
 }
 
-void ArduinoCoreManagerFrame::OnTypeChanged(wxCommandEvent &evt) {
-  (void)evt;
+void ArduinoCoreManagerFrame::OnTypeChanged(wxCommandEvent &WXUNUSED(evt)) {
   ApplyFilter();
 }
 
-void ArduinoCoreManagerFrame::OnSearchText(wxCommandEvent &evt) {
-  (void)evt;
+void ArduinoCoreManagerFrame::OnSearchText(wxCommandEvent &WXUNUSED(evt)) {
   m_searchTimer.Start(300, true);
 }
 
-void ArduinoCoreManagerFrame::OnSearchTimer(wxTimerEvent &evt) {
-  (void)evt;
+void ArduinoCoreManagerFrame::OnSearchTimer(wxTimerEvent &WXUNUSED(evt)) {
   ApplyFilter();
 }
 
@@ -626,6 +623,7 @@ void ArduinoCoreManagerFrame::StartInstallCore(const ArduinoCoreInfo &core,
   ids.push_back(id);
 
   if (frame->CanPerformAction(coreinstall, true)) {
+    frame->StartProcess(_("Installing core/board toolchain..."), ID_PROCESS_INSTALL_CORE, ArduinoActivityState::Busy, /*canBeTerminated=*/true);
     m_cli->InstallCoresAsync(ids, frame);
   }
 }
