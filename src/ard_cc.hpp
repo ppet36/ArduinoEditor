@@ -189,6 +189,8 @@ struct IncludeUsage {
   bool used = false;
 };
 
+using CollectSketchFilesFn = std::function<void(std::vector<SketchFileBuffer>&)>;
+
 class ArduinoCodeCompletion {
 private:
   static constexpr size_t MAX_ITEMS = 20;
@@ -224,6 +226,7 @@ private:
   CompletionSessionCache m_completionSession;
 
   std::atomic<bool> m_cancelAsync{false};
+  CollectSketchFilesFn m_collectSketchFilesFn;
   wxEvtHandler *m_eventHandler = nullptr;
 
   bool IsIno(const std::string &filename) const;
@@ -271,14 +274,14 @@ private:
 
   void FilterAndSortCompletionsWithPrefix(const std::string &prefix, std::vector<CompletionItem> &inOutCompletions);
 
-  bool TryCollectSketchFiles(std::vector<SketchFileBuffer> &outFiles) const;
+  void CollectSketchFiles(std::vector<SketchFileBuffer> &outFiles) const;
   std::vector<std::string> GetCompilerArgs(const std::vector<SketchFileBuffer> &files) const;
   std::vector<std::string> GetCompilerArgs() const;
 
   void AeGetBestDiagLocation(CXSourceLocation loc, CXFile *out_file, unsigned *out_line, unsigned *out_column, unsigned *out_offset) const;
 
 public:
-  ArduinoCodeCompletion(ArduinoCli *ardCli, const ClangSettings &clangSettings, wxEvtHandler *eventHandler);
+  ArduinoCodeCompletion(ArduinoCli *ardCli, const ClangSettings &clangSettings, CollectSketchFilesFn collectSketchFilesFn, wxEvtHandler *eventHandler);
   ~ArduinoCodeCompletion();
 
   void ApplySettings(const ClangSettings &settings);

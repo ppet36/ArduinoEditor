@@ -2209,7 +2209,7 @@ void ArduinoCodeCompletion::RefreshDiagnosticsAsync(const std::string &filename,
     return;
 
   std::vector<SketchFileBuffer> filesSnapshot;
-  TryCollectSketchFiles(filesSnapshot);
+  CollectSketchFiles(filesSnapshot);
 
   std::thread([this, filename, code, filesSnapshot = std::move(filesSnapshot)]() {
     CcFilesSnapshotGuard guard(&filesSnapshot);
@@ -2448,30 +2448,30 @@ void ArduinoCodeCompletion::FilterAndSortCompletionsWithPrefix(const std::string
   }
 }
 
-bool ArduinoCodeCompletion::TryCollectSketchFiles(std::vector<SketchFileBuffer> &outFiles) const {
-  outFiles.clear();
-
-  // owner is in reality ArduinoEditorFrame
-  ArduinoEditorFrame *frame = wxDynamicCast(m_eventHandler, ArduinoEditorFrame);
-  if (!frame) {
-    return false;
+void ArduinoCodeCompletion::CollectSketchFiles(std::vector<SketchFileBuffer> &outFiles) const {
+  if (!wxIsMainThread()) {
+    AE_TRAP_MSG("CC: CollectSketchFiles(&); must run on the main (GUI) thread");
   }
-
-  frame->CollectEditorSources(outFiles);
-  return !outFiles.empty();
+  m_collectSketchFilesFn(outFiles);
 }
 
 std::vector<std::string> ArduinoCodeCompletion::GetCompilerArgs() const {
-  if (!arduinoCli) {
-    return {};
-  }
-
   // If we are running in a worker thread where a snapshot is set, we will use it.
   if (g_ccFilesSnapshot && !g_ccFilesSnapshot->empty()) {
     return GetCompilerArgs(*g_ccFilesSnapshot);
   }
 
-  return arduinoCli->GetCompilerArgs();
+  if (wxIsMainThread()) {
+    // If we are on the main thread, we can still check out
+    // the files directly from the editors.
+    std::vector<SketchFileBuffer> files;
+    CollectSketchFiles(files);
+    return GetCompilerArgs(files);
+  }
+
+  AE_TRAP_MSG("CC: No files snapshot available!");
+
+  return {};
 }
 
 std::vector<std::string> ArduinoCodeCompletion::GetCompilerArgs(const std::vector<SketchFileBuffer> &files) const {
@@ -2562,7 +2562,7 @@ void ArduinoCodeCompletion::ShowAutoCompletionAsync(wxStyledTextCtrl *editor, st
   bool canUseCache = false;
 
   std::vector<SketchFileBuffer> filesSnapshot;
-  TryCollectSketchFiles(filesSnapshot);
+  CollectSketchFiles(filesSnapshot);
 
   {
     std::lock_guard<std::mutex> lock(m_completionSessionMutex);
@@ -2707,6 +2707,10 @@ bool ArduinoCodeCompletion::GetHoverInfo(const std::string &filename, const std:
 
   if (!m_ready)
     return false;
+
+  std::vector<SketchFileBuffer> filesSnapshot;
+  CollectSketchFiles(filesSnapshot);
+  CcFilesSnapshotGuard guard(&filesSnapshot);
 
   outInfo = HoverInfo{};
 
@@ -3671,7 +3675,7 @@ void ArduinoCodeCompletion::FindSymbolOccurrencesAsync(const std::string &filena
   }
 
   std::vector<SketchFileBuffer> filesSnapshot;
-  TryCollectSketchFiles(filesSnapshot);
+  CollectSketchFiles(filesSnapshot);
 
   std::thread([this,
                handler,
@@ -4979,8 +4983,8 @@ void ArduinoCodeCompletion::ApplySettings(const ClangSettings &settings) {
   m_clangSettings = settings;
 }
 
-ArduinoCodeCompletion::ArduinoCodeCompletion(ArduinoCli *ardCli, const ClangSettings &clangSettings, wxEvtHandler *eventHandler)
-    : arduinoCli(ardCli), m_clangSettings(clangSettings), m_eventHandler(eventHandler) {
+ArduinoCodeCompletion::ArduinoCodeCompletion(ArduinoCli *ardCli, const ClangSettings &clangSettings, CollectSketchFilesFn collectSketchFilesFn, wxEvtHandler *eventHandler)
+    : arduinoCli(ardCli), m_clangSettings(clangSettings), m_collectSketchFilesFn(std::move(collectSketchFilesFn)), m_eventHandler(eventHandler) {
   index = clang_createIndex(0, 0);
 
   CXString v = clang_getClangVersion();

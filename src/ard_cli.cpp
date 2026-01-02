@@ -1601,15 +1601,6 @@ std::vector<ResolvedLibraryInfo> ArduinoCli::GetResolvedLibrariesFromCompileComm
   return outLibs;
 }
 
-void ArduinoCli::InvalidateLibraryCache() {
-  std::lock_guard<std::mutex> lock(m_resolveCacheMutex);
-  m_hasResolveLibrariesCache = false;
-  m_resolveLibs.clear();
-  m_resolveHeaderToLibSrc.clear();
-  m_resolveSrcRootToLibIndex.clear();
-  m_resolveNameToLibIndex.clear();
-}
-
 bool ArduinoCli::LoadLibraries() {
   ScopeTimer t("CLI: LoadLibraries()");
   APP_DEBUG_LOG("CLI: LoadLibraries()");
@@ -2667,24 +2658,30 @@ std::string ArduinoCli::GetCachedEnviromentFqbn() const {
 
 void ArduinoCli::CleanCachedEnvironment() {
   APP_DEBUG_LOG("CleanCachedEnvironment()");
-  {
-    std::lock_guard<std::mutex> lock(m_resolveCacheMutex);
-    m_hasResolveLibrariesCache = false;
-    m_resolveLibs.clear();
-    m_resolveHeaderToLibSrc.clear();
-    m_resolveSrcRootToLibIndex.clear();
-    m_resolveNameToLibIndex.clear();
-  }
+  InvalidateLibraryCache();
+  CleanBuildDirectory();
+}
 
+void ArduinoCli::CleanBuildDirectory() {
   fs::path buildPath = fs::path(sketchPath) / ".ardedit" / "build";
   std::error_code ec;
   fs::remove_all(buildPath, ec);
   if (ec) {
     wxLogWarning(wxT("Failed to remove build directory '%s': %s"), wxString::FromUTF8(buildPath.string()), wxString::FromUTF8(ec.message()));
   } else {
-    APP_DEBUG_LOG("Build directory '%s' removed.", buildPath.string().c_str());
+    APP_DEBUG_LOG("CLI: Build directory '%s' removed.", buildPath.string().c_str());
   }
 }
+
+void ArduinoCli::InvalidateLibraryCache() {
+  std::lock_guard<std::mutex> lock(m_resolveCacheMutex);
+  m_hasResolveLibrariesCache = false;
+  m_resolveLibs.clear();
+  m_resolveHeaderToLibSrc.clear();
+  m_resolveSrcRootToLibIndex.clear();
+  m_resolveNameToLibIndex.clear();
+}
+
 
 void ArduinoCli::CancelAsyncOperations() {
   m_cancelAsync.store(true, std::memory_order_relaxed);

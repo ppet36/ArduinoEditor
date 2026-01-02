@@ -67,6 +67,11 @@ void AppTraceLog(const char *fmt, ...);
     AppTraceLog(__VA_ARGS__); \
   } while (0)
 
+#define AE_TRAP_MSG(msg) do { \
+  std::fprintf(stderr, "TRAP: %s\n  at %s:%d (%s)\n", msg, __FILE__, __LINE__, __func__); \
+  __builtin_trap(); \
+} while(0)
+
 /**
  * Helper for profiling.
  */

@@ -422,7 +422,9 @@ void ArduinoEditorFrame::OpenSketch(const std::string &skp) {
   }
 
   app.SetSplashMessage(_("Creating completion engine..."));
-  completion = new ArduinoCodeCompletion(arduinoCli, m_clangSettings, this);
+  completion = new ArduinoCodeCompletion(arduinoCli, m_clangSettings, [this](std::vector<SketchFileBuffer>& out) {
+      this->CollectEditorSources(out);
+    }, /*eventHandler=*/this);
 
   // ---------------------------------------------------------------------------
   // Create editor ONLY for the primary .ino file.
@@ -1283,8 +1285,16 @@ void ArduinoEditorFrame::OnProjectClean(wxCommandEvent &WXUNUSED(event)) {
 
 void ArduinoEditorFrame::OnCliProcessKill(wxCommandEvent &) {
   APP_DEBUG_LOG("FRM: OnCliProcessKill()");
+
   if (arduinoCli) {
-    arduinoCli->CancelRunning();
+    if (arduinoCli->CancelRunning()) {
+
+      if (m_action == upload) {
+        // An aborted build usually corrupts the translation
+        // directory, so we'd rather delete it.
+        arduinoCli->CleanBuildDirectory();
+      }
+    }
   }
 }
 

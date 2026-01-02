@@ -267,7 +267,9 @@ public:
   const std::vector<ArduinoCoreInfo> &GetCores() const;
 
   void CleanCachedEnvironment();
-
+  void CleanBuildDirectory();
+  void InvalidateLibraryCache();
+ 
   void CancelAsyncOperations();
 
   const std::vector<std::string> &GetCompilerArgs() const {
@@ -304,7 +306,6 @@ public:
   void SearchLibraryProvidingHeaderAsync(const std::string &header, wxEvtHandler *handler);
 
   // arduino libs management
-  void InvalidateLibraryCache();
   void LoadLibrariesAsync(wxEvtHandler *handler);
   void LoadInstalledLibrariesAsync(wxEvtHandler *handler);
   // Asynchronous installation (can install multiple libraries at once)

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ArduinoEditor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-01 18:28+0100\n"
+"POT-Creation-Date: 2026-01-02 08:45+0100\n"
 "PO-Revision-Date: 2025-12-09 22:52:00+0100\n"
 "Last-Translator: Pavel Petržela <r17c@seznam.cz>\n"
 "Language-Team: -\n"
@@ -671,7 +671,7 @@ msgstr ""
 "    </a>\n"
 "  </p>\n"
 
-#: ../src/ard_aboutdlg.cpp:320 ../src/ard_ed_frm.cpp:2700
+#: ../src/ard_aboutdlg.cpp:320 ../src/ard_ed_frm.cpp:2710
 msgid "About Arduino Editor"
 msgstr "O aplikaci Arduino Editor"
 
@@ -1032,7 +1032,7 @@ msgstr "API klíč je ukládán pomocí systémového zabezpečeného úložišt
 msgid "Extra request JSON"
 msgstr "Dodatečné JSON parametry"
 
-#: ../src/ard_aimdldlg.cpp:173 ../src/ard_ed_frm.cpp:4076
+#: ../src/ard_aimdldlg.cpp:173 ../src/ard_ed_frm.cpp:4086
 msgid "Delete"
 msgstr "Smazat"
 
@@ -1050,7 +1050,7 @@ msgid "OK"
 msgstr "OK"
 
 #: ../src/ard_aimdldlg.cpp:184 ../src/ard_boptdlg.cpp:77
-#: ../src/ard_diff.cpp:126 ../src/ard_ed_frm.cpp:2361 ../src/ard_fmtdlg.cpp:188
+#: ../src/ard_diff.cpp:126 ../src/ard_ed_frm.cpp:2371 ../src/ard_fmtdlg.cpp:188
 #: ../src/utils.cpp:1015
 msgid "Cancel"
 msgstr "Storno"
@@ -1228,11 +1228,11 @@ msgstr "<nahrávají se programátory...>"
 msgid "<default>"
 msgstr "<výchozí>"
 
-#: ../src/ard_cc.cpp:2846
+#: ../src/ard_cc.cpp:2850
 msgid "Declaration:"
 msgstr "Deklarace:"
 
-#: ../src/ard_cli.cpp:2957
+#: ../src/ard_cli.cpp:2954
 msgid "Serial port is not set. Cannot upload sketch.\n"
 msgstr "Sériový port není nastaven. Nelze nahrát sketch.\n"
 
@@ -1260,7 +1260,7 @@ msgstr "Připravují se nástroje Arduino"
 
 #: ../src/ard_cliinst.cpp:153 ../src/ard_cliinst.cpp:421
 #: ../src/ard_cliinst.cpp:519 ../src/ard_cliinst.cpp:622
-#: ../src/ard_ed_frm.cpp:1676
+#: ../src/ard_ed_frm.cpp:1686
 msgid "Preparing..."
 msgstr "Připravuji..."
 
@@ -1359,7 +1359,7 @@ msgstr "Nainstalovat"
 msgid "Browse"
 msgstr "Procházet"
 
-#: ../src/ard_cliinst.cpp:255 ../src/ard_ed_frm.cpp:2577 ../src/main.cpp:404
+#: ../src/ard_cliinst.cpp:255 ../src/ard_ed_frm.cpp:2587 ../src/main.cpp:404
 msgid "Exit"
 msgstr "Ukončit"
 
@@ -1640,7 +1640,7 @@ msgid "Uninstall"
 msgstr "Odinstalovat"
 
 #: ../src/ard_coreinfo.cpp:237 ../src/ard_coreman.cpp:153
-#: ../src/ard_ed_frm.cpp:874 ../src/ard_libinfo.cpp:360
+#: ../src/ard_ed_frm.cpp:876 ../src/ard_libinfo.cpp:360
 #: ../src/ard_libman.cpp:199
 msgid "Close"
 msgstr "Zavřít"
@@ -1655,8 +1655,8 @@ msgstr "Typ:"
 
 #: ../src/ard_coreman.cpp:105 ../src/ard_coreman.cpp:188
 #: ../src/ard_coreman.cpp:344 ../src/ard_coreman.cpp:440
-#: ../src/ard_ed_frm.cpp:1603 ../src/ard_ed_frm.cpp:2185
-#: ../src/ard_ed_frm.cpp:2230 ../src/ard_libman.cpp:145
+#: ../src/ard_ed_frm.cpp:1613 ../src/ard_ed_frm.cpp:2195
+#: ../src/ard_ed_frm.cpp:2240 ../src/ard_libman.cpp:145
 #: ../src/ard_libman.cpp:262 ../src/ard_libman.cpp:433
 #: ../src/ard_libman.cpp:598
 msgid "All"
@@ -1789,8 +1789,8 @@ msgstr "Varování"
 msgid "Initializing..."
 msgstr "Inicializuji..."
 
-#: ../src/ard_ed_frm.cpp:302 ../src/ard_ed_frm.cpp:3652
-#: ../src/ard_ed_frm.cpp:3847
+#: ../src/ard_ed_frm.cpp:302 ../src/ard_ed_frm.cpp:3662
+#: ../src/ard_ed_frm.cpp:3857
 #, c-format
 msgid "Directory '%s' does not exist."
 msgstr "Adresář '%s' neexistuje."
@@ -1835,85 +1835,85 @@ msgstr "Pokračovat bez výběru"
 msgid "Creating completion engine..."
 msgstr "Vytvářím dokončovací prostředí..."
 
-#: ../src/ard_ed_frm.cpp:455
+#: ../src/ard_ed_frm.cpp:457
 msgid "Initiating background processes..."
 msgstr "Inicializuji procesy na pozadí..."
 
-#: ../src/ard_ed_frm.cpp:456
+#: ../src/ard_ed_frm.cpp:458
 msgid "Loading installed libraries..."
 msgstr "Načítání instalovaných knihoven..."
 
-#: ../src/ard_ed_frm.cpp:580
+#: ../src/ard_ed_frm.cpp:582
 msgid "Arduino Clang completion initialized for "
 msgstr "Dokončování kódu Arduino Clang inicializováno pro "
 
-#: ../src/ard_ed_frm.cpp:610
+#: ../src/ard_ed_frm.cpp:612
 msgid "Failed create Arduino Clang completion!"
 msgstr "Nepodařilo se vytvořit prostředí pro dokončování kódu Arduino Clang!"
 
-#: ../src/ard_ed_frm.cpp:645 ../src/ard_ed_frm.cpp:1264
+#: ../src/ard_ed_frm.cpp:647 ../src/ard_ed_frm.cpp:1266
 msgid "Initializing Arduino Clang completion..."
 msgstr "Inicializuji Arduino Clang..."
 
-#: ../src/ard_ed_frm.cpp:649 ../src/ard_ed_frm.cpp:1268
+#: ../src/ard_ed_frm.cpp:651 ../src/ard_ed_frm.cpp:1270
 msgid "Loading board parameters..."
 msgstr "Načítání parametrů desky..."
 
-#: ../src/ard_ed_frm.cpp:657 ../src/ard_ed_frm.cpp:1272
+#: ../src/ard_ed_frm.cpp:659 ../src/ard_ed_frm.cpp:1274
 msgid "Loading compile parameters..."
 msgstr "Načítání parametrů pro překlad..."
 
-#: ../src/ard_ed_frm.cpp:693
+#: ../src/ard_ed_frm.cpp:695
 msgid "Error loading default board options."
 msgstr "Chyba při čtení výchozích parametrů desky."
 
-#: ../src/ard_ed_frm.cpp:698
+#: ../src/ard_ed_frm.cpp:700
 msgid "Board has no options."
 msgstr "Deska nemá žádné volby."
 
-#: ../src/ard_ed_frm.cpp:698
+#: ../src/ard_ed_frm.cpp:700
 msgid "Information"
 msgstr "Informace"
 
-#: ../src/ard_ed_frm.cpp:705
+#: ../src/ard_ed_frm.cpp:707
 msgid "Error loading board options."
 msgstr "Chyba při čtení parametrů vývojové desky."
 
-#: ../src/ard_ed_frm.cpp:713
+#: ../src/ard_ed_frm.cpp:715
 msgid "Board settings"
 msgstr "Nastavení desky"
 
-#: ../src/ard_ed_frm.cpp:781 ../src/ard_ed_frm.cpp:834
+#: ../src/ard_ed_frm.cpp:783 ../src/ard_ed_frm.cpp:836
 msgid "The file in the editor is modified. Do you want to save the file?"
 msgstr "Soubor v editoru je modifikován. Chcete jej uložit?"
 
-#: ../src/ard_ed_frm.cpp:782 ../src/ard_ed_frm.cpp:835
+#: ../src/ard_ed_frm.cpp:784 ../src/ard_ed_frm.cpp:837
 msgid "Close tab"
 msgstr "Zavřít kartu"
 
-#: ../src/ard_ed_frm.cpp:786 ../src/ard_ed_frm.cpp:839
-#: ../src/ard_ed_frm.cpp:1153 ../src/ard_ed_frm.cpp:1178
+#: ../src/ard_ed_frm.cpp:788 ../src/ard_ed_frm.cpp:841
+#: ../src/ard_ed_frm.cpp:1155 ../src/ard_ed_frm.cpp:1180
 msgid "Save error!"
 msgstr "Chyba při ukládání!"
 
-#: ../src/ard_ed_frm.cpp:875
+#: ../src/ard_ed_frm.cpp:877
 msgid "Close Others"
 msgstr "Zavřít ostatní"
 
-#: ../src/ard_ed_frm.cpp:876
+#: ../src/ard_ed_frm.cpp:878
 msgid "Close All"
 msgstr "Zavřít vše"
 
-#: ../src/ard_ed_frm.cpp:938
+#: ../src/ard_ed_frm.cpp:940
 #, c-format
 msgid "File %s not found."
 msgstr "Soubor %s nebyl nalezen."
 
-#: ../src/ard_ed_frm.cpp:943
+#: ../src/ard_ed_frm.cpp:945
 msgid "Cannot delete .ino file of the sketch."
 msgstr "Nelze smazat .ino soubor sketche."
 
-#: ../src/ard_ed_frm.cpp:955
+#: ../src/ard_ed_frm.cpp:957
 msgid ""
 "The file has unsaved changes.\n"
 "Do you really want to delete it?"
@@ -1921,170 +1921,170 @@ msgstr ""
 "Soubor obsahuje neuložené změny.\n"
 "Opravdu jej chcete smazat?"
 
-#: ../src/ard_ed_frm.cpp:957 ../src/ard_filestree.cpp:438
+#: ../src/ard_ed_frm.cpp:959 ../src/ard_filestree.cpp:438
 msgid "Delete file"
 msgstr "Smazat soubor"
 
-#: ../src/ard_ed_frm.cpp:969
+#: ../src/ard_ed_frm.cpp:971
 #, c-format
 msgid "Failed to delete %s."
 msgstr "Nepodařilo se smazat %s."
 
-#: ../src/ard_ed_frm.cpp:1008
+#: ../src/ard_ed_frm.cpp:1010
 msgid "File with this name already exists in the filesystem."
 msgstr "Soubor s tímto názvem již v souborovém systému existuje."
 
-#: ../src/ard_ed_frm.cpp:1013
+#: ../src/ard_ed_frm.cpp:1015
 msgid "Cannot create file outside of project."
 msgstr "Nelze vytvořit soubor mimo projekt."
 
-#: ../src/ard_ed_frm.cpp:1020
+#: ../src/ard_ed_frm.cpp:1022
 #, c-format
 msgid "Cannot create file '%s'."
 msgstr "Nelze vytvořit soubor '%s'."
 
-#: ../src/ard_ed_frm.cpp:1066 ../src/ard_examples.cpp:479
+#: ../src/ard_ed_frm.cpp:1068 ../src/ard_examples.cpp:479
 msgid "Sketch name cannot be empty."
 msgstr "Název sketche nesmí být prázdný."
 
-#: ../src/ard_ed_frm.cpp:1079
+#: ../src/ard_ed_frm.cpp:1081
 #, c-format
 msgid "Error creating directory '%s'."
 msgstr "Chyba při vytváření adresáře '%s'."
 
-#: ../src/ard_ed_frm.cpp:1119 ../src/nsketch.cpp:111
+#: ../src/ard_ed_frm.cpp:1121 ../src/nsketch.cpp:111
 msgid "Select sketch directory"
 msgstr "Vyberte adresář sketche"
 
-#: ../src/ard_ed_frm.cpp:1151
+#: ../src/ard_ed_frm.cpp:1153
 msgid "Saved..."
 msgstr "Uloženo..."
 
-#: ../src/ard_ed_frm.cpp:1176
+#: ../src/ard_ed_frm.cpp:1178
 msgid "All saved..."
 msgstr "Vše uloženo..."
 
-#: ../src/ard_ed_frm.cpp:1197
+#: ../src/ard_ed_frm.cpp:1199
 msgid "Serial port changed to "
 msgstr "Sériový port změněn na "
 
-#: ../src/ard_ed_frm.cpp:1205
+#: ../src/ard_ed_frm.cpp:1207
 msgid "Serial ports refreshed."
 msgstr "Sériové porty obnoveny."
 
-#: ../src/ard_ed_frm.cpp:1218
+#: ../src/ard_ed_frm.cpp:1220
 msgid "No symbols found."
 msgstr "Nebyly nalezeny žádné symboly."
 
-#: ../src/ard_ed_frm.cpp:1218 ../src/ard_finsymdlg.cpp:29
+#: ../src/ard_ed_frm.cpp:1220 ../src/ard_finsymdlg.cpp:29
 msgid "Find symbol"
 msgstr "Najít symbol"
 
-#: ../src/ard_ed_frm.cpp:1262
+#: ../src/ard_ed_frm.cpp:1264
 msgid "Rebuilding project..."
 msgstr "Projekt se znovu kompiluje..."
 
-#: ../src/ard_ed_frm.cpp:1295
+#: ../src/ard_ed_frm.cpp:1305
 msgid "Compilation"
 msgstr "Kompilace"
 
-#: ../src/ard_ed_frm.cpp:1298
+#: ../src/ard_ed_frm.cpp:1308
 msgid "Upload"
 msgstr "Nahrát"
 
-#: ../src/ard_ed_frm.cpp:1301
+#: ../src/ard_ed_frm.cpp:1311
 msgid "Library installation"
 msgstr "Instalace knihovny"
 
-#: ../src/ard_ed_frm.cpp:1304
+#: ../src/ard_ed_frm.cpp:1314
 msgid "Library uninstalation"
 msgstr "Odinstalace knihovny"
 
-#: ../src/ard_ed_frm.cpp:1307 ../src/ard_libman.cpp:743
+#: ../src/ard_ed_frm.cpp:1317 ../src/ard_libman.cpp:743
 msgid "Update library index"
 msgstr "Aktualizovat index knihoven"
 
-#: ../src/ard_ed_frm.cpp:1311
+#: ../src/ard_ed_frm.cpp:1321
 msgid "Action"
 msgstr "Akce"
 
-#: ../src/ard_ed_frm.cpp:1319
+#: ../src/ard_ed_frm.cpp:1329
 #, c-format
 msgid "Other action \"%s\" running. Please try again later."
 msgstr "Jiná akce \"%s\" právě probíhá. Prosím, zkuste to později."
 
-#: ../src/ard_ed_frm.cpp:1333
+#: ../src/ard_ed_frm.cpp:1343
 #, c-format
 msgid "%s started..."
 msgstr "%s spuštěna..."
 
-#: ../src/ard_ed_frm.cpp:1345
+#: ../src/ard_ed_frm.cpp:1355
 msgid "finished."
 msgstr "dokončena."
 
-#: ../src/ard_ed_frm.cpp:1345
+#: ../src/ard_ed_frm.cpp:1355
 msgid "failed."
 msgstr "selhala."
 
-#: ../src/ard_ed_frm.cpp:1353
+#: ../src/ard_ed_frm.cpp:1363
 #, c-format
 msgid "%s failed. See the CLI output for more information."
 msgstr "%s selhala. Pro více informací si prosím prohlédněte výstup CLI."
 
-#: ../src/ard_ed_frm.cpp:1359 ../src/ard_ed_frm.cpp:1596
-#: ../src/ard_ed_frm.cpp:2178 ../src/ard_libman.cpp:249
+#: ../src/ard_ed_frm.cpp:1369 ../src/ard_ed_frm.cpp:1606
+#: ../src/ard_ed_frm.cpp:2188 ../src/ard_libman.cpp:249
 msgid "Loading libraries..."
 msgstr "Načítání knihoven..."
 
-#: ../src/ard_ed_frm.cpp:1385 ../src/ard_ed_frm.cpp:2208
+#: ../src/ard_ed_frm.cpp:1395 ../src/ard_ed_frm.cpp:2218
 msgid "Enumerating available boards..."
 msgstr "Zjišťování dostupných desek..."
 
-#: ../src/ard_ed_frm.cpp:1387
+#: ../src/ard_ed_frm.cpp:1397
 msgid "Loading core list..."
 msgstr "Načítání seznamu jader..."
 
-#: ../src/ard_ed_frm.cpp:1431
+#: ../src/ard_ed_frm.cpp:1441
 msgid "Building project..."
 msgstr "Sestavování projektu..."
 
-#: ../src/ard_ed_frm.cpp:1466
+#: ../src/ard_ed_frm.cpp:1476
 msgid "Uploading project..."
 msgstr "Upload projektu na desku..."
 
-#: ../src/ard_ed_frm.cpp:1586
+#: ../src/ard_ed_frm.cpp:1596
 msgid "Resolving missing libraries..."
 msgstr "Hledání chybějících knihoven..."
 
-#: ../src/ard_ed_frm.cpp:1654 ../src/ard_ed_frm.cpp:2905
+#: ../src/ard_ed_frm.cpp:1664 ../src/ard_ed_frm.cpp:2915
 msgid "Problems"
 msgstr "Problémy"
 
-#: ../src/ard_ed_frm.cpp:1685
+#: ../src/ard_ed_frm.cpp:1695
 msgid "Translation unit not prepared."
 msgstr "Překladová jednotka není připravena."
 
-#: ../src/ard_ed_frm.cpp:1700 ../src/ard_ed_frm.cpp:1960
+#: ../src/ard_ed_frm.cpp:1710 ../src/ard_ed_frm.cpp:1970
 msgid "Diagnostics turned off."
 msgstr "Diagnostika vypnuta."
 
-#: ../src/ard_ed_frm.cpp:1710
+#: ../src/ard_ed_frm.cpp:1720
 msgid "No problems found."
 msgstr "Nebyly nalezeny žádné problémy."
 
-#: ../src/ard_ed_frm.cpp:1939
+#: ../src/ard_ed_frm.cpp:1949
 msgid "Project diagnostics evaluation..."
 msgstr "Vyhodnocování diagnostiky projektu..."
 
-#: ../src/ard_ed_frm.cpp:1954
+#: ../src/ard_ed_frm.cpp:1964
 msgid "Diagnostic evaluation..."
 msgstr "Vyhodnocování diagnostiky..."
 
-#: ../src/ard_ed_frm.cpp:1970
+#: ../src/ard_ed_frm.cpp:1980
 msgid "Failed to load Arduino libraries from arduino-cli."
 msgstr "Nepodařilo se načíst Arduino knihovny z arduino-cli."
 
-#: ../src/ard_ed_frm.cpp:2039
+#: ../src/ard_ed_frm.cpp:2049
 #, c-format
 msgid ""
 "Header '%s' was not found, but it looks like it belongs to an installed "
@@ -2109,11 +2109,11 @@ msgstr ""
 "\n"
 "Chcete projekt nyní znovu sestavit?"
 
-#: ../src/ard_ed_frm.cpp:2049
+#: ../src/ard_ed_frm.cpp:2059
 msgid "Rebuild required"
 msgstr "Je potřeba znovu sestavit projekt"
 
-#: ../src/ard_ed_frm.cpp:2062
+#: ../src/ard_ed_frm.cpp:2072
 msgid ""
 "The following missing headers are claimed to be provided by Arduino "
 "libraries:\n"
@@ -2122,7 +2122,7 @@ msgstr ""
 "Následující chybějící hlavičky se zdají být poskytovány Arduino knihovnami:\n"
 "\n"
 
-#: ../src/ard_ed_frm.cpp:2082
+#: ../src/ard_ed_frm.cpp:2092
 msgid ""
 "\n"
 "Note: Arduino library metadata can be wrong. The Library Manager will be "
@@ -2134,39 +2134,39 @@ msgstr ""
 "knihoven, kde můžete vybrat knihovnu k instalaci.\n"
 "\n"
 
-#: ../src/ard_ed_frm.cpp:2087
+#: ../src/ard_ed_frm.cpp:2097
 msgid "Missing headers"
 msgstr "Chybějící hlavičky"
 
-#: ../src/ard_ed_frm.cpp:2090
+#: ../src/ard_ed_frm.cpp:2100
 msgid "Open Library Manager"
 msgstr "Otevřít správce knihoven"
 
-#: ../src/ard_ed_frm.cpp:2090
+#: ../src/ard_ed_frm.cpp:2100
 msgid "Ignore"
 msgstr "Ignorovat"
 
-#: ../src/ard_ed_frm.cpp:2123
+#: ../src/ard_ed_frm.cpp:2133
 msgid "Failed to load installed Arduino libraries from arduino-cli."
 msgstr "Nepodařilo se načíst nainstalované Arduino knihovny z arduino-cli."
 
-#: ../src/ard_ed_frm.cpp:2196
+#: ../src/ard_ed_frm.cpp:2206
 msgid "Failed to load installed Arduino cores from arduino-cli."
 msgstr "Nepodařilo se načíst nainstalované Arduino desky z arduino-cli."
 
-#: ../src/ard_ed_frm.cpp:2217
+#: ../src/ard_ed_frm.cpp:2227
 msgid "Failed to load Arduino cores from arduino-cli."
 msgstr "Nepodařilo se načíst Arduino desky z arduino-cli."
 
-#: ../src/ard_ed_frm.cpp:2242
+#: ../src/ard_ed_frm.cpp:2252
 msgid "Failed to load available boards from arduino-cli."
 msgstr "Nepodařilo se načíst dostupné desky z arduino-cli."
 
-#: ../src/ard_ed_frm.cpp:2265
+#: ../src/ard_ed_frm.cpp:2275
 msgid "Resolving libraries..."
 msgstr "Určování použitých knihoven..."
 
-#: ../src/ard_ed_frm.cpp:2357
+#: ../src/ard_ed_frm.cpp:2367
 msgid ""
 "Some files have unsaved changes.\n"
 "Do you want to save them before exiting?"
@@ -2174,290 +2174,290 @@ msgstr ""
 "Některé soubory obsahují neuložené změny.\n"
 "Přejete si je před ukončením uložit?"
 
-#: ../src/ard_ed_frm.cpp:2358
+#: ../src/ard_ed_frm.cpp:2368
 msgid "Confirm exit"
 msgstr "Potvrdit ukončení"
 
-#: ../src/ard_ed_frm.cpp:2361
+#: ../src/ard_ed_frm.cpp:2371
 msgid "Save"
 msgstr "Uložit"
 
-#: ../src/ard_ed_frm.cpp:2361
+#: ../src/ard_ed_frm.cpp:2371
 msgid "Discard"
 msgstr "Zahodit"
 
-#: ../src/ard_ed_frm.cpp:2372
+#: ../src/ard_ed_frm.cpp:2382
 msgid "Some files couldn't be saved."
 msgstr "Některé soubory nebylo možné uložit."
 
-#: ../src/ard_ed_frm.cpp:2372
+#: ../src/ard_ed_frm.cpp:2382
 msgid "Save error"
 msgstr "Chyba při ukládání"
 
-#: ../src/ard_ed_frm.cpp:2521
+#: ../src/ard_ed_frm.cpp:2531
 msgid "New Sketch...\tCtrl+N"
 msgstr "Nový sketch...\tCtrl+N"
 
-#: ../src/ard_ed_frm.cpp:2522
+#: ../src/ard_ed_frm.cpp:2532
 msgid "Create new sketch"
 msgstr "Vytvořit nový sketch"
 
-#: ../src/ard_ed_frm.cpp:2527
+#: ../src/ard_ed_frm.cpp:2537
 msgid "Open Sketch...\tCtrl+O"
 msgstr "Otevřít sketch...\tCtrl+O"
 
-#: ../src/ard_ed_frm.cpp:2528
+#: ../src/ard_ed_frm.cpp:2538
 msgid "Open an existing Arduino sketch directory"
 msgstr "Otevřít existující adresář Arduino sketche"
 
-#: ../src/ard_ed_frm.cpp:2533
+#: ../src/ard_ed_frm.cpp:2543
 msgid "Open recent"
 msgstr "Otevřít nedávné"
 
-#: ../src/ard_ed_frm.cpp:2538
+#: ../src/ard_ed_frm.cpp:2548
 msgid "Sketches"
 msgstr "Sketche"
 
-#: ../src/ard_ed_frm.cpp:2543
+#: ../src/ard_ed_frm.cpp:2553
 msgid "Examples...\tCtrl+E"
 msgstr "Příklady...\tCtrl+E"
 
-#: ../src/ard_ed_frm.cpp:2544
+#: ../src/ard_ed_frm.cpp:2554
 msgid "Browse and preview Arduino library examples"
 msgstr "Prohlížet příklady Arduino knihoven"
 
-#: ../src/ard_ed_frm.cpp:2549
+#: ../src/ard_ed_frm.cpp:2559
 msgid "Save\tCtrl+S"
 msgstr "Uložit\tCtrl+S"
 
-#: ../src/ard_ed_frm.cpp:2550
+#: ../src/ard_ed_frm.cpp:2560
 msgid "Save the current file"
 msgstr "Uložit aktuální soubor"
 
-#: ../src/ard_ed_frm.cpp:2555
+#: ../src/ard_ed_frm.cpp:2565
 msgid "Save All\tCtrl+Shift+S"
 msgstr "Uložit vše\tCtrl+Shift+S"
 
-#: ../src/ard_ed_frm.cpp:2556
+#: ../src/ard_ed_frm.cpp:2566
 msgid "Save all opened files"
 msgstr "Uložit všechny otevřené soubory"
 
-#: ../src/ard_ed_frm.cpp:2563
+#: ../src/ard_ed_frm.cpp:2573
 msgid "Settings..."
 msgstr "Nastavení..."
 
-#: ../src/ard_ed_frm.cpp:2564
+#: ../src/ard_ed_frm.cpp:2574
 msgid "Open configuration (cli, fonts, colors and behavior)"
 msgstr "Otevřít konfiguraci (cli, písma, barvy a chování)"
 
-#: ../src/ard_ed_frm.cpp:2578
+#: ../src/ard_ed_frm.cpp:2588
 msgid "Exit the application"
 msgstr "Ukončit aplikaci"
 
-#: ../src/ard_ed_frm.cpp:2590
+#: ../src/ard_ed_frm.cpp:2600
 msgid "Back\tAlt-Left"
 msgstr "Zpět\tAlt-Left"
 
-#: ../src/ard_ed_frm.cpp:2591
+#: ../src/ard_ed_frm.cpp:2601
 msgid "Jump back to the previous cursor navigation location"
 msgstr "Přejít zpět na předchozí umístění kurzoru"
 
-#: ../src/ard_ed_frm.cpp:2596
+#: ../src/ard_ed_frm.cpp:2606
 msgid "Forward\tAlt-Right"
 msgstr "Vpřed\tAlt-Right"
 
-#: ../src/ard_ed_frm.cpp:2597
+#: ../src/ard_ed_frm.cpp:2607
 msgid "Go forward in navigation history"
 msgstr "Jít vpřed v historii navigace"
 
-#: ../src/ard_ed_frm.cpp:2602
+#: ../src/ard_ed_frm.cpp:2612
 msgid "Find symbol...\tCtrl-Shift-O"
 msgstr "Najít symbol...\tCtrl-Shift-O"
 
-#: ../src/ard_ed_frm.cpp:2603
+#: ../src/ard_ed_frm.cpp:2613
 msgid "Find and navigate to any symbol in the current sketch"
 msgstr "Najděte a přejděte na libovolný symbol v aktuálním sketchi"
 
-#: ../src/ard_ed_frm.cpp:2610
+#: ../src/ard_ed_frm.cpp:2620
 msgid "Library manager...\tCtrl+Shift+L"
 msgstr "Správce knihoven...\tCtrl+Shift+L"
 
-#: ../src/ard_ed_frm.cpp:2611
+#: ../src/ard_ed_frm.cpp:2621
 msgid "Manage Arduino libraries"
 msgstr "Spravovat Arduino knihovny"
 
-#: ../src/ard_ed_frm.cpp:2616
+#: ../src/ard_ed_frm.cpp:2626
 msgid "Boards manager...\tCtrl+Shift+B"
 msgstr "Správce desek...\tCtrl+Shift+B"
 
-#: ../src/ard_ed_frm.cpp:2617
+#: ../src/ard_ed_frm.cpp:2627
 msgid "Manage Arduino boards (cores)"
 msgstr "Spravujte Arduino desky (cores)"
 
-#: ../src/ard_ed_frm.cpp:2623 ../src/ard_ed_frm.cpp:3511
+#: ../src/ard_ed_frm.cpp:2633 ../src/ard_ed_frm.cpp:3521
 msgid "Serial monitor"
 msgstr "Serial monitor"
 
-#: ../src/ard_ed_frm.cpp:2624
+#: ../src/ard_ed_frm.cpp:2634
 msgid "Shows serial monitor of connected board"
 msgstr "Zobrazí monitor sériového portu připojené desky"
 
-#: ../src/ard_ed_frm.cpp:2631
+#: ../src/ard_ed_frm.cpp:2641
 msgid "Build\tCtrl+R"
 msgstr "Sestavit\tCtrl+R"
 
-#: ../src/ard_ed_frm.cpp:2632
+#: ../src/ard_ed_frm.cpp:2642
 msgid "Build sketch using arduino-cli"
 msgstr "Sestavit sketch pomocí arduino-cli"
 
-#: ../src/ard_ed_frm.cpp:2637
+#: ../src/ard_ed_frm.cpp:2647
 msgid "Upload\tCtrl+U"
 msgstr "Nahrát\tCtrl+U"
 
-#: ../src/ard_ed_frm.cpp:2638
+#: ../src/ard_ed_frm.cpp:2648
 msgid "Upload sketch using arduino-cli"
 msgstr "Nahrát sketch pomocí arduino-cli"
 
-#: ../src/ard_ed_frm.cpp:2645
+#: ../src/ard_ed_frm.cpp:2655
 msgid "Clean\tShift+Ctrl+K"
 msgstr "Vyčistit\tShift+Ctrl+K"
 
-#: ../src/ard_ed_frm.cpp:2646
+#: ../src/ard_ed_frm.cpp:2656
 msgid "Remove build cache and regenerate clang properties"
 msgstr "Odstranit build cache a znovu vygenerovat prostředí Clang"
 
-#: ../src/ard_ed_frm.cpp:2655 ../src/ard_ed_frm.cpp:2952
+#: ../src/ard_ed_frm.cpp:2665 ../src/ard_ed_frm.cpp:2962
 msgid "Output"
 msgstr "Výstup"
 
-#: ../src/ard_ed_frm.cpp:2656
+#: ../src/ard_ed_frm.cpp:2666
 msgid "Output window problems / build"
 msgstr "Okno seznamu problémů a výstupu CLI"
 
-#: ../src/ard_ed_frm.cpp:2666
+#: ../src/ard_ed_frm.cpp:2676
 msgid "Sketch browser"
 msgstr "Prohlížeč souborů"
 
-#: ../src/ard_ed_frm.cpp:2667
+#: ../src/ard_ed_frm.cpp:2677
 msgid "Show browser for Sketch directory"
 msgstr "Zobrazit prohlížeč pro adresář sketche"
 
-#: ../src/ard_ed_frm.cpp:2677 ../src/ard_ed_frm.cpp:2964
+#: ../src/ard_ed_frm.cpp:2687 ../src/ard_ed_frm.cpp:2974
 #: ../src/ard_setdlg.cpp:1695
 msgid "AI assistant"
 msgstr "AI asistent"
 
-#: ../src/ard_ed_frm.cpp:2678
+#: ../src/ard_ed_frm.cpp:2688
 msgid "Show AI chat panel"
 msgstr "Zobrazit AI chat panel"
 
-#: ../src/ard_ed_frm.cpp:2691
+#: ../src/ard_ed_frm.cpp:2701
 msgid "Check for Updates..."
 msgstr "Zkontrolovat aktualizace..."
 
-#: ../src/ard_ed_frm.cpp:2692
+#: ../src/ard_ed_frm.cpp:2702
 msgid "Check GitHub for a newer version of Arduino Editor"
 msgstr "Zkontroluje novější verzi aplikace Arduino Editor na GitHubu."
 
-#: ../src/ard_ed_frm.cpp:2699
+#: ../src/ard_ed_frm.cpp:2709
 msgid "&About Arduino Editor...\tShift-F1"
 msgstr "&O Arduino Editoru...\tShift-F1"
 
-#: ../src/ard_ed_frm.cpp:2710
+#: ../src/ard_ed_frm.cpp:2720
 msgid "&File"
 msgstr "&Soubor"
 
-#: ../src/ard_ed_frm.cpp:2711
+#: ../src/ard_ed_frm.cpp:2721
 msgid "&Project"
 msgstr "&Projekt"
 
-#: ../src/ard_ed_frm.cpp:2712
+#: ../src/ard_ed_frm.cpp:2722
 msgid "&Tools"
 msgstr "&Nástroje"
 
-#: ../src/ard_ed_frm.cpp:2713
+#: ../src/ard_ed_frm.cpp:2723
 msgid "&View"
 msgstr "&Zobrazit"
 
-#: ../src/ard_ed_frm.cpp:2714
+#: ../src/ard_ed_frm.cpp:2724
 msgid "&Help"
 msgstr "&Nápověda"
 
-#: ../src/ard_ed_frm.cpp:2772
+#: ../src/ard_ed_frm.cpp:2782
 msgid "Loading available boards..."
 msgstr "Načítání dostupných desek..."
 
-#: ../src/ard_ed_frm.cpp:2775
+#: ../src/ard_ed_frm.cpp:2785
 msgid "Loading available cores..."
 msgstr "Načítání dostupných jader..."
 
-#: ../src/ard_ed_frm.cpp:2828
+#: ../src/ard_ed_frm.cpp:2838
 msgid "Development board options"
 msgstr "Možnosti vývojové desky"
 
-#: ../src/ard_ed_frm.cpp:2830
+#: ../src/ard_ed_frm.cpp:2840
 msgid "Build sketch (Ctrl+R)"
 msgstr "Kompilovat sketch (Ctrl+R)"
 
-#: ../src/ard_ed_frm.cpp:2832
+#: ../src/ard_ed_frm.cpp:2842
 msgid "Upload sketch (Ctrl+U)"
 msgstr "Nahrát sketch (Ctrl+U)"
 
-#: ../src/ard_ed_frm.cpp:2838
+#: ../src/ard_ed_frm.cpp:2848
 msgid "Refresh port list"
 msgstr "Obnovit seznam portů"
 
-#: ../src/ard_ed_frm.cpp:2839
+#: ../src/ard_ed_frm.cpp:2849
 msgid "Open Serial Monitor"
 msgstr "Otevřít sériový monitor"
 
-#: ../src/ard_ed_frm.cpp:2877 ../src/ard_finsymdlg.cpp:45
+#: ../src/ard_ed_frm.cpp:2887 ../src/ard_finsymdlg.cpp:45
 #: ../src/ard_renamedlg.cpp:146
 msgid "File"
 msgstr "Soubor"
 
-#: ../src/ard_ed_frm.cpp:2878 ../src/ard_finsymdlg.cpp:46
+#: ../src/ard_ed_frm.cpp:2888 ../src/ard_finsymdlg.cpp:46
 #: ../src/ard_orginc.cpp:57 ../src/ard_renamedlg.cpp:147
 msgid "Line"
 msgstr "Řádek"
 
-#: ../src/ard_ed_frm.cpp:2879 ../src/ard_renamedlg.cpp:148
+#: ../src/ard_ed_frm.cpp:2889 ../src/ard_renamedlg.cpp:148
 msgid "Column"
 msgstr "Sloupec"
 
-#: ../src/ard_ed_frm.cpp:2880 ../src/ard_mdwidget.cpp:146
+#: ../src/ard_ed_frm.cpp:2890 ../src/ard_mdwidget.cpp:146
 msgid "Message"
 msgstr "Zpráva"
 
-#: ../src/ard_ed_frm.cpp:2906 ../src/ard_setdlg.cpp:1093
+#: ../src/ard_ed_frm.cpp:2916 ../src/ard_setdlg.cpp:1093
 msgid "CLI"
 msgstr "CLI"
 
-#: ../src/ard_ed_frm.cpp:2939
+#: ../src/ard_ed_frm.cpp:2949
 msgid "Sketch files"
 msgstr "Soubory sketche"
 
-#: ../src/ard_ed_frm.cpp:3231 ../src/sf.cpp:68
+#: ../src/ard_ed_frm.cpp:3241 ../src/sf.cpp:68
 msgid "Arduino Editor"
 msgstr "Arduino Editor"
 
-#: ../src/ard_ed_frm.cpp:3238
+#: ../src/ard_ed_frm.cpp:3248
 msgid "Application initializing..."
 msgstr "Inicializace aplikace..."
 
-#: ../src/ard_ed_frm.cpp:3395
+#: ../src/ard_ed_frm.cpp:3405
 msgid "Copy problem"
 msgstr "Kopírovat problém"
 
-#: ../src/ard_ed_frm.cpp:3396
+#: ../src/ard_ed_frm.cpp:3406
 msgid "Copy all problems"
 msgstr "Zkopírovat všechny problémy"
 
-#: ../src/ard_ed_frm.cpp:3404
+#: ../src/ard_ed_frm.cpp:3414
 msgid "Solve error with AI"
 msgstr "Vyřešit chybu pomocí AI"
 
-#: ../src/ard_ed_frm.cpp:3509
+#: ../src/ard_ed_frm.cpp:3519
 msgid ""
 "Serial monitor is available only for local serial ports.\n"
 "\n"
@@ -2467,164 +2467,164 @@ msgstr ""
 "\n"
 "Vyberte sériový port na panelu nástrojů."
 
-#: ../src/ard_ed_frm.cpp:3610
+#: ../src/ard_ed_frm.cpp:3620
 msgid "(Empty)"
 msgstr "(Prázdné)"
 
-#: ../src/ard_ed_frm.cpp:3613 ../src/ard_ed_frm.cpp:3639
-#: ../src/ard_ed_frm.cpp:3669
+#: ../src/ard_ed_frm.cpp:3623 ../src/ard_ed_frm.cpp:3649
+#: ../src/ard_ed_frm.cpp:3679
 msgid "Clear history"
 msgstr "Vymazat historii"
 
-#: ../src/ard_ed_frm.cpp:3669
+#: ../src/ard_ed_frm.cpp:3679
 msgid "Do you really want to clear the recent sketches history?"
 msgstr "Opravdu chcete vymazat historii nedávných sketchů?"
 
-#: ../src/ard_ed_frm.cpp:3734
+#: ../src/ard_ed_frm.cpp:3744
 msgid "(SketchesDir does not exist)"
 msgstr "(SketchesDir neexistuje)"
 
-#: ../src/ard_ed_frm.cpp:3741
+#: ../src/ard_ed_frm.cpp:3751
 msgid "(Cannot open SketchesDir)"
 msgstr "(Nelze otevřít SketchesDir)"
 
-#: ../src/ard_ed_frm.cpp:3805
+#: ../src/ard_ed_frm.cpp:3815
 msgid "(No sketches found)"
 msgstr "(Nebyly nalezeny žádné sketche)"
 
-#: ../src/ard_ed_frm.cpp:3998 ../src/ard_ed_frm.cpp:4149
+#: ../src/ard_ed_frm.cpp:4008 ../src/ard_ed_frm.cpp:4159
 #, c-format
 msgid "Cannot open '%s' in associated application."
 msgstr "Nelze otevřít '%s' v přidružené aplikaci."
 
-#: ../src/ard_ed_frm.cpp:3998 ../src/ard_ed_frm.cpp:4149
+#: ../src/ard_ed_frm.cpp:4008 ../src/ard_ed_frm.cpp:4159
 msgid "Open file"
 msgstr "Otevřít soubor"
 
-#: ../src/ard_ed_frm.cpp:4009
+#: ../src/ard_ed_frm.cpp:4019
 msgid "Enter new file name:"
 msgstr "Zadejte nový název souboru:"
 
-#: ../src/ard_ed_frm.cpp:4009 ../src/ard_filestree.cpp:421
+#: ../src/ard_ed_frm.cpp:4019 ../src/ard_filestree.cpp:421
 msgid "New file"
 msgstr "Nový soubor"
 
-#: ../src/ard_ed_frm.cpp:4009
+#: ../src/ard_ed_frm.cpp:4019
 msgid "new_file.cpp"
 msgstr "new_file.cpp"
 
-#: ../src/ard_ed_frm.cpp:4018
+#: ../src/ard_ed_frm.cpp:4028
 msgid "File name must not contain path separators."
 msgstr "Název souboru nesmí obsahovat oddělovače cest."
 
-#: ../src/ard_ed_frm.cpp:4034
+#: ../src/ard_ed_frm.cpp:4044
 msgid "Folder name:"
 msgstr "Název složky:"
 
-#: ../src/ard_ed_frm.cpp:4035 ../src/ard_filestree.cpp:422
+#: ../src/ard_ed_frm.cpp:4045 ../src/ard_filestree.cpp:422
 msgid "New folder"
 msgstr "Nová složka"
 
-#: ../src/ard_ed_frm.cpp:4036
+#: ../src/ard_ed_frm.cpp:4046
 msgid "new_folder"
 msgstr "nová_slozka"
 
-#: ../src/ard_ed_frm.cpp:4045
+#: ../src/ard_ed_frm.cpp:4055
 msgid "Invalid folder name."
 msgstr "Neplatný název složky."
 
-#: ../src/ard_ed_frm.cpp:4051
+#: ../src/ard_ed_frm.cpp:4061
 msgid "Cannot create folder."
 msgstr "Nelze vytvořit složku."
 
-#: ../src/ard_ed_frm.cpp:4067
+#: ../src/ard_ed_frm.cpp:4077
 msgid "Cannot delete .ino file of sketch."
 msgstr "Nelze smazat .ino soubor sketche."
 
-#: ../src/ard_ed_frm.cpp:4072
+#: ../src/ard_ed_frm.cpp:4082
 #, c-format
 msgid "Do you want to delete folder %s and all its contents?"
 msgstr "Chcete smazat složku %s a veškerý její obsah?"
 
-#: ../src/ard_ed_frm.cpp:4073
+#: ../src/ard_ed_frm.cpp:4083
 #, c-format
 msgid "Do you want to delete file %s?"
 msgstr "Opravdu chcete smazat soubor %s?"
 
-#: ../src/ard_ed_frm.cpp:4084
+#: ../src/ard_ed_frm.cpp:4094
 msgid "Failed to delete: "
 msgstr "Nepodařilo se odstranit: "
 
-#: ../src/ard_ed_frm.cpp:4101 ../src/ard_renamedlg.cpp:121
+#: ../src/ard_ed_frm.cpp:4111 ../src/ard_renamedlg.cpp:121
 msgid "New name:"
 msgstr "Nový název:"
 
-#: ../src/ard_ed_frm.cpp:4101
+#: ../src/ard_ed_frm.cpp:4111
 msgid "Rename"
 msgstr "Přejmenovat"
 
-#: ../src/ard_ed_frm.cpp:4135
+#: ../src/ard_ed_frm.cpp:4145
 msgid "Rename failed."
 msgstr "Přejmenování se nezdařilo."
 
-#: ../src/ard_ed_frm.cpp:4156
+#: ../src/ard_ed_frm.cpp:4166
 msgid "No board selected"
 msgstr "Není vybrána žádná deska"
 
-#: ../src/ard_ed_frm.cpp:4204 ../src/ard_ed_frm.cpp:4292
+#: ../src/ard_ed_frm.cpp:4214 ../src/ard_ed_frm.cpp:4302
 msgid "--- Select board ---"
 msgstr "--- Vyberte desku ---"
 
-#: ../src/ard_ed_frm.cpp:4404
+#: ../src/ard_ed_frm.cpp:4414
 msgid "Code completion engine is not available."
 msgstr "Prostředí pro dokončování není inicializováno."
 
-#: ../src/ard_ed_frm.cpp:4414
+#: ../src/ard_ed_frm.cpp:4424
 msgid "Translation unit is not valid."
 msgstr "Překladová jednotka není připravena."
 
-#: ../src/ard_ed_frm.cpp:4414 ../src/ard_ed_frm.cpp:4435
-#: ../src/ard_ed_frm.cpp:4448 ../src/ard_ed_frm.cpp:4457
-#: ../src/ard_ed_frm.cpp:4478 ../src/ard_ed_frm.cpp:4488
-#: ../src/ard_ed_frm.cpp:4495 ../src/ard_ed_frm.cpp:4509
-#: ../src/ard_ed_frm.cpp:4537 ../src/ard_refactor.cpp:473
+#: ../src/ard_ed_frm.cpp:4424 ../src/ard_ed_frm.cpp:4445
+#: ../src/ard_ed_frm.cpp:4458 ../src/ard_ed_frm.cpp:4467
+#: ../src/ard_ed_frm.cpp:4488 ../src/ard_ed_frm.cpp:4498
+#: ../src/ard_ed_frm.cpp:4505 ../src/ard_ed_frm.cpp:4519
+#: ../src/ard_ed_frm.cpp:4547 ../src/ard_refactor.cpp:473
 #: ../src/ard_refactor.cpp:483 ../src/ard_renamedlg.cpp:71
 msgid "Rename symbol"
 msgstr "Přejmenovat symbol"
 
-#: ../src/ard_ed_frm.cpp:4435
+#: ../src/ard_ed_frm.cpp:4445
 msgid "Sources contains compilation errors."
 msgstr "Zdrojové soubory obsahují chyby překladu."
 
-#: ../src/ard_ed_frm.cpp:4448
+#: ../src/ard_ed_frm.cpp:4458
 msgid "No usages of this symbol were found."
 msgstr "Nebyly nalezeny žádné výskyty symbolu."
 
-#: ../src/ard_ed_frm.cpp:4457
+#: ../src/ard_ed_frm.cpp:4467
 msgid "Symbol is declared outside of sketch directory."
 msgstr "Symbol je deklarován mimo sketch."
 
-#: ../src/ard_ed_frm.cpp:4478
+#: ../src/ard_ed_frm.cpp:4488
 msgid "New name cannot be empty."
 msgstr "Název nesmí být prázdný."
 
-#: ../src/ard_ed_frm.cpp:4488
+#: ../src/ard_ed_frm.cpp:4498
 msgid "New name is not a valid identifier."
 msgstr "Zadaný název není platným identifikátorem."
 
-#: ../src/ard_ed_frm.cpp:4495
+#: ../src/ard_ed_frm.cpp:4505
 msgid "No occurrences selected."
 msgstr "Nebyly vybrány žádné výskyty."
 
-#: ../src/ard_ed_frm.cpp:4509
+#: ../src/ard_ed_frm.cpp:4519
 msgid "No usages of this symbol were found inside the current sketch."
 msgstr "Nebyly nalezeny žádné výskyty symbolu v aktuálním sketchi."
 
-#: ../src/ard_ed_frm.cpp:4537
+#: ../src/ard_ed_frm.cpp:4547
 msgid "No matching occurrences to rename were found."
 msgstr "Žádné odpovídající výskyty pro přejmenování nebyly nalezeny."
 
-#: ../src/ard_ed_frm.cpp:4541
+#: ../src/ard_ed_frm.cpp:4551
 #, c-format
 msgid "Renamed %d occurrences."
 msgstr "Přejmenováno %d výskytů."

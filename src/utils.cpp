@@ -1925,21 +1925,12 @@ std::string ExtractBodySnippetFromText(const std::string &fileText, unsigned fro
   return out;
 }
 
-// --- DEDUP clang args. ---
-static bool IsTwoTokenOption(const std::string &a, const char *opt) {
-  return a == opt;
-}
-
-static bool IsAttachedOption(const std::string &a, const char *opt) {
-  // opt like "-I" or "-isystem"
-  return a.rfind(opt, 0) == 0 && a.size() > std::strlen(opt);
-}
-
 static std::string NormalizeIncPath(const std::string &raw) {
   std::filesystem::path p = std::filesystem::u8path(raw).lexically_normal();
   return p.u8string();
 }
 
+/// Compiler args deduplication.
 void DedupArgs(std::vector<std::string> &argv) {
   ScopeTimer t("UTIL: DedupArgs(%zu args)", argv.size());
 
@@ -1961,7 +1952,6 @@ void DedupArgs(std::vector<std::string> &argv) {
       return "x"; // -xfoo
     if (a == "-isysroot")
       return "isysroot";
-    // add more if you want (carefully)
     return {};
   };
 

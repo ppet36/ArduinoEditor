@@ -167,11 +167,11 @@ static bool EnsureSingleInstanceAndForwardIfNeeded(const wxString &sketchToOpen)
 #endif // __WXMSW__
 
 static const wxCmdLineEntryDesc g_cmdLineDesc[] = {
-    // --verbose
+    // --trace
     {wxCMD_LINE_SWITCH,
      nullptr,
-     "verbose",
-     "generate verbose log messages",
+     "trace",
+     "generate verbose/trace log messages",
      wxCMD_LINE_VAL_NONE,
      0},
 
@@ -498,7 +498,7 @@ void ArduinoEditApp::OnInitCmdLine(wxCmdLineParser &parser) {
 
 bool ArduinoEditApp::OnCmdLineParsed(wxCmdLineParser &parser) {
   bool hasDebug = parser.Found(wxT("debug"));
-  bool hasVerbose = parser.Found(wxT("verbose"));
+  bool hasVerbose = parser.Found(wxT("trace"));
 
   g_verboseLogging = hasVerbose;
   g_debugLogging = hasDebug || hasVerbose;
