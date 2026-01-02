@@ -538,6 +538,7 @@ void ClangSettings::Load(wxConfigBase *cfg) {
   ConfigReadInt(cfg, wxT("Clang/AutocompletionDelay"), autocompletionDelay, 1500);
   ConfigReadInt(cfg, wxT("Clang/ResolveDiagnosticsDelay"), resolveDiagnosticsDelay, 5000);
   ConfigReadBool(cfg, wxT("Clang/ResolveOnlyAfterSave"), resolveDiagOnlyAfterSave, true);
+  ConfigReadBool(cfg, wxT("Clang/DisplayDiagnosticsOnlyFromSketch"), displayDiagnosticsOnlyFromSketch, true);
   ConfigReadString(cfg, wxT("Clang/ExtSourceOpenCommand"), extSourceOpenCommand, wxEmptyString);
   ConfigReadBool(cfg, wxT("Clang/OpenSourceFilesInside"), openSourceFilesInside, true);
 
@@ -562,6 +563,7 @@ void ClangSettings::Save(wxConfigBase *cfg) const {
   cfg->Write(wxT("Clang/AutocompletionDelay"), (long)autocompletionDelay);
   cfg->Write(wxT("Clang/ResolveDiagnosticsDelay"), (long)resolveDiagnosticsDelay);
   cfg->Write(wxT("Clang/ResolveOnlyAfterSave"), resolveDiagOnlyAfterSave);
+  cfg->Write(wxT("Clang/DisplayDiagnosticsOnlyFromSketch"), displayDiagnosticsOnlyFromSketch);
   cfg->Write(wxT("Clang/ExtSourceOpenCommand"), extSourceOpenCommand);
   cfg->Write(wxT("Clang/OpenSourceFilesInside"), openSourceFilesInside);
 
@@ -1544,8 +1546,20 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
 
   m_resolveAfterSave = new wxCheckBox(clangPage, wxID_ANY, _("Resolve after save"));
   m_resolveAfterSave->SetValue(m_clangSettings.resolveDiagOnlyAfterSave);
-  m_resolveAfterSave->SetToolTip(_("Errors are resolved only after saving the file."));
-  clangGrid->Add(m_resolveAfterSave, 0, wxLEFT | wxRIGHT | wxBOTTOM, 8);
+  m_resolveAfterSave->SetToolTip(_("Diagnostics are resolved only after saving the file."));
+
+  m_displayDiagOnlyFromSketch = new wxCheckBox(clangPage, wxID_ANY, _("Show diagnostics only for sketch files"));
+  m_displayDiagOnlyFromSketch->SetValue(m_clangSettings.displayDiagnosticsOnlyFromSketch);
+  m_displayDiagOnlyFromSketch->SetToolTip(_(
+      "When enabled, diagnostics are shown only for files in the current sketch. "
+      "When disabled, all diagnostics reported by Clang are shown, including those from libraries and the toolchain."));
+
+  auto *diagFlagsRow = new wxBoxSizer(wxHORIZONTAL);
+
+  diagFlagsRow->Add(m_resolveAfterSave, 0, wxRIGHT, 10);
+  diagFlagsRow->Add(m_displayDiagOnlyFromSketch, 1, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
+
+  clangGrid->Add(diagFlagsRow, 0, wxLEFT | wxRIGHT | wxBOTTOM, 8);
 
   // --- Completion mode choice ---
   clangGrid->Add(new wxStaticText(
@@ -2188,6 +2202,10 @@ ClangSettings ArduinoEditorSettingsDialog::GetClangSettings() const {
 
   if (m_resolveAfterSave) {
     s.resolveDiagOnlyAfterSave = m_resolveAfterSave->GetValue();
+  }
+
+  if (m_displayDiagOnlyFromSketch) {
+    s.displayDiagnosticsOnlyFromSketch = m_displayDiagOnlyFromSketch->GetValue();
   }
 
   if (m_clangExtSourceCmd) {

@@ -207,7 +207,7 @@ void ArduinoEditorFrame::OnEditorSettings(wxCommandEvent &) {
 
     auto newClangSettings = dlg.GetClangSettings();
     bool diagModeChanged = (newClangSettings.diagnosticMode != m_clangSettings.diagnosticMode);
-    bool resolveModeChanged = (newClangSettings.resolveMode != m_clangSettings.resolveMode);
+    bool resolveModeChanged = (newClangSettings.resolveMode != m_clangSettings.resolveMode) || (newClangSettings.displayDiagnosticsOnlyFromSketch != m_clangSettings.displayDiagnosticsOnlyFromSketch);
     bool warningModeChanged = (newClangSettings.warningMode != m_clangSettings.warningMode) || (newClangSettings.customWarningFlags != m_clangSettings.customWarningFlags);
     m_clangSettings = newClangSettings;
     m_clangSettings.Save(config);
@@ -422,9 +422,7 @@ void ArduinoEditorFrame::OpenSketch(const std::string &skp) {
   }
 
   app.SetSplashMessage(_("Creating completion engine..."));
-  completion = new ArduinoCodeCompletion(arduinoCli, m_clangSettings, [this](std::vector<SketchFileBuffer>& out) {
-      this->CollectEditorSources(out);
-    }, /*eventHandler=*/this);
+  completion = new ArduinoCodeCompletion(arduinoCli, m_clangSettings, [this](std::vector<SketchFileBuffer> &out) { this->CollectEditorSources(out); }, /*eventHandler=*/this);
 
   // ---------------------------------------------------------------------------
   // Create editor ONLY for the primary .ino file.
@@ -689,14 +687,18 @@ void ArduinoEditorFrame::SelectBoard() {
 }
 
 void ArduinoEditorFrame::OnChangeBoardOptions(wxCommandEvent &) {
+  wxBeginBusyCursor();
+
   std::vector<ArduinoBoardOption> defOpts;
 
   if (!arduinoCli->GetDefaultBoardOptions(defOpts)) {
+    wxEndBusyCursor();
     ModalMsgDialog(_("Error loading default board options."));
     return;
   }
 
   if (defOpts.empty()) {
+    wxEndBusyCursor();
     ModalMsgDialog(_("Board has no options."), _("Information"), wxOK | wxICON_INFORMATION);
     return;
   }
@@ -704,6 +706,7 @@ void ArduinoEditorFrame::OnChangeBoardOptions(wxCommandEvent &) {
   std::vector<ArduinoBoardOption> opts;
 
   if (!arduinoCli->GetBoardOptions(opts)) {
+    wxEndBusyCursor();
     ModalMsgDialog(_("Error loading board options."));
     return;
   }
@@ -712,6 +715,7 @@ void ArduinoEditorFrame::OnChangeBoardOptions(wxCommandEvent &) {
     opts = defOpts;
   }
 
+  wxEndBusyCursor();
   ArduinoBoardOptionsDialog dlg(this, opts, _("Board settings"));
 
   if (dlg.ShowModal() == wxID_OK) {

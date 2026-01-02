@@ -2084,10 +2084,12 @@ std::vector<ArduinoParseError> ArduinoCodeCompletion::CollectDiagnosticsLocked(C
       continue;
     }
 
-    bool fromSketch = (e.file.rfind(sketchDir, 0) == 0);
-    if (!fromSketch) {
-      i = j;
-      continue;
+    if (m_clangSettings.displayDiagnosticsOnlyFromSketch) {
+      bool fromSketch = (e.file.rfind(sketchDir, 0) == 0);
+      if (!fromSketch) {
+        i = j;
+        continue;
+      }
     }
 
     if (e.severity != CXDiagnostic_Warning &&

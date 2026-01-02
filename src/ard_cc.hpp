@@ -189,7 +189,7 @@ struct IncludeUsage {
   bool used = false;
 };
 
-using CollectSketchFilesFn = std::function<void(std::vector<SketchFileBuffer>&)>;
+using CollectSketchFilesFn = std::function<void(std::vector<SketchFileBuffer> &)>;
 
 class ArduinoCodeCompletion {
 private:

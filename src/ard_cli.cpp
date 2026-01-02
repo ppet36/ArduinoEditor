@@ -359,16 +359,6 @@ static void ExpandResponseFileSanitized(const std::string &atArg, std::vector<st
 
     if (token == "-iwithprefixbefore") {
       if (hasIprefixRoot && iss >> token) {
-        // token is a subpath relative to iprefixRoot
-        // deliberately skip embedded C lib stuff
-        if (token.rfind("newlib/", 0) == 0 ||
-            token.rfind("newlib\\", 0) == 0 ||
-            token.rfind("xtensa/", 0) == 0 ||
-            token.rfind("xtensa\\", 0) == 0) {
-          // we'll leave these trees alone so they are pulled from the host toolchain (or not at all)
-          continue;
-        }
-
         std::string full = iprefixRoot;
         if (!full.empty() && full.back() != '/' && full.back() != '\\')
           full += '/';
@@ -2415,6 +2405,15 @@ std::vector<std::string> ArduinoCli::ResolveLibraries(const std::vector<std::str
       }
     }
 
+    ssize_t spiIdx = findLibByKey("SPI");
+    if (spiIdx >= 0) {
+      ssize_t sdIdx = findLibByKey("SD");
+      if (sdIdx >= 0) {
+        m_resolveLibs[static_cast<size_t>(sdIdx)].depends.push_back("SPI");
+        APP_DEBUG_LOG("CLI: ResolveLibraries hack: adding dependency SD -> SPI");
+      }
+    }
+
     m_hasResolveLibrariesCache = true;
   }
 
@@ -2681,7 +2680,6 @@ void ArduinoCli::InvalidateLibraryCache() {
   m_resolveSrcRootToLibIndex.clear();
   m_resolveNameToLibIndex.clear();
 }
-
 
 void ArduinoCli::CancelAsyncOperations() {
   m_cancelAsync.store(true, std::memory_order_relaxed);

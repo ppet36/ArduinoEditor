@@ -269,7 +269,7 @@ public:
   void CleanCachedEnvironment();
   void CleanBuildDirectory();
   void InvalidateLibraryCache();
- 
+
   void CancelAsyncOperations();
 
   const std::vector<std::string> &GetCompilerArgs() const {

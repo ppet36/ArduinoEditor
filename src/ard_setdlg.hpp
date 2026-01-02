@@ -134,6 +134,7 @@ struct ClangSettings {
   int autocompletionDelay = 1500;     // minimum 250ms, maximum unlimited
   int resolveDiagnosticsDelay = 5000; // minimum 1000ms, maximum unlimited
   bool resolveDiagOnlyAfterSave = true;
+  bool displayDiagnosticsOnlyFromSketch = true; // display errors/warnings only from sketch files
 
   bool openSourceFilesInside = true;
   wxString extSourceOpenCommand; // external editor for opening cpp/hpp/c/h source files
@@ -336,6 +337,7 @@ private:
   wxButton *m_clangExtSourceBrowse = nullptr;
   wxChoice *m_clangResolveChoice = nullptr;
   wxCheckBox *m_resolveAfterSave = nullptr;
+  wxCheckBox *m_displayDiagOnlyFromSketch = nullptr;
 
   // AI / LLM settings
   wxCheckBox *m_aiEnable = nullptr;
