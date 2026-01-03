@@ -32,8 +32,6 @@
 #include <wx/stc/stc.h>
 #include <wx/wx.h>
 
-#define ID_PROCESS_DIAG_EVAL 667
-
 struct CompletionItem {
   std::string text;
   std::string type;

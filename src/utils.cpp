@@ -29,6 +29,7 @@
 #include <regex>
 #include <sstream>
 #include <system_error>
+#include <cmath>
 #include <wx/dir.h>
 #include <wx/filename.h>
 #include <wx/html/htmlwin.h>
@@ -2064,3 +2065,38 @@ void DedupArgs(std::vector<std::string> &argv) {
   APP_DEBUG_LOG("UTIL: DedupArgs() %zu -> %zu", argv.size(), out.size());
   argv.swap(out);
 }
+
+
+void SetListCtrlStale(wxListCtrl* lc, bool stale) {
+  if (!lc) return;
+
+  auto blend = [](const wxColour& a, const wxColour& b, double t) -> wxColour {
+    t = std::clamp(t, 0.0, 1.0);
+    auto lerp = [t](unsigned char x, unsigned char y) -> unsigned char {
+      return (unsigned char)std::lround((1.0 - t) * (double)x + t * (double)y);
+    };
+    return wxColour(lerp(a.Red(), b.Red()),
+                    lerp(a.Green(), b.Green()),
+                    lerp(a.Blue(), b.Blue()));
+  };
+
+  const wxColour normalFg = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT);
+  const wxColour normalBg = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOX);
+
+  const double textT = IsDarkMode() ? 0.60 : 0.55;
+
+  const wxColour staleFg = blend(normalFg, normalBg, textT);
+
+  lc->Freeze();
+
+  lc->SetTextColour(stale ? staleFg : normalFg);
+
+  const long count = lc->GetItemCount();
+  for (long i = 0; i < count; ++i) {
+    lc->SetItemTextColour(i, stale ? staleFg : normalFg);
+  }
+
+  lc->Refresh();
+  lc->Thaw();
+}
+

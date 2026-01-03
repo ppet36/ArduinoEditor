@@ -45,7 +45,12 @@ ArduinoDiagnosticsView::ArduinoDiagnosticsView(wxWindow *parent, wxConfigBase *c
 void ArduinoDiagnosticsView::ApplySettings(const EditorSettings &settings) {
   EditorColorScheme colors = settings.GetColors();
   UpdateColors(colors);
-  SetDiagnostics(m_current);
+
+  if (!m_currentMessage.IsEmpty()) {
+    ShowMessage(m_currentMessage);
+  } else {
+    SetDiagnostics(m_current);
+  }
 }
 
 void ArduinoDiagnosticsView::UpdateColors(const EditorColorScheme &colors) {
@@ -77,6 +82,7 @@ void ArduinoDiagnosticsView::ApplySettings(const AiSettings &settings) {
 
 void ArduinoDiagnosticsView::ShowMessage(const wxString &message) {
   m_current.clear();
+  m_currentMessage = message;
 
   m_list->Freeze();
   m_list->DeleteAllItems();
@@ -171,6 +177,7 @@ bool ArduinoDiagnosticsView::GetDiagnosticsAt(const std::string &filename, unsig
 
 void ArduinoDiagnosticsView::SetDiagnostics(const std::vector<ArduinoParseError> &diags) {
   m_current = diags;
+  m_currentMessage = wxEmptyString;
 
   m_list->Freeze();
   m_list->DeleteAllItems();
@@ -239,6 +246,10 @@ void ArduinoDiagnosticsView::OnSysColourChanged(wxSysColourChangedEvent &event) 
   ApplySettings(settings);
 
   event.Skip();
+}
+
+void ArduinoDiagnosticsView::SetStale (bool stale) {
+  SetListCtrlStale (m_list, stale);
 }
 
 wxString ArduinoDiagnosticsView::GetRowText(long row) const {

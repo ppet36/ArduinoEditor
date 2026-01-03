@@ -2179,14 +2179,13 @@ std::size_t ArduinoCodeCompletion::ComputeDiagHash(const std::vector<ArduinoPars
 
 void ArduinoCodeCompletion::NotifyDiagnosticsChangedLocked(const std::vector<ArduinoParseError> &errs) {
   std::size_t newHash = ComputeDiagHash(errs);
-  if ((m_lastDiagHash != 0) && (newHash == m_lastDiagHash)) {
-    APP_DEBUG_LOG("No diagnostics errors changed; skipping event.");
-    return;
-  }
+
+  bool diagChanged = (m_lastDiagHash == 0) || (newHash != m_lastDiagHash);
 
   m_lastDiagHash = newHash;
 
   wxThreadEvent evt(EVT_DIAGNOSTICS_UPDATED);
+  evt.SetInt(diagChanged ? 1 : 0);
   QueueUiEvent(m_eventHandler, evt.Clone());
 }
 
@@ -4890,23 +4889,14 @@ std::vector<ArduinoParseError> ArduinoCodeCompletion::GetLastProjectErrors() con
 }
 
 void ArduinoCodeCompletion::NotifyProjectDiagnosticsChangedLocked(const std::vector<ArduinoParseError> &errs) {
-  // It only sends an event if something changes, so we need to terminate the process from here.
-  ArduinoEditorFrame *frame = wxDynamicCast(m_eventHandler, ArduinoEditorFrame);
-  if (frame) {
-    wxThreadEvent ev(EVT_STOP_PROCESS);
-    ev.SetInt(ID_PROCESS_DIAG_EVAL);
-    QueueUiEvent(frame, ev.Clone());
-  }
-
   std::size_t newHash = ComputeDiagHash(errs);
-  if (newHash == m_lastDiagHash) {
-    APP_DEBUG_LOG("No diagnostics errors changed. Skipping event.");
-    return;
-  }
+
+  bool diagChanged = (m_lastDiagHash == 0) || (newHash != m_lastDiagHash);
 
   m_lastDiagHash = newHash;
 
   wxThreadEvent evt(EVT_DIAGNOSTICS_UPDATED);
+  evt.SetInt(diagChanged ? 1 : 0);
   QueueUiEvent(m_eventHandler, evt.Clone());
 }
 

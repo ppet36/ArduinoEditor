@@ -59,6 +59,8 @@ public:
   void ApplySettings(const EditorSettings &settings);
   void ApplySettings(const AiSettings &settings);
 
+  void SetStale(bool stale = true);
+
 private:
   void OnItemActivated(wxListEvent &event);
   void OnContextMenu(wxContextMenuEvent &evt);
@@ -88,4 +90,5 @@ private:
   std::string m_sketchRoot;
 
   std::vector<ArduinoParseError> m_current;
+  wxString m_currentMessage;
 };

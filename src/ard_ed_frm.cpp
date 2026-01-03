@@ -93,6 +93,7 @@ enum {
   ID_PROCESS_CLI,
   ID_PROCESS_APP_INIT,
   ID_PROCESS_ACTION,
+  ID_PROCESS_DIAG_EVAL,
 
   ID_MENU_OPEN_RECENT_CLEAR,
   ID_MENU_OPEN_RECENT_FIRST,
@@ -1671,10 +1672,16 @@ void ArduinoEditorFrame::ShowSingleDiagMessage(const wxString &message) {
   }
 }
 
-void ArduinoEditorFrame::OnDiagnosticsUpdated(wxThreadEvent &WXUNUSED(evt)) {
+void ArduinoEditorFrame::OnDiagnosticsUpdated(wxThreadEvent &evt) {
   StopProcess(ID_PROCESS_DIAG_EVAL);
 
   if (!completion || !m_diagView || !m_bottomNotebook) {
+    return;
+  }
+
+  m_diagView->SetStale(false);
+
+  if (evt.GetInt() == 0) {
     return;
   }
 
@@ -2247,6 +2254,10 @@ void ArduinoEditorFrame::ResolveLibrariesOrDiagnostics() {
 void ArduinoEditorFrame::ScheduleDiagRefresh() {
   if (m_diagTimer.IsRunning())
     m_diagTimer.Stop();
+
+  if (m_diagView) {
+    m_diagView->SetStale();
+  }
 
   APP_DEBUG_LOG("FRM: ScheduleDiagRefresh()");
   m_diagTimer.Start(m_clangSettings.resolveDiagnosticsDelay, wxTIMER_ONE_SHOT);

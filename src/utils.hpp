@@ -32,6 +32,7 @@
 #include <wx/filefn.h>
 #include <wx/filename.h>
 #include <wx/imaglist.h>
+#include <wx/listctrl.h>
 #include <wx/log.h>
 #include <wx/menu.h>
 
@@ -202,3 +203,6 @@ std::string ExtractCommentBlockAboveLine(const std::string &fileText, int declLi
 std::string ExtractBodySnippetFromText(const std::string &fileText, unsigned fromLine, unsigned toLine);
 
 void DedupArgs(std::vector<std::string> &argv);
+
+void SetListCtrlStale(wxListCtrl* lc, bool stale);
+
