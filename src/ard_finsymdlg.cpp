@@ -21,6 +21,8 @@
 
 #include <wx/sizer.h>
 
+wxDEFINE_EVENT(EVT_ARD_SYMBOL_ACTIVATED, ArduinoSymbolActivatedEvent);
+
 FindSymbolDialog::FindSymbolDialog(wxWindow *parent,
                                    wxConfigBase *config,
                                    const std::vector<SymbolInfo> &symbols)
@@ -55,6 +57,7 @@ FindSymbolDialog::FindSymbolDialog(wxWindow *parent,
   Bind(wxEVT_CLOSE_WINDOW, &FindSymbolDialog::OnClose, this);
   Bind(wxEVT_CHAR_HOOK, &FindSymbolDialog::OnCharHook, this);
   Bind(wxEVT_TIMER, &FindSymbolDialog::OnSearchTimer, this);
+  Bind(wxEVT_SHOW, &FindSymbolDialog::OnShow, this);
 
   m_filteredSymbols.clear();
   RebuildList();
@@ -111,11 +114,32 @@ void FindSymbolDialog::ApplyFilterAndRebuild() {
 }
 
 void FindSymbolDialog::OnCharHook(wxKeyEvent &event) {
-  if (event.GetKeyCode() == WXK_ESCAPE) {
+  const int key = event.GetKeyCode();
+
+  if (key == WXK_ESCAPE) {
     // Close() -> calls OnClose, where the geometry is saved and the window is hidden
     Close();
     return;
   }
+
+  // When typing in the search box:
+  // Down or Tab moves focus to the list (and selects the first item).
+  if (wxWindow::FindFocus() == m_search && (key == WXK_DOWN || key == WXK_TAB)) {
+    const long count = m_list->GetItemCount();
+    if (count > 0) {
+      // ensure some selection exists
+      long sel = m_list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+      if (sel < 0) {
+        sel = 0;
+        m_list->SetItemState(sel, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
+      }
+      m_list->EnsureVisible(sel);
+      m_list->SetFocus();
+    }
+    // do not propagate (prevents caret move / tab navigation)
+    return;
+  }
+
   event.Skip();
 }
 
@@ -131,14 +155,13 @@ void FindSymbolDialog::RebuildList() {
     wxString baseName = fn.GetFullName(); // "foo.cpp"
     wxString path = fn.GetPath();         // "/full/path/..."
 
-    long idx = m_list->InsertItem(
-        i, wxString::FromUTF8(s.name.c_str()));
+    long idx = m_list->InsertItem(i, wxString::FromUTF8(s.display.c_str()));
     m_list->SetItem(idx, 1, baseName);
     m_list->SetItem(idx, 2, wxString::Format(wxT("%d"), s.line));
     m_list->SetItem(idx, 3, path);
   }
 
-  // autosize columns - be careful, it can be more expensive with many rows,
+  // autosize columns - it can be more expensive with many rows,
   // but it doesn't matter for "Find symbol"
   int colCount = 4;
   for (int col = 0; col < colCount; ++col) {
@@ -155,14 +178,33 @@ void FindSymbolDialog::RebuildList() {
 }
 
 void FindSymbolDialog::OnItemActivated(wxListEvent &WXUNUSED(event)) {
-  if (!m_onActivated)
-    return;
-
   SymbolInfo s;
   if (!GetSelectedSymbol(s))
     return;
 
-  m_onActivated(s);
+  ArduinoSymbolActivatedEvent evt(EVT_ARD_SYMBOL_ACTIVATED, GetId());
+  evt.SetEventObject(this);
+  evt.SetSymbol(s);
+
+  wxPostEvent(GetParent(), evt);
+
+  m_search->SetFocus();
+}
+
+void FindSymbolDialog::OnShow(wxShowEvent &event) {
+  event.Skip();
+
+  if (!event.IsShown())
+    return;
+
+  // Defer focus change to after the window is really shown,
+  // otherwise it can be ignored on some platforms.
+  CallAfter([this]() {
+    if (!m_search)
+      return;
+    m_search->SetFocus();
+    m_search->SelectAll();
+  });
 }
 
 void FindSymbolDialog::OnClose(wxCloseEvent &event) {

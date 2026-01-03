@@ -134,7 +134,10 @@ private:
   // history of FQBN
   std::vector<std::string> m_boardHistory;
 
+  // symbol search
   FindSymbolDialog *m_findSymbolDlg = nullptr;
+  void OnSymbolActivated(ArduinoSymbolActivatedEvent &evt);
+
   ArduinoLibraryManagerFrame *m_libManager = nullptr;
   ArduinoExamplesFrame *m_examplesFrame = nullptr;
   ArduinoCoreManagerFrame *m_coreManager = nullptr;

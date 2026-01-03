@@ -300,6 +300,7 @@ public:
   bool GetSymbolInfo(const std::string &filename, const std::string &code, int line, int column, SymbolInfo &outInfo);
   bool FindDefinition(const std::string &filename, const std::string &code, int line, int column, JumpTarget &out);
   std::vector<SymbolInfo> GetAllSymbols(const std::string &filename, const std::string &code);
+  std::vector<SymbolInfo> GetAllSymbols();
 
   bool FindSymbolOccurrences(const std::string &filename, const std::string &code, int line, int column, bool onlyFromSketch, std::vector<JumpTarget> &outTargets);
   void FindSymbolOccurrencesAsync(const std::string &filename,

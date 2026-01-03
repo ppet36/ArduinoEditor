@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ArduinoEditor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-03 20:02+0100\n"
+"POT-Creation-Date: 2026-01-03 22:15+0100\n"
 "PO-Revision-Date: 2025-12-09 22:52:00+0100\n"
 "Last-Translator: Pavel Petržela <r17c@seznam.cz>\n"
 "Language-Team: -\n"
@@ -307,7 +307,9 @@ msgstr ""
 "   <hr>\n"
 "\n"
 "   <p>\n"
-"     <b>Domovská stránka projektu a zdrojové kódy:&nbsp;</b><a href=\"https://github.com/ppet36/ArduinoEditor\">https://github.com/ppet36/ArduinoEditor</a>\n"
+"     <b>Domovská stránka projektu a zdrojové kódy:&nbsp;</b><a href="
+"\"https://github.com/ppet36/ArduinoEditor\">https://github.com/ppet36/"
+"ArduinoEditor</a>\n"
 "   </p>\n"
 "\n"
 "   <hr>\n"
@@ -1068,7 +1070,7 @@ msgid "OK"
 msgstr "OK"
 
 #: ../src/ard_aimdldlg.cpp:184 ../src/ard_boptdlg.cpp:77
-#: ../src/ard_diff.cpp:126 ../src/ard_ed_frm.cpp:2347 ../src/ard_fmtdlg.cpp:188
+#: ../src/ard_diff.cpp:126 ../src/ard_ed_frm.cpp:2346 ../src/ard_fmtdlg.cpp:188
 #: ../src/utils.cpp:1016
 msgid "Cancel"
 msgstr "Storno"
@@ -1214,7 +1216,7 @@ msgid "Select board"
 msgstr "Vyberte desku"
 
 #: ../src/ard_borsel.cpp:163 ../src/ard_borsel.cpp:445
-#: ../src/ard_finsymdlg.cpp:44 ../src/ard_libman.cpp:177
+#: ../src/ard_finsymdlg.cpp:46 ../src/ard_libman.cpp:177
 msgid "Name"
 msgstr "Jméno"
 
@@ -1288,7 +1290,7 @@ msgstr "Připravují se nástroje Arduino"
 
 #: ../src/ard_cliinst.cpp:153 ../src/ard_cliinst.cpp:421
 #: ../src/ard_cliinst.cpp:519 ../src/ard_cliinst.cpp:622
-#: ../src/ard_ed_frm.cpp:1718
+#: ../src/ard_ed_frm.cpp:1717
 msgid "Preparing..."
 msgstr "Připravuji..."
 
@@ -1677,8 +1679,8 @@ msgstr "Typ:"
 
 #: ../src/ard_coreman.cpp:105 ../src/ard_coreman.cpp:188
 #: ../src/ard_coreman.cpp:344 ../src/ard_coreman.cpp:437
-#: ../src/ard_ed_frm.cpp:1657 ../src/ard_ed_frm.cpp:2166
-#: ../src/ard_ed_frm.cpp:2212 ../src/ard_libman.cpp:145
+#: ../src/ard_ed_frm.cpp:1656 ../src/ard_ed_frm.cpp:2165
+#: ../src/ard_ed_frm.cpp:2211 ../src/ard_libman.cpp:145
 #: ../src/ard_libman.cpp:262 ../src/ard_libman.cpp:433
 #: ../src/ard_libman.cpp:598
 msgid "All"
@@ -1744,12 +1746,12 @@ msgstr "nainstalováno "
 msgid "Uninstall core"
 msgstr "Odinstalovat desku"
 
-#: ../src/ard_diagview.cpp:22 ../src/ard_finsymdlg.cpp:45
+#: ../src/ard_diagview.cpp:22 ../src/ard_finsymdlg.cpp:47
 #: ../src/ard_renamedlg.cpp:146
 msgid "File"
 msgstr "Soubor"
 
-#: ../src/ard_diagview.cpp:23 ../src/ard_finsymdlg.cpp:46
+#: ../src/ard_diagview.cpp:23 ../src/ard_finsymdlg.cpp:48
 #: ../src/ard_orginc.cpp:57 ../src/ard_renamedlg.cpp:147
 msgid "Line"
 msgstr "Řádek"
@@ -1907,15 +1909,15 @@ msgstr "Dokončování kódu Arduino Clang inicializováno pro "
 msgid "Failed create Arduino Clang completion!"
 msgstr "Nepodařilo se vytvořit prostředí pro dokončování kódu Arduino Clang!"
 
-#: ../src/ard_ed_frm.cpp:658 ../src/ard_ed_frm.cpp:1283
+#: ../src/ard_ed_frm.cpp:658 ../src/ard_ed_frm.cpp:1282
 msgid "Initializing Arduino Clang completion..."
 msgstr "Inicializuji Arduino Clang..."
 
-#: ../src/ard_ed_frm.cpp:662 ../src/ard_ed_frm.cpp:1287
+#: ../src/ard_ed_frm.cpp:662 ../src/ard_ed_frm.cpp:1286
 msgid "Loading board parameters..."
 msgstr "Načítání parametrů desky..."
 
-#: ../src/ard_ed_frm.cpp:670 ../src/ard_ed_frm.cpp:1291
+#: ../src/ard_ed_frm.cpp:670 ../src/ard_ed_frm.cpp:1290
 msgid "Loading compile parameters..."
 msgstr "Načítání parametrů pro překlad..."
 
@@ -2028,123 +2030,123 @@ msgstr "Sériový port změněn na "
 msgid "Serial ports refreshed."
 msgstr "Sériové porty obnoveny."
 
-#: ../src/ard_ed_frm.cpp:1237
+#: ../src/ard_ed_frm.cpp:1230
 msgid "No symbols found."
 msgstr "Nebyly nalezeny žádné symboly."
 
-#: ../src/ard_ed_frm.cpp:1237 ../src/ard_finsymdlg.cpp:29
+#: ../src/ard_ed_frm.cpp:1230 ../src/ard_finsymdlg.cpp:31
 msgid "Find symbol"
 msgstr "Najít symbol"
 
-#: ../src/ard_ed_frm.cpp:1281
+#: ../src/ard_ed_frm.cpp:1280
 msgid "Rebuilding project..."
 msgstr "Projekt se znovu kompiluje..."
 
-#: ../src/ard_ed_frm.cpp:1322
+#: ../src/ard_ed_frm.cpp:1321
 msgid "Compilation"
 msgstr "Kompilace"
 
-#: ../src/ard_ed_frm.cpp:1325
+#: ../src/ard_ed_frm.cpp:1324
 msgid "Upload"
 msgstr "Nahrát"
 
-#: ../src/ard_ed_frm.cpp:1328
+#: ../src/ard_ed_frm.cpp:1327
 msgid "Library installation"
 msgstr "Instalace knihovny"
 
-#: ../src/ard_ed_frm.cpp:1331
+#: ../src/ard_ed_frm.cpp:1330
 msgid "Library uninstalation"
 msgstr "Odinstalace knihovny"
 
-#: ../src/ard_ed_frm.cpp:1334 ../src/ard_libman.cpp:743
+#: ../src/ard_ed_frm.cpp:1333 ../src/ard_libman.cpp:743
 msgid "Update library index"
 msgstr "Aktualizovat index knihoven"
 
-#: ../src/ard_ed_frm.cpp:1338
+#: ../src/ard_ed_frm.cpp:1337
 msgid "Action"
 msgstr "Akce"
 
-#: ../src/ard_ed_frm.cpp:1346
+#: ../src/ard_ed_frm.cpp:1345
 #, c-format
 msgid "Other action \"%s\" running. Please try again later."
 msgstr "Jiná akce \"%s\" právě probíhá. Prosím, zkuste to později."
 
-#: ../src/ard_ed_frm.cpp:1360
+#: ../src/ard_ed_frm.cpp:1359
 #, c-format
 msgid "%s started..."
 msgstr "%s spuštěna..."
 
-#: ../src/ard_ed_frm.cpp:1373
+#: ../src/ard_ed_frm.cpp:1372
 msgid "finished."
 msgstr "dokončena."
 
-#: ../src/ard_ed_frm.cpp:1373
+#: ../src/ard_ed_frm.cpp:1372
 msgid "failed."
 msgstr "selhala."
 
-#: ../src/ard_ed_frm.cpp:1384 ../src/ard_ed_frm.cpp:1650
-#: ../src/ard_ed_frm.cpp:2159 ../src/ard_libman.cpp:249
+#: ../src/ard_ed_frm.cpp:1383 ../src/ard_ed_frm.cpp:1649
+#: ../src/ard_ed_frm.cpp:2158 ../src/ard_libman.cpp:249
 msgid "Loading libraries..."
 msgstr "Načítání knihoven..."
 
-#: ../src/ard_ed_frm.cpp:1413
+#: ../src/ard_ed_frm.cpp:1412
 msgid "arduino-cli build diagnostics"
 msgstr "arduino-cli diagnostika překladu"
 
-#: ../src/ard_ed_frm.cpp:1434 ../src/ard_ed_frm.cpp:2190
+#: ../src/ard_ed_frm.cpp:1433 ../src/ard_ed_frm.cpp:2189
 msgid "Enumerating available boards..."
 msgstr "Zjišťování dostupných desek..."
 
-#: ../src/ard_ed_frm.cpp:1436
+#: ../src/ard_ed_frm.cpp:1435
 msgid "Loading core list..."
 msgstr "Načítání seznamu jader..."
 
-#: ../src/ard_ed_frm.cpp:1445
+#: ../src/ard_ed_frm.cpp:1444
 #, c-format
 msgid "%s failed. See the CLI output for more information."
 msgstr "%s selhala. Pro více informací si prosím prohlédněte výstup CLI."
 
-#: ../src/ard_ed_frm.cpp:1485
+#: ../src/ard_ed_frm.cpp:1484
 msgid "Building project..."
 msgstr "Sestavování projektu..."
 
-#: ../src/ard_ed_frm.cpp:1520
+#: ../src/ard_ed_frm.cpp:1519
 msgid "Uploading project..."
 msgstr "Upload projektu na desku..."
 
-#: ../src/ard_ed_frm.cpp:1640
+#: ../src/ard_ed_frm.cpp:1639
 msgid "Resolving missing libraries..."
 msgstr "Hledání chybějících knihoven..."
 
-#: ../src/ard_ed_frm.cpp:1696 ../src/ard_ed_frm.cpp:2865
+#: ../src/ard_ed_frm.cpp:1695 ../src/ard_ed_frm.cpp:2865
 msgid "Problems"
 msgstr "Problémy"
 
-#: ../src/ard_ed_frm.cpp:1727
+#: ../src/ard_ed_frm.cpp:1726
 msgid "Translation unit not prepared."
 msgstr "Překladová jednotka není připravena."
 
-#: ../src/ard_ed_frm.cpp:1742 ../src/ard_ed_frm.cpp:1941
+#: ../src/ard_ed_frm.cpp:1741 ../src/ard_ed_frm.cpp:1940
 msgid "Diagnostics turned off."
 msgstr "Diagnostika vypnuta."
 
-#: ../src/ard_ed_frm.cpp:1752
+#: ../src/ard_ed_frm.cpp:1751
 msgid "No problems found."
 msgstr "Nebyly nalezeny žádné problémy."
 
-#: ../src/ard_ed_frm.cpp:1920
+#: ../src/ard_ed_frm.cpp:1919
 msgid "Project diagnostics evaluation..."
 msgstr "Vyhodnocování diagnostiky projektu..."
 
-#: ../src/ard_ed_frm.cpp:1935
+#: ../src/ard_ed_frm.cpp:1934
 msgid "Diagnostic evaluation..."
 msgstr "Vyhodnocování diagnostiky..."
 
-#: ../src/ard_ed_frm.cpp:1951
+#: ../src/ard_ed_frm.cpp:1950
 msgid "Failed to load Arduino libraries from arduino-cli."
 msgstr "Nepodařilo se načíst Arduino knihovny z arduino-cli."
 
-#: ../src/ard_ed_frm.cpp:2020
+#: ../src/ard_ed_frm.cpp:2019
 #, c-format
 msgid ""
 "Header '%s' was not found, but it looks like it belongs to an installed "
@@ -2169,11 +2171,11 @@ msgstr ""
 "\n"
 "Chcete projekt nyní znovu sestavit?"
 
-#: ../src/ard_ed_frm.cpp:2030
+#: ../src/ard_ed_frm.cpp:2029
 msgid "Rebuild required"
 msgstr "Je potřeba znovu sestavit projekt"
 
-#: ../src/ard_ed_frm.cpp:2043
+#: ../src/ard_ed_frm.cpp:2042
 msgid ""
 "The following missing headers are claimed to be provided by Arduino "
 "libraries:\n"
@@ -2182,7 +2184,7 @@ msgstr ""
 "Následující chybějící hlavičky se zdají být poskytovány Arduino knihovnami:\n"
 "\n"
 
-#: ../src/ard_ed_frm.cpp:2063
+#: ../src/ard_ed_frm.cpp:2062
 msgid ""
 "\n"
 "Note: Arduino library metadata can be wrong. The Library Manager will be "
@@ -2194,39 +2196,39 @@ msgstr ""
 "knihoven, kde můžete vybrat knihovnu k instalaci.\n"
 "\n"
 
-#: ../src/ard_ed_frm.cpp:2068
+#: ../src/ard_ed_frm.cpp:2067
 msgid "Missing headers"
 msgstr "Chybějící hlavičky"
 
-#: ../src/ard_ed_frm.cpp:2071
+#: ../src/ard_ed_frm.cpp:2070
 msgid "Open Library Manager"
 msgstr "Otevřít správce knihoven"
 
-#: ../src/ard_ed_frm.cpp:2071
+#: ../src/ard_ed_frm.cpp:2070
 msgid "Ignore"
 msgstr "Ignorovat"
 
-#: ../src/ard_ed_frm.cpp:2104
+#: ../src/ard_ed_frm.cpp:2103
 msgid "Failed to load installed Arduino libraries from arduino-cli."
 msgstr "Nepodařilo se načíst nainstalované Arduino knihovny z arduino-cli."
 
-#: ../src/ard_ed_frm.cpp:2178
+#: ../src/ard_ed_frm.cpp:2177
 msgid "Failed to load installed Arduino cores from arduino-cli."
 msgstr "Nepodařilo se načíst nainstalované Arduino desky z arduino-cli."
 
-#: ../src/ard_ed_frm.cpp:2199
+#: ../src/ard_ed_frm.cpp:2198
 msgid "Failed to load Arduino cores from arduino-cli."
 msgstr "Nepodařilo se načíst Arduino desky z arduino-cli."
 
-#: ../src/ard_ed_frm.cpp:2224
+#: ../src/ard_ed_frm.cpp:2223
 msgid "Failed to load available boards from arduino-cli."
 msgstr "Nepodařilo se načíst dostupné desky z arduino-cli."
 
-#: ../src/ard_ed_frm.cpp:2247
+#: ../src/ard_ed_frm.cpp:2246
 msgid "Resolving libraries..."
 msgstr "Určování použitých knihoven..."
 
-#: ../src/ard_ed_frm.cpp:2343
+#: ../src/ard_ed_frm.cpp:2342
 msgid ""
 "Some files have unsaved changes.\n"
 "Do you want to save them before exiting?"
@@ -2234,23 +2236,23 @@ msgstr ""
 "Některé soubory obsahují neuložené změny.\n"
 "Přejete si je před ukončením uložit?"
 
-#: ../src/ard_ed_frm.cpp:2344
+#: ../src/ard_ed_frm.cpp:2343
 msgid "Confirm exit"
 msgstr "Potvrdit ukončení"
 
-#: ../src/ard_ed_frm.cpp:2347
+#: ../src/ard_ed_frm.cpp:2346
 msgid "Save"
 msgstr "Uložit"
 
-#: ../src/ard_ed_frm.cpp:2347
+#: ../src/ard_ed_frm.cpp:2346
 msgid "Discard"
 msgstr "Zahodit"
 
-#: ../src/ard_ed_frm.cpp:2358
+#: ../src/ard_ed_frm.cpp:2357
 msgid "Some files couldn't be saved."
 msgstr "Některé soubory nebylo možné uložit."
 
-#: ../src/ard_ed_frm.cpp:2358
+#: ../src/ard_ed_frm.cpp:2357
 msgid "Save error"
 msgstr "Chyba při ukládání"
 
@@ -2938,7 +2940,7 @@ msgstr "URL"
 msgid "Example"
 msgstr "Příklad"
 
-#: ../src/ard_examples.cpp:94 ../src/ard_finsymdlg.cpp:47
+#: ../src/ard_examples.cpp:94 ../src/ard_finsymdlg.cpp:49
 msgid "Path"
 msgstr "Cesta"
 

@@ -4372,6 +4372,87 @@ std::vector<SymbolInfo> ArduinoCodeCompletion::GetAllSymbols(const std::string &
   return symbols;
 }
 
+std::vector<SymbolInfo> ArduinoCodeCompletion::GetAllSymbols() {
+  std::lock_guard<std::mutex> lock(m_ccMutex);
+
+  std::vector<SymbolInfo> out;
+  if (!m_ready || !arduinoCli)
+    return out;
+
+  const std::string sketchPath = arduinoCli->GetSketchPath();
+  if (sketchPath.empty())
+    return out;
+
+  ScopeTimer t("CC: GetAllSymbols (project-wide)");
+
+  std::vector<SymbolInfo> all;
+  all.reserve(1024);
+
+  const CXCursor nullParent = clang_getNullCursor();
+
+  // Prefer project-wide TU cache; fallback to single TU cache.
+  if (!m_projectTuCache.empty()) {
+    for (const auto &kv : m_projectTuCache) {
+      const ProjectTuEntry &entry = kv.second;
+      if (!entry.tu)
+        continue;
+
+      // Project TUs don't currently track synthetic .ino line shifts -> use addedLines = 0.
+      CollectSymbolsInTUForParent(entry.tu, entry.mainFilename, 0, all, nullParent);
+    }
+  } else {
+    for (const auto &kv : m_tuCache) {
+      const CachedTranslationUnit &entry = kv.second;
+      if (!entry.tu)
+        continue;
+
+      CollectSymbolsInTUForParent(entry.tu, entry.mainFilename, entry.addedLines, all, nullParent);
+    }
+  }
+
+  // Filter to symbols declared inside sketchPath (normalize clang filenames first).
+  out.reserve(all.size());
+  for (auto &s : all) {
+    if (s.file.empty())
+      continue;
+
+    if (hasSuffix(s.file, "ino.hpp")) // ignore ino synthetic header
+      continue;
+
+    std::string normFile = NormalizeFilename(sketchPath, s.file);
+    if (normFile.rfind(sketchPath, 0) != 0)
+      continue;
+
+    s.file = std::move(normFile);
+    out.push_back(std::move(s));
+  }
+
+  std::sort(out.begin(), out.end(),
+            [](const SymbolInfo &a, const SymbolInfo &b) {
+              if (a.name != b.name)
+                return a.name < b.name;
+              if (a.file != b.file)
+                return a.file < b.file;
+              if (a.line != b.line)
+                return a.line < b.line;
+              if (a.column != b.column)
+                return a.column < b.column;
+              return a.kind < b.kind;
+            });
+
+  out.erase(std::unique(out.begin(), out.end(),
+                        [](const SymbolInfo &a, const SymbolInfo &b) {
+                          return a.name == b.name &&
+                                 a.file == b.file &&
+                                 a.line == b.line &&
+                                 a.column == b.column &&
+                                 a.kind == b.kind;
+                        }),
+            out.end());
+
+  return out;
+}
+
 void ArduinoCodeCompletion::InvalidateTranslationUnit() {
   std::lock_guard<std::mutex> lock(m_ccMutex);
 

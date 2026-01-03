@@ -18,16 +18,35 @@
 
 #pragma once
 
-#include <functional>
 #include <vector>
 
 #include <wx/config.h>
 #include <wx/dialog.h>
+#include <wx/event.h>
 #include <wx/listctrl.h>
 #include <wx/textctrl.h>
 #include <wx/timer.h>
 
 #include "ard_cc.hpp"
+
+class ArduinoSymbolActivatedEvent : public wxCommandEvent {
+public:
+  ArduinoSymbolActivatedEvent(wxEventType type = wxEVT_NULL, int id = 0)
+      : wxCommandEvent(type, id) {}
+
+  ArduinoSymbolActivatedEvent(const ArduinoSymbolActivatedEvent &e)
+      : wxCommandEvent(e), m_symbol(e.m_symbol) {}
+
+  wxEvent *Clone() const override { return new ArduinoSymbolActivatedEvent(*this); }
+
+  void SetSymbol(const SymbolInfo &s) { m_symbol = s; }
+  const SymbolInfo &GetSymbol() const { return m_symbol; }
+
+private:
+  SymbolInfo m_symbol;
+};
+
+wxDECLARE_EVENT(EVT_ARD_SYMBOL_ACTIVATED, ArduinoSymbolActivatedEvent);
 
 class FindSymbolDialog : public wxDialog {
 public:
@@ -38,11 +57,6 @@ public:
   // Returns the selected symbol (current item in the list)
   bool GetSelectedSymbol(SymbolInfo &out) const;
 
-  // Sets the callback called on double-click / Enter on a symbol
-  void SetOnSymbolActivated(const std::function<void(const SymbolInfo &)> &cb) {
-    m_onActivated = cb;
-  }
-
   // Update of the symbol list (e.g. after reparse)
   void SetSymbols(const std::vector<SymbolInfo> &symbols);
 
@@ -50,6 +64,7 @@ private:
   void OnSearchChanged(wxCommandEvent &event);
   void OnItemActivated(wxListEvent &event);
   void OnClose(wxCloseEvent &event);
+  void OnShow(wxShowEvent &event);
   void OnCharHook(wxKeyEvent &event);
   void OnSearchTimer(wxTimerEvent &event);
 
@@ -64,8 +79,6 @@ private:
 
   std::vector<SymbolInfo> m_allSymbols;
   std::vector<SymbolInfo> m_filteredSymbols;
-
-  std::function<void(const SymbolInfo &)> m_onActivated;
 
   wxTimer m_searchTimer;
 };

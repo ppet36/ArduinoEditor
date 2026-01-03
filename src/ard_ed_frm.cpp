@@ -1225,40 +1225,39 @@ void ArduinoEditorFrame::OnRefreshSerialPorts(wxCommandEvent &WXUNUSED(event)) {
 }
 
 void ArduinoEditorFrame::OnFindSymbol(wxCommandEvent &WXUNUSED(event)) {
-  auto *ed = dynamic_cast<ArduinoEditor *>(m_notebook->GetCurrentPage());
-  if (!ed)
-    return;
-
-  std::string filename = ed->GetFilePath();
-  std::string code = ed->GetText(); // getter for the content of the editor
-
-  auto symbols = completion->GetAllSymbols(filename, code);
+  auto symbols = completion->GetAllSymbols();
   if (symbols.empty()) {
     ModalMsgDialog(_("No symbols found."), _("Find symbol"), wxOK | wxICON_INFORMATION);
     return;
   }
 
   if (!m_findSymbolDlg) {
-    m_findSymbolDlg = new FindSymbolDialog(this,
-                                           config,
-                                           symbols);
-
-    m_findSymbolDlg->SetOnSymbolActivated(
-        [this](const SymbolInfo &s) {
-          JumpTarget tgt;
-          tgt.file = s.file;
-          tgt.line = s.line;
-          tgt.column = s.column;
-
-          this->HandleGoToLocation(tgt);
-        });
+    m_findSymbolDlg = new FindSymbolDialog(this, config, symbols);
   } else {
-    // Update symbols according to the current editor
     m_findSymbolDlg->SetSymbols(symbols);
   }
 
   m_findSymbolDlg->Show();
   m_findSymbolDlg->Raise();
+}
+
+void ArduinoEditorFrame::OnSymbolActivated(ArduinoSymbolActivatedEvent &evt) {
+  const SymbolInfo &s = evt.GetSymbol();
+
+  if (auto *editor = GetCurrentEditor()) {
+    int line, column;
+    editor->GetCurrentCursor(line, column);
+    PushNavLocation(editor->GetFilePath(), line, column);
+  }
+
+  JumpTarget tgt;
+  tgt.file = s.file;
+  tgt.line = s.line;
+  tgt.column = s.column;
+
+  this->HandleGoToLocation(tgt);
+
+  Raise();
 }
 
 void ArduinoEditorFrame::CleanProject() {
@@ -2484,6 +2483,7 @@ void ArduinoEditorFrame::BindEvents() {
   Bind(wxEVT_MENU, &ArduinoEditorFrame::OnTabMenuClose, this, ID_TABMENU_CLOSE);
   Bind(wxEVT_MENU, &ArduinoEditorFrame::OnTabMenuCloseOthers, this, ID_TABMENU_CLOSE_OTHERS);
   Bind(wxEVT_MENU, &ArduinoEditorFrame::OnTabMenuCloseAll, this, ID_TABMENU_CLOSE_ALL);
+  Bind(EVT_ARD_SYMBOL_ACTIVATED, &ArduinoEditorFrame::OnSymbolActivated, this);
 }
 
 void ArduinoEditorFrame::LoadConfig() {

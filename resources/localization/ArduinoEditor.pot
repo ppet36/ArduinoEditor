@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-03 20:02+0100\n"
+"POT-Creation-Date: 2026-01-03 22:16+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -732,7 +732,7 @@ msgid "OK"
 msgstr ""
 
 #: ../src/ard_aimdldlg.cpp:184 ../src/ard_boptdlg.cpp:77
-#: ../src/ard_diff.cpp:126 ../src/ard_ed_frm.cpp:2347 ../src/ard_fmtdlg.cpp:188
+#: ../src/ard_diff.cpp:126 ../src/ard_ed_frm.cpp:2346 ../src/ard_fmtdlg.cpp:188
 #: ../src/utils.cpp:1016
 msgid "Cancel"
 msgstr ""
@@ -862,7 +862,7 @@ msgid "Select board"
 msgstr ""
 
 #: ../src/ard_borsel.cpp:163 ../src/ard_borsel.cpp:445
-#: ../src/ard_finsymdlg.cpp:44 ../src/ard_libman.cpp:177
+#: ../src/ard_finsymdlg.cpp:46 ../src/ard_libman.cpp:177
 msgid "Name"
 msgstr ""
 
@@ -930,7 +930,7 @@ msgstr ""
 
 #: ../src/ard_cliinst.cpp:153 ../src/ard_cliinst.cpp:421
 #: ../src/ard_cliinst.cpp:519 ../src/ard_cliinst.cpp:622
-#: ../src/ard_ed_frm.cpp:1718
+#: ../src/ard_ed_frm.cpp:1717
 msgid "Preparing..."
 msgstr ""
 
@@ -1259,8 +1259,8 @@ msgstr ""
 
 #: ../src/ard_coreman.cpp:105 ../src/ard_coreman.cpp:188
 #: ../src/ard_coreman.cpp:344 ../src/ard_coreman.cpp:437
-#: ../src/ard_ed_frm.cpp:1657 ../src/ard_ed_frm.cpp:2166
-#: ../src/ard_ed_frm.cpp:2212 ../src/ard_libman.cpp:145
+#: ../src/ard_ed_frm.cpp:1656 ../src/ard_ed_frm.cpp:2165
+#: ../src/ard_ed_frm.cpp:2211 ../src/ard_libman.cpp:145
 #: ../src/ard_libman.cpp:262 ../src/ard_libman.cpp:433
 #: ../src/ard_libman.cpp:598
 msgid "All"
@@ -1326,12 +1326,12 @@ msgstr ""
 msgid "Uninstall core"
 msgstr ""
 
-#: ../src/ard_diagview.cpp:22 ../src/ard_finsymdlg.cpp:45
+#: ../src/ard_diagview.cpp:22 ../src/ard_finsymdlg.cpp:47
 #: ../src/ard_renamedlg.cpp:146
 msgid "File"
 msgstr ""
 
-#: ../src/ard_diagview.cpp:23 ../src/ard_finsymdlg.cpp:46
+#: ../src/ard_diagview.cpp:23 ../src/ard_finsymdlg.cpp:48
 #: ../src/ard_orginc.cpp:57 ../src/ard_renamedlg.cpp:147
 msgid "Line"
 msgstr ""
@@ -1482,15 +1482,15 @@ msgstr ""
 msgid "Failed create Arduino Clang completion!"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:658 ../src/ard_ed_frm.cpp:1283
+#: ../src/ard_ed_frm.cpp:658 ../src/ard_ed_frm.cpp:1282
 msgid "Initializing Arduino Clang completion..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:662 ../src/ard_ed_frm.cpp:1287
+#: ../src/ard_ed_frm.cpp:662 ../src/ard_ed_frm.cpp:1286
 msgid "Loading board parameters..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:670 ../src/ard_ed_frm.cpp:1291
+#: ../src/ard_ed_frm.cpp:670 ../src/ard_ed_frm.cpp:1290
 msgid "Loading compile parameters..."
 msgstr ""
 
@@ -1601,123 +1601,123 @@ msgstr ""
 msgid "Serial ports refreshed."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1237
+#: ../src/ard_ed_frm.cpp:1230
 msgid "No symbols found."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1237 ../src/ard_finsymdlg.cpp:29
+#: ../src/ard_ed_frm.cpp:1230 ../src/ard_finsymdlg.cpp:31
 msgid "Find symbol"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1281
+#: ../src/ard_ed_frm.cpp:1280
 msgid "Rebuilding project..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1322
+#: ../src/ard_ed_frm.cpp:1321
 msgid "Compilation"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1325
+#: ../src/ard_ed_frm.cpp:1324
 msgid "Upload"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1328
+#: ../src/ard_ed_frm.cpp:1327
 msgid "Library installation"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1331
+#: ../src/ard_ed_frm.cpp:1330
 msgid "Library uninstalation"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1334 ../src/ard_libman.cpp:743
+#: ../src/ard_ed_frm.cpp:1333 ../src/ard_libman.cpp:743
 msgid "Update library index"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1338
+#: ../src/ard_ed_frm.cpp:1337
 msgid "Action"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1346
+#: ../src/ard_ed_frm.cpp:1345
 #, c-format
 msgid "Other action \"%s\" running. Please try again later."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1360
+#: ../src/ard_ed_frm.cpp:1359
 #, c-format
 msgid "%s started..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1373
+#: ../src/ard_ed_frm.cpp:1372
 msgid "finished."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1373
+#: ../src/ard_ed_frm.cpp:1372
 msgid "failed."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1384 ../src/ard_ed_frm.cpp:1650
-#: ../src/ard_ed_frm.cpp:2159 ../src/ard_libman.cpp:249
+#: ../src/ard_ed_frm.cpp:1383 ../src/ard_ed_frm.cpp:1649
+#: ../src/ard_ed_frm.cpp:2158 ../src/ard_libman.cpp:249
 msgid "Loading libraries..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1413
+#: ../src/ard_ed_frm.cpp:1412
 msgid "arduino-cli build diagnostics"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1434 ../src/ard_ed_frm.cpp:2190
+#: ../src/ard_ed_frm.cpp:1433 ../src/ard_ed_frm.cpp:2189
 msgid "Enumerating available boards..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1436
+#: ../src/ard_ed_frm.cpp:1435
 msgid "Loading core list..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1445
+#: ../src/ard_ed_frm.cpp:1444
 #, c-format
 msgid "%s failed. See the CLI output for more information."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1485
+#: ../src/ard_ed_frm.cpp:1484
 msgid "Building project..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1520
+#: ../src/ard_ed_frm.cpp:1519
 msgid "Uploading project..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1640
+#: ../src/ard_ed_frm.cpp:1639
 msgid "Resolving missing libraries..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1696 ../src/ard_ed_frm.cpp:2865
+#: ../src/ard_ed_frm.cpp:1695 ../src/ard_ed_frm.cpp:2865
 msgid "Problems"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1727
+#: ../src/ard_ed_frm.cpp:1726
 msgid "Translation unit not prepared."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1742 ../src/ard_ed_frm.cpp:1941
+#: ../src/ard_ed_frm.cpp:1741 ../src/ard_ed_frm.cpp:1940
 msgid "Diagnostics turned off."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1752
+#: ../src/ard_ed_frm.cpp:1751
 msgid "No problems found."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1920
+#: ../src/ard_ed_frm.cpp:1919
 msgid "Project diagnostics evaluation..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1935
+#: ../src/ard_ed_frm.cpp:1934
 msgid "Diagnostic evaluation..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1951
+#: ../src/ard_ed_frm.cpp:1950
 msgid "Failed to load Arduino libraries from arduino-cli."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2020
+#: ../src/ard_ed_frm.cpp:2019
 #, c-format
 msgid ""
 "Header '%s' was not found, but it looks like it belongs to an installed "
@@ -1732,18 +1732,18 @@ msgid ""
 "Rebuild now?"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2030
+#: ../src/ard_ed_frm.cpp:2029
 msgid "Rebuild required"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2043
+#: ../src/ard_ed_frm.cpp:2042
 msgid ""
 "The following missing headers are claimed to be provided by Arduino "
 "libraries:\n"
 "\n"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2063
+#: ../src/ard_ed_frm.cpp:2062
 msgid ""
 "\n"
 "Note: Arduino library metadata can be wrong. The Library Manager will be "
@@ -1751,61 +1751,61 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2068
+#: ../src/ard_ed_frm.cpp:2067
 msgid "Missing headers"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2071
+#: ../src/ard_ed_frm.cpp:2070
 msgid "Open Library Manager"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2071
+#: ../src/ard_ed_frm.cpp:2070
 msgid "Ignore"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2104
+#: ../src/ard_ed_frm.cpp:2103
 msgid "Failed to load installed Arduino libraries from arduino-cli."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2178
+#: ../src/ard_ed_frm.cpp:2177
 msgid "Failed to load installed Arduino cores from arduino-cli."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2199
+#: ../src/ard_ed_frm.cpp:2198
 msgid "Failed to load Arduino cores from arduino-cli."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2224
+#: ../src/ard_ed_frm.cpp:2223
 msgid "Failed to load available boards from arduino-cli."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2247
+#: ../src/ard_ed_frm.cpp:2246
 msgid "Resolving libraries..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2343
+#: ../src/ard_ed_frm.cpp:2342
 msgid ""
 "Some files have unsaved changes.\n"
 "Do you want to save them before exiting?"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2344
+#: ../src/ard_ed_frm.cpp:2343
 msgid "Confirm exit"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2347
+#: ../src/ard_ed_frm.cpp:2346
 msgid "Save"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2347
+#: ../src/ard_ed_frm.cpp:2346
 msgid "Discard"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2358
+#: ../src/ard_ed_frm.cpp:2357
 msgid "Some files couldn't be saved."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2358
+#: ../src/ard_ed_frm.cpp:2357
 msgid "Save error"
 msgstr ""
 
@@ -2486,7 +2486,7 @@ msgstr ""
 msgid "Example"
 msgstr ""
 
-#: ../src/ard_examples.cpp:94 ../src/ard_finsymdlg.cpp:47
+#: ../src/ard_examples.cpp:94 ../src/ard_finsymdlg.cpp:49
 msgid "Path"
 msgstr ""
 
