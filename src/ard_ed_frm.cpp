@@ -1301,7 +1301,7 @@ void ArduinoEditorFrame::OnCliProcessKill(wxCommandEvent &) {
   if (arduinoCli) {
     if (arduinoCli->CancelRunning()) {
 
-      if (m_action == upload) {
+      if (m_action == build) {
         // An aborted build usually corrupts the translation
         // directory, so we'd rather delete it.
         arduinoCli->CleanBuildDirectory();
