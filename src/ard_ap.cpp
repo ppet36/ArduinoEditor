@@ -269,7 +269,6 @@ wxBitmapBundle ArduinoArtProvider::CreateBitmapBundle(const wxArtID &id, const w
     x32 = dark ? mdi_swap_horiz_dark_32 : mdi_swap_horiz_light_32;
   }
 
-
   if (!x16 || !x32 || !x24 || !x20)
     return wxNullBitmap;
 

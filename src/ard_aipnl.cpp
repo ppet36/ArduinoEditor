@@ -19,10 +19,10 @@
 #include "ard_aipnl.hpp"
 #include "ard_ai.hpp"
 #include "ard_ap.hpp"
+#include "ard_ed_frm.hpp"
 #include "ard_ev.hpp"
 #include "ard_mdwidget.hpp"
 #include "ard_setdlg.hpp"
-#include "ard_ed_frm.hpp"
 #include <wx/button.h>
 #include <wx/choice.h>
 
@@ -62,9 +62,8 @@ ArduinoAiChatPanel::ArduinoAiChatPanel(wxWindow *parent, ArduinoAiActions *actio
 
   m_switchModelBtn->Bind(wxEVT_BUTTON, &ArduinoAiChatPanel::OnSwitchModelClicked, this);
 
-
   std::vector<AiModelSettings> models;
-  ArduinoEditorSettingsDialog::LoadAiModels (m_config, models);
+  ArduinoEditorSettingsDialog::LoadAiModels(m_config, models);
   if (m_switchModelBtn) {
     m_switchModelBtn->Enable(models.size() > 1);
   }
@@ -78,15 +77,14 @@ ArduinoAiChatPanel::~ArduinoAiChatPanel() {
   }
 }
 
-void ArduinoAiChatPanel::ApplySettings(const AiSettings& WXUNUSED(settings)) {
+void ArduinoAiChatPanel::ApplySettings(const AiSettings &WXUNUSED(settings)) {
   std::vector<AiModelSettings> models;
-  ArduinoEditorSettingsDialog::LoadAiModels (m_config, models);
+  ArduinoEditorSettingsDialog::LoadAiModels(m_config, models);
 
   if (m_switchModelBtn) {
     m_switchModelBtn->Enable(models.size() > 1);
   }
 }
-
 
 void ArduinoAiChatPanel::InitUi() {
   auto *sizer = new wxBoxSizer(wxVERTICAL);
@@ -308,7 +306,7 @@ void ArduinoAiChatPanel::OnRefreshTimer(wxTimerEvent &) {
 
 void ArduinoAiChatPanel::OnSwitchModelClicked(wxCommandEvent &) {
   std::vector<AiModelSettings> models;
-  ArduinoEditorSettingsDialog::LoadAiModels (m_config, models);
+  ArduinoEditorSettingsDialog::LoadAiModels(m_config, models);
 
   AiSettings aiSettings;
   aiSettings.Load(m_config);
@@ -328,7 +326,7 @@ void ArduinoAiChatPanel::OnSwitchModelClicked(wxCommandEvent &) {
         [this, isModel = m, &aiSettings](wxCommandEvent &) mutable {
           ArduinoEditorSettingsDialog::ApplyModelToAiSettings(isModel, aiSettings);
           aiSettings.Save(m_config);
-          if (auto *frame = wxDynamicCast (GetParent(), ArduinoEditorFrame)) {
+          if (auto *frame = wxDynamicCast(GetParent(), ArduinoEditorFrame)) {
             frame->ApplySettings(aiSettings);
           }
         },

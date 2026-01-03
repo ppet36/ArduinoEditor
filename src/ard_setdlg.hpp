@@ -215,7 +215,7 @@ public:
   AiSettings GetAiSettings() const;
 
   static void LoadAiModels(wxConfigBase *cfg, std::vector<AiModelSettings> &out);
-  static void ApplyModelToAiSettings (const AiModelSettings& isModel, AiSettings &settings);
+  static void ApplyModelToAiSettings(const AiModelSettings &isModel, AiSettings &settings);
 
 private:
   EditorSettings m_settings;

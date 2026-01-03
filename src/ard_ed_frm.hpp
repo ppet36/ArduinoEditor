@@ -156,11 +156,12 @@ private:
 
   void ApplySettings(const EditorSettings &settings);
   void ApplySettings(const ClangSettings &settings);
+
 public:
   // This is called also from ArduinoAiChatPanel for model switch
   void ApplySettings(const AiSettings &settings);
-private:
 
+private:
   void UpdateBoard(std::string &fqbn);
   void UpdateBoardText();
   void SelectBoard();

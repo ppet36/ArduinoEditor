@@ -54,7 +54,7 @@ void ArduinoLibraryDetailDialog::ShowInstalledLibraryInfo(wxWindow *parent,
     return;
   }
 
-  const auto &libs = cli->GetLibraries();
+  const auto &libs = cli->GetInstalledLibraries();
   if (libs.empty()) {
     return;
   }
@@ -62,7 +62,7 @@ void ArduinoLibraryDetailDialog::ShowInstalledLibraryInfo(wxWindow *parent,
   const ArduinoLibraryInfo *info = nullptr;
   for (const auto &lib : libs) {
     if (installedInfo->name == lib.name) {
-      info = &lib; // here you take the address of the element in the vector
+      info = &lib;
       break;
     }
   }
@@ -71,7 +71,6 @@ void ArduinoLibraryDetailDialog::ShowInstalledLibraryInfo(wxWindow *parent,
     return;
   }
 
-  // constructor needs const ArduinoLibraryInfo& -> you dereference the pointer
   ArduinoLibraryDetailDialog dialog(parent, *info, installedInfo,
                                     config, wxEmptyString, false);
   dialog.ShowModal();
@@ -86,7 +85,7 @@ ArduinoLibraryDetailDialog::ArduinoLibraryDetailDialog(wxWindow *parent,
     : wxDialog(parent, wxID_ANY,
                wxString::FromUTF8(info.name.c_str()),
                wxDefaultPosition, wxSize(500, 400),
-               wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
+               wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER | wxSTAY_ON_TOP),
       m_installedInfo(installedInfo),
       m_config(config) {
 

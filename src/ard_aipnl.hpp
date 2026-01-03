@@ -35,7 +35,7 @@ public:
   ArduinoAiChatPanel(wxWindow *parent, ArduinoAiActions *actions, wxConfigBase *config);
   ~ArduinoAiChatPanel();
 
-  void ApplySettings(const AiSettings& settings);
+  void ApplySettings(const AiSettings &settings);
 
   void Clear();
 

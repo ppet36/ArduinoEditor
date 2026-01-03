@@ -2024,7 +2024,7 @@ void ArduinoEditorSettingsDialog::LoadAiModels(wxConfigBase *cfg, std::vector<Ai
   }
 }
 
-void ArduinoEditorSettingsDialog::ApplyModelToAiSettings(const AiModelSettings& m, AiSettings &settings) {
+void ArduinoEditorSettingsDialog::ApplyModelToAiSettings(const AiModelSettings &m, AiSettings &settings) {
   settings.id = m.id;
   settings.name = m.name;
   settings.endpointUrl = m.endpointUrl;
