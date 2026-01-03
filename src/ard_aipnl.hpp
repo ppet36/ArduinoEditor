@@ -26,6 +26,7 @@
 #include <wx/wx.h>
 
 class ArduinoAiActions;
+struct AiSettings;
 class ArduinoMarkdownPanel;
 
 // AI Chat panel / AUI widget
@@ -33,6 +34,8 @@ class ArduinoAiChatPanel : public wxPanel {
 public:
   ArduinoAiChatPanel(wxWindow *parent, ArduinoAiActions *actions, wxConfigBase *config);
   ~ArduinoAiChatPanel();
+
+  void ApplySettings(const AiSettings& settings);
 
   void Clear();
 
@@ -42,6 +45,7 @@ private:
   wxTextCtrl *m_inputCtrl;
   wxSplitterWindow *m_splitter = nullptr;
   wxPanel *m_inputPanel = nullptr;
+  wxBitmapButton *m_switchModelBtn = nullptr;
 
   wxChoice *m_sessionChoice = nullptr;
   std::string m_currentSessionId;       // selected/active session (kept across refreshes)
@@ -63,6 +67,7 @@ private:
   void ResetChat();
   void OnRefreshSessions(wxCommandEvent &);
   void OnRefreshTimer(wxTimerEvent &);
+  void OnSwitchModelClicked(wxCommandEvent &);
 
   void OnSysColourChanged(wxSysColourChangedEvent &event);
 

@@ -166,6 +166,10 @@ void ArduinoEditorFrame::ApplySettings(const AiSettings &settings) {
     m_diagView->ApplySettings(settings);
   }
 
+  if (m_aiPanel) {
+    m_aiPanel->ApplySettings(settings);
+  }
+
   APP_DEBUG_LOG("FRM: AiSettings, fullInfoRequest=%d, floatingWindow=%d", settings.fullInfoRequest, settings.floatingWindow);
 
   m_aiGlobalActions.SetFullInfoRequest(settings.fullInfoRequest);
@@ -2922,6 +2926,16 @@ void ArduinoEditorFrame::InitComponents() {
     wxString perspective;
     if (config->Read(wxT("Layout.Perspective"), &perspective) && !perspective.empty()) {
       m_auiManager.LoadPerspective(perspective);
+
+      for (auto &p : m_auiManager.GetAllPanes()) {
+        if (p.name == wxT("files")) {
+          p.Caption(_("Sketch files"));
+        } else if (p.name == wxT("output")) {
+          p.Caption(_("Output"));
+        } else if (p.name == wxT("ai")) {
+          p.Caption(_("AI assistant"));
+        }
+      }
     }
   }
 

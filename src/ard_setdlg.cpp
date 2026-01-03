@@ -194,40 +194,6 @@ static wxString AiModelsBaseKey() {
   return wxT("AI/Models");
 }
 
-static void LoadAiModels(wxConfigBase *cfg, std::vector<AiModelSettings> &out) {
-  out.clear();
-  if (!cfg)
-    return;
-
-  long cnt = 0;
-  cfg->Read(AiModelsBaseKey() + wxT("/Count"), &cnt, 0L);
-
-  for (long i = 0; i < cnt; ++i) {
-    wxString base = AiModelsBaseKey() + wxString::Format(wxT("/Item%ld"), i);
-
-    AiModelSettings m;
-    cfg->Read(base + wxT("/Id"), &m.id, wxEmptyString);
-    cfg->Read(base + wxT("/Name"), &m.name, wxEmptyString);
-    cfg->Read(base + wxT("/EndpointUrl"), &m.endpointUrl, wxEmptyString);
-    cfg->Read(base + wxT("/Model"), &m.model, wxEmptyString);
-
-    cfg->Read(base + wxT("/MaxIterations"), &m.maxIterations, 5L);
-    cfg->Read(base + wxT("/RequestTimeout"), &m.requestTimeout, 60L);
-
-    cfg->Read(base + wxT("/ExtraRequestJson"), &m.extraRequestJson, wxEmptyString);
-
-    cfg->Read(base + wxT("/ForceModelQueryRange"), &m.forceModelQueryRange, false);
-    cfg->Read(base + wxT("/FullInfoRequest"), &m.fullInfoRequest, true);
-    cfg->Read(base + wxT("/FloatingWindow"), &m.floatingWindow, true);
-    cfg->Read(base + wxT("/HasAuthentization"), &m.hasAuthentization, false);
-
-    if (m.id.empty())
-      m.id = GenAiModelId();
-
-    out.push_back(m);
-  }
-}
-
 static void SaveAiModels(wxConfigBase *cfg, const std::vector<AiModelSettings> &models) {
   if (!cfg)
     return;
@@ -1787,17 +1753,7 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
       return;
 
     const auto &m = m_aiModels[(size_t)sel];
-    m_aiSettings.id = m.id;
-    m_aiSettings.name = m.name;
-    m_aiSettings.endpointUrl = m.endpointUrl;
-    m_aiSettings.model = m.model;
-    m_aiSettings.maxIterations = m.maxIterations;
-    m_aiSettings.requestTimeout = m.requestTimeout;
-    m_aiSettings.extraRequestJson = m.extraRequestJson;
-    m_aiSettings.forceModelQueryRange = m.forceModelQueryRange;
-    m_aiSettings.fullInfoRequest = m.fullInfoRequest;
-    m_aiSettings.floatingWindow = m.floatingWindow;
-    m_aiSettings.hasAuthentization = m.hasAuthentization;
+    ApplyModelToAiSettings(m, m_aiSettings);
   };
 
   RebuildModelChoice();
@@ -2032,6 +1988,54 @@ void ArduinoEditorSettingsDialog::OnClose(wxCloseEvent &WXUNUSED(evt)) {
     SaveWindowSize(wxT("SettingsDlg"), this, m_config);
     Destroy();
   }
+}
+
+void ArduinoEditorSettingsDialog::LoadAiModels(wxConfigBase *cfg, std::vector<AiModelSettings> &out) {
+  out.clear();
+  if (!cfg)
+    return;
+
+  long cnt = 0;
+  cfg->Read(AiModelsBaseKey() + wxT("/Count"), &cnt, 0L);
+
+  for (long i = 0; i < cnt; ++i) {
+    wxString base = AiModelsBaseKey() + wxString::Format(wxT("/Item%ld"), i);
+
+    AiModelSettings m;
+    cfg->Read(base + wxT("/Id"), &m.id, wxEmptyString);
+    cfg->Read(base + wxT("/Name"), &m.name, wxEmptyString);
+    cfg->Read(base + wxT("/EndpointUrl"), &m.endpointUrl, wxEmptyString);
+    cfg->Read(base + wxT("/Model"), &m.model, wxEmptyString);
+
+    cfg->Read(base + wxT("/MaxIterations"), &m.maxIterations, 5L);
+    cfg->Read(base + wxT("/RequestTimeout"), &m.requestTimeout, 60L);
+
+    cfg->Read(base + wxT("/ExtraRequestJson"), &m.extraRequestJson, wxEmptyString);
+
+    cfg->Read(base + wxT("/ForceModelQueryRange"), &m.forceModelQueryRange, false);
+    cfg->Read(base + wxT("/FullInfoRequest"), &m.fullInfoRequest, true);
+    cfg->Read(base + wxT("/FloatingWindow"), &m.floatingWindow, true);
+    cfg->Read(base + wxT("/HasAuthentization"), &m.hasAuthentization, false);
+
+    if (m.id.empty())
+      m.id = GenAiModelId();
+
+    out.push_back(m);
+  }
+}
+
+void ArduinoEditorSettingsDialog::ApplyModelToAiSettings(const AiModelSettings& m, AiSettings &settings) {
+  settings.id = m.id;
+  settings.name = m.name;
+  settings.endpointUrl = m.endpointUrl;
+  settings.model = m.model;
+  settings.maxIterations = m.maxIterations;
+  settings.requestTimeout = m.requestTimeout;
+  settings.extraRequestJson = m.extraRequestJson;
+  settings.forceModelQueryRange = m.forceModelQueryRange;
+  settings.fullInfoRequest = m.fullInfoRequest;
+  settings.floatingWindow = m.floatingWindow;
+  settings.hasAuthentization = m.hasAuthentization;
 }
 
 EditorSettings ArduinoEditorSettingsDialog::GetSettings() const {

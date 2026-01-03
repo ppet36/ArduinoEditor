@@ -21,6 +21,8 @@
 #include "ard_ap.hpp"
 #include "ard_ev.hpp"
 #include "ard_mdwidget.hpp"
+#include "ard_setdlg.hpp"
+#include "ard_ed_frm.hpp"
 #include <wx/button.h>
 #include <wx/choice.h>
 
@@ -57,6 +59,15 @@ ArduinoAiChatPanel::ArduinoAiChatPanel(wxWindow *parent, ArduinoAiActions *actio
   Bind(wxEVT_AI_SIMPLE_CHAT_PROGRESS, &ArduinoAiChatPanel::OnChatProgress, this);
   Bind(wxEVT_AI_SUMMARIZATION_UPDATED, &ArduinoAiChatPanel::OnSessionTitleUpdated, this);
   Bind(wxEVT_SYS_COLOUR_CHANGED, &ArduinoAiChatPanel::OnSysColourChanged, this);
+
+  m_switchModelBtn->Bind(wxEVT_BUTTON, &ArduinoAiChatPanel::OnSwitchModelClicked, this);
+
+
+  std::vector<AiModelSettings> models;
+  ArduinoEditorSettingsDialog::LoadAiModels (m_config, models);
+  if (m_switchModelBtn) {
+    m_switchModelBtn->Enable(models.size() > 1);
+  }
 }
 
 ArduinoAiChatPanel::~ArduinoAiChatPanel() {
@@ -67,6 +78,16 @@ ArduinoAiChatPanel::~ArduinoAiChatPanel() {
   }
 }
 
+void ArduinoAiChatPanel::ApplySettings(const AiSettings& WXUNUSED(settings)) {
+  std::vector<AiModelSettings> models;
+  ArduinoEditorSettingsDialog::LoadAiModels (m_config, models);
+
+  if (m_switchModelBtn) {
+    m_switchModelBtn->Enable(models.size() > 1);
+  }
+}
+
+
 void ArduinoAiChatPanel::InitUi() {
   auto *sizer = new wxBoxSizer(wxVERTICAL);
 
@@ -75,6 +96,12 @@ void ArduinoAiChatPanel::InitUi() {
 
   m_sessionChoice = new wxChoice(this, wxID_ANY);
   topBar->Add(m_sessionChoice, 1, wxEXPAND | wxALL, 5);
+
+  m_switchModelBtn = new wxBitmapButton(this, wxID_ANY, AEGetArtBundle(wxAEArt::SwitchModel));
+
+  m_switchModelBtn->SetToolTip(_("Switch AI model"));
+  m_switchModelBtn->SetCanFocus(false);
+  topBar->Add(m_switchModelBtn, 0, wxALIGN_CENTER_VERTICAL | wxTOP | wxBOTTOM | wxRIGHT, 5);
 
   sizer->Add(topBar, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 5);
 
@@ -279,6 +306,41 @@ void ArduinoAiChatPanel::OnRefreshTimer(wxTimerEvent &) {
   RefreshSessionList();
 }
 
+void ArduinoAiChatPanel::OnSwitchModelClicked(wxCommandEvent &) {
+  std::vector<AiModelSettings> models;
+  ArduinoEditorSettingsDialog::LoadAiModels (m_config, models);
+
+  AiSettings aiSettings;
+  aiSettings.Load(m_config);
+
+  wxMenu menu;
+
+  for (const auto &m : models) {
+    const wxWindowID id = wxWindow::NewControlId();
+
+    wxMenuItem *it = menu.AppendRadioItem(id, m.name);
+    if (m.id == aiSettings.id) {
+      it->Check(true);
+    }
+
+    menu.Bind(
+        wxEVT_MENU,
+        [this, isModel = m, &aiSettings](wxCommandEvent &) mutable {
+          ArduinoEditorSettingsDialog::ApplyModelToAiSettings(isModel, aiSettings);
+          aiSettings.Save(m_config);
+          if (auto *frame = wxDynamicCast (GetParent(), ArduinoEditorFrame)) {
+            frame->ApplySettings(aiSettings);
+          }
+        },
+        id);
+  }
+
+  wxRect r = m_switchModelBtn->GetRect();
+  wxPoint pos(r.GetLeft(), r.GetBottom());
+
+  PopupMenu(&menu, pos);
+}
+
 void ArduinoAiChatPanel::OnRefreshSessions(wxCommandEvent &) {
   RefreshSessionList();
 }
@@ -374,6 +436,13 @@ void ArduinoAiChatPanel::Clear() {
 
 void ArduinoAiChatPanel::OnSysColourChanged(wxSysColourChangedEvent &event) {
   m_historyPanel->Render(/*scrollToEnd=*/false);
+
+  if (m_switchModelBtn) {
+    m_switchModelBtn->SetBitmap(AEGetArtBundle(wxAEArt::SwitchModel));
+  }
+
+  Layout();
+
   event.Skip();
 }
 

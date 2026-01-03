@@ -392,6 +392,15 @@ void ArduinoDiagnosticsView::OnContextMenu(wxContextMenuEvent &evt) {
   if (!m_list)
     return;
 
+  long selRow = GetSelectedRow();
+  if (selRow == wxNOT_FOUND) {
+    return;
+  }
+  long data = m_list->GetItemData(selRow);
+  if (data < 0) {
+    return;
+  }
+
   wxPoint screenPt = evt.GetPosition();
   if (screenPt == wxDefaultPosition) {
     screenPt = m_list->GetScreenPosition();
@@ -402,27 +411,18 @@ void ArduinoDiagnosticsView::OnContextMenu(wxContextMenuEvent &evt) {
 
   wxPoint clientPt = m_list->ScreenToClient(screenPt);
 
-  bool hasSelection = (GetSelectedRow() != wxNOT_FOUND);
-
   wxMenu menu;
 
   int idCopy = wxWindow::NewControlId();
   int idCopyAll = wxWindow::NewControlId();
   int idSolveAi = wxWindow::NewControlId();
 
-  wxMenuItem *copyItem = menu.Append(idCopy, _("Copy problem"));
+  menu.Append(idCopy, _("Copy problem"));
   menu.Append(idCopyAll, _("Copy all problems"));
-
-  if (!hasSelection && copyItem) {
-    copyItem->Enable(false);
-  }
 
   if (m_aiEnabled) {
     menu.AppendSeparator();
-    wxMenuItem *solveItem = menu.Append(idSolveAi, _("Solve error with AI"));
-    if (!hasSelection && solveItem) {
-      solveItem->Enable(false);
-    }
+    menu.Append(idSolveAi, _("Solve error with AI"));
   }
 
   menu.Bind(wxEVT_MENU, [this](wxCommandEvent &) { CopySelected(); }, idCopy);

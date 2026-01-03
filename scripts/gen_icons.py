@@ -55,6 +55,7 @@ VARIANTS = {
 }
 
 ICONS_DEFAULT = [
+    "swap_horiz",
     "123",
     "close",
     "sync",
