@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ArduinoEditor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-03 18:28+0100\n"
+"POT-Creation-Date: 2026-01-03 20:02+0100\n"
 "PO-Revision-Date: 2025-12-09 22:52:00+0100\n"
 "Last-Translator: Pavel Petržela <r17c@seznam.cz>\n"
 "Language-Team: -\n"
@@ -126,6 +126,16 @@ msgid ""
 "IDE\n"
 "     as a drop-in alternative for the official Arduino IDE.\n"
 "   </p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <p>\n"
+"     <b>Project homepage and source code:&nbsp;</b><a href=\"https://github."
+"com/ppet36/ArduinoEditor\">https://github.com/ppet36/ArduinoEditor</a>\n"
+"   </p>\n"
+"\n"
+"   <hr>\n"
+"\n"
 "\n"
 "   <h3>Key Features</h3>\n"
 "   <ul>\n"
@@ -294,6 +304,14 @@ msgstr ""
 "     jako přímou alternativu k oficiálnímu Arduino IDE.\n"
 "   </p>\n"
 "\n"
+"   <hr>\n"
+"\n"
+"   <p>\n"
+"     <b>Domovská stránka projektu a zdrojové kódy:&nbsp;</b><a href=\"https://github.com/ppet36/ArduinoEditor\">https://github.com/ppet36/ArduinoEditor</a>\n"
+"   </p>\n"
+"\n"
+"   <hr>\n"
+"\n"
 "   <h3>Hlavní funkce</h3>\n"
 "   <ul>\n"
 "     <li><a href=\"#async\">Asynchronní zpracování</a> – uživatelské "
@@ -438,7 +456,7 @@ msgstr ""
 "</body>\n"
 "</html>\n"
 
-#: ../src/ard_aboutdlg.cpp:194
+#: ../src/ard_aboutdlg.cpp:203
 msgid ""
 "  <h3>Arduino Editor License (GPLv3)</h3>\n"
 "  <p>\n"
@@ -465,7 +483,7 @@ msgstr ""
 "    </a>\n"
 "  </p>\n"
 
-#: ../src/ard_aboutdlg.cpp:207
+#: ../src/ard_aboutdlg.cpp:216
 msgid ""
 "  <hr>\n"
 "  <h3>wxWidgets License</h3>\n"
@@ -491,7 +509,7 @@ msgstr ""
 "    </a>\n"
 "  </p>\n"
 
-#: ../src/ard_aboutdlg.cpp:220
+#: ../src/ard_aboutdlg.cpp:229
 msgid ""
 "  <hr>\n"
 "  <h3>Clang/LLVM License</h3>\n"
@@ -519,7 +537,7 @@ msgstr ""
 "    </a>\n"
 "  </p>\n"
 
-#: ../src/ard_aboutdlg.cpp:234
+#: ../src/ard_aboutdlg.cpp:243
 msgid ""
 "  <hr>\n"
 "  <h3>cURL / libcurl License</h3>\n"
@@ -552,7 +570,7 @@ msgstr ""
 "    </a>\n"
 "  </p>\n"
 
-#: ../src/ard_aboutdlg.cpp:250
+#: ../src/ard_aboutdlg.cpp:259
 msgid ""
 "  <hr>\n"
 "  <h3>maddy Markdown Parser (MIT)</h3>\n"
@@ -594,7 +612,7 @@ msgstr ""
 "    </a>\n"
 "  </p>\n"
 
-#: ../src/ard_aboutdlg.cpp:270
+#: ../src/ard_aboutdlg.cpp:279
 msgid ""
 "  <hr>\n"
 "  <h3>arduino-cli License (GPLv3)</h3>\n"
@@ -629,7 +647,7 @@ msgstr ""
 "    </a>\n"
 "  </p>\n"
 
-#: ../src/ard_aboutdlg.cpp:285
+#: ../src/ard_aboutdlg.cpp:294
 msgid ""
 "  <hr>\n"
 "  <h3>nlohmann/json (MIT)</h3>\n"
@@ -671,15 +689,15 @@ msgstr ""
 "    </a>\n"
 "  </p>\n"
 
-#: ../src/ard_aboutdlg.cpp:320 ../src/ard_ed_frm.cpp:2682
+#: ../src/ard_aboutdlg.cpp:329 ../src/ard_ed_frm.cpp:2682
 msgid "About Arduino Editor"
 msgstr "O aplikaci Arduino Editor"
 
-#: ../src/ard_aboutdlg.cpp:351
+#: ../src/ard_aboutdlg.cpp:360
 msgid "About"
 msgstr "O aplikaci"
 
-#: ../src/ard_aboutdlg.cpp:372
+#: ../src/ard_aboutdlg.cpp:381
 msgid "Licenses"
 msgstr "Licence"
 
@@ -1744,15 +1762,15 @@ msgstr "Sloupec"
 msgid "Message"
 msgstr "Zpráva"
 
-#: ../src/ard_diagview.cpp:431
+#: ../src/ard_diagview.cpp:398
 msgid "Copy problem"
 msgstr "Kopírovat problém"
 
-#: ../src/ard_diagview.cpp:432
+#: ../src/ard_diagview.cpp:399
 msgid "Copy all problems"
 msgstr "Zkopírovat všechny problémy"
 
-#: ../src/ard_diagview.cpp:436
+#: ../src/ard_diagview.cpp:403
 msgid "Solve error with AI"
 msgstr "Vyřešit chybu pomocí AI"
 
@@ -4419,4 +4437,3 @@ msgstr "Adresář '%s' již existuje."
 #, c-format
 msgid "Version %s"
 msgstr "Verze %s"
-
