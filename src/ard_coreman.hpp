@@ -33,7 +33,6 @@
 
 #include "ard_cli.hpp"
 
-
 static constexpr int ID_PROCESS_INSTALL_CORE = wxID_HIGHEST + 3100;
 
 class ArduinoEditorFrame;

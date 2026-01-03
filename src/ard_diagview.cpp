@@ -99,16 +99,16 @@ void ArduinoDiagnosticsView::ShowMessage(const wxString &message) {
   m_list->Thaw();
 }
 
-bool ArduinoDiagnosticsView::GetDiagnosticsAt(const std::string& filename, unsigned row, unsigned col,
-                                             ArduinoParseError &outDiagnostic) {
+bool ArduinoDiagnosticsView::GetDiagnosticsAt(const std::string &filename, unsigned row, unsigned col,
+                                              ArduinoParseError &outDiagnostic) {
   if (filename.empty() || m_current.empty())
     return false;
 
-  auto normalizePath = [&](const std::string& in) -> std::string {
+  auto normalizePath = [&](const std::string &in) -> std::string {
     return NormalizeFilename(m_sketchRoot, in);
   };
 
-  auto endsWithPath = [](const std::string& whole, const std::string& tail) -> bool {
+  auto endsWithPath = [](const std::string &whole, const std::string &tail) -> bool {
     if (tail.empty())
       return false;
     if (whole.size() < tail.size())
@@ -126,7 +126,7 @@ bool ArduinoDiagnosticsView::GetDiagnosticsAt(const std::string& filename, unsig
 
   const std::string want = normalizePath(filename);
 
-  auto fileMatches = [&](const std::string& diagFile) -> bool {
+  auto fileMatches = [&](const std::string &diagFile) -> bool {
     if (diagFile.empty())
       return false;
 
@@ -139,7 +139,7 @@ bool ArduinoDiagnosticsView::GetDiagnosticsAt(const std::string& filename, unsig
     return endsWithPath(have, want) || endsWithPath(want, have);
   };
 
-  auto matches = [&](const ArduinoParseError& e) -> bool {
+  auto matches = [&](const ArduinoParseError &e) -> bool {
     if (!fileMatches(e.file))
       return false;
     if (row != 0 && e.line != row)
@@ -149,18 +149,18 @@ bool ArduinoDiagnosticsView::GetDiagnosticsAt(const std::string& filename, unsig
     return true;
   };
 
-  auto findFirst = [&](auto&& self, const ArduinoParseError& e) -> const ArduinoParseError* {
+  auto findFirst = [&](auto &&self, const ArduinoParseError &e) -> const ArduinoParseError * {
     if (matches(e))
       return &e;
-    for (const auto& ch : e.childs) {
-      if (const ArduinoParseError* hit = self(self, ch))
+    for (const auto &ch : e.childs) {
+      if (const ArduinoParseError *hit = self(self, ch))
         return hit;
     }
     return nullptr;
   };
 
-  for (const auto& e : m_current) {
-    if (const ArduinoParseError* hit = findFirst(findFirst, e)) {
+  for (const auto &e : m_current) {
+    if (const ArduinoParseError *hit = findFirst(findFirst, e)) {
       outDiagnostic = *hit;
       return true;
     }
@@ -168,7 +168,6 @@ bool ArduinoDiagnosticsView::GetDiagnosticsAt(const std::string& filename, unsig
 
   return false;
 }
-
 
 void ArduinoDiagnosticsView::SetDiagnostics(const std::vector<ArduinoParseError> &diags) {
   m_current = diags;

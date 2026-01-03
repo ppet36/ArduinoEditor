@@ -891,7 +891,7 @@ static std::string InjectParameterNamesIntoSignature(const std::string &sig, con
 
 // -------------------------------------------------------------------------------
 
-const char* ArduinoParseError::SeverityString() const {
+const char *ArduinoParseError::SeverityString() const {
   switch (severity) {
     case CXDiagnostic_Fatal:
       return "Fatal";
@@ -907,7 +907,6 @@ const char* ArduinoParseError::SeverityString() const {
       return "";
   }
 }
-
 
 std::string ArduinoParseError::ToString() const {
   std::ostringstream oss;

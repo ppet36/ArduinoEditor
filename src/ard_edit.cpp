@@ -2490,11 +2490,11 @@ void ArduinoEditor::OnDwellStart(wxStyledTextEvent &event) {
     if (frame->GetDiagnosticsAt(m_filename, line, /*column=*/0, diag)) {
       std::string diagPart = std::string(diag.SeverityString()) + ":" + diag.message;
       hoverInfo += diagPart;
-      hoverInfo += "\n";     
+      hoverInfo += "\n";
       for (unsigned i = 0; i < diagPart.size(); i++) {
         hoverInfo += "_";
       }
-      hoverInfo += "\n\n";     
+      hoverInfo += "\n\n";
     }
   }
 
