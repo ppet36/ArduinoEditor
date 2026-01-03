@@ -1542,6 +1542,8 @@ bool ArduinoCli::ResolveLibInfoFromIncludePath(const std::string &includePath, R
 
   outInfo.isCoreLibrary = (!m_platformPath.empty() && includePath.rfind(m_platformPath, 0) == 0) || (!m_corePlatformPath.empty() && includePath.rfind(m_corePlatformPath, 0) == 0);
 
+  bool foundAny = false;
+
   if (in) {
     std::string line;
     while (std::getline(in, line)) {
@@ -1566,15 +1568,15 @@ bool ArduinoCli::ResolveLibInfoFromIncludePath(const std::string &includePath, R
 
       if (key == "name") {
         outInfo.name = val;
+        foundAny = true;
       } else if (key == "version") {
         outInfo.version = val;
+        foundAny = true;
       }
-
-      return true;
     }
   }
 
-  return false;
+  return foundAny;
 }
 
 std::vector<ResolvedLibraryInfo> ArduinoCli::GetResolvedLibrariesFromCompileCommands() const {
@@ -2666,7 +2668,7 @@ void ArduinoCli::CleanBuildDirectory() {
   std::error_code ec;
   fs::remove_all(buildPath, ec);
   if (ec) {
-    wxLogWarning(wxT("Failed to remove build directory '%s': %s"), wxString::FromUTF8(buildPath.string()), wxString::FromUTF8(ec.message()));
+    wxLogWarning(wxT("CLI: Failed to remove build directory '%s': %s"), wxString::FromUTF8(buildPath.string()), wxString::FromUTF8(ec.message()));
   } else {
     APP_DEBUG_LOG("CLI: Build directory '%s' removed.", buildPath.string().c_str());
   }
