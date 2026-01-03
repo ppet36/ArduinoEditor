@@ -331,7 +331,7 @@ public:
   void PushNavLocation(const std::string &file, int line, int column);
   void GoBackInNavigation();
   void GoForwardInNavigation();
-  bool GetDiagnosticsAt(const std::string &filename, unsigned row, unsigned column, ArduinoParseError &outDiagnostics);
+  bool GetDiagnosticsAt(const std::string &filename, unsigned row, unsigned column, std::vector<ArduinoParseError> &outDiagnostics);
 
   // Refactoring
   void CollectEditorSources(std::vector<SketchFileBuffer> &files);

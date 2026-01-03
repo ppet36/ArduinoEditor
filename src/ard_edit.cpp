@@ -2486,12 +2486,18 @@ void ArduinoEditor::OnDwellStart(wxStyledTextEvent &event) {
   std::string hoverInfo;
 
   if (auto *frame = GetOwnerFrame()) {
-    ArduinoParseError diag;
-    if (frame->GetDiagnosticsAt(m_filename, line, /*column=*/0, diag)) {
-      std::string diagPart = std::string(diag.SeverityString()) + ":" + diag.message;
-      hoverInfo += diagPart;
-      hoverInfo += "\n";
-      for (unsigned i = 0; i < diagPart.size(); i++) {
+    std::vector<ArduinoParseError> diags;
+    if (frame->GetDiagnosticsAt(m_filename, line, /*column=*/0, diags)) {
+      unsigned maxDiagLineLen = 0;
+
+      for (auto &diag : diags) {
+        std::string diagPart = std::string(diag.SeverityString()) + ": " + diag.message;
+        maxDiagLineLen = std::max(maxDiagLineLen, (unsigned)diagPart.size());
+        hoverInfo += diagPart;
+        hoverInfo += "\n";
+      }
+
+      for (unsigned i = 0; i < maxDiagLineLen; i++) {
         hoverInfo += "_";
       }
       hoverInfo += "\n\n";

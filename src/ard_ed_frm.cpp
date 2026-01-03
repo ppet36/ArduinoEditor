@@ -1782,7 +1782,7 @@ void ArduinoEditorFrame::OnDiagnosticsUpdated(wxThreadEvent &evt) {
   CheckMissingHeadersInDiagnostics(errors);
 }
 
-bool ArduinoEditorFrame::GetDiagnosticsAt(const std::string &filename, unsigned row, unsigned column, ArduinoParseError &outDiagnostics) {
+bool ArduinoEditorFrame::GetDiagnosticsAt(const std::string &filename, unsigned row, unsigned column, std::vector<ArduinoParseError> &outDiagnostics) {
   if (m_diagView) {
     return m_diagView->GetDiagnosticsAt(filename, row, column, outDiagnostics);
   }

@@ -106,7 +106,9 @@ void ArduinoDiagnosticsView::ShowMessage(const wxString &message) {
 }
 
 bool ArduinoDiagnosticsView::GetDiagnosticsAt(const std::string &filename, unsigned row, unsigned col,
-                                              ArduinoParseError &outDiagnostic) {
+                                              std::vector<ArduinoParseError> &outDiagnostics) {
+  outDiagnostics.clear();
+
   if (filename.empty() || m_current.empty())
     return false;
 
@@ -114,39 +116,10 @@ bool ArduinoDiagnosticsView::GetDiagnosticsAt(const std::string &filename, unsig
     return NormalizeFilename(m_sketchRoot, in);
   };
 
-  auto endsWithPath = [](const std::string &whole, const std::string &tail) -> bool {
-    if (tail.empty())
-      return false;
-    if (whole.size() < tail.size())
-      return false;
-    if (whole.compare(whole.size() - tail.size(), tail.size(), tail) != 0)
-      return false;
-
-    // Ensure we cut on a path boundary if there are extra chars before the match.
-    if (whole.size() == tail.size())
-      return true;
-
-    const char prev = whole[whole.size() - tail.size() - 1];
-    return prev == '/';
-  };
-
-  const std::string want = normalizePath(filename);
-
-  auto fileMatches = [&](const std::string &diagFile) -> bool {
-    if (diagFile.empty())
-      return false;
-
-    const std::string have = normalizePath(diagFile);
-    if (have == want)
-      return true;
-
-    // Tolerant match: allow "absolute vs relative" differences.
-    // (e.g. have ends with want, or want ends with have)
-    return endsWithPath(have, want) || endsWithPath(want, have);
-  };
+  const std::string wantFile = normalizePath(filename);
 
   auto matches = [&](const ArduinoParseError &e) -> bool {
-    if (!fileMatches(e.file))
+    if (normalizePath(e.file) != wantFile)
       return false;
     if (row != 0 && e.line != row)
       return false;
@@ -155,24 +128,18 @@ bool ArduinoDiagnosticsView::GetDiagnosticsAt(const std::string &filename, unsig
     return true;
   };
 
-  auto findFirst = [&](auto &&self, const ArduinoParseError &e) -> const ArduinoParseError * {
+  auto collectAll = [&](auto &&self, const ArduinoParseError &e) -> void {
     if (matches(e))
-      return &e;
-    for (const auto &ch : e.childs) {
-      if (const ArduinoParseError *hit = self(self, ch))
-        return hit;
-    }
-    return nullptr;
+      outDiagnostics.push_back(e);
+
+    for (const auto &ch : e.childs)
+      self(self, ch);
   };
 
-  for (const auto &e : m_current) {
-    if (const ArduinoParseError *hit = findFirst(findFirst, e)) {
-      outDiagnostic = *hit;
-      return true;
-    }
-  }
+  for (const auto &e : m_current)
+    collectAll(collectAll, e);
 
-  return false;
+  return !outDiagnostics.empty();
 }
 
 void ArduinoDiagnosticsView::SetDiagnostics(const std::vector<ArduinoParseError> &diags) {
@@ -248,8 +215,8 @@ void ArduinoDiagnosticsView::OnSysColourChanged(wxSysColourChangedEvent &event) 
   event.Skip();
 }
 
-void ArduinoDiagnosticsView::SetStale (bool stale) {
-  SetListCtrlStale (m_list, stale);
+void ArduinoDiagnosticsView::SetStale(bool stale) {
+  SetListCtrlStale(m_list, stale);
 }
 
 wxString ArduinoDiagnosticsView::GetRowText(long row) const {

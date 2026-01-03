@@ -21,6 +21,7 @@
 #include "ard_setdlg.hpp"
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 #include <cstddef>
 #include <cstring>
 #include <filesystem>
@@ -29,7 +30,6 @@
 #include <regex>
 #include <sstream>
 #include <system_error>
-#include <cmath>
 #include <wx/dir.h>
 #include <wx/filename.h>
 #include <wx/html/htmlwin.h>
@@ -2066,11 +2066,11 @@ void DedupArgs(std::vector<std::string> &argv) {
   argv.swap(out);
 }
 
+void SetListCtrlStale(wxListCtrl *lc, bool stale) {
+  if (!lc)
+    return;
 
-void SetListCtrlStale(wxListCtrl* lc, bool stale) {
-  if (!lc) return;
-
-  auto blend = [](const wxColour& a, const wxColour& b, double t) -> wxColour {
+  auto blend = [](const wxColour &a, const wxColour &b, double t) -> wxColour {
     t = std::clamp(t, 0.0, 1.0);
     auto lerp = [t](unsigned char x, unsigned char y) -> unsigned char {
       return (unsigned char)std::lround((1.0 - t) * (double)x + t * (double)y);
@@ -2099,4 +2099,3 @@ void SetListCtrlStale(wxListCtrl* lc, bool stale) {
   lc->Refresh();
   lc->Thaw();
 }
-

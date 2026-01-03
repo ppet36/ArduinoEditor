@@ -204,5 +204,4 @@ std::string ExtractBodySnippetFromText(const std::string &fileText, unsigned fro
 
 void DedupArgs(std::vector<std::string> &argv);
 
-void SetListCtrlStale(wxListCtrl* lc, bool stale);
-
+void SetListCtrlStale(wxListCtrl *lc, bool stale);
