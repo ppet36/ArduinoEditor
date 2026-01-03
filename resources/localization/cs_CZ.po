@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ArduinoEditor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-03 10:35+0100\n"
+"POT-Creation-Date: 2026-01-03 11:35+0100\n"
 "PO-Revision-Date: 2025-12-09 22:52:00+0100\n"
 "Last-Translator: Pavel Petržela <r17c@seznam.cz>\n"
 "Language-Team: -\n"
@@ -1228,7 +1228,7 @@ msgstr "<nahrávají se programátory...>"
 msgid "<default>"
 msgstr "<výchozí>"
 
-#: ../src/ard_cc.cpp:2853
+#: ../src/ard_cc.cpp:2852
 msgid "Declaration:"
 msgstr "Deklarace:"
 
@@ -1740,15 +1740,15 @@ msgstr "Sloupec"
 msgid "Message"
 msgstr "Zpráva"
 
-#: ../src/ard_diagview.cpp:414
+#: ../src/ard_diagview.cpp:413
 msgid "Copy problem"
 msgstr "Kopírovat problém"
 
-#: ../src/ard_diagview.cpp:415
+#: ../src/ard_diagview.cpp:414
 msgid "Copy all problems"
 msgstr "Zkopírovat všechny problémy"
 
-#: ../src/ard_diagview.cpp:423
+#: ../src/ard_diagview.cpp:422
 msgid "Solve error with AI"
 msgstr "Vyřešit chybu pomocí AI"
 

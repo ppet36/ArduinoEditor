@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-03 10:40+0100\n"
+"POT-Creation-Date: 2026-01-03 11:35+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -884,7 +884,7 @@ msgstr ""
 msgid "<default>"
 msgstr ""
 
-#: ../src/ard_cc.cpp:2853
+#: ../src/ard_cc.cpp:2852
 msgid "Declaration:"
 msgstr ""
 
@@ -1330,15 +1330,15 @@ msgstr ""
 msgid "Message"
 msgstr ""
 
-#: ../src/ard_diagview.cpp:414
+#: ../src/ard_diagview.cpp:413
 msgid "Copy problem"
 msgstr ""
 
-#: ../src/ard_diagview.cpp:415
+#: ../src/ard_diagview.cpp:414
 msgid "Copy all problems"
 msgstr ""
 
-#: ../src/ard_diagview.cpp:423
+#: ../src/ard_diagview.cpp:422
 msgid "Solve error with AI"
 msgstr ""
 

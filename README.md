@@ -10,7 +10,11 @@
 
 *Fast code completion. Smart navigation. No nonsense.*
 
-![Arduino Editor – main window](doc/main.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/main-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/main-light.png">
+  <img alt="Arduino Editor – main window" src="docs/main-light.png">
+</picture>
 
 Arduino Editor is a modern development environment for Arduino projects built
 on the Clang toolchain. It provides fast and precise code completion, smart
@@ -43,11 +47,19 @@ control, transparency, or performance.
 - **AI-assisted development**  
   Patch-based edits with diff preview and explicit confirmation before applying
   changes.
-  ![Arduino Editor – AI diff view](doc/diff.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/diff-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/diff-light.png">
+  <img alt="Arduino Editor – AI diff view" src="docs/diff-light.png">
+</picture>
 
 - **Configurable editor**  
   Fonts, colors, formatting, and editor behavior can be customized.
-  ![Arduino Editor – AI settings view](doc/settings.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/settings-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/settings-light.png">
+  <img alt="Arduino Editor – settings view" src="docs/settings-light.png">
+</picture>
 
 - **Arduino CLI integration**  
   Building, uploading, and toolchain management are handled via `arduino-cli`.
