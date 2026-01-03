@@ -2964,7 +2964,7 @@ void ArduinoEditorFrame::PushNavLocation(const std::string &file, int line, int 
   if (m_navBackStack.size() >= 100) {
     m_navBackStack.erase(m_navBackStack.begin());
   }
-  m_navBackStack.push_back(NavLocation{normFile, line, column});
+  m_navBackStack.push_back(JumpTarget{normFile, line, column});
 }
 
 std::string ArduinoEditorFrame::NormalizeFilename(const std::string &filename) const {
@@ -3096,7 +3096,7 @@ ArduinoEditor *ArduinoEditorFrame::CreateEditorForFile(const std::string &filePa
 
 void ArduinoEditorFrame::GoBackInNavigation() {
   while (!m_navBackStack.empty()) {
-    NavLocation loc = m_navBackStack.back();
+    JumpTarget loc = m_navBackStack.back();
     m_navBackStack.pop_back();
 
     ArduinoEditor *editor = FindEditorWithFile(loc.file, /*allowCreate=*/true);
@@ -3109,7 +3109,7 @@ void ArduinoEditorFrame::GoBackInNavigation() {
               : nullptr;
 
       if (curEd) {
-        NavLocation cur;
+        JumpTarget cur;
         cur.file = curEd->GetFilePath();
         curEd->GetCurrentCursor(cur.line, cur.column);
         m_navForwardStack.push_back(cur);
@@ -3123,7 +3123,7 @@ void ArduinoEditorFrame::GoBackInNavigation() {
 
 void ArduinoEditorFrame::GoForwardInNavigation() {
   while (!m_navForwardStack.empty()) {
-    NavLocation loc = m_navForwardStack.back();
+    JumpTarget loc = m_navForwardStack.back();
     m_navForwardStack.pop_back();
 
     ArduinoEditor *editor = FindEditorWithFile(loc.file, /*allowCreate=*/true);
@@ -3136,7 +3136,7 @@ void ArduinoEditorFrame::GoForwardInNavigation() {
               : nullptr;
 
       if (curEd) {
-        NavLocation cur;
+        JumpTarget cur;
         cur.file = curEd->GetFilePath();
         curEd->GetCurrentCursor(cur.line, cur.column);
 

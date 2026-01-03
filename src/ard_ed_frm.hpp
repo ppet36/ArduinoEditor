@@ -41,12 +41,6 @@
 #include <wx/treectrl.h>
 #include <wx/wx.h>
 
-struct NavLocation {
-  std::string file;
-  int line;
-  int column;
-};
-
 enum CurrentAction {
   none,
   build,
@@ -134,8 +128,8 @@ private:
   std::vector<ArduinoEditor *> GetAllEditors(bool onlyEditable = false);
 
   // Navigations stacks
-  std::vector<NavLocation> m_navBackStack;
-  std::vector<NavLocation> m_navForwardStack;
+  std::vector<JumpTarget> m_navBackStack;
+  std::vector<JumpTarget> m_navForwardStack;
 
   // history of FQBN
   std::vector<std::string> m_boardHistory;
