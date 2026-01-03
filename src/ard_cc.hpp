@@ -55,6 +55,7 @@ struct ArduinoParseError {
   CXDiagnosticSeverity severity;
   std::vector<ArduinoParseError> childs; // clang notes for main error/warning
 
+  const char* SeverityString() const;
   std::string ToString() const;
 };
 

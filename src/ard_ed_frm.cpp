@@ -1405,7 +1405,7 @@ void ArduinoEditorFrame::FinalizeCurrentAction(bool successful) {
 
             if (!cliErrors.empty()) {
               if (!m_cliDiagDialog) {
-                m_cliDiagDialog = new ArduinoCliDiagnosticsDialog(this, config);
+                m_cliDiagDialog = new ArduinoCliDiagnosticsDialog(this, config, wxID_ANY, _("arduino-cli build diagnostics"));
                 m_cliDiagDialog->SetSketchRoot(arduinoCli->GetSketchPath());
               }
 
@@ -1771,6 +1771,13 @@ void ArduinoEditorFrame::OnDiagnosticsUpdated(wxThreadEvent &WXUNUSED(evt)) {
   CheckMissingHeadersInDiagnostics(errors);
 }
 
+bool ArduinoEditorFrame::GetDiagnosticsAt(const std::string &filename, unsigned row, unsigned column, ArduinoParseError &outDiagnostics) {
+  if (m_diagView) {
+    return m_diagView->GetDiagnosticsAt(filename, row, column, outDiagnostics);
+  }
+  return false;
+}
+
 void ArduinoEditorFrame::CheckMissingHeadersInDiagnostics(const std::vector<ArduinoParseError> &errors) {
   std::vector<std::string> missingHeaders;
 
@@ -1810,25 +1817,16 @@ void ArduinoEditorFrame::CollectEditorSources(std::vector<SketchFileBuffer> &fil
     seenFiles.insert(buf.filename);
   }
 
-  fs::path rootPath = fs::u8path(arduinoCli->GetSketchPath());
   std::error_code ec;
+  fs::path rootPath = fs::u8path(arduinoCli->GetSketchPath());
 
   if (!fs::exists(rootPath, ec) || !fs::is_directory(rootPath, ec)) {
     return; // Nothing to traverse
   }
 
-  // Helper: convert path to UTF-8 string
-  auto pathToUtf8 = [](const fs::path &p) -> std::string {
-#if defined(__cpp_lib_filesystem) && __cpp_lib_filesystem >= 201703L
-    return p.u8string();
-#else
-    return p.string();
-#endif
-  };
-
   // Helper: attempt to add a file if it matches Arduino sketch rules
   auto tryAddFile = [&](const fs::path &p) {
-    std::string pathUtf8 = pathToUtf8(p);
+    std::string pathUtf8 = p.u8string();
 
     bool isHeader = isHeaderFile(pathUtf8);
     bool isSource = isSourceFile(pathUtf8);
@@ -3011,9 +3009,10 @@ ArduinoEditor *ArduinoEditorFrame::FindEditorWithFile(const std::string &filenam
     return nullptr;
   }
 
-  fs::path p = fs::u8path(targetFile);
+  std::error_code ec;
+  const fs::path p = fs::u8path(targetFile);
 
-  if (fs::exists(p) && fs::is_regular_file(p)) {
+  if (fs::exists(p, ec) && !ec && fs::is_regular_file(p)) {
     std::string basename = RelativizeFilename(targetFile);
 
     auto *newEdit = new ArduinoEditor(m_notebook,
@@ -3038,7 +3037,15 @@ void ArduinoEditorFrame::HandleGoToLocation(const JumpTarget &tgt) {
   unsigned line = tgt.line;
   unsigned column = tgt.column;
 
-  APP_DEBUG_LOG("HandleGoToLocation(file=%s, line=%u, column=%u)",
+  std::error_code ec;
+  const fs::path p = fs::u8path(NormalizeFilename(tgt.file));
+
+  if (!fs::exists(p, ec) || ec || !fs::is_regular_file(p)) {
+    APP_DEBUG_LOG("FRM: HandleGoToLocation: file does not exist (or not accessible): %s", tgt.file.c_str());
+    return;
+  }
+
+  APP_DEBUG_LOG("FRM: HandleGoToLocation(file=%s, line=%u, column=%u)",
                 tgt.file.c_str(), line, column);
 
   CreateEditorForFile(tgt.file, line, column);
@@ -3079,6 +3086,7 @@ ArduinoEditor *ArduinoEditorFrame::CreateEditorForFile(const std::string &filePa
 
   newEdit->ApplySettings(m_clangSettings);
   newEdit->ApplySettings(m_aiSettings);
+
   m_notebook->AddPage(newEdit, wxString::FromUTF8(tabTitle), true, IMLI_NOTEBOOK_EMPTY);
   m_notebook->SetPageToolTip(m_notebook->GetPageCount() - 1, wxString::FromUTF8(filePathNorm));
   newEdit->SetReadOnly(!projectFile);

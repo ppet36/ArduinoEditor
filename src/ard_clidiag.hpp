@@ -35,7 +35,7 @@ public:
   ArduinoCliDiagnosticsDialog(wxWindow *parent,
                               wxConfigBase *config,
                               wxWindowID id = wxID_ANY,
-                              const wxString &title = _("arduino-cli build diagnostics"),
+                              const wxString &title = wxEmptyString,
                               const wxPoint &pos = wxDefaultPosition,
                               const wxSize &size = wxSize(900, 520),
                               long style = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);

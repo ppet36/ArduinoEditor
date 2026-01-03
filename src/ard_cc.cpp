@@ -891,24 +891,25 @@ static std::string InjectParameterNamesIntoSignature(const std::string &sig, con
 
 // -------------------------------------------------------------------------------
 
-std::string ArduinoParseError::ToString() const {
-  auto sevLabel = [](CXDiagnosticSeverity s) -> const char * {
-    switch (s) {
-      case CXDiagnostic_Fatal:
-        return "Fatal";
-      case CXDiagnostic_Error:
-        return "Error";
-      case CXDiagnostic_Warning:
-        return "Warning";
-      case CXDiagnostic_Note:
-        return "Note";
-      case CXDiagnostic_Ignored:
-        return "Ignored";
-      default:
-        return "";
-    }
-  };
+const char* ArduinoParseError::SeverityString() const {
+  switch (severity) {
+    case CXDiagnostic_Fatal:
+      return "Fatal";
+    case CXDiagnostic_Error:
+      return "Error";
+    case CXDiagnostic_Warning:
+      return "Warning";
+    case CXDiagnostic_Note:
+      return "Note";
+    case CXDiagnostic_Ignored:
+      return "Ignored";
+    default:
+      return "";
+  }
+}
 
+
+std::string ArduinoParseError::ToString() const {
   std::ostringstream oss;
 
   auto dump = [&](auto &&self, const ArduinoParseError &e, int indent) -> void {
@@ -916,7 +917,7 @@ std::string ArduinoParseError::ToString() const {
       oss << std::string((size_t)indent, ' ');
     }
 
-    const char *lbl = sevLabel(e.severity);
+    const char *lbl = SeverityString();
     if (lbl && *lbl) {
       oss << lbl << ": ";
     }

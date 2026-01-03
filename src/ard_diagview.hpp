@@ -54,6 +54,8 @@ public:
 
   void ShowMessage(const wxString &message);
 
+  bool GetDiagnosticsAt(const std::string& filename, unsigned row, unsigned col, ArduinoParseError &outDiagnostics);
+
   void ApplySettings(const EditorSettings &settings);
   void ApplySettings(const AiSettings &settings);
 

@@ -2483,8 +2483,24 @@ void ArduinoEditor::OnDwellStart(wxStyledTextEvent &event) {
                 info.briefComment.c_str(),
                 info.fullComment.c_str());
 
-  wxString wxTip = wxString::FromUTF8(info.ToHoverString());
-  wxTip.Trim(true).Trim(false);
+  std::string hoverInfo;
+
+  if (auto *frame = GetOwnerFrame()) {
+    ArduinoParseError diag;
+    if (frame->GetDiagnosticsAt(m_filename, line, /*column=*/0, diag)) {
+      std::string diagPart = std::string(diag.SeverityString()) + ":" + diag.message;
+      hoverInfo += diagPart;
+      hoverInfo += "\n";     
+      for (unsigned i = 0; i < diagPart.size(); i++) {
+        hoverInfo += "_";
+      }
+      hoverInfo += "\n\n";     
+    }
+  }
+
+  hoverInfo += info.ToHoverString();
+
+  wxString wxTip = TrimCopy(wxString::FromUTF8(hoverInfo));
   m_editor->CallTipShow(pos, wxTip);
 }
 
