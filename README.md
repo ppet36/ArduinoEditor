@@ -11,9 +11,9 @@
 *Fast code completion. Smart navigation. No nonsense.*
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/main-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="docs/main-light.png">
-  <img alt="Arduino Editor – main window" src="docs/main-light.png">
+  <source media="(prefers-color-scheme: dark)" srcset="doc/main-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="doc/main-light.png">
+  <img alt="Arduino Editor – main window" src="doc/main-light.png">
 </picture>
 
 Arduino Editor is a modern development environment for Arduino projects built
@@ -47,18 +47,20 @@ control, transparency, or performance.
 - **AI-assisted development**  
   Patch-based edits with diff preview and explicit confirmation before applying
   changes.
+
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/diff-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="docs/diff-light.png">
-  <img alt="Arduino Editor – AI diff view" src="docs/diff-light.png">
+  <source media="(prefers-color-scheme: dark)" srcset="doc/diff-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="doc/diff-light.png">
+  <img alt="Arduino Editor – AI diff view" src="doc/diff-light.png">
 </picture>
 
 - **Configurable editor**  
   Fonts, colors, formatting, and editor behavior can be customized.
+
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/settings-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="docs/settings-light.png">
-  <img alt="Arduino Editor – settings view" src="docs/settings-light.png">
+  <source media="(prefers-color-scheme: dark)" srcset="doc/settings-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="doc/settings-light.png">
+  <img alt="Arduino Editor – settings view" src="doc/settings-light.png">
 </picture>
 
 - **Arduino CLI integration**  
