@@ -22,7 +22,6 @@
 #include <wx/progdlg.h>
 #include <wx/wx.h>
 
-
 class ArduinoCliInstaller {
 private:
   wxConfigBase *m_config;

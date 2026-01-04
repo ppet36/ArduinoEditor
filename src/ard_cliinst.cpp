@@ -36,14 +36,14 @@
 
 #include "ard_cliinst.hpp"
 #include "utils.hpp"
+#include <atomic>
 #include <memory>
+#include <thread>
 #include <wx/dirdlg.h>
 #include <wx/filedlg.h>
 #include <wx/regex.h>
 #include <wx/richmsgdlg.h>
 #include <wx/stdpaths.h>
-#include <atomic>
-#include <thread>
 #include <wx/utils.h>
 
 #define MIN_CLI_VERSION "1.3.0"
@@ -293,7 +293,6 @@ bool ArduinoCliInstaller::EnsureBaseToolchainInstalled(const wxString &cliPath) 
 
   return InstallBaseToolchain(cliPath, &prog);
 }
-
 
 ArduinoCli *ArduinoCliInstaller::GetCli(const std::string &sketchPath) {
   // Try to get the arduino-cli path from the config

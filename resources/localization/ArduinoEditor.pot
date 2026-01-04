@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-04 14:11+0000\n"
+"POT-Creation-Date: 2026-01-04 15:41+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,45 +17,798 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../src/ard_borsel.cpp:40
-msgid "Select board"
+#: ../src/ai_client.cpp:74
+msgid ""
+"Extra JSON request parameters must be a JSON object (e.g. {\"temperature"
+"\":0.2})."
 msgstr ""
 
-#: ../src/ard_borsel.cpp:163 ../src/ard_borsel.cpp:445
-#: ../src/ard_libman.cpp:177 ../src/ard_finsymdlg.cpp:46
-msgid "Name"
+#: ../src/ai_client.cpp:82
+#, c-format
+msgid "Invalid extra request JSON: %s"
 msgstr ""
 
-#: ../src/ard_borsel.cpp:169 ../src/ard_borsel.cpp:450
-msgid "Board"
+#: ../src/ai_client.cpp:121
+msgid "Failed to initialize HTTP client (cURL)."
 msgstr ""
 
-#: ../src/ard_borsel.cpp:183
-msgid "Filter boards..."
+#: ../src/ai_client.cpp:227
+msgid "HTTP request failed: "
 msgstr ""
 
-#: ../src/ard_borsel.cpp:198
-msgid "Programmer:"
+#: ../src/ai_client.cpp:255
+#, c-format
+msgid "HTTP error %ld from AI endpoint: %s"
 msgstr ""
 
-#: ../src/ard_borsel.cpp:222
-msgid "Maintainer:"
+#: ../src/ai_client.cpp:264
+#, c-format
+msgid ""
+"HTTP error %ld from AI endpoint. Response body:\n"
+"%s"
 msgstr ""
 
-#: ../src/ard_borsel.cpp:225
-msgid "Website:"
+#: ../src/ai_client.cpp:336
+msgid "No API key found in the system secret store or OPENAI_API_KEY."
 msgstr ""
 
-#: ../src/ard_borsel.cpp:228
-msgid "Email:"
+#: ../src/ai_client.cpp:344 ../src/ai_client.cpp:364 ../src/ai_client.cpp:438
+msgid "AI is not enabled or not configured."
 msgstr ""
 
-#: ../src/ard_borsel.cpp:562
-msgid "<loading programmers...>"
+#: ../src/ai_client.cpp:415
+msgid "Could not extract assistant text."
 msgstr ""
 
-#: ../src/ard_borsel.cpp:596
-msgid "<default>"
+#: ../src/ai_client.cpp:490
+msgid "HTTP request failed."
+msgstr ""
+
+#: ../src/ai_client.cpp:508
+msgid "Could not extract assistant text from AI response."
+msgstr ""
+
+#: ../src/ai_client.cpp:735
+msgid ""
+"Could not extract assistant text from AI response.\n"
+"Raw JSON (truncated):\n"
+msgstr ""
+
+#: ../src/ai_client.cpp:816
+msgid ""
+"Could not extract assistant text from AI response.\n"
+"Raw response (truncated):\n"
+msgstr ""
+
+#: ../src/ai_client.cpp:821
+#, c-format
+msgid "Failed to parse AI response: %s"
+msgstr ""
+
+#: ../src/ard_aboutdlg.cpp:33
+#, c-format
+msgid ""
+"<html>\n"
+"<body bgcolor=\"%s\">\n"
+"   <a name=\"top\"></a>\n"
+"   <h2>Arduino Editor %s</h2>\n"
+"\n"
+"   <p>\n"
+"     <b>Modern Arduino IDE powered by Clang</b>\n"
+"     <p>\n"
+"       <i>Fast code completion. Smart navigation. No nonsense.</i>\n"
+"     </p>\n"
+"   </p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <p>\n"
+"     Arduino Editor is a modern development environment for Arduino "
+"projects\n"
+"     built on the Clang toolchain. It provides fast and precise code "
+"completion,\n"
+"     smart navigation tools, real-time error highlighting, and full support "
+"for\n"
+"     multi-file Arduino sketches.\n"
+"   </p>\n"
+"\n"
+"   <p>\n"
+"     The goal of the project is to offer a stable, powerful and professional "
+"IDE\n"
+"     as a drop-in alternative for the official Arduino IDE.\n"
+"   </p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <p>\n"
+"     <b>Project homepage and source code:&nbsp;</b><a href=\"https://github."
+"com/ppet36/ArduinoEditor\">https://github.com/ppet36/ArduinoEditor</a>\n"
+"   </p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"\n"
+"   <h3>Key Features</h3>\n"
+"   <ul>\n"
+"     <li><a href=\"#async\">Asynchronous processing</a> - the UI stays "
+"responsive even on large projects</li>\n"
+"     <li><a href=\"#navigation\">Smart navigation</a> - go to definition, "
+"follow symbol, hover information</li>\n"
+"     <li><a href=\"#clang\">Clang-based engine</a> for parsing, symbol "
+"resolution and code completion</li>\n"
+"     <li><a href=\"#project\">Project-wide support</a> for structured "
+"sketches and multiple .ino/.cpp/.hpp files</li>\n"
+"     <li><a href=\"#refactoring\">Advanced refactoring</a> - safe, semantic "
+"code transformations</li>\n"
+"     <li><a href=\"#ai\">AI-assisted development</a> - patch-based edits "
+"with diff preview and user control</li>\n"
+"     <li><a href=\"#editor\">Configurable editor</a> - colors, fonts and "
+"behavior can be customized</li>\n"
+"     <li><a href=\"#cli\">Arduino CLI integration</a> for building and "
+"uploading sketches</li>\n"
+"   </ul>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <a name=\"async\"></a>\n"
+"   <h3>Asynchronous Processing</h3>\n"
+"   <p>\n"
+"     Heavy operations such as parsing, indexing, compilation and AI requests "
+"are executed\n"
+"     asynchronously to keep the user interface responsive.\n"
+"   </p>\n"
+"   <p><a href=\"#top\">Back to top</a></p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <a name=\"navigation\"></a>\n"
+"   <h3>Smart Navigation</h3>\n"
+"   <ul>\n"
+"     <li>Go to definition / declaration</li>\n"
+"     <li>Navigate between symbol references across files</li>\n"
+"     <li>Navigation history with backward and forward movement</li>\n"
+"     <li>Hover information powered by semantic analysis</li>\n"
+"   </ul>\n"
+"   <p><a href=\"#top\">Back to top</a></p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <a name=\"clang\"></a>\n"
+"   <h3>Clang-based Engine</h3>\n"
+"   <p>\n"
+"     The editor uses Clang/LLVM to understand code semantically (AST-based), "
+"enabling\n"
+"     precise completion, symbol resolution and on-the-fly diagnostics while "
+"editing.\n"
+"   </p>\n"
+"   <p><a href=\"#top\">Back to top</a></p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <a name=\"project\"></a>\n"
+"   <h3>Project-wide Multi-file Support</h3>\n"
+"   <p>\n"
+"     Full support for structured sketches and multiple files (.ino/.cpp/."
+"hpp), including\n"
+"     project-wide indexing, navigation and explicit support for structured "
+"Arduino projects.\n"
+"   </p>\n"
+"   <p><a href=\"#top\">Back to top</a></p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <a name=\"refactoring\"></a>\n"
+"   <h3>Advanced Refactoring</h3>\n"
+"   <p>\n"
+"     Clang-powered refactoring tools help you change code safely and "
+"predictably.\n"
+"     Transformations are semantic (AST-based), not simple text "
+"replacements.\n"
+"   </p>\n"
+"   <ul>\n"
+"     <li>Rename symbol across the project with full semantic awareness</li>\n"
+"     <li>Extract function from selected code blocks</li>\n"
+"     <li>Inline variable and introduce variable refactorings</li>\n"
+"      <li>Create implementation from declaration and declaration from "
+"implementation</li>\n"
+"   </ul>\n"
+"   <p><a href=\"#top\">Back to top</a></p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <a name=\"ai\"></a>\n"
+"   <h3>AI-Assisted Development</h3>\n"
+"   <p>\n"
+"     Arduino Editor includes a deeply integrated AI assistant designed to "
+"work directly\n"
+"     with your project structure and source code.\n"
+"   </p>\n"
+"   <ul>\n"
+"     <li>Context-aware code modifications using structured patches</li>\n"
+"     <li>Multi-file awareness for complex sketches</li>\n"
+"     <li>Explicit diff previews before applying any change</li>\n"
+"     <li>AI-assisted error analysis and problem solving</li>\n"
+"     <li>Session-based conversations with persistent history</li>\n"
+"   </ul>\n"
+"   <p>\n"
+"     The AI never modifies code blindly: every change is explicit, "
+"reviewable and\n"
+"     user-approved.\n"
+"   </p>\n"
+"   <p><a href=\"#top\">Back to top</a></p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <a name=\"editor\"></a>\n"
+"   <h3>Configurable Editor</h3>\n"
+"   <p>\n"
+"     Customize colors, fonts and behavior, with support for system light and "
+"dark themes.\n"
+"   </p>\n"
+"   <p><a href=\"#top\">Back to top</a></p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <a name=\"cli\"></a>\n"
+"   <h3>Arduino CLI Integration</h3>\n"
+"   <p>\n"
+"       Deep integration with arduino-cli for building, uploading, library "
+"management,\n"
+"       board management and compiler toolchain configuration.\n"
+"   </p>\n"
+"   <p><a href=\"#top\">Back to top</a></p>\n"
+"\n"
+"   <hr>\n"
+"\n"
+"   <p>\n"
+"     <b>Author:</b> Pavel Petrzela (ppet36)<br/>\n"
+"     <b>Powered by:</b> wxWidgets, Clang/LLVM, Arduino CLI\n"
+"   </p>\n"
+"</body>\n"
+"</html>\n"
+msgstr ""
+
+#: ../src/ard_aboutdlg.cpp:203
+msgid ""
+"  <h3>Arduino Editor License (GPLv3)</h3>\n"
+"  <p>\n"
+"    Arduino Editor is free software: you can redistribute it and/or modify "
+"it\n"
+"    under the terms of the GNU General Public License version 3 (GPLv3).\n"
+"  </p>\n"
+"  <p>\n"
+"    For the full license text see:<br>\n"
+"    <a href=\"https://www.gnu.org/licenses/gpl-3.0.html#license-text\">\n"
+"      https://www.gnu.org/licenses/gpl-3.0.html\n"
+"    </a>\n"
+"  </p>\n"
+msgstr ""
+
+#: ../src/ard_aboutdlg.cpp:216
+msgid ""
+"  <hr>\n"
+"  <h3>wxWidgets License</h3>\n"
+"  <p>\n"
+"    wxWidgets is distributed under the wxWidgets License.\n"
+"  </p>\n"
+"  <p>\n"
+"    For details see:<br>\n"
+"    <a href=\"https://www.wxwidgets.org/about/licence/\">\n"
+"      https://www.wxwidgets.org/about/licence/\n"
+"    </a>\n"
+"  </p>\n"
+msgstr ""
+
+#: ../src/ard_aboutdlg.cpp:229
+msgid ""
+"  <hr>\n"
+"  <h3>Clang/LLVM License</h3>\n"
+"  <p>\n"
+"    Clang and LLVM are distributed under the Apache License v2.0\n"
+"    with LLVM exceptions.\n"
+"  </p>\n"
+"  <p>\n"
+"    For details see:<br>\n"
+"    <a href=\"https://llvm.org/docs/DeveloperPolicy.html#license\">\n"
+"      https://llvm.org/docs/DeveloperPolicy.html#license\n"
+"    </a>\n"
+"  </p>\n"
+msgstr ""
+
+#: ../src/ard_aboutdlg.cpp:243
+msgid ""
+"  <hr>\n"
+"  <h3>cURL / libcurl License</h3>\n"
+"  <p>\n"
+"    This application uses libcurl (cURL) for network communication.\n"
+"  </p>\n"
+"  <p>\n"
+"    curl and libcurl are distributed under a permissive MIT/X derivative "
+"license.\n"
+"  </p>\n"
+"  <p>\n"
+"    For details see:<br>\n"
+"    <a href=\"https://curl.se/docs/copyright.html\">\n"
+"      https://curl.se/docs/copyright.html\n"
+"    </a>\n"
+"  </p>\n"
+msgstr ""
+
+#: ../src/ard_aboutdlg.cpp:259
+msgid ""
+"  <hr>\n"
+"  <h3>maddy Markdown Parser (MIT)</h3>\n"
+"  <p>\n"
+"    This application includes maddy, a C++ Markdown to HTML header-only "
+"parser library,\n"
+"    distributed under the MIT License.\n"
+"  </p>\n"
+"  <p>\n"
+"    Project home:<br>\n"
+"    <a href=\"https://github.com/progsource/maddy\">\n"
+"      https://github.com/progsource/maddy\n"
+"    </a>\n"
+"  </p>\n"
+"  <p>\n"
+"    License text:<br>\n"
+"    <a href=\"https://github.com/progsource/maddy/blob/master/LICENSE\">\n"
+"      https://github.com/progsource/maddy/blob/master/LICENSE\n"
+"    </a>\n"
+"  </p>\n"
+msgstr ""
+
+#: ../src/ard_aboutdlg.cpp:279
+msgid ""
+"  <hr>\n"
+"  <h3>arduino-cli License (GPLv3)</h3>\n"
+"  <p>\n"
+"    This product bundles the <strong>arduino-cli</strong> executable in "
+"binary form.\n"
+"    arduino-cli is distributed under the terms of the GNU General Public "
+"License\n"
+"    version 3 (GPLv3).\n"
+"  </p>\n"
+"  <p>\n"
+"    For the full license text see:<br>\n"
+"    <a href=\"https://github.com/arduino/arduino-cli/blob/master/LICENSE.txt"
+"\">\n"
+"      https://github.com/arduino/arduino-cli/blob/master/LICENSE.txt\n"
+"    </a>\n"
+"  </p>\n"
+msgstr ""
+
+#: ../src/ard_aboutdlg.cpp:294
+msgid ""
+"  <hr>\n"
+"  <h3>nlohmann/json (MIT)</h3>\n"
+"  <p>\n"
+"    This application includes nlohmann/json, a single-header JSON library "
+"for Modern C++,\n"
+"    distributed under the MIT License.\n"
+"  </p>\n"
+"  <p>\n"
+"    Project home:<br>\n"
+"    <a href=\"https://github.com/nlohmann/json\">\n"
+"      https://github.com/nlohmann/json\n"
+"    </a>\n"
+"  </p>\n"
+"  <p>\n"
+"    License text:<br>\n"
+"    <a href=\"https://github.com/nlohmann/json/blob/develop/LICENSE.MIT\">\n"
+"      https://github.com/nlohmann/json/blob/develop/LICENSE.MIT\n"
+"    </a>\n"
+"  </p>\n"
+msgstr ""
+
+#: ../src/ard_aboutdlg.cpp:329 ../src/ard_ed_frm.cpp:2699
+msgid "About Arduino Editor"
+msgstr ""
+
+#: ../src/ard_aboutdlg.cpp:360
+msgid "About"
+msgstr ""
+
+#: ../src/ard_aboutdlg.cpp:381
+msgid "Licenses"
+msgstr ""
+
+#: ../src/ard_ai.cpp:658 ../src/ard_aipnl.cpp:541
+#, c-format
+msgid "%s (in: %d, out: %d, tot: %d) tokens"
+msgstr ""
+
+#: ../src/ard_ai.cpp:712
+msgid "Another AI action is running."
+msgstr ""
+
+#: ../src/ard_ai.cpp:713 ../src/ard_ai.cpp:720 ../src/ard_ai.cpp:2844
+#: ../src/ard_ai.cpp:3154 ../src/ard_ai.cpp:3177 ../src/ard_ai.cpp:3473
+#: ../src/ard_ai.cpp:3542
+msgid "Arduino Editor AI"
+msgstr ""
+
+#: ../src/ard_ai.cpp:719
+msgid "AI is disabled. Enable it in Settings -> AI."
+msgstr ""
+
+#: ../src/ard_ai.cpp:754
+msgid "Please select some code you want to explain."
+msgstr ""
+
+#: ../src/ard_ai.cpp:755 ../src/ard_ai.cpp:767 ../src/ard_ai.cpp:789
+#: ../src/ard_ai.cpp:3497
+msgid "AI explain selection"
+msgstr ""
+
+#: ../src/ard_ai.cpp:766
+msgid "The selected text is empty or whitespace only."
+msgstr ""
+
+#: ../src/ard_ai.cpp:774
+msgid ""
+"You are an expert Arduino/C++ assistant integrated into an IDE. Explain the "
+"selected code snippet in a clear and concise way. Focus on what it does, "
+"important details, side-effects and possible pitfalls. Answer in English."
+msgstr ""
+
+#: ../src/ard_ai.cpp:780
+msgid ""
+"Please explain the following C++/Arduino code snippet:\n"
+"\n"
+"```cpp\n"
+msgstr ""
+
+#: ../src/ard_ai.cpp:782 ../src/ard_ai.cpp:856
+msgid ""
+"\n"
+"```"
+msgstr ""
+
+#: ../src/ard_ai.cpp:788 ../src/ard_ai.cpp:1177 ../src/ard_ai.cpp:1290
+#: ../src/ard_ai.cpp:1411 ../src/ard_ai.cpp:1485 ../src/ard_ai.cpp:1772
+msgid "Failed to start AI request."
+msgstr ""
+
+#: ../src/ard_ai.cpp:839
+msgid ""
+"You are an expert C++/Arduino assistant integrated into an IDE.\n"
+"You will receive:\n"
+"1) A single C++ declaration of the symbol that should be documented.\n"
+"2) Additional surrounding code for context.\n"
+"You MUST generate a concise Doxygen-style documentation comment for that "
+"symbol only.\n"
+"Rules:\n"
+"- Output ONLY a C++ documentation comment block starting with \"/**\" and "
+"ending with \"*/\".\n"
+"- Do not include the declaration or definition itself.\n"
+"- Use clear English sentences.\n"
+"- For functions/methods, include @param and @return tags where appropriate.\n"
+"- Do not add any text outside the comment block."
+msgstr ""
+
+#: ../src/ard_ai.cpp:853
+#, c-format
+msgid ""
+"Generate a documentation comment for the symbol %s in the following C++/"
+"Arduino code:\n"
+"\n"
+"```cpp\n"
+msgstr ""
+
+#: ../src/ard_ai.cpp:887
+msgid "This symbol is already documented."
+msgstr ""
+
+#: ../src/ard_ai.cpp:887 ../src/ard_ai.cpp:896 ../src/ard_ai.cpp:906
+#: ../src/ard_ai.cpp:968 ../src/ard_ai.cpp:1050 ../src/ard_ai.cpp:1106
+#: ../src/ard_ai.cpp:1167 ../src/ard_ai.cpp:1178 ../src/ard_ai.cpp:1206
+#: ../src/ard_ai.cpp:1217 ../src/ard_ai.cpp:1226 ../src/ard_ai.cpp:1281
+#: ../src/ard_ai.cpp:1291 ../src/ard_ai.cpp:3442 ../src/ard_ai.cpp:3503
+#: ../src/ard_ai.cpp:3529
+msgid "AI generate documentation"
+msgstr ""
+
+#: ../src/ard_ai.cpp:895 ../src/ard_ai.cpp:1205 ../src/ard_ai.cpp:1330
+#: ../src/ard_refactor.cpp:656 ../src/ard_refactor.cpp:915
+#: ../src/ard_refactor.cpp:1127
+msgid "No symbol under the cursor."
+msgstr ""
+
+#: ../src/ard_ai.cpp:905
+msgid "No suitable type or context for documentation at the cursor."
+msgstr ""
+
+#: ../src/ard_ai.cpp:967
+msgid "No documentation comments to insert."
+msgstr ""
+
+#: ../src/ard_ai.cpp:1046
+#, c-format
+msgid ""
+"Documentation was generated, but no suitable insertion points were found "
+"(%zu symbol(s))."
+msgstr ""
+
+#: ../src/ard_ai.cpp:1103
+#, c-format
+msgid "Documentation generated for %zu symbol(s)."
+msgstr ""
+
+#: ../src/ard_ai.cpp:1166
+msgid "No functions or methods found that need documentation."
+msgstr ""
+
+#: ../src/ard_ai.cpp:1216
+msgid "Cursor is not on a class or struct declaration."
+msgstr ""
+
+#: ../src/ard_ai.cpp:1225
+msgid "Class body range is not available."
+msgstr ""
+
+#: ../src/ard_ai.cpp:1280
+msgid "No methods found in the current class that need documentation."
+msgstr ""
+
+#: ../src/ard_ai.cpp:1331 ../src/ard_ai.cpp:1347 ../src/ard_ai.cpp:1356
+#: ../src/ard_ai.cpp:1412 ../src/ard_ai.cpp:3535
+msgid "AI optimize function or method"
+msgstr ""
+
+#: ../src/ard_ai.cpp:1346
+msgid "Cursor is not on a function or method declaration."
+msgstr ""
+
+#: ../src/ard_ai.cpp:1355
+msgid "Function or method body range is not available."
+msgstr ""
+
+#: ../src/ard_ai.cpp:1486 ../src/ard_ai.cpp:3509
+msgid "AI solve project errors"
+msgstr ""
+
+#: ../src/ard_ai.cpp:1549
+msgid "please "
+msgstr ""
+
+#: ../src/ard_ai.cpp:1551
+msgid "pls "
+msgstr ""
+
+#: ../src/ard_ai.cpp:1773 ../src/ard_ai.cpp:3521
+msgid "AI interactive chat"
+msgstr ""
+
+#: ../src/ard_ai.cpp:1916
+msgid ""
+"(Loaded previous session context.)\n"
+"\n"
+msgstr ""
+
+#: ../src/ard_ai.cpp:2023
+#, c-format
+msgid ""
+"\n"
+"\n"
+"<patch into file %s (%d-%d)>\n"
+msgstr ""
+
+#: ../src/ard_ai.cpp:2030
+#, c-format
+msgid ""
+"\n"
+"\n"
+"<info with type %s requested>\n"
+msgstr ""
+
+#: ../src/ard_ai.cpp:2831
+msgid ""
+"\n"
+"\n"
+"<patch rejected: file_range required>\n"
+msgstr ""
+
+#: ../src/ard_ai.cpp:2843
+msgid "AI requested more information too many times."
+msgstr ""
+
+#: ../src/ard_ai.cpp:3128
+msgid ""
+"\n"
+"\n"
+"<patch rejected>"
+msgstr ""
+
+#: ../src/ard_ai.cpp:3154
+msgid "New sketch file can not be created!"
+msgstr ""
+
+#: ../src/ard_ai.cpp:3176
+msgid "AI patch does not apply to the current file."
+msgstr ""
+
+#: ../src/ard_ai.cpp:3184
+#, c-format
+msgid ""
+"\n"
+"\n"
+"<patch applied into file %s>\n"
+msgstr ""
+
+#: ../src/ard_ai.cpp:3235
+#, c-format
+msgid "<info with type %s requested>\n"
+msgstr ""
+
+#: ../src/ard_ai.cpp:3441
+msgid "Failed to start AI request for next symbol."
+msgstr ""
+
+#: ../src/ard_ai.cpp:3487
+msgid "Unknown AI error."
+msgstr ""
+
+#: ../src/ard_ai.cpp:3496 ../src/ard_ai.cpp:3502 ../src/ard_ai.cpp:3508
+#: ../src/ard_ai.cpp:3520 ../src/ard_ai.cpp:3528 ../src/ard_ai.cpp:3534
+#: ../src/ard_ai.cpp:3541
+msgid "AI request failed:\n"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:57
+msgid "AI model"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:88
+msgid "Name:"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:92
+msgid "Endpoint URL:"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:96
+msgid "Model:"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:100
+msgid "Maximum AI iterations:"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:106
+msgid "Request timeout (seconds, 0 = no limit):"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:113
+msgid "Force file_range policy (AI must inspect files before PATCH)"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:117
+msgid "Keep full AI context (include all requested code and info)"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:121
+msgid "Limit AI context to last applied change (floating window)"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:126
+msgid "Authentication"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:127
+msgid "This endpoint requires an API key"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:132
+msgid "API key:"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:137
+msgid "Clear stored key"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:143
+msgid "The API key is stored using the system's secure keychain."
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:149
+msgid "Extra request JSON"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:173 ../src/ard_ed_frm.cpp:3895
+msgid "Delete"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:174
+msgid "Export..."
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:175
+msgid "Test"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:183 ../src/ard_boptdlg.cpp:76
+#: ../src/ard_fmtdlg.cpp:187 ../src/utils.cpp:1015
+msgid "OK"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:184 ../src/ard_boptdlg.cpp:77
+#: ../src/ard_diff.cpp:126 ../src/ard_ed_frm.cpp:2364 ../src/ard_fmtdlg.cpp:188
+#: ../src/utils.cpp:1016
+msgid "Cancel"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:243
+msgid "A key is already stored. Leave empty to keep it."
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:245
+msgid "Enter your API key (will be stored securely)."
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:281
+msgid "Export model to JSON"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:282 ../src/ard_setdlg.cpp:1812
+msgid "JSON files (*.json)|*.json|All files|*.*"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:288
+msgid "Failed to write file."
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:288
+msgid "Export"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:302 ../src/ard_aimdldlg.cpp:417
+msgid "Invalid JSON"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:328 ../src/ard_aimdldlg.cpp:425
+msgid "Endpoint URL is empty."
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:328 ../src/ard_aimdldlg.cpp:350
+#: ../src/ard_aimdldlg.cpp:425
+msgid "Validation"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:350
+msgid ""
+"API key is required for this endpoint (no key provided and none stored)."
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:394
+msgid "Connection test succeeded."
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:394 ../src/ard_aimdldlg.cpp:396
+msgid "AI Test"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:396
+msgid "Connection test failed."
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:452
+msgid ""
+"System keyring (Secret Service) is not available in this session.\n"
+"\n"
+"The API key will NOT be saved and you will have to enter it again next "
+"time.\n"
+"\n"
+"Tip: On Linux/Raspberry Pi this usually means there is no DBus session "
+"(DBUS_SESSION_BUS_ADDRESS is missing) or no secret-service provider is "
+"running."
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:456
+msgid "API key not saved"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:494
+msgid "Failed to save AI API key to the system secret store."
 msgstr ""
 
 #: ../src/ard_aipnl.cpp:40
@@ -91,11 +844,6 @@ msgstr ""
 msgid "[AI] Failed to start interactive chat request."
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:541 ../src/ard_ai.cpp:658
-#, c-format
-msgid "%s (in: %d, out: %d, tot: %d) tokens"
-msgstr ""
-
 #: ../src/ard_aipnl.cpp:569
 msgid "[AI ERROR] Unknown error"
 msgstr ""
@@ -105,90 +853,498 @@ msgstr ""
 msgid "[AI ERROR] %s"
 msgstr ""
 
-#: ../src/ard_libinfo.cpp:106
-msgid "Version: "
+#: ../src/ard_boptdlg.cpp:52
+msgid "<unknown>"
 msgstr ""
 
-#: ../src/ard_libinfo.cpp:117
-msgid "Category: "
+#: ../src/ard_borsel.cpp:40
+msgid "Select board"
 msgstr ""
 
-#: ../src/ard_libinfo.cpp:118 ../src/ard_coreinfo.cpp:76
-msgid "Maintainer: "
+#: ../src/ard_borsel.cpp:163 ../src/ard_borsel.cpp:445
+#: ../src/ard_finsymdlg.cpp:46 ../src/ard_libman.cpp:177
+msgid "Name"
 msgstr ""
 
-#: ../src/ard_libinfo.cpp:126 ../src/ard_coreinfo.cpp:91
-msgid "Type: "
+#: ../src/ard_borsel.cpp:169 ../src/ard_borsel.cpp:450
+msgid "Board"
 msgstr ""
 
-#: ../src/ard_libinfo.cpp:134
-msgid "Installed version: "
+#: ../src/ard_borsel.cpp:183
+msgid "Filter boards..."
 msgstr ""
 
-#: ../src/ard_libinfo.cpp:136
-msgid "Installed: yes"
+#: ../src/ard_borsel.cpp:198
+msgid "Programmer:"
 msgstr ""
 
-#: ../src/ard_libinfo.cpp:144
-msgid "Legacy library (old layout)"
+#: ../src/ard_borsel.cpp:222
+msgid "Maintainer:"
 msgstr ""
 
-#: ../src/ard_libinfo.cpp:184
-msgid "Architectures:"
+#: ../src/ard_borsel.cpp:225
+msgid "Website:"
 msgstr ""
 
-#: ../src/ard_libinfo.cpp:199
-msgid "Provides includes:"
+#: ../src/ard_borsel.cpp:228
+msgid "Email:"
 msgstr ""
 
-#: ../src/ard_libinfo.cpp:214
-msgid "Available versions:"
+#: ../src/ard_borsel.cpp:562
+msgid "<loading programmers...>"
 msgstr ""
 
-#: ../src/ard_libinfo.cpp:231 ../src/nsketch.cpp:60
-msgid "Location:"
+#: ../src/ard_borsel.cpp:596
+msgid "<default>"
 msgstr ""
 
-#: ../src/ard_libinfo.cpp:242
-msgid "Dependencies:"
+#: ../src/ard_cc.cpp:2851
+msgid "Declaration:"
 msgstr ""
 
-#: ../src/ard_libinfo.cpp:253
-msgid "(none)"
+#: ../src/ard_cli.cpp:2945
+msgid "Serial port is not set. Cannot upload sketch.\n"
 msgstr ""
 
-#: ../src/ard_libinfo.cpp:264
-msgid "Install dir:"
-msgstr ""
-
-#: ../src/ard_libinfo.cpp:296 ../src/ard_coreinfo.cpp:174
-#: ../src/ard_examples.cpp:436
-msgid "Install..."
-msgstr ""
-
-#: ../src/ard_libinfo.cpp:307 ../src/ard_coreinfo.cpp:185
-#: ../src/ard_libman.cpp:650 ../src/ard_coreman.cpp:480
-msgid "Latest"
-msgstr ""
-
-#: ../src/ard_libinfo.cpp:342 ../src/ard_coreinfo.cpp:220
-#: ../src/ard_libman.cpp:674 ../src/ard_coreman.cpp:496
-msgid "Uninstall"
-msgstr ""
-
-#: ../src/ard_libinfo.cpp:359 ../src/ard_coreinfo.cpp:237
-#: ../src/ard_libman.cpp:199 ../src/ard_ed_frm.cpp:910
-#: ../src/ard_clidiag.cpp:57 ../src/ard_coreman.cpp:153
+#: ../src/ard_clidiag.cpp:57 ../src/ard_coreinfo.cpp:237
+#: ../src/ard_coreman.cpp:153 ../src/ard_ed_frm.cpp:910
+#: ../src/ard_libinfo.cpp:359 ../src/ard_libman.cpp:199
 msgid "Close"
 msgstr ""
 
-#: ../src/ard_diagview.cpp:22 ../src/ard_renamedlg.cpp:146
-#: ../src/ard_finsymdlg.cpp:47
+#: ../src/ard_cliinst.cpp:89
+msgid "Checking installed cores..."
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:127
+msgid ""
+"Unable to check installed Arduino cores (arduino-cli core list failed).\n"
+"\n"
+"Do you want Arduino Editor to run the initial setup now?\n"
+"(Update core index + install Arduino AVR core + update library index)"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:130
+msgid "Arduino toolchain setup"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:180 ../src/ard_cliinst.cpp:286
+msgid "Preparing Arduino toolchain"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:181 ../src/ard_cliinst.cpp:490
+#: ../src/ard_cliinst.cpp:588 ../src/ard_cliinst.cpp:691
+#: ../src/ard_ed_frm.cpp:1734
+msgid "Preparing..."
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:227 ../src/ard_cliinst.cpp:250
+#: ../src/ard_cliinst.cpp:257 ../src/ard_cliinst.cpp:264
+msgid "Toolchain setup was cancelled."
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:227 ../src/ard_cliinst.cpp:250
+#: ../src/ard_cliinst.cpp:257 ../src/ard_cliinst.cpp:264
+msgid "Cancelled"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:239
+#, c-format
+msgid ""
+"arduino-cli command failed while %s:\n"
+"\n"
+"%s\n"
+"\n"
+"Output:\n"
+"%s"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:241
+msgid "arduino-cli setup error"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:249
+msgid "Updating core index..."
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:253
+msgid "updating core index"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:256
+msgid "Installing Arduino AVR core..."
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:260
+msgid "installing Arduino AVR core"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:263
+msgid "Updating library index..."
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:267
+msgid "updating library index"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:270 ../src/ard_cliinst.cpp:576
+#: ../src/ard_cliinst.cpp:679 ../src/ard_cliinst.cpp:772
+msgid "Done."
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:287
+msgid "Installing required components..."
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:292
+msgid "Starting installation..."
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:314
+msgid ""
+"arduino-cli was not found.\n"
+"\n"
+"Arduino Editor can automatically download the official arduino-cli binary "
+"from the Arduino servers, extract it into the same directory as this "
+"application and use it only for this editor.\n"
+"\n"
+"Alternatively, you can select an existing arduino-cli binary on disk.\n"
+"\n"
+"How do you want to proceed?"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:321
+msgid "arduino-cli missing"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:324 ../src/ard_coreman.cpp:491
+#: ../src/ard_libman.cpp:661
+msgid "Install"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:324
+msgid "Browse"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:324 ../src/ard_ed_frm.cpp:2576 ../src/main.cpp:404
+msgid "Exit"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:352
+msgid ""
+"arduino-cli was downloaded, but it does not appear to be a valid arduino-cli "
+"binary.\n"
+"\n"
+"Please install arduino-cli manually or select the binary manually."
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:355 ../src/ard_cliinst.cpp:408
+msgid "Invalid arduino-cli binary"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:365 ../src/ard_setdlg.cpp:998
+msgid "Select arduino-cli executable"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:367
+msgid "Select arduino-cli binary"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:376
+msgid "arduino-cli executable (*.exe)|*.exe|All files (*.*)|*.*"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:378 ../src/ard_setdlg.cpp:2352
+msgid "All files (*)|*"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:406
+msgid ""
+"The selected file does not appear to be a valid arduino-cli binary.\n"
+"\n"
+"Do you want to try selecting a different file?"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:425
+msgid ""
+"Arduino Editor cannot run without arduino-cli.\n"
+"\n"
+"Please install arduino-cli and restart the application."
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:427 ../src/ard_cliinst.cpp:674
+#: ../src/ard_cliinst.cpp:760
+msgid "arduino-cli not found"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:440
+#, c-format
+msgid ""
+"Installed arduino-cli version is %s.\n"
+"\n"
+"This Arduino Editor requires arduino-cli version %s or newer.\n"
+"\n"
+"Please update arduino-cli and start the application again."
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:446
+msgid "Unsupported arduino-cli version"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:475
+msgid ""
+"Automatic arduino-cli installation is not supported on this platform.\n"
+"\n"
+"Please install arduino-cli manually and restart the application."
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:477 ../src/ard_cliinst.cpp:617
+msgid "arduino-cli install"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:489 ../src/ard_cliinst.cpp:587
+#: ../src/ard_cliinst.cpp:690
+msgid "Installing arduino-cli"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:502 ../src/ard_cliinst.cpp:702
+msgid ""
+"Cannot determine application directory.\n"
+"Please install arduino-cli manually."
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:518 ../src/ard_cliinst.cpp:716
+msgid "Downloading arduino-cli..."
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:528 ../src/ard_cliinst.cpp:727
+msgid ""
+"Downloading arduino-cli failed.\n"
+"\n"
+"Command was:\n"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:529 ../src/ard_cliinst.cpp:728
+msgid "Download error"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:537 ../src/ard_cliinst.cpp:735
+msgid "Extracting arduino-cli..."
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:545 ../src/ard_cliinst.cpp:744
+msgid ""
+"Extracting arduino-cli failed.\n"
+"\n"
+"Command was:\n"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:546 ../src/ard_cliinst.cpp:745
+msgid "Extraction error"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:554 ../src/ard_cliinst.cpp:752
+msgid "Verifying arduino-cli..."
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:560 ../src/ard_cliinst.cpp:759
+msgid "After extraction, the arduino-cli executable was not found at:\n"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:593
+msgid "Looking for Homebrew (brew)..."
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:613
+msgid ""
+"Homebrew (brew) was not found in standard locations.\n"
+"\n"
+"Please install Homebrew first (https://brew.sh/), then run:\n"
+"\n"
+"  brew install arduino-cli\n"
+"\n"
+"and finally use the 'Browse' option to select the arduino-cli binary."
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:623
+msgid "Installing arduino-cli via Homebrew..."
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:632
+#, c-format
+msgid ""
+"Homebrew command failed:\n"
+"\n"
+"%s\n"
+"\n"
+"Please run this command in Terminal and then use 'Browse' to select the "
+"arduino-cli binary."
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:636
+msgid "Homebrew error"
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:642
+msgid "Locating arduino-cli binary..."
+msgstr ""
+
+#: ../src/ard_cliinst.cpp:670
+msgid ""
+"Homebrew seems to have installed arduino-cli, but the binary could not be "
+"located in standard paths.\n"
+"\n"
+"Please run 'brew --prefix' or 'brew --prefix arduino-cli' in Terminal\n"
+"to locate the installation and then use the 'Browse' option."
+msgstr ""
+
+#: ../src/ard_coreinfo.cpp:58
+msgid "Latest: "
+msgstr ""
+
+#: ../src/ard_coreinfo.cpp:63
+msgid "Installed: "
+msgstr ""
+
+#: ../src/ard_coreinfo.cpp:76 ../src/ard_libinfo.cpp:118
+msgid "Maintainer: "
+msgstr ""
+
+#: ../src/ard_coreinfo.cpp:79
+msgid "Email: "
+msgstr ""
+
+#: ../src/ard_coreinfo.cpp:91 ../src/ard_libinfo.cpp:126
+msgid "Type: "
+msgstr ""
+
+#: ../src/ard_coreinfo.cpp:97
+msgid "Indexed in package index"
+msgstr ""
+
+#: ../src/ard_coreinfo.cpp:115
+msgid "Available versions:\n"
+msgstr ""
+
+#: ../src/ard_coreinfo.cpp:126
+msgid "installed"
+msgstr ""
+
+#: ../src/ard_coreinfo.cpp:128
+msgid ", latest"
+msgstr ""
+
+#: ../src/ard_coreinfo.cpp:130
+msgid "latest"
+msgstr ""
+
+#: ../src/ard_coreinfo.cpp:142
+msgid "Boards:\n"
+msgstr ""
+
+#: ../src/ard_coreinfo.cpp:146
+msgid "Version "
+msgstr ""
+
+#: ../src/ard_coreinfo.cpp:174 ../src/ard_examples.cpp:436
+#: ../src/ard_libinfo.cpp:296
+msgid "Install..."
+msgstr ""
+
+#: ../src/ard_coreinfo.cpp:185 ../src/ard_coreman.cpp:480
+#: ../src/ard_libinfo.cpp:307 ../src/ard_libman.cpp:650
+msgid "Latest"
+msgstr ""
+
+#: ../src/ard_coreinfo.cpp:220 ../src/ard_coreman.cpp:496
+#: ../src/ard_libinfo.cpp:342 ../src/ard_libman.cpp:674
+msgid "Uninstall"
+msgstr ""
+
+#: ../src/ard_coreman.cpp:53
+msgid "Arduino Cores"
+msgstr ""
+
+#: ../src/ard_coreman.cpp:102 ../src/ard_libman.cpp:142
+msgid "Type:"
+msgstr ""
+
+#: ../src/ard_coreman.cpp:105 ../src/ard_coreman.cpp:188
+#: ../src/ard_coreman.cpp:344 ../src/ard_coreman.cpp:437
+#: ../src/ard_ed_frm.cpp:1673 ../src/ard_ed_frm.cpp:2182
+#: ../src/ard_ed_frm.cpp:2228 ../src/ard_libman.cpp:145
+#: ../src/ard_libman.cpp:262 ../src/ard_libman.cpp:433
+#: ../src/ard_libman.cpp:598
+msgid "All"
+msgstr ""
+
+#: ../src/ard_coreman.cpp:106 ../src/ard_coreman.cpp:352
+#: ../src/ard_libman.cpp:146 ../src/ard_libman.cpp:453
+msgid "Updatable"
+msgstr ""
+
+#: ../src/ard_coreman.cpp:107 ../src/ard_coreman.cpp:349
+#: ../src/ard_libman.cpp:147 ../src/ard_libman.cpp:448
+msgid "Installed"
+msgstr ""
+
+#: ../src/ard_coreman.cpp:113 ../src/ard_libman.cpp:158
+msgid "Search:"
+msgstr ""
+
+#: ../src/ard_coreman.cpp:116
+msgid "id / maintainer / board / website"
+msgstr ""
+
+#: ../src/ard_coreman.cpp:131
+msgid "Core"
+msgstr ""
+
+#: ../src/ard_coreman.cpp:132 ../src/ard_examples.cpp:73
+#: ../src/ard_libman.cpp:179
+msgid "Version"
+msgstr ""
+
+#: ../src/ard_coreman.cpp:133 ../src/ard_examples.cpp:74
+#: ../src/ard_libman.cpp:180
+msgid "Maintainer"
+msgstr ""
+
+#: ../src/ard_coreman.cpp:134
+msgid "Boards"
+msgstr ""
+
+#: ../src/ard_coreman.cpp:148
+msgid "Update index"
+msgstr ""
+
+#: ../src/ard_coreman.cpp:173
+msgid "No cores (boards) available"
+msgstr ""
+
+#: ../src/ard_coreman.cpp:626
+msgid "Installing core/board toolchain..."
+msgstr ""
+
+#: ../src/ard_coreman.cpp:636
+msgid "Do you really want to uninstall core:\n"
+msgstr ""
+
+#: ../src/ard_coreman.cpp:639
+msgid "installed "
+msgstr ""
+
+#: ../src/ard_coreman.cpp:643
+msgid "Uninstall core"
+msgstr ""
+
+#: ../src/ard_diagview.cpp:22 ../src/ard_finsymdlg.cpp:47
+#: ../src/ard_renamedlg.cpp:146
 msgid "File"
 msgstr ""
 
-#: ../src/ard_diagview.cpp:23 ../src/ard_renamedlg.cpp:147
-#: ../src/ard_finsymdlg.cpp:48 ../src/ard_orginc.cpp:57
+#: ../src/ard_diagview.cpp:23 ../src/ard_finsymdlg.cpp:48
+#: ../src/ard_orginc.cpp:57 ../src/ard_renamedlg.cpp:147
 msgid "Line"
 msgstr ""
 
@@ -210,6 +1366,847 @@ msgstr ""
 
 #: ../src/ard_diagview.cpp:403
 msgid "Solve error with AI"
+msgstr ""
+
+#: ../src/ard_diff.cpp:40
+msgid "Review AI Changes"
+msgstr ""
+
+#: ../src/ard_diff.cpp:92 ../src/ard_pop.cpp:29
+msgid "AI explanation"
+msgstr ""
+
+#: ../src/ard_diff.cpp:125
+msgid "Apply"
+msgstr ""
+
+#: ../src/ard_diff.cpp:188
+msgid "No changes to review."
+msgstr ""
+
+#: ../src/ard_diff.cpp:190
+msgid "Empty"
+msgstr ""
+
+#: ../src/ard_diff.cpp:203
+#, c-format
+msgid "Existing file: %s"
+msgstr ""
+
+#: ../src/ard_diff.cpp:218
+msgid "Original"
+msgstr ""
+
+#: ../src/ard_diff.cpp:219
+msgid "Patched"
+msgstr ""
+
+#: ../src/ard_diff.cpp:259
+msgid "Show full file"
+msgstr ""
+
+#: ../src/ard_diff.cpp:293
+#, c-format
+msgid "New file: %s"
+msgstr ""
+
+#: ../src/ard_diff.cpp:429
+msgid ""
+"\n"
+"\n"
+"/* --- next hunk --- */\n"
+"\n"
+msgstr ""
+
+#: ../src/ard_diff.cpp:528
+#, c-format
+msgid "-------- hunk #%zu (lines %d-%d) --------"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:263
+msgid "The specified arduino-cli is invalid. It may be missing or outdated."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:264
+msgid "Warning"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:287
+msgid "Initializing..."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:319 ../src/ard_ed_frm.cpp:3471
+#: ../src/ard_ed_frm.cpp:3666
+#, c-format
+msgid "Directory '%s' does not exist."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:331
+#, c-format
+msgid "Directory '%s' could not be opened."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:351
+msgid "Opening sketch..."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:397
+#, c-format
+msgid "Can't create file '%s'."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:413
+msgid "Updating board..."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:454
+msgid "Creating completion engine..."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:485
+msgid "Initiating background processes..."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:486
+msgid "Loading installed libraries..."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:609
+msgid "Arduino Clang completion initialized for "
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:639
+msgid "Failed create Arduino Clang completion!"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:674 ../src/ard_ed_frm.cpp:1299
+msgid "Initializing Arduino Clang completion..."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:678 ../src/ard_ed_frm.cpp:1303
+msgid "Loading board parameters..."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:686 ../src/ard_ed_frm.cpp:1307
+msgid "Loading compile parameters..."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:726
+msgid "Error loading default board options."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:732
+msgid "Board has no options."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:732
+msgid "Information"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:740
+msgid "Error loading board options."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:749
+msgid "Board settings"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:817 ../src/ard_ed_frm.cpp:870
+msgid "The file in the editor is modified. Do you want to save the file?"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:818 ../src/ard_ed_frm.cpp:871
+msgid "Close tab"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:822 ../src/ard_ed_frm.cpp:875
+#: ../src/ard_ed_frm.cpp:1189 ../src/ard_ed_frm.cpp:1214
+msgid "Save error!"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:911
+msgid "Close Others"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:912
+msgid "Close All"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:974
+#, c-format
+msgid "File %s not found."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:979
+msgid "Cannot delete .ino file of the sketch."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:991
+msgid ""
+"The file has unsaved changes.\n"
+"Do you really want to delete it?"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:993 ../src/ard_filestree.cpp:438
+msgid "Delete file"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1005
+#, c-format
+msgid "Failed to delete %s."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1044
+msgid "File with this name already exists in the filesystem."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1049
+msgid "Cannot create file outside of project."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1056
+#, c-format
+msgid "Cannot create file '%s'."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1102 ../src/ard_examples.cpp:479
+msgid "Sketch name cannot be empty."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1115
+#, c-format
+msgid "Error creating directory '%s'."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1155 ../src/nsketch.cpp:111
+msgid "Select sketch directory"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1187
+msgid "Saved..."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1212
+msgid "All saved..."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1233
+msgid "Serial port changed to "
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1241
+msgid "Serial ports refreshed."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1247
+msgid "No symbols found."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1247 ../src/ard_finsymdlg.cpp:31
+msgid "Find symbol"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1297
+msgid "Rebuilding project..."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1338
+msgid "Compilation"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1341
+msgid "Upload"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1344
+msgid "Library installation"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1347
+msgid "Library uninstalation"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1350 ../src/ard_libman.cpp:743
+msgid "Update library index"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1354
+msgid "Action"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1362
+#, c-format
+msgid "Other action \"%s\" running. Please try again later."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1376
+#, c-format
+msgid "%s started..."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1389
+msgid "finished."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1389
+msgid "failed."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1400 ../src/ard_ed_frm.cpp:1666
+#: ../src/ard_ed_frm.cpp:2175 ../src/ard_libman.cpp:249
+msgid "Loading libraries..."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1429
+msgid "arduino-cli build diagnostics"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1450 ../src/ard_ed_frm.cpp:2206
+msgid "Enumerating available boards..."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1452
+msgid "Loading core list..."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1461
+#, c-format
+msgid "%s failed. See the CLI output for more information."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1501
+msgid "Building project..."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1536
+msgid "Uploading project..."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1656
+msgid "Resolving missing libraries..."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1712 ../src/ard_ed_frm.cpp:2882
+msgid "Problems"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1743
+msgid "Translation unit not prepared."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1758 ../src/ard_ed_frm.cpp:1957
+msgid "Diagnostics turned off."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1768
+msgid "No problems found."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1936
+msgid "Project diagnostics evaluation..."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1951
+msgid "Diagnostic evaluation..."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1967
+msgid "Failed to load Arduino libraries from arduino-cli."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2036
+#, c-format
+msgid ""
+"Header '%s' was not found, but it looks like it belongs to an installed "
+"Arduino library.\n"
+"\n"
+"In this mode, libraries are detected from the last project build, so newly "
+"added #include directives won't be picked up until you rebuild.\n"
+"\n"
+"Rebuild will regenerate the build configuration (including compile_commands."
+"json) and attach libraries to this sketch.\n"
+"\n"
+"Rebuild now?"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2046
+msgid "Rebuild required"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2059
+msgid ""
+"The following missing headers are claimed to be provided by Arduino "
+"libraries:\n"
+"\n"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2079
+msgid ""
+"\n"
+"Note: Arduino library metadata can be wrong. The Library Manager will be "
+"opened so you can choose what to install.\n"
+"\n"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2084
+msgid "Missing headers"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2087
+msgid "Open Library Manager"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2087
+msgid "Ignore"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2120
+msgid "Failed to load installed Arduino libraries from arduino-cli."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2194
+msgid "Failed to load installed Arduino cores from arduino-cli."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2215
+msgid "Failed to load Arduino cores from arduino-cli."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2240
+msgid "Failed to load available boards from arduino-cli."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2264
+msgid "Resolving libraries..."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2360
+msgid ""
+"Some files have unsaved changes.\n"
+"Do you want to save them before exiting?"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2361
+msgid "Confirm exit"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2364
+msgid "Save"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2364
+msgid "Discard"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2375
+msgid "Some files couldn't be saved."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2375
+msgid "Save error"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2520
+msgid "New Sketch...\tCtrl+N"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2521
+msgid "Create new sketch"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2526
+msgid "Open Sketch...\tCtrl+O"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2527
+msgid "Open an existing Arduino sketch directory"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2532
+msgid "Open recent"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2537
+msgid "Sketches"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2542
+msgid "Examples...\tCtrl+E"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2543
+msgid "Browse and preview Arduino library examples"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2548
+msgid "Save\tCtrl+S"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2549
+msgid "Save the current file"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2554
+msgid "Save All\tCtrl+Shift+S"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2555
+msgid "Save all opened files"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2562
+msgid "Settings..."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2563
+msgid "Open configuration (cli, fonts, colors and behavior)"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2577
+msgid "Exit the application"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2589
+msgid "Back\tAlt-Left"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2590
+msgid "Jump back to the previous cursor navigation location"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2595
+msgid "Forward\tAlt-Right"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2596
+msgid "Go forward in navigation history"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2601
+msgid "Find symbol...\tCtrl-Shift-O"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2602
+msgid "Find and navigate to any symbol in the current sketch"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2609
+msgid "Library manager...\tCtrl+Shift+L"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2610
+msgid "Manage Arduino libraries"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2615
+msgid "Boards manager...\tCtrl+Shift+B"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2616
+msgid "Manage Arduino boards (cores)"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2622 ../src/ard_ed_frm.cpp:3330
+msgid "Serial monitor"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2623
+msgid "Shows serial monitor of connected board"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2630
+msgid "Build\tCtrl+R"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2631
+msgid "Build sketch using arduino-cli"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2636
+msgid "Upload\tCtrl+U"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2637
+msgid "Upload sketch using arduino-cli"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2644
+msgid "Clean\tShift+Ctrl+K"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2645
+msgid "Remove build cache and regenerate clang properties"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2654 ../src/ard_ed_frm.cpp:2929
+#: ../src/ard_ed_frm.cpp:2962
+msgid "Output"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2655
+msgid "Output window problems / build"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2665
+msgid "Sketch browser"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2666
+msgid "Show browser for Sketch directory"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2676 ../src/ard_ed_frm.cpp:2941
+#: ../src/ard_ed_frm.cpp:2964 ../src/ard_setdlg.cpp:1675
+msgid "AI assistant"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2677
+msgid "Show AI chat panel"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2690
+msgid "Check for Updates..."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2691
+msgid "Check GitHub for a newer version of Arduino Editor"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2698
+msgid "&About Arduino Editor...\tShift-F1"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2709
+msgid "&File"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2710
+msgid "&Project"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2711
+msgid "&Tools"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2712
+msgid "&View"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2713
+msgid "&Help"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2771
+msgid "Loading available boards..."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2774
+msgid "Loading available cores..."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2827
+msgid "Development board options"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2829
+msgid "Build sketch (Ctrl+R)"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2831
+msgid "Upload sketch (Ctrl+U)"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2837
+msgid "Refresh port list"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2838
+msgid "Open Serial Monitor"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2883 ../src/ard_setdlg.cpp:1061
+msgid "CLI"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:2916 ../src/ard_ed_frm.cpp:2960
+msgid "Sketch files"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3228 ../src/sf.cpp:68
+msgid "Arduino Editor"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3235
+msgid "Application initializing..."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3328
+msgid ""
+"Serial monitor is available only for local serial ports.\n"
+"\n"
+"Select a serial port in the toolbar."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3429
+msgid "(Empty)"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3432 ../src/ard_ed_frm.cpp:3458
+#: ../src/ard_ed_frm.cpp:3488
+msgid "Clear history"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3488
+msgid "Do you really want to clear the recent sketches history?"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3553
+msgid "(SketchesDir does not exist)"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3560
+msgid "(Cannot open SketchesDir)"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3624
+msgid "(No sketches found)"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3817 ../src/ard_ed_frm.cpp:3968
+#, c-format
+msgid "Cannot open '%s' in associated application."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3817 ../src/ard_ed_frm.cpp:3968
+msgid "Open file"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3828
+msgid "Enter new file name:"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3828 ../src/ard_filestree.cpp:421
+msgid "New file"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3828
+msgid "new_file.cpp"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3837
+msgid "File name must not contain path separators."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3853
+msgid "Folder name:"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3854 ../src/ard_filestree.cpp:422
+msgid "New folder"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3855
+msgid "new_folder"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3864
+msgid "Invalid folder name."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3870
+msgid "Cannot create folder."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3886
+msgid "Cannot delete .ino file of sketch."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3891
+#, c-format
+msgid "Do you want to delete folder %s and all its contents?"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3892
+#, c-format
+msgid "Do you want to delete file %s?"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3903
+msgid "Failed to delete: "
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3920 ../src/ard_renamedlg.cpp:121
+msgid "New name:"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3920
+msgid "Rename"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3954
+msgid "Rename failed."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:3975
+msgid "No board selected"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:4023 ../src/ard_ed_frm.cpp:4123
+msgid "--- Select board ---"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:4235
+msgid "Code completion engine is not available."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:4245
+msgid "Translation unit is not valid."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:4245 ../src/ard_ed_frm.cpp:4266
+#: ../src/ard_ed_frm.cpp:4279 ../src/ard_ed_frm.cpp:4288
+#: ../src/ard_ed_frm.cpp:4309 ../src/ard_ed_frm.cpp:4319
+#: ../src/ard_ed_frm.cpp:4326 ../src/ard_ed_frm.cpp:4340
+#: ../src/ard_ed_frm.cpp:4368 ../src/ard_refactor.cpp:473
+#: ../src/ard_refactor.cpp:483 ../src/ard_renamedlg.cpp:71
+msgid "Rename symbol"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:4266
+msgid "Sources contains compilation errors."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:4279
+msgid "No usages of this symbol were found."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:4288
+msgid "Symbol is declared outside of sketch directory."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:4309
+msgid "New name cannot be empty."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:4319
+msgid "New name is not a valid identifier."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:4326
+msgid "No occurrences selected."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:4340
+msgid "No usages of this symbol were found inside the current sketch."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:4368
+msgid "No matching occurrences to rename were found."
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:4372
+#, c-format
+msgid "Renamed %d occurrences."
 msgstr ""
 
 #: ../src/ard_edit.cpp:356
@@ -466,65 +2463,249 @@ msgstr ""
 msgid "Unable to save file %s."
 msgstr ""
 
-#: ../src/ard_coreinfo.cpp:58
-msgid "Latest: "
+#: ../src/ard_examples.cpp:40
+msgid "Arduino Library Examples"
 msgstr ""
 
-#: ../src/ard_coreinfo.cpp:63
-msgid "Installed: "
+#: ../src/ard_examples.cpp:64
+msgid "Filter libraries..."
 msgstr ""
 
-#: ../src/ard_coreinfo.cpp:79
-msgid "Email: "
+#: ../src/ard_examples.cpp:72
+msgid "Library"
 msgstr ""
 
-#: ../src/ard_coreinfo.cpp:97
-msgid "Indexed in package index"
+#: ../src/ard_examples.cpp:75
+msgid "URL"
 msgstr ""
 
-#: ../src/ard_coreinfo.cpp:115
-msgid "Available versions:\n"
+#: ../src/ard_examples.cpp:93
+msgid "Example"
 msgstr ""
 
-#: ../src/ard_coreinfo.cpp:126
-msgid "installed"
+#: ../src/ard_examples.cpp:94 ../src/ard_finsymdlg.cpp:49
+msgid "Path"
 msgstr ""
 
-#: ../src/ard_coreinfo.cpp:128
-msgid ", latest"
+#: ../src/ard_examples.cpp:283
+msgid ""
+"// Example not found:\n"
+"// "
 msgstr ""
 
-#: ../src/ard_coreinfo.cpp:130
-msgid "latest"
+#: ../src/ard_examples.cpp:291 ../src/ard_examples.cpp:336
+msgid ""
+"// Cannot open file:\n"
+"// "
 msgstr ""
 
-#: ../src/ard_coreinfo.cpp:142
-msgid "Boards:\n"
+#: ../src/ard_examples.cpp:311
+msgid ""
+"// Cannot open directory:\n"
+"// "
 msgstr ""
 
-#: ../src/ard_coreinfo.cpp:146
-msgid "Version "
+#: ../src/ard_examples.cpp:325
+msgid ""
+"// No .ino (or .cpp) file found in:\n"
+"// "
 msgstr ""
 
-#: ../src/nsketch.cpp:26 ../src/main.cpp:404
-msgid "New sketch"
+#: ../src/ard_examples.cpp:452
+msgid "Example directory does not exist:\n"
 msgstr ""
 
-#: ../src/nsketch.cpp:37
-msgid "Sketch name:"
+#: ../src/ard_examples.cpp:452 ../src/ard_examples.cpp:469
+msgid "Install example"
 msgstr ""
 
-#: ../src/nsketch.cpp:66
-msgid "Change"
+#: ../src/ard_examples.cpp:464
+msgid "example"
 msgstr ""
 
-#: ../src/nsketch.cpp:111 ../src/ard_ed_frm.cpp:1155
-msgid "Select sketch directory"
+#: ../src/ard_examples.cpp:468
+msgid "Enter sketch name:"
 msgstr ""
 
-#: ../src/nsketch.cpp:147
+#: ../src/ard_examples.cpp:485
+msgid "Sketch name must not contain path separators."
+msgstr ""
+
+#: ../src/ard_examples.cpp:491
+msgid "Sketches directory is not known."
+msgstr ""
+
+#: ../src/ard_examples.cpp:499
+msgid "Target sketch directory already exists:\n"
+msgstr ""
+
+#: ../src/ard_examples.cpp:504
+msgid "Failed to copy example to:\n"
+msgstr ""
+
+#: ../src/ard_filestree.cpp:180 ../src/ard_filestree.cpp:326
+msgid "Libraries"
+msgstr ""
+
+#: ../src/ard_filestree.cpp:298
+msgid "No sketch opened"
+msgstr ""
+
+#: ../src/ard_filestree.cpp:320
+msgid "Files"
+msgstr ""
+
+#: ../src/ard_filestree.cpp:424
+msgid "Open in file browser"
+msgstr ""
+
+#: ../src/ard_filestree.cpp:428
+msgid "Rename folder"
+msgstr ""
+
+#: ../src/ard_filestree.cpp:429
+msgid "Delete folder"
+msgstr ""
+
+#: ../src/ard_filestree.cpp:433
+msgid "Open externally"
+msgstr ""
+
+#: ../src/ard_filestree.cpp:437
+msgid "Rename file"
+msgstr ""
+
+#: ../src/ard_fmtdlg.cpp:146
+msgid "Clang-format options"
+msgstr ""
+
+#: ../src/ard_fmtdlg.cpp:163
+msgid ""
+"These options are used only when the sketch does NOT contain .clang-format "
+"or _clang-format."
+msgstr ""
+
+#: ../src/ard_fmtdlg.cpp:175
+msgid "Open clang-format style options documentation"
+msgstr ""
+
+#: ../src/ard_fmtdlg.cpp:182
+msgid "Reset to defaults"
+msgstr ""
+
+#: ../src/ard_indic.cpp:272
+msgid "Terminate current process"
+msgstr ""
+
+#: ../src/ard_indic.cpp:309
+msgid "No background activity"
+msgstr ""
+
+#: ../src/ard_indic.cpp:312
+msgid "Background activity in progress (e.g. AI, parsing)"
+msgstr ""
+
+#: ../src/ard_indic.cpp:315
+msgid "Busy: heavy operation running"
+msgstr ""
+
+#: ../src/ard_indic.cpp:321
+msgid "Running tasks:"
+msgstr ""
+
+#: ../src/ard_indic.cpp:328
+msgid "Idle"
+msgstr ""
+
+#: ../src/ard_indic.cpp:331
+msgid "Background"
+msgstr ""
+
+#: ../src/ard_indic.cpp:334
+msgid "Busy"
+msgstr ""
+
+#: ../src/ard_indic.cpp:387
+msgid "Background activity"
+msgstr ""
+
+#: ../src/ard_initbrdsel.cpp:11
+msgid "Select development board"
+msgstr ""
+
+#: ../src/ard_initbrdsel.cpp:18
 #, c-format
-msgid "Directory '%s' already exists."
+msgid ""
+"No development board is configured for this sketch.\n"
+"\n"
+"Sketch: %s\n"
+"\n"
+"You can select one from your recently used boards, or open the full board "
+"selector."
+msgstr ""
+
+#: ../src/ard_initbrdsel.cpp:25
+msgid "Recently used boards:"
+msgstr ""
+
+#: ../src/ard_initbrdsel.cpp:33
+msgid "Use selected"
+msgstr ""
+
+#: ../src/ard_initbrdsel.cpp:34
+msgid "Select board..."
+msgstr ""
+
+#: ../src/ard_initbrdsel.cpp:35
+msgid "Continue without board"
+msgstr ""
+
+#: ../src/ard_libinfo.cpp:106
+msgid "Version: "
+msgstr ""
+
+#: ../src/ard_libinfo.cpp:117
+msgid "Category: "
+msgstr ""
+
+#: ../src/ard_libinfo.cpp:134
+msgid "Installed version: "
+msgstr ""
+
+#: ../src/ard_libinfo.cpp:136
+msgid "Installed: yes"
+msgstr ""
+
+#: ../src/ard_libinfo.cpp:144
+msgid "Legacy library (old layout)"
+msgstr ""
+
+#: ../src/ard_libinfo.cpp:184
+msgid "Architectures:"
+msgstr ""
+
+#: ../src/ard_libinfo.cpp:199
+msgid "Provides includes:"
+msgstr ""
+
+#: ../src/ard_libinfo.cpp:214
+msgid "Available versions:"
+msgstr ""
+
+#: ../src/ard_libinfo.cpp:231 ../src/nsketch.cpp:60
+msgid "Location:"
+msgstr ""
+
+#: ../src/ard_libinfo.cpp:242
+msgid "Dependencies:"
+msgstr ""
+
+#: ../src/ard_libinfo.cpp:253
+msgid "(none)"
+msgstr ""
+
+#: ../src/ard_libinfo.cpp:264
+msgid "Install dir:"
 msgstr ""
 
 #: ../src/ard_libman.cpp:74
@@ -533,29 +2714,6 @@ msgstr ""
 
 #: ../src/ard_libman.cpp:136
 msgid "Topic:"
-msgstr ""
-
-#: ../src/ard_libman.cpp:142 ../src/ard_coreman.cpp:102
-msgid "Type:"
-msgstr ""
-
-#: ../src/ard_libman.cpp:145 ../src/ard_libman.cpp:262
-#: ../src/ard_libman.cpp:433 ../src/ard_libman.cpp:598
-#: ../src/ard_ed_frm.cpp:1673 ../src/ard_ed_frm.cpp:2182
-#: ../src/ard_ed_frm.cpp:2228 ../src/ard_coreman.cpp:105
-#: ../src/ard_coreman.cpp:188 ../src/ard_coreman.cpp:344
-#: ../src/ard_coreman.cpp:437
-msgid "All"
-msgstr ""
-
-#: ../src/ard_libman.cpp:146 ../src/ard_libman.cpp:453
-#: ../src/ard_coreman.cpp:106 ../src/ard_coreman.cpp:352
-msgid "Updatable"
-msgstr ""
-
-#: ../src/ard_libman.cpp:147 ../src/ard_libman.cpp:448
-#: ../src/ard_coreman.cpp:107 ../src/ard_coreman.cpp:349
-msgid "Installed"
 msgstr ""
 
 #: ../src/ard_libman.cpp:151
@@ -567,26 +2725,12 @@ msgid ""
 "Show only libraries compatible with the currently selected board (FQBN)."
 msgstr ""
 
-#: ../src/ard_libman.cpp:158 ../src/ard_coreman.cpp:113
-msgid "Search:"
-msgstr ""
-
 #: ../src/ard_libman.cpp:162
 msgid "author / maintainer / text / website"
 msgstr ""
 
 #: ../src/ard_libman.cpp:178
 msgid "Category"
-msgstr ""
-
-#: ../src/ard_libman.cpp:179 ../src/ard_examples.cpp:73
-#: ../src/ard_coreman.cpp:132
-msgid "Version"
-msgstr ""
-
-#: ../src/ard_libman.cpp:180 ../src/ard_examples.cpp:74
-#: ../src/ard_coreman.cpp:133
-msgid "Maintainer"
 msgstr ""
 
 #: ../src/ard_libman.cpp:194
@@ -598,26 +2742,12 @@ msgstr ""
 msgid "All topics"
 msgstr ""
 
-#: ../src/ard_libman.cpp:249 ../src/ard_ed_frm.cpp:1400
-#: ../src/ard_ed_frm.cpp:1666 ../src/ard_ed_frm.cpp:2175
-msgid "Loading libraries..."
-msgstr ""
-
-#: ../src/ard_libman.cpp:661 ../src/ard_cliinst.cpp:325
-#: ../src/ard_coreman.cpp:491
-msgid "Install"
-msgstr ""
-
 #: ../src/ard_libman.cpp:740
 msgid "Git repository..."
 msgstr ""
 
 #: ../src/ard_libman.cpp:741
 msgid "Zip file..."
-msgstr ""
-
-#: ../src/ard_libman.cpp:743 ../src/ard_ed_frm.cpp:1350
-msgid "Update library index"
 msgstr ""
 
 #: ../src/ard_libman.cpp:758
@@ -690,440 +2820,297 @@ msgstr ""
 msgid "Uninstall library"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:89
-msgid "Checking installed cores..."
+#: ../src/ard_mdwidget.cpp:136
+msgid "You"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:127
+#: ../src/ard_mdwidget.cpp:138
+msgid "Assistant"
+msgstr ""
+
+#: ../src/ard_mdwidget.cpp:140
+msgid "System"
+msgstr ""
+
+#: ../src/ard_mdwidget.cpp:142
+msgid "Info"
+msgstr ""
+
+#: ../src/ard_mdwidget.cpp:144
+msgid "Error"
+msgstr ""
+
+#: ../src/ard_orginc.cpp:31 ../src/ard_refactor.cpp:1947
+#: ../src/ard_refactor.cpp:1959 ../src/ard_refactor.cpp:1966
+msgid "Organize includes"
+msgstr ""
+
+#: ../src/ard_orginc.cpp:43
 msgid ""
-"Unable to check installed Arduino cores (arduino-cli core list failed).\n"
-"\n"
-"Do you want Arduino Editor to run the initial setup now?\n"
-"(Update core index + install Arduino AVR core + update library index)"
+"The following #include directives are considered unused and are selected for "
+"removal.\n"
+"Uncheck any includes you want to KEEP. Includes that remain unchecked will "
+"stay unchanged."
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:130
-msgid "Arduino toolchain setup"
+#: ../src/ard_orginc.cpp:55
+msgid "Remove"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:180 ../src/ard_cliinst.cpp:286
-msgid "Preparing Arduino toolchain"
+#: ../src/ard_orginc.cpp:56
+msgid "Include"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:181 ../src/ard_cliinst.cpp:491
-#: ../src/ard_cliinst.cpp:589 ../src/ard_cliinst.cpp:692
-#: ../src/ard_ed_frm.cpp:1734
-msgid "Preparing..."
+#: ../src/ard_orginc.cpp:58
+msgid "Header file"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:227 ../src/ard_cliinst.cpp:250
-#: ../src/ard_cliinst.cpp:257 ../src/ard_cliinst.cpp:264
-msgid "Toolchain setup was cancelled."
+#: ../src/ard_orginc.cpp:69
+msgid "(used)"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:227 ../src/ard_cliinst.cpp:250
-#: ../src/ard_cliinst.cpp:257 ../src/ard_cliinst.cpp:264
-msgid "Cancelled"
+#: ../src/ard_orginc.cpp:69
+msgid "(unused)"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:239
+#: ../src/ard_orginc.cpp:83
+msgid "Sort #include directives"
+msgstr ""
+
+#: ../src/ard_orginc.cpp:86
+msgid ""
+"Sorts includes so that system headers come first, followed by user headers.\n"
+"Within each group, items are ordered alphabetically."
+msgstr ""
+
+#: ../src/ard_refactor.cpp:472
+msgid "No identifier under the cursor."
+msgstr ""
+
+#: ../src/ard_refactor.cpp:482
+msgid "The text under the cursor is not a valid identifier."
+msgstr ""
+
+#: ../src/ard_refactor.cpp:507 ../src/ard_refactor.cpp:519
+msgid "Please select an expression to extract into a variable."
+msgstr ""
+
+#: ../src/ard_refactor.cpp:508 ../src/ard_refactor.cpp:520
+#: ../src/ard_refactor.cpp:538 ../src/ard_refactor.cpp:551
+#: ../src/ard_refactor.cpp:563 ../src/ard_refactor.cpp:571
+msgid "Introduce variable"
+msgstr ""
+
+#: ../src/ard_refactor.cpp:537
+msgid ""
+"The selection contains only whitespace. Please select a valid expression."
+msgstr ""
+
+#: ../src/ard_refactor.cpp:550
+msgid "Variable name:"
+msgstr ""
+
+#: ../src/ard_refactor.cpp:552
+msgid "tmp"
+msgstr ""
+
+#: ../src/ard_refactor.cpp:562
+msgid "Variable name cannot be empty."
+msgstr ""
+
+#: ../src/ard_refactor.cpp:570
+msgid "Variable name is not a valid identifier."
+msgstr ""
+
+#: ../src/ard_refactor.cpp:639 ../src/ard_refactor.cpp:897
+#: ../src/ard_refactor.cpp:1082 ../src/ard_refactor.cpp:1946
+#: ../src/ard_refactor.cpp:2054
+msgid "Code completion is not initialized yet."
+msgstr ""
+
+#: ../src/ard_refactor.cpp:664
+msgid ""
+"This refactoring currently supports only local variables declared inside a "
+"function."
+msgstr ""
+
+#: ../src/ard_refactor.cpp:671
+msgid "The symbol under the cursor is not a valid variable."
+msgstr ""
+
+#: ../src/ard_refactor.cpp:682
+msgid "Unable to collect variable occurrences from the code model."
+msgstr ""
+
+#: ../src/ard_refactor.cpp:689
+msgid "No usages of this variable were found."
+msgstr ""
+
+#: ../src/ard_refactor.cpp:699
+msgid ""
+"This variable is used in another file.\n"
+"Inline variable currently supports only variables used in a single file."
+msgstr ""
+
+#: ../src/ard_refactor.cpp:750
+msgid ""
+"Multiple assignments or initializations of this variable were found.\n"
+"Inline variable currently supports only a single initialized declaration."
+msgstr ""
+
+#: ../src/ard_refactor.cpp:764
+msgid ""
+"Unable to locate a simple initialized declaration for this variable.\n"
+"Expected something like \"auto name = expr;\"."
+msgstr ""
+
+#: ../src/ard_refactor.cpp:780 ../src/ard_refactor.cpp:790
+msgid "The variable does not have an initializer."
+msgstr ""
+
+#: ../src/ard_refactor.cpp:812
+msgid ""
+"No usages of this variable were found outside its declaration.\n"
+"Do you still want to remove the declaration?"
+msgstr ""
+
+#: ../src/ard_refactor.cpp:898 ../src/ard_refactor.cpp:916
+#: ../src/ard_refactor.cpp:926 ../src/ard_refactor.cpp:962
+#: ../src/ard_refactor.cpp:990 ../src/ard_refactor.cpp:1008
+#: ../src/ard_refactor.cpp:1019
+msgid "Generate function"
+msgstr ""
+
+#: ../src/ard_refactor.cpp:925 ../src/ard_refactor.cpp:1136
+msgid "The symbol under the cursor does not look like a function."
+msgstr ""
+
+#: ../src/ard_refactor.cpp:961 ../src/ard_refactor.cpp:1160
+msgid "Unable to build function signature."
+msgstr ""
+
+#: ../src/ard_refactor.cpp:987
 #, c-format
 msgid ""
-"arduino-cli command failed while %s:\n"
-"\n"
-"%s\n"
-"\n"
-"Output:\n"
-"%s"
+"An implementation of this function already exists in %s.\n"
+"Do you want to open it?"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:241
-msgid "arduino-cli setup error"
+#: ../src/ard_refactor.cpp:1007
+#, c-format
+msgid "Function signature (in %s):"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:249
-msgid "Updating core index..."
+#: ../src/ard_refactor.cpp:1018
+msgid "Function signature cannot be empty."
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:253
-msgid "updating core index"
+#: ../src/ard_refactor.cpp:1083 ../src/ard_refactor.cpp:1090
+#: ../src/ard_refactor.cpp:1111 ../src/ard_refactor.cpp:1128
+#: ../src/ard_refactor.cpp:1137 ../src/ard_refactor.cpp:1161
+#: ../src/ard_refactor.cpp:1175 ../src/ard_refactor.cpp:1198
+#: ../src/ard_refactor.cpp:1209
+msgid "Create declaration in header"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:256
-msgid "Installing Arduino AVR core..."
-msgstr ""
-
-#: ../src/ard_cliinst.cpp:260
-msgid "installing Arduino AVR core"
-msgstr ""
-
-#: ../src/ard_cliinst.cpp:263
-msgid "Updating library index..."
-msgstr ""
-
-#: ../src/ard_cliinst.cpp:267
-msgid "updating library index"
-msgstr ""
-
-#: ../src/ard_cliinst.cpp:270 ../src/ard_cliinst.cpp:577
-#: ../src/ard_cliinst.cpp:680 ../src/ard_cliinst.cpp:773
-msgid "Done."
-msgstr ""
-
-#: ../src/ard_cliinst.cpp:287
-msgid "Installing required components..."
-msgstr ""
-
-#: ../src/ard_cliinst.cpp:292
-msgid "Starting installation..."
-msgstr ""
-
-#: ../src/ard_cliinst.cpp:315
+#: ../src/ard_refactor.cpp:1089
 msgid ""
-"arduino-cli was not found.\n"
-"\n"
-"Arduino Editor can automatically download the official arduino-cli binary "
-"from the Arduino servers, extract it into the same directory as this "
-"application and use it only for this editor.\n"
-"\n"
-"Alternatively, you can select an existing arduino-cli binary on disk.\n"
-"\n"
-"How do you want to proceed?"
+"This refactoring can only be used in a C/C++ source file (.cpp, .c, ...)."
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:322
-msgid "arduino-cli missing"
+#: ../src/ard_refactor.cpp:1110
+msgid "Unable to locate or create a header file for this source file."
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:325
-msgid "Browse"
-msgstr ""
-
-#: ../src/ard_cliinst.cpp:325 ../src/ard_ed_frm.cpp:2576 ../src/main.cpp:404
-msgid "Exit"
-msgstr ""
-
-#: ../src/ard_cliinst.cpp:353
-msgid ""
-"arduino-cli was downloaded, but it does not appear to be a valid arduino-cli "
-"binary.\n"
-"\n"
-"Please install arduino-cli manually or select the binary manually."
-msgstr ""
-
-#: ../src/ard_cliinst.cpp:356 ../src/ard_cliinst.cpp:409
-msgid "Invalid arduino-cli binary"
-msgstr ""
-
-#: ../src/ard_cliinst.cpp:366 ../src/ard_setdlg.cpp:998
-msgid "Select arduino-cli executable"
-msgstr ""
-
-#: ../src/ard_cliinst.cpp:368
-msgid "Select arduino-cli binary"
-msgstr ""
-
-#: ../src/ard_cliinst.cpp:377
-msgid "arduino-cli executable (*.exe)|*.exe|All files (*.*)|*.*"
-msgstr ""
-
-#: ../src/ard_cliinst.cpp:379 ../src/ard_setdlg.cpp:2352
-msgid "All files (*)|*"
-msgstr ""
-
-#: ../src/ard_cliinst.cpp:407
-msgid ""
-"The selected file does not appear to be a valid arduino-cli binary.\n"
-"\n"
-"Do you want to try selecting a different file?"
-msgstr ""
-
-#: ../src/ard_cliinst.cpp:426
-msgid ""
-"Arduino Editor cannot run without arduino-cli.\n"
-"\n"
-"Please install arduino-cli and restart the application."
-msgstr ""
-
-#: ../src/ard_cliinst.cpp:428 ../src/ard_cliinst.cpp:675
-#: ../src/ard_cliinst.cpp:761
-msgid "arduino-cli not found"
-msgstr ""
-
-#: ../src/ard_cliinst.cpp:441
+#: ../src/ard_refactor.cpp:1172
 #, c-format
 msgid ""
-"Installed arduino-cli version is %s.\n"
-"\n"
-"This Arduino Editor requires arduino-cli version %s or newer.\n"
-"\n"
-"Please update arduino-cli and start the application again."
+"An declaration of this function already exists in %s.\n"
+"Do you want to open it?"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:447
-msgid "Unsupported arduino-cli version"
+#: ../src/ard_refactor.cpp:1197
+#, c-format
+msgid "Function declaration (in %s):"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:476
-msgid ""
-"Automatic arduino-cli installation is not supported on this platform.\n"
-"\n"
-"Please install arduino-cli manually and restart the application."
+#: ../src/ard_refactor.cpp:1208
+msgid "Function declaration cannot be empty."
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:478 ../src/ard_cliinst.cpp:618
-msgid "arduino-cli install"
+#: ../src/ard_refactor.cpp:1434
+msgid "Document is read-only."
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:490 ../src/ard_cliinst.cpp:588
-#: ../src/ard_cliinst.cpp:691
-msgid "Installing arduino-cli"
+#: ../src/ard_refactor.cpp:1579
+msgid "Format selection"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:503 ../src/ard_cliinst.cpp:703
-msgid ""
-"Cannot determine application directory.\n"
-"Please install arduino-cli manually."
+#: ../src/ard_refactor.cpp:1586
+msgid "Format file"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:519 ../src/ard_cliinst.cpp:717
-msgid "Downloading arduino-cli..."
+#: ../src/ard_refactor.cpp:1635
+msgid "implementation"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:529 ../src/ard_cliinst.cpp:728
-msgid ""
-"Downloading arduino-cli failed.\n"
-"\n"
-"Command was:\n"
+#: ../src/ard_refactor.cpp:1637
+msgid "declaration"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:530 ../src/ard_cliinst.cpp:729
-msgid "Download error"
-msgstr ""
-
-#: ../src/ard_cliinst.cpp:538 ../src/ard_cliinst.cpp:736
-msgid "Extracting arduino-cli..."
-msgstr ""
-
-#: ../src/ard_cliinst.cpp:546 ../src/ard_cliinst.cpp:745
-msgid ""
-"Extracting arduino-cli failed.\n"
-"\n"
-"Command was:\n"
-msgstr ""
-
-#: ../src/ard_cliinst.cpp:547 ../src/ard_cliinst.cpp:746
-msgid "Extraction error"
-msgstr ""
-
-#: ../src/ard_cliinst.cpp:555 ../src/ard_cliinst.cpp:753
-msgid "Verifying arduino-cli..."
-msgstr ""
-
-#: ../src/ard_cliinst.cpp:561 ../src/ard_cliinst.cpp:760
-msgid "After extraction, the arduino-cli executable was not found at:\n"
-msgstr ""
-
-#: ../src/ard_cliinst.cpp:594
-msgid "Looking for Homebrew (brew)..."
-msgstr ""
-
-#: ../src/ard_cliinst.cpp:614
-msgid ""
-"Homebrew (brew) was not found in standard locations.\n"
-"\n"
-"Please install Homebrew first (https://brew.sh/), then run:\n"
-"\n"
-"  brew install arduino-cli\n"
-"\n"
-"and finally use the 'Browse' option to select the arduino-cli binary."
-msgstr ""
-
-#: ../src/ard_cliinst.cpp:624
-msgid "Installing arduino-cli via Homebrew..."
-msgstr ""
-
-#: ../src/ard_cliinst.cpp:633
+#: ../src/ard_refactor.cpp:1641
 #, c-format
 msgid ""
-"Homebrew command failed:\n"
-"\n"
-"%s\n"
-"\n"
-"Please run this command in Terminal and then use 'Browse' to select the "
-"arduino-cli binary."
+"The %s file %s does not exist.\n"
+"Do you want to create it?"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:637
-msgid "Homebrew error"
+#: ../src/ard_refactor.cpp:1958
+msgid "Unable to analyze includes for this file."
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:643
-msgid "Locating arduino-cli binary..."
+#: ../src/ard_refactor.cpp:1965
+msgid "No #include directives found in this file."
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:671
+#: ../src/ard_refactor.cpp:2055 ../src/ard_refactor.cpp:2066
+#: ../src/ard_refactor.cpp:2076 ../src/ard_refactor.cpp:2104
+#: ../src/ard_refactor.cpp:2116 ../src/ard_refactor.cpp:2124
+#: ../src/ard_refactor.cpp:2151
+msgid "Extract function"
+msgstr ""
+
+#: ../src/ard_refactor.cpp:2065
+msgid "Please select a block of code to extract."
+msgstr ""
+
+#: ../src/ard_refactor.cpp:2075
 msgid ""
-"Homebrew seems to have installed arduino-cli, but the binary could not be "
-"located in standard paths.\n"
-"\n"
-"Please run 'brew --prefix' or 'brew --prefix arduino-cli' in Terminal\n"
-"to locate the installation and then use the 'Browse' option."
+"The selection contains only whitespace. Please select a valid block of code."
 msgstr ""
 
-#: ../src/ard_initbrdsel.cpp:11
-msgid "Select development board"
+#: ../src/ard_refactor.cpp:2103
+msgid "Function name:"
 msgstr ""
 
-#: ../src/ard_initbrdsel.cpp:18
-#, c-format
-msgid ""
-"No development board is configured for this sketch.\n"
-"\n"
-"Sketch: %s\n"
-"\n"
-"You can select one from your recently used boards, or open the full board "
-"selector."
+#: ../src/ard_refactor.cpp:2105
+msgid "extractedFunction"
 msgstr ""
 
-#: ../src/ard_initbrdsel.cpp:25
-msgid "Recently used boards:"
+#: ../src/ard_refactor.cpp:2115
+msgid "Function name cannot be empty."
 msgstr ""
 
-#: ../src/ard_initbrdsel.cpp:33
-msgid "Use selected"
+#: ../src/ard_refactor.cpp:2123
+msgid "Function name is not a valid identifier."
 msgstr ""
 
-#: ../src/ard_initbrdsel.cpp:34
-msgid "Select board..."
-msgstr ""
-
-#: ../src/ard_initbrdsel.cpp:35
-msgid "Continue without board"
-msgstr ""
-
-#: ../src/ard_cc.cpp:2851
-msgid "Declaration:"
-msgstr ""
-
-#: ../src/sf.cpp:68 ../src/ard_ed_frm.cpp:3228
-msgid "Arduino Editor"
-msgstr ""
-
-#: ../src/sf.cpp:72
-#, c-format
-msgid "Version %s"
-msgstr ""
-
-#: ../src/utils.cpp:1015 ../src/ard_aimdldlg.cpp:183 ../src/ard_fmtdlg.cpp:187
-#: ../src/ard_boptdlg.cpp:76
-msgid "OK"
-msgstr ""
-
-#: ../src/utils.cpp:1016 ../src/ard_ed_frm.cpp:2364 ../src/ard_aimdldlg.cpp:184
-#: ../src/ard_fmtdlg.cpp:188 ../src/ard_diff.cpp:126 ../src/ard_boptdlg.cpp:77
-msgid "Cancel"
-msgstr ""
-
-#: ../src/ai_client.cpp:74
-msgid ""
-"Extra JSON request parameters must be a JSON object (e.g. {\"temperature"
-"\":0.2})."
-msgstr ""
-
-#: ../src/ai_client.cpp:82
-#, c-format
-msgid "Invalid extra request JSON: %s"
-msgstr ""
-
-#: ../src/ai_client.cpp:121
-msgid "Failed to initialize HTTP client (cURL)."
-msgstr ""
-
-#: ../src/ai_client.cpp:227
-msgid "HTTP request failed: "
-msgstr ""
-
-#: ../src/ai_client.cpp:255
-#, c-format
-msgid "HTTP error %ld from AI endpoint: %s"
-msgstr ""
-
-#: ../src/ai_client.cpp:264
-#, c-format
-msgid ""
-"HTTP error %ld from AI endpoint. Response body:\n"
-"%s"
-msgstr ""
-
-#: ../src/ai_client.cpp:336
-msgid "No API key found in the system secret store or OPENAI_API_KEY."
-msgstr ""
-
-#: ../src/ai_client.cpp:344 ../src/ai_client.cpp:364 ../src/ai_client.cpp:438
-msgid "AI is not enabled or not configured."
-msgstr ""
-
-#: ../src/ai_client.cpp:415
-msgid "Could not extract assistant text."
-msgstr ""
-
-#: ../src/ai_client.cpp:490
-msgid "HTTP request failed."
-msgstr ""
-
-#: ../src/ai_client.cpp:508
-msgid "Could not extract assistant text from AI response."
-msgstr ""
-
-#: ../src/ai_client.cpp:735
-msgid ""
-"Could not extract assistant text from AI response.\n"
-"Raw JSON (truncated):\n"
-msgstr ""
-
-#: ../src/ai_client.cpp:816
-msgid ""
-"Could not extract assistant text from AI response.\n"
-"Raw response (truncated):\n"
-msgstr ""
-
-#: ../src/ai_client.cpp:821
-#, c-format
-msgid "Failed to parse AI response: %s"
-msgstr ""
-
-#: ../src/ard_renamedlg.cpp:71 ../src/ard_ed_frm.cpp:4245
-#: ../src/ard_ed_frm.cpp:4266 ../src/ard_ed_frm.cpp:4279
-#: ../src/ard_ed_frm.cpp:4288 ../src/ard_ed_frm.cpp:4309
-#: ../src/ard_ed_frm.cpp:4319 ../src/ard_ed_frm.cpp:4326
-#: ../src/ard_ed_frm.cpp:4340 ../src/ard_ed_frm.cpp:4368
-#: ../src/ard_refactor.cpp:473 ../src/ard_refactor.cpp:483
-msgid "Rename symbol"
-msgstr ""
-
-#: ../src/ard_renamedlg.cpp:121 ../src/ard_ed_frm.cpp:3920
-msgid "New name:"
+#: ../src/ard_refactor.cpp:2150
+msgid "Unable to analyze the selected block."
 msgstr ""
 
 #: ../src/ard_renamedlg.cpp:149
 msgid "Preview"
-msgstr ""
-
-#: ../src/ard_finsymdlg.cpp:31 ../src/ard_ed_frm.cpp:1247
-msgid "Find symbol"
-msgstr ""
-
-#: ../src/ard_finsymdlg.cpp:49 ../src/ard_examples.cpp:94
-msgid "Path"
-msgstr ""
-
-#: ../src/ard_cli.cpp:2945
-msgid "Serial port is not set. Cannot upload sketch.\n"
-msgstr ""
-
-#: ../src/ard_pop.cpp:29 ../src/ard_diff.cpp:92
-msgid "AI explanation"
 msgstr ""
 
 #: ../src/ard_sermon.cpp:264
@@ -1341,10 +3328,6 @@ msgstr ""
 
 #: ../src/ard_setdlg.cpp:1047
 msgid "Network connection timeout (seconds, 0 = no limit):"
-msgstr ""
-
-#: ../src/ard_setdlg.cpp:1061 ../src/ard_ed_frm.cpp:2883
-msgid "CLI"
 msgstr ""
 
 #: ../src/ard_setdlg.cpp:1086
@@ -1671,11 +3654,6 @@ msgstr ""
 msgid "Resolve diagnostics delay (ms):"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1675 ../src/ard_ed_frm.cpp:2676
-#: ../src/ard_ed_frm.cpp:2941 ../src/ard_ed_frm.cpp:2964
-msgid "AI assistant"
-msgstr ""
-
 #: ../src/ard_setdlg.cpp:1680
 msgid "Enable AI-powered features (code fixes, explanations, ...)"
 msgstr ""
@@ -1713,10 +3691,6 @@ msgstr ""
 
 #: ../src/ard_setdlg.cpp:1811
 msgid "Import model from JSON"
-msgstr ""
-
-#: ../src/ard_setdlg.cpp:1812 ../src/ard_aimdldlg.cpp:282
-msgid "JSON files (*.json)|*.json|All files|*.*"
 msgstr ""
 
 #: ../src/ard_setdlg.cpp:1819
@@ -1806,2002 +3780,6 @@ msgstr ""
 msgid "Select external program"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:263
-msgid "The specified arduino-cli is invalid. It may be missing or outdated."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:264
-msgid "Warning"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:287
-msgid "Initializing..."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:319 ../src/ard_ed_frm.cpp:3471
-#: ../src/ard_ed_frm.cpp:3666
-#, c-format
-msgid "Directory '%s' does not exist."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:331
-#, c-format
-msgid "Directory '%s' could not be opened."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:351
-msgid "Opening sketch..."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:397
-#, c-format
-msgid "Can't create file '%s'."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:413
-msgid "Updating board..."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:454
-msgid "Creating completion engine..."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:485
-msgid "Initiating background processes..."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:486
-msgid "Loading installed libraries..."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:609
-msgid "Arduino Clang completion initialized for "
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:639
-msgid "Failed create Arduino Clang completion!"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:674 ../src/ard_ed_frm.cpp:1299
-msgid "Initializing Arduino Clang completion..."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:678 ../src/ard_ed_frm.cpp:1303
-msgid "Loading board parameters..."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:686 ../src/ard_ed_frm.cpp:1307
-msgid "Loading compile parameters..."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:726
-msgid "Error loading default board options."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:732
-msgid "Board has no options."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:732
-msgid "Information"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:740
-msgid "Error loading board options."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:749
-msgid "Board settings"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:817 ../src/ard_ed_frm.cpp:870
-msgid "The file in the editor is modified. Do you want to save the file?"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:818 ../src/ard_ed_frm.cpp:871
-msgid "Close tab"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:822 ../src/ard_ed_frm.cpp:875
-#: ../src/ard_ed_frm.cpp:1189 ../src/ard_ed_frm.cpp:1214
-msgid "Save error!"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:911
-msgid "Close Others"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:912
-msgid "Close All"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:974
-#, c-format
-msgid "File %s not found."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:979
-msgid "Cannot delete .ino file of the sketch."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:991
-msgid ""
-"The file has unsaved changes.\n"
-"Do you really want to delete it?"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:993 ../src/ard_filestree.cpp:438
-msgid "Delete file"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1005
-#, c-format
-msgid "Failed to delete %s."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1044
-msgid "File with this name already exists in the filesystem."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1049
-msgid "Cannot create file outside of project."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1056
-#, c-format
-msgid "Cannot create file '%s'."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1102 ../src/ard_examples.cpp:479
-msgid "Sketch name cannot be empty."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1115
-#, c-format
-msgid "Error creating directory '%s'."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1187
-msgid "Saved..."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1212
-msgid "All saved..."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1233
-msgid "Serial port changed to "
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1241
-msgid "Serial ports refreshed."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1247
-msgid "No symbols found."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1297
-msgid "Rebuilding project..."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1338
-msgid "Compilation"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1341
-msgid "Upload"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1344
-msgid "Library installation"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1347
-msgid "Library uninstalation"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1354
-msgid "Action"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1362
-#, c-format
-msgid "Other action \"%s\" running. Please try again later."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1376
-#, c-format
-msgid "%s started..."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1389
-msgid "finished."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1389
-msgid "failed."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1429
-msgid "arduino-cli build diagnostics"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1450 ../src/ard_ed_frm.cpp:2206
-msgid "Enumerating available boards..."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1452
-msgid "Loading core list..."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1461
-#, c-format
-msgid "%s failed. See the CLI output for more information."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1501
-msgid "Building project..."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1536
-msgid "Uploading project..."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1656
-msgid "Resolving missing libraries..."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1712 ../src/ard_ed_frm.cpp:2882
-msgid "Problems"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1743
-msgid "Translation unit not prepared."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1758 ../src/ard_ed_frm.cpp:1957
-msgid "Diagnostics turned off."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1768
-msgid "No problems found."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1936
-msgid "Project diagnostics evaluation..."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1951
-msgid "Diagnostic evaluation..."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:1967
-msgid "Failed to load Arduino libraries from arduino-cli."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2036
-#, c-format
-msgid ""
-"Header '%s' was not found, but it looks like it belongs to an installed "
-"Arduino library.\n"
-"\n"
-"In this mode, libraries are detected from the last project build, so newly "
-"added #include directives won't be picked up until you rebuild.\n"
-"\n"
-"Rebuild will regenerate the build configuration (including compile_commands."
-"json) and attach libraries to this sketch.\n"
-"\n"
-"Rebuild now?"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2046
-msgid "Rebuild required"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2059
-msgid ""
-"The following missing headers are claimed to be provided by Arduino "
-"libraries:\n"
-"\n"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2079
-msgid ""
-"\n"
-"Note: Arduino library metadata can be wrong. The Library Manager will be "
-"opened so you can choose what to install.\n"
-"\n"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2084
-msgid "Missing headers"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2087
-msgid "Open Library Manager"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2087
-msgid "Ignore"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2120
-msgid "Failed to load installed Arduino libraries from arduino-cli."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2194
-msgid "Failed to load installed Arduino cores from arduino-cli."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2215
-msgid "Failed to load Arduino cores from arduino-cli."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2240
-msgid "Failed to load available boards from arduino-cli."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2264
-msgid "Resolving libraries..."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2360
-msgid ""
-"Some files have unsaved changes.\n"
-"Do you want to save them before exiting?"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2361
-msgid "Confirm exit"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2364
-msgid "Save"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2364
-msgid "Discard"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2375
-msgid "Some files couldn't be saved."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2375
-msgid "Save error"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2520
-msgid "New Sketch...\tCtrl+N"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2521
-msgid "Create new sketch"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2526
-msgid "Open Sketch...\tCtrl+O"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2527
-msgid "Open an existing Arduino sketch directory"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2532
-msgid "Open recent"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2537
-msgid "Sketches"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2542
-msgid "Examples...\tCtrl+E"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2543
-msgid "Browse and preview Arduino library examples"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2548
-msgid "Save\tCtrl+S"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2549
-msgid "Save the current file"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2554
-msgid "Save All\tCtrl+Shift+S"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2555
-msgid "Save all opened files"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2562
-msgid "Settings..."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2563
-msgid "Open configuration (cli, fonts, colors and behavior)"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2577
-msgid "Exit the application"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2589
-msgid "Back\tAlt-Left"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2590
-msgid "Jump back to the previous cursor navigation location"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2595
-msgid "Forward\tAlt-Right"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2596
-msgid "Go forward in navigation history"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2601
-msgid "Find symbol...\tCtrl-Shift-O"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2602
-msgid "Find and navigate to any symbol in the current sketch"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2609
-msgid "Library manager...\tCtrl+Shift+L"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2610
-msgid "Manage Arduino libraries"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2615
-msgid "Boards manager...\tCtrl+Shift+B"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2616
-msgid "Manage Arduino boards (cores)"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2622 ../src/ard_ed_frm.cpp:3330
-msgid "Serial monitor"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2623
-msgid "Shows serial monitor of connected board"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2630
-msgid "Build\tCtrl+R"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2631
-msgid "Build sketch using arduino-cli"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2636
-msgid "Upload\tCtrl+U"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2637
-msgid "Upload sketch using arduino-cli"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2644
-msgid "Clean\tShift+Ctrl+K"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2645
-msgid "Remove build cache and regenerate clang properties"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2654 ../src/ard_ed_frm.cpp:2929
-#: ../src/ard_ed_frm.cpp:2962
-msgid "Output"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2655
-msgid "Output window problems / build"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2665
-msgid "Sketch browser"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2666
-msgid "Show browser for Sketch directory"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2677
-msgid "Show AI chat panel"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2690
-msgid "Check for Updates..."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2691
-msgid "Check GitHub for a newer version of Arduino Editor"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2698
-msgid "&About Arduino Editor...\tShift-F1"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2699 ../src/ard_aboutdlg.cpp:329
-msgid "About Arduino Editor"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2709
-msgid "&File"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2710
-msgid "&Project"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2711
-msgid "&Tools"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2712
-msgid "&View"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2713
-msgid "&Help"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2771
-msgid "Loading available boards..."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2774
-msgid "Loading available cores..."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2827
-msgid "Development board options"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2829
-msgid "Build sketch (Ctrl+R)"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2831
-msgid "Upload sketch (Ctrl+U)"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2837
-msgid "Refresh port list"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2838
-msgid "Open Serial Monitor"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:2916 ../src/ard_ed_frm.cpp:2960
-msgid "Sketch files"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:3235
-msgid "Application initializing..."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:3328
-msgid ""
-"Serial monitor is available only for local serial ports.\n"
-"\n"
-"Select a serial port in the toolbar."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:3429
-msgid "(Empty)"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:3432 ../src/ard_ed_frm.cpp:3458
-#: ../src/ard_ed_frm.cpp:3488
-msgid "Clear history"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:3488
-msgid "Do you really want to clear the recent sketches history?"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:3553
-msgid "(SketchesDir does not exist)"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:3560
-msgid "(Cannot open SketchesDir)"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:3624
-msgid "(No sketches found)"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:3817 ../src/ard_ed_frm.cpp:3968
-#, c-format
-msgid "Cannot open '%s' in associated application."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:3817 ../src/ard_ed_frm.cpp:3968
-msgid "Open file"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:3828
-msgid "Enter new file name:"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:3828 ../src/ard_filestree.cpp:421
-msgid "New file"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:3828
-msgid "new_file.cpp"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:3837
-msgid "File name must not contain path separators."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:3853
-msgid "Folder name:"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:3854 ../src/ard_filestree.cpp:422
-msgid "New folder"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:3855
-msgid "new_folder"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:3864
-msgid "Invalid folder name."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:3870
-msgid "Cannot create folder."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:3886
-msgid "Cannot delete .ino file of sketch."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:3891
-#, c-format
-msgid "Do you want to delete folder %s and all its contents?"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:3892
-#, c-format
-msgid "Do you want to delete file %s?"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:3895 ../src/ard_aimdldlg.cpp:173
-msgid "Delete"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:3903
-msgid "Failed to delete: "
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:3920
-msgid "Rename"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:3954
-msgid "Rename failed."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:3975
-msgid "No board selected"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:4023 ../src/ard_ed_frm.cpp:4123
-msgid "--- Select board ---"
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:4235
-msgid "Code completion engine is not available."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:4245
-msgid "Translation unit is not valid."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:4266
-msgid "Sources contains compilation errors."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:4279
-msgid "No usages of this symbol were found."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:4288
-msgid "Symbol is declared outside of sketch directory."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:4309
-msgid "New name cannot be empty."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:4319
-msgid "New name is not a valid identifier."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:4326
-msgid "No occurrences selected."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:4340
-msgid "No usages of this symbol were found inside the current sketch."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:4368
-msgid "No matching occurrences to rename were found."
-msgstr ""
-
-#: ../src/ard_ed_frm.cpp:4372
-#, c-format
-msgid "Renamed %d occurrences."
-msgstr ""
-
-#: ../src/ard_examples.cpp:40
-msgid "Arduino Library Examples"
-msgstr ""
-
-#: ../src/ard_examples.cpp:64
-msgid "Filter libraries..."
-msgstr ""
-
-#: ../src/ard_examples.cpp:72
-msgid "Library"
-msgstr ""
-
-#: ../src/ard_examples.cpp:75
-msgid "URL"
-msgstr ""
-
-#: ../src/ard_examples.cpp:93
-msgid "Example"
-msgstr ""
-
-#: ../src/ard_examples.cpp:283
-msgid ""
-"// Example not found:\n"
-"// "
-msgstr ""
-
-#: ../src/ard_examples.cpp:291 ../src/ard_examples.cpp:336
-msgid ""
-"// Cannot open file:\n"
-"// "
-msgstr ""
-
-#: ../src/ard_examples.cpp:311
-msgid ""
-"// Cannot open directory:\n"
-"// "
-msgstr ""
-
-#: ../src/ard_examples.cpp:325
-msgid ""
-"// No .ino (or .cpp) file found in:\n"
-"// "
-msgstr ""
-
-#: ../src/ard_examples.cpp:452
-msgid "Example directory does not exist:\n"
-msgstr ""
-
-#: ../src/ard_examples.cpp:452 ../src/ard_examples.cpp:469
-msgid "Install example"
-msgstr ""
-
-#: ../src/ard_examples.cpp:464
-msgid "example"
-msgstr ""
-
-#: ../src/ard_examples.cpp:468
-msgid "Enter sketch name:"
-msgstr ""
-
-#: ../src/ard_examples.cpp:485
-msgid "Sketch name must not contain path separators."
-msgstr ""
-
-#: ../src/ard_examples.cpp:491
-msgid "Sketches directory is not known."
-msgstr ""
-
-#: ../src/ard_examples.cpp:499
-msgid "Target sketch directory already exists:\n"
-msgstr ""
-
-#: ../src/ard_examples.cpp:504
-msgid "Failed to copy example to:\n"
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:57
-msgid "AI model"
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:88
-msgid "Name:"
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:92
-msgid "Endpoint URL:"
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:96
-msgid "Model:"
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:100
-msgid "Maximum AI iterations:"
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:106
-msgid "Request timeout (seconds, 0 = no limit):"
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:113
-msgid "Force file_range policy (AI must inspect files before PATCH)"
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:117
-msgid "Keep full AI context (include all requested code and info)"
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:121
-msgid "Limit AI context to last applied change (floating window)"
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:126
-msgid "Authentication"
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:127
-msgid "This endpoint requires an API key"
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:132
-msgid "API key:"
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:137
-msgid "Clear stored key"
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:143
-msgid "The API key is stored using the system's secure keychain."
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:149
-msgid "Extra request JSON"
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:174
-msgid "Export..."
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:175
-msgid "Test"
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:243
-msgid "A key is already stored. Leave empty to keep it."
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:245
-msgid "Enter your API key (will be stored securely)."
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:281
-msgid "Export model to JSON"
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:288
-msgid "Failed to write file."
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:288
-msgid "Export"
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:302 ../src/ard_aimdldlg.cpp:417
-msgid "Invalid JSON"
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:328 ../src/ard_aimdldlg.cpp:425
-msgid "Endpoint URL is empty."
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:328 ../src/ard_aimdldlg.cpp:350
-#: ../src/ard_aimdldlg.cpp:425
-msgid "Validation"
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:350
-msgid ""
-"API key is required for this endpoint (no key provided and none stored)."
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:394
-msgid "Connection test succeeded."
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:394 ../src/ard_aimdldlg.cpp:396
-msgid "AI Test"
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:396
-msgid "Connection test failed."
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:452
-msgid ""
-"System keyring (Secret Service) is not available in this session.\n"
-"\n"
-"The API key will NOT be saved and you will have to enter it again next "
-"time.\n"
-"\n"
-"Tip: On Linux/Raspberry Pi this usually means there is no DBus session "
-"(DBUS_SESSION_BUS_ADDRESS is missing) or no secret-service provider is "
-"running."
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:456
-msgid "API key not saved"
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:494
-msgid "Failed to save AI API key to the system secret store."
-msgstr ""
-
-#: ../src/ard_fmtdlg.cpp:146
-msgid "Clang-format options"
-msgstr ""
-
-#: ../src/ard_fmtdlg.cpp:163
-msgid ""
-"These options are used only when the sketch does NOT contain .clang-format "
-"or _clang-format."
-msgstr ""
-
-#: ../src/ard_fmtdlg.cpp:175
-msgid "Open clang-format style options documentation"
-msgstr ""
-
-#: ../src/ard_fmtdlg.cpp:182
-msgid "Reset to defaults"
-msgstr ""
-
-#: ../src/ard_coreman.cpp:53
-msgid "Arduino Cores"
-msgstr ""
-
-#: ../src/ard_coreman.cpp:116
-msgid "id / maintainer / board / website"
-msgstr ""
-
-#: ../src/ard_coreman.cpp:131
-msgid "Core"
-msgstr ""
-
-#: ../src/ard_coreman.cpp:134
-msgid "Boards"
-msgstr ""
-
-#: ../src/ard_coreman.cpp:148
-msgid "Update index"
-msgstr ""
-
-#: ../src/ard_coreman.cpp:173
-msgid "No cores (boards) available"
-msgstr ""
-
-#: ../src/ard_coreman.cpp:626
-msgid "Installing core/board toolchain..."
-msgstr ""
-
-#: ../src/ard_coreman.cpp:636
-msgid "Do you really want to uninstall core:\n"
-msgstr ""
-
-#: ../src/ard_coreman.cpp:639
-msgid "installed "
-msgstr ""
-
-#: ../src/ard_coreman.cpp:643
-msgid "Uninstall core"
-msgstr ""
-
-#: ../src/ard_filestree.cpp:180 ../src/ard_filestree.cpp:326
-msgid "Libraries"
-msgstr ""
-
-#: ../src/ard_filestree.cpp:298
-msgid "No sketch opened"
-msgstr ""
-
-#: ../src/ard_filestree.cpp:320
-msgid "Files"
-msgstr ""
-
-#: ../src/ard_filestree.cpp:424
-msgid "Open in file browser"
-msgstr ""
-
-#: ../src/ard_filestree.cpp:428
-msgid "Rename folder"
-msgstr ""
-
-#: ../src/ard_filestree.cpp:429
-msgid "Delete folder"
-msgstr ""
-
-#: ../src/ard_filestree.cpp:433
-msgid "Open externally"
-msgstr ""
-
-#: ../src/ard_filestree.cpp:437
-msgid "Rename file"
-msgstr ""
-
-#: ../src/ard_mdwidget.cpp:136
-msgid "You"
-msgstr ""
-
-#: ../src/ard_mdwidget.cpp:138
-msgid "Assistant"
-msgstr ""
-
-#: ../src/ard_mdwidget.cpp:140
-msgid "System"
-msgstr ""
-
-#: ../src/ard_mdwidget.cpp:142
-msgid "Info"
-msgstr ""
-
-#: ../src/ard_mdwidget.cpp:144
-msgid "Error"
-msgstr ""
-
-#: ../src/ard_indic.cpp:272
-msgid "Terminate current process"
-msgstr ""
-
-#: ../src/ard_indic.cpp:309
-msgid "No background activity"
-msgstr ""
-
-#: ../src/ard_indic.cpp:312
-msgid "Background activity in progress (e.g. AI, parsing)"
-msgstr ""
-
-#: ../src/ard_indic.cpp:315
-msgid "Busy: heavy operation running"
-msgstr ""
-
-#: ../src/ard_indic.cpp:321
-msgid "Running tasks:"
-msgstr ""
-
-#: ../src/ard_indic.cpp:328
-msgid "Idle"
-msgstr ""
-
-#: ../src/ard_indic.cpp:331
-msgid "Background"
-msgstr ""
-
-#: ../src/ard_indic.cpp:334
-msgid "Busy"
-msgstr ""
-
-#: ../src/ard_indic.cpp:387
-msgid "Background activity"
-msgstr ""
-
-#: ../src/ard_ai.cpp:712
-msgid "Another AI action is running."
-msgstr ""
-
-#: ../src/ard_ai.cpp:713 ../src/ard_ai.cpp:720 ../src/ard_ai.cpp:2844
-#: ../src/ard_ai.cpp:3154 ../src/ard_ai.cpp:3177 ../src/ard_ai.cpp:3473
-#: ../src/ard_ai.cpp:3542
-msgid "Arduino Editor AI"
-msgstr ""
-
-#: ../src/ard_ai.cpp:719
-msgid "AI is disabled. Enable it in Settings -> AI."
-msgstr ""
-
-#: ../src/ard_ai.cpp:754
-msgid "Please select some code you want to explain."
-msgstr ""
-
-#: ../src/ard_ai.cpp:755 ../src/ard_ai.cpp:767 ../src/ard_ai.cpp:789
-#: ../src/ard_ai.cpp:3497
-msgid "AI explain selection"
-msgstr ""
-
-#: ../src/ard_ai.cpp:766
-msgid "The selected text is empty or whitespace only."
-msgstr ""
-
-#: ../src/ard_ai.cpp:774
-msgid ""
-"You are an expert Arduino/C++ assistant integrated into an IDE. Explain the "
-"selected code snippet in a clear and concise way. Focus on what it does, "
-"important details, side-effects and possible pitfalls. Answer in English."
-msgstr ""
-
-#: ../src/ard_ai.cpp:780
-msgid ""
-"Please explain the following C++/Arduino code snippet:\n"
-"\n"
-"```cpp\n"
-msgstr ""
-
-#: ../src/ard_ai.cpp:782 ../src/ard_ai.cpp:856
-msgid ""
-"\n"
-"```"
-msgstr ""
-
-#: ../src/ard_ai.cpp:788 ../src/ard_ai.cpp:1177 ../src/ard_ai.cpp:1290
-#: ../src/ard_ai.cpp:1411 ../src/ard_ai.cpp:1485 ../src/ard_ai.cpp:1772
-msgid "Failed to start AI request."
-msgstr ""
-
-#: ../src/ard_ai.cpp:839
-msgid ""
-"You are an expert C++/Arduino assistant integrated into an IDE.\n"
-"You will receive:\n"
-"1) A single C++ declaration of the symbol that should be documented.\n"
-"2) Additional surrounding code for context.\n"
-"You MUST generate a concise Doxygen-style documentation comment for that "
-"symbol only.\n"
-"Rules:\n"
-"- Output ONLY a C++ documentation comment block starting with \"/**\" and "
-"ending with \"*/\".\n"
-"- Do not include the declaration or definition itself.\n"
-"- Use clear English sentences.\n"
-"- For functions/methods, include @param and @return tags where appropriate.\n"
-"- Do not add any text outside the comment block."
-msgstr ""
-
-#: ../src/ard_ai.cpp:853
-#, c-format
-msgid ""
-"Generate a documentation comment for the symbol %s in the following C++/"
-"Arduino code:\n"
-"\n"
-"```cpp\n"
-msgstr ""
-
-#: ../src/ard_ai.cpp:887
-msgid "This symbol is already documented."
-msgstr ""
-
-#: ../src/ard_ai.cpp:887 ../src/ard_ai.cpp:896 ../src/ard_ai.cpp:906
-#: ../src/ard_ai.cpp:968 ../src/ard_ai.cpp:1050 ../src/ard_ai.cpp:1106
-#: ../src/ard_ai.cpp:1167 ../src/ard_ai.cpp:1178 ../src/ard_ai.cpp:1206
-#: ../src/ard_ai.cpp:1217 ../src/ard_ai.cpp:1226 ../src/ard_ai.cpp:1281
-#: ../src/ard_ai.cpp:1291 ../src/ard_ai.cpp:3442 ../src/ard_ai.cpp:3503
-#: ../src/ard_ai.cpp:3529
-msgid "AI generate documentation"
-msgstr ""
-
-#: ../src/ard_ai.cpp:895 ../src/ard_ai.cpp:1205 ../src/ard_ai.cpp:1330
-#: ../src/ard_refactor.cpp:656 ../src/ard_refactor.cpp:915
-#: ../src/ard_refactor.cpp:1127
-msgid "No symbol under the cursor."
-msgstr ""
-
-#: ../src/ard_ai.cpp:905
-msgid "No suitable type or context for documentation at the cursor."
-msgstr ""
-
-#: ../src/ard_ai.cpp:967
-msgid "No documentation comments to insert."
-msgstr ""
-
-#: ../src/ard_ai.cpp:1046
-#, c-format
-msgid ""
-"Documentation was generated, but no suitable insertion points were found "
-"(%zu symbol(s))."
-msgstr ""
-
-#: ../src/ard_ai.cpp:1103
-#, c-format
-msgid "Documentation generated for %zu symbol(s)."
-msgstr ""
-
-#: ../src/ard_ai.cpp:1166
-msgid "No functions or methods found that need documentation."
-msgstr ""
-
-#: ../src/ard_ai.cpp:1216
-msgid "Cursor is not on a class or struct declaration."
-msgstr ""
-
-#: ../src/ard_ai.cpp:1225
-msgid "Class body range is not available."
-msgstr ""
-
-#: ../src/ard_ai.cpp:1280
-msgid "No methods found in the current class that need documentation."
-msgstr ""
-
-#: ../src/ard_ai.cpp:1331 ../src/ard_ai.cpp:1347 ../src/ard_ai.cpp:1356
-#: ../src/ard_ai.cpp:1412 ../src/ard_ai.cpp:3535
-msgid "AI optimize function or method"
-msgstr ""
-
-#: ../src/ard_ai.cpp:1346
-msgid "Cursor is not on a function or method declaration."
-msgstr ""
-
-#: ../src/ard_ai.cpp:1355
-msgid "Function or method body range is not available."
-msgstr ""
-
-#: ../src/ard_ai.cpp:1486 ../src/ard_ai.cpp:3509
-msgid "AI solve project errors"
-msgstr ""
-
-#: ../src/ard_ai.cpp:1549
-msgid "please "
-msgstr ""
-
-#: ../src/ard_ai.cpp:1551
-msgid "pls "
-msgstr ""
-
-#: ../src/ard_ai.cpp:1773 ../src/ard_ai.cpp:3521
-msgid "AI interactive chat"
-msgstr ""
-
-#: ../src/ard_ai.cpp:1916
-msgid ""
-"(Loaded previous session context.)\n"
-"\n"
-msgstr ""
-
-#: ../src/ard_ai.cpp:2023
-#, c-format
-msgid ""
-"\n"
-"\n"
-"<patch into file %s (%d-%d)>\n"
-msgstr ""
-
-#: ../src/ard_ai.cpp:2030
-#, c-format
-msgid ""
-"\n"
-"\n"
-"<info with type %s requested>\n"
-msgstr ""
-
-#: ../src/ard_ai.cpp:2831
-msgid ""
-"\n"
-"\n"
-"<patch rejected: file_range required>\n"
-msgstr ""
-
-#: ../src/ard_ai.cpp:2843
-msgid "AI requested more information too many times."
-msgstr ""
-
-#: ../src/ard_ai.cpp:3128
-msgid ""
-"\n"
-"\n"
-"<patch rejected>"
-msgstr ""
-
-#: ../src/ard_ai.cpp:3154
-msgid "New sketch file can not be created!"
-msgstr ""
-
-#: ../src/ard_ai.cpp:3176
-msgid "AI patch does not apply to the current file."
-msgstr ""
-
-#: ../src/ard_ai.cpp:3184
-#, c-format
-msgid ""
-"\n"
-"\n"
-"<patch applied into file %s>\n"
-msgstr ""
-
-#: ../src/ard_ai.cpp:3235
-#, c-format
-msgid "<info with type %s requested>\n"
-msgstr ""
-
-#: ../src/ard_ai.cpp:3441
-msgid "Failed to start AI request for next symbol."
-msgstr ""
-
-#: ../src/ard_ai.cpp:3487
-msgid "Unknown AI error."
-msgstr ""
-
-#: ../src/ard_ai.cpp:3496 ../src/ard_ai.cpp:3502 ../src/ard_ai.cpp:3508
-#: ../src/ard_ai.cpp:3520 ../src/ard_ai.cpp:3528 ../src/ard_ai.cpp:3534
-#: ../src/ard_ai.cpp:3541
-msgid "AI request failed:\n"
-msgstr ""
-
-#: ../src/ard_refactor.cpp:472
-msgid "No identifier under the cursor."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:482
-msgid "The text under the cursor is not a valid identifier."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:507 ../src/ard_refactor.cpp:519
-msgid "Please select an expression to extract into a variable."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:508 ../src/ard_refactor.cpp:520
-#: ../src/ard_refactor.cpp:538 ../src/ard_refactor.cpp:551
-#: ../src/ard_refactor.cpp:563 ../src/ard_refactor.cpp:571
-msgid "Introduce variable"
-msgstr ""
-
-#: ../src/ard_refactor.cpp:537
-msgid ""
-"The selection contains only whitespace. Please select a valid expression."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:550
-msgid "Variable name:"
-msgstr ""
-
-#: ../src/ard_refactor.cpp:552
-msgid "tmp"
-msgstr ""
-
-#: ../src/ard_refactor.cpp:562
-msgid "Variable name cannot be empty."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:570
-msgid "Variable name is not a valid identifier."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:639 ../src/ard_refactor.cpp:897
-#: ../src/ard_refactor.cpp:1082 ../src/ard_refactor.cpp:1946
-#: ../src/ard_refactor.cpp:2054
-msgid "Code completion is not initialized yet."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:664
-msgid ""
-"This refactoring currently supports only local variables declared inside a "
-"function."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:671
-msgid "The symbol under the cursor is not a valid variable."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:682
-msgid "Unable to collect variable occurrences from the code model."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:689
-msgid "No usages of this variable were found."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:699
-msgid ""
-"This variable is used in another file.\n"
-"Inline variable currently supports only variables used in a single file."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:750
-msgid ""
-"Multiple assignments or initializations of this variable were found.\n"
-"Inline variable currently supports only a single initialized declaration."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:764
-msgid ""
-"Unable to locate a simple initialized declaration for this variable.\n"
-"Expected something like \"auto name = expr;\"."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:780 ../src/ard_refactor.cpp:790
-msgid "The variable does not have an initializer."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:812
-msgid ""
-"No usages of this variable were found outside its declaration.\n"
-"Do you still want to remove the declaration?"
-msgstr ""
-
-#: ../src/ard_refactor.cpp:898 ../src/ard_refactor.cpp:916
-#: ../src/ard_refactor.cpp:926 ../src/ard_refactor.cpp:962
-#: ../src/ard_refactor.cpp:990 ../src/ard_refactor.cpp:1008
-#: ../src/ard_refactor.cpp:1019
-msgid "Generate function"
-msgstr ""
-
-#: ../src/ard_refactor.cpp:925 ../src/ard_refactor.cpp:1136
-msgid "The symbol under the cursor does not look like a function."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:961 ../src/ard_refactor.cpp:1160
-msgid "Unable to build function signature."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:987
-#, c-format
-msgid ""
-"An implementation of this function already exists in %s.\n"
-"Do you want to open it?"
-msgstr ""
-
-#: ../src/ard_refactor.cpp:1007
-#, c-format
-msgid "Function signature (in %s):"
-msgstr ""
-
-#: ../src/ard_refactor.cpp:1018
-msgid "Function signature cannot be empty."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:1083 ../src/ard_refactor.cpp:1090
-#: ../src/ard_refactor.cpp:1111 ../src/ard_refactor.cpp:1128
-#: ../src/ard_refactor.cpp:1137 ../src/ard_refactor.cpp:1161
-#: ../src/ard_refactor.cpp:1175 ../src/ard_refactor.cpp:1198
-#: ../src/ard_refactor.cpp:1209
-msgid "Create declaration in header"
-msgstr ""
-
-#: ../src/ard_refactor.cpp:1089
-msgid ""
-"This refactoring can only be used in a C/C++ source file (.cpp, .c, ...)."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:1110
-msgid "Unable to locate or create a header file for this source file."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:1172
-#, c-format
-msgid ""
-"An declaration of this function already exists in %s.\n"
-"Do you want to open it?"
-msgstr ""
-
-#: ../src/ard_refactor.cpp:1197
-#, c-format
-msgid "Function declaration (in %s):"
-msgstr ""
-
-#: ../src/ard_refactor.cpp:1208
-msgid "Function declaration cannot be empty."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:1434
-msgid "Document is read-only."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:1579
-msgid "Format selection"
-msgstr ""
-
-#: ../src/ard_refactor.cpp:1586
-msgid "Format file"
-msgstr ""
-
-#: ../src/ard_refactor.cpp:1635
-msgid "implementation"
-msgstr ""
-
-#: ../src/ard_refactor.cpp:1637
-msgid "declaration"
-msgstr ""
-
-#: ../src/ard_refactor.cpp:1641
-#, c-format
-msgid ""
-"The %s file %s does not exist.\n"
-"Do you want to create it?"
-msgstr ""
-
-#: ../src/ard_refactor.cpp:1947 ../src/ard_refactor.cpp:1959
-#: ../src/ard_refactor.cpp:1966 ../src/ard_orginc.cpp:31
-msgid "Organize includes"
-msgstr ""
-
-#: ../src/ard_refactor.cpp:1958
-msgid "Unable to analyze includes for this file."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:1965
-msgid "No #include directives found in this file."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:2055 ../src/ard_refactor.cpp:2066
-#: ../src/ard_refactor.cpp:2076 ../src/ard_refactor.cpp:2104
-#: ../src/ard_refactor.cpp:2116 ../src/ard_refactor.cpp:2124
-#: ../src/ard_refactor.cpp:2151
-msgid "Extract function"
-msgstr ""
-
-#: ../src/ard_refactor.cpp:2065
-msgid "Please select a block of code to extract."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:2075
-msgid ""
-"The selection contains only whitespace. Please select a valid block of code."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:2103
-msgid "Function name:"
-msgstr ""
-
-#: ../src/ard_refactor.cpp:2105
-msgid "extractedFunction"
-msgstr ""
-
-#: ../src/ard_refactor.cpp:2115
-msgid "Function name cannot be empty."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:2123
-msgid "Function name is not a valid identifier."
-msgstr ""
-
-#: ../src/ard_refactor.cpp:2150
-msgid "Unable to analyze the selected block."
-msgstr ""
-
-#: ../src/ard_aboutdlg.cpp:33
-#, c-format
-msgid ""
-"<html>\n"
-"<body bgcolor=\"%s\">\n"
-"   <a name=\"top\"></a>\n"
-"   <h2>Arduino Editor %s</h2>\n"
-"\n"
-"   <p>\n"
-"     <b>Modern Arduino IDE powered by Clang</b>\n"
-"     <p>\n"
-"       <i>Fast code completion. Smart navigation. No nonsense.</i>\n"
-"     </p>\n"
-"   </p>\n"
-"\n"
-"   <hr>\n"
-"\n"
-"   <p>\n"
-"     Arduino Editor is a modern development environment for Arduino "
-"projects\n"
-"     built on the Clang toolchain. It provides fast and precise code "
-"completion,\n"
-"     smart navigation tools, real-time error highlighting, and full support "
-"for\n"
-"     multi-file Arduino sketches.\n"
-"   </p>\n"
-"\n"
-"   <p>\n"
-"     The goal of the project is to offer a stable, powerful and professional "
-"IDE\n"
-"     as a drop-in alternative for the official Arduino IDE.\n"
-"   </p>\n"
-"\n"
-"   <hr>\n"
-"\n"
-"   <p>\n"
-"     <b>Project homepage and source code:&nbsp;</b><a href=\"https://github."
-"com/ppet36/ArduinoEditor\">https://github.com/ppet36/ArduinoEditor</a>\n"
-"   </p>\n"
-"\n"
-"   <hr>\n"
-"\n"
-"\n"
-"   <h3>Key Features</h3>\n"
-"   <ul>\n"
-"     <li><a href=\"#async\">Asynchronous processing</a> - the UI stays "
-"responsive even on large projects</li>\n"
-"     <li><a href=\"#navigation\">Smart navigation</a> - go to definition, "
-"follow symbol, hover information</li>\n"
-"     <li><a href=\"#clang\">Clang-based engine</a> for parsing, symbol "
-"resolution and code completion</li>\n"
-"     <li><a href=\"#project\">Project-wide support</a> for structured "
-"sketches and multiple .ino/.cpp/.hpp files</li>\n"
-"     <li><a href=\"#refactoring\">Advanced refactoring</a> - safe, semantic "
-"code transformations</li>\n"
-"     <li><a href=\"#ai\">AI-assisted development</a> - patch-based edits "
-"with diff preview and user control</li>\n"
-"     <li><a href=\"#editor\">Configurable editor</a> - colors, fonts and "
-"behavior can be customized</li>\n"
-"     <li><a href=\"#cli\">Arduino CLI integration</a> for building and "
-"uploading sketches</li>\n"
-"   </ul>\n"
-"\n"
-"   <hr>\n"
-"\n"
-"   <a name=\"async\"></a>\n"
-"   <h3>Asynchronous Processing</h3>\n"
-"   <p>\n"
-"     Heavy operations such as parsing, indexing, compilation and AI requests "
-"are executed\n"
-"     asynchronously to keep the user interface responsive.\n"
-"   </p>\n"
-"   <p><a href=\"#top\">Back to top</a></p>\n"
-"\n"
-"   <hr>\n"
-"\n"
-"   <a name=\"navigation\"></a>\n"
-"   <h3>Smart Navigation</h3>\n"
-"   <ul>\n"
-"     <li>Go to definition / declaration</li>\n"
-"     <li>Navigate between symbol references across files</li>\n"
-"     <li>Navigation history with backward and forward movement</li>\n"
-"     <li>Hover information powered by semantic analysis</li>\n"
-"   </ul>\n"
-"   <p><a href=\"#top\">Back to top</a></p>\n"
-"\n"
-"   <hr>\n"
-"\n"
-"   <a name=\"clang\"></a>\n"
-"   <h3>Clang-based Engine</h3>\n"
-"   <p>\n"
-"     The editor uses Clang/LLVM to understand code semantically (AST-based), "
-"enabling\n"
-"     precise completion, symbol resolution and on-the-fly diagnostics while "
-"editing.\n"
-"   </p>\n"
-"   <p><a href=\"#top\">Back to top</a></p>\n"
-"\n"
-"   <hr>\n"
-"\n"
-"   <a name=\"project\"></a>\n"
-"   <h3>Project-wide Multi-file Support</h3>\n"
-"   <p>\n"
-"     Full support for structured sketches and multiple files (.ino/.cpp/."
-"hpp), including\n"
-"     project-wide indexing, navigation and explicit support for structured "
-"Arduino projects.\n"
-"   </p>\n"
-"   <p><a href=\"#top\">Back to top</a></p>\n"
-"\n"
-"   <hr>\n"
-"\n"
-"   <a name=\"refactoring\"></a>\n"
-"   <h3>Advanced Refactoring</h3>\n"
-"   <p>\n"
-"     Clang-powered refactoring tools help you change code safely and "
-"predictably.\n"
-"     Transformations are semantic (AST-based), not simple text "
-"replacements.\n"
-"   </p>\n"
-"   <ul>\n"
-"     <li>Rename symbol across the project with full semantic awareness</li>\n"
-"     <li>Extract function from selected code blocks</li>\n"
-"     <li>Inline variable and introduce variable refactorings</li>\n"
-"      <li>Create implementation from declaration and declaration from "
-"implementation</li>\n"
-"   </ul>\n"
-"   <p><a href=\"#top\">Back to top</a></p>\n"
-"\n"
-"   <hr>\n"
-"\n"
-"   <a name=\"ai\"></a>\n"
-"   <h3>AI-Assisted Development</h3>\n"
-"   <p>\n"
-"     Arduino Editor includes a deeply integrated AI assistant designed to "
-"work directly\n"
-"     with your project structure and source code.\n"
-"   </p>\n"
-"   <ul>\n"
-"     <li>Context-aware code modifications using structured patches</li>\n"
-"     <li>Multi-file awareness for complex sketches</li>\n"
-"     <li>Explicit diff previews before applying any change</li>\n"
-"     <li>AI-assisted error analysis and problem solving</li>\n"
-"     <li>Session-based conversations with persistent history</li>\n"
-"   </ul>\n"
-"   <p>\n"
-"     The AI never modifies code blindly: every change is explicit, "
-"reviewable and\n"
-"     user-approved.\n"
-"   </p>\n"
-"   <p><a href=\"#top\">Back to top</a></p>\n"
-"\n"
-"   <hr>\n"
-"\n"
-"   <a name=\"editor\"></a>\n"
-"   <h3>Configurable Editor</h3>\n"
-"   <p>\n"
-"     Customize colors, fonts and behavior, with support for system light and "
-"dark themes.\n"
-"   </p>\n"
-"   <p><a href=\"#top\">Back to top</a></p>\n"
-"\n"
-"   <hr>\n"
-"\n"
-"   <a name=\"cli\"></a>\n"
-"   <h3>Arduino CLI Integration</h3>\n"
-"   <p>\n"
-"       Deep integration with arduino-cli for building, uploading, library "
-"management,\n"
-"       board management and compiler toolchain configuration.\n"
-"   </p>\n"
-"   <p><a href=\"#top\">Back to top</a></p>\n"
-"\n"
-"   <hr>\n"
-"\n"
-"   <p>\n"
-"     <b>Author:</b> Pavel Petrzela (ppet36)<br/>\n"
-"     <b>Powered by:</b> wxWidgets, Clang/LLVM, Arduino CLI\n"
-"   </p>\n"
-"</body>\n"
-"</html>\n"
-msgstr ""
-
-#: ../src/ard_aboutdlg.cpp:203
-msgid ""
-"  <h3>Arduino Editor License (GPLv3)</h3>\n"
-"  <p>\n"
-"    Arduino Editor is free software: you can redistribute it and/or modify "
-"it\n"
-"    under the terms of the GNU General Public License version 3 (GPLv3).\n"
-"  </p>\n"
-"  <p>\n"
-"    For the full license text see:<br>\n"
-"    <a href=\"https://www.gnu.org/licenses/gpl-3.0.html#license-text\">\n"
-"      https://www.gnu.org/licenses/gpl-3.0.html\n"
-"    </a>\n"
-"  </p>\n"
-msgstr ""
-
-#: ../src/ard_aboutdlg.cpp:216
-msgid ""
-"  <hr>\n"
-"  <h3>wxWidgets License</h3>\n"
-"  <p>\n"
-"    wxWidgets is distributed under the wxWidgets License.\n"
-"  </p>\n"
-"  <p>\n"
-"    For details see:<br>\n"
-"    <a href=\"https://www.wxwidgets.org/about/licence/\">\n"
-"      https://www.wxwidgets.org/about/licence/\n"
-"    </a>\n"
-"  </p>\n"
-msgstr ""
-
-#: ../src/ard_aboutdlg.cpp:229
-msgid ""
-"  <hr>\n"
-"  <h3>Clang/LLVM License</h3>\n"
-"  <p>\n"
-"    Clang and LLVM are distributed under the Apache License v2.0\n"
-"    with LLVM exceptions.\n"
-"  </p>\n"
-"  <p>\n"
-"    For details see:<br>\n"
-"    <a href=\"https://llvm.org/docs/DeveloperPolicy.html#license\">\n"
-"      https://llvm.org/docs/DeveloperPolicy.html#license\n"
-"    </a>\n"
-"  </p>\n"
-msgstr ""
-
-#: ../src/ard_aboutdlg.cpp:243
-msgid ""
-"  <hr>\n"
-"  <h3>cURL / libcurl License</h3>\n"
-"  <p>\n"
-"    This application uses libcurl (cURL) for network communication.\n"
-"  </p>\n"
-"  <p>\n"
-"    curl and libcurl are distributed under a permissive MIT/X derivative "
-"license.\n"
-"  </p>\n"
-"  <p>\n"
-"    For details see:<br>\n"
-"    <a href=\"https://curl.se/docs/copyright.html\">\n"
-"      https://curl.se/docs/copyright.html\n"
-"    </a>\n"
-"  </p>\n"
-msgstr ""
-
-#: ../src/ard_aboutdlg.cpp:259
-msgid ""
-"  <hr>\n"
-"  <h3>maddy Markdown Parser (MIT)</h3>\n"
-"  <p>\n"
-"    This application includes maddy, a C++ Markdown to HTML header-only "
-"parser library,\n"
-"    distributed under the MIT License.\n"
-"  </p>\n"
-"  <p>\n"
-"    Project home:<br>\n"
-"    <a href=\"https://github.com/progsource/maddy\">\n"
-"      https://github.com/progsource/maddy\n"
-"    </a>\n"
-"  </p>\n"
-"  <p>\n"
-"    License text:<br>\n"
-"    <a href=\"https://github.com/progsource/maddy/blob/master/LICENSE\">\n"
-"      https://github.com/progsource/maddy/blob/master/LICENSE\n"
-"    </a>\n"
-"  </p>\n"
-msgstr ""
-
-#: ../src/ard_aboutdlg.cpp:279
-msgid ""
-"  <hr>\n"
-"  <h3>arduino-cli License (GPLv3)</h3>\n"
-"  <p>\n"
-"    This product bundles the <strong>arduino-cli</strong> executable in "
-"binary form.\n"
-"    arduino-cli is distributed under the terms of the GNU General Public "
-"License\n"
-"    version 3 (GPLv3).\n"
-"  </p>\n"
-"  <p>\n"
-"    For the full license text see:<br>\n"
-"    <a href=\"https://github.com/arduino/arduino-cli/blob/master/LICENSE.txt"
-"\">\n"
-"      https://github.com/arduino/arduino-cli/blob/master/LICENSE.txt\n"
-"    </a>\n"
-"  </p>\n"
-msgstr ""
-
-#: ../src/ard_aboutdlg.cpp:294
-msgid ""
-"  <hr>\n"
-"  <h3>nlohmann/json (MIT)</h3>\n"
-"  <p>\n"
-"    This application includes nlohmann/json, a single-header JSON library "
-"for Modern C++,\n"
-"    distributed under the MIT License.\n"
-"  </p>\n"
-"  <p>\n"
-"    Project home:<br>\n"
-"    <a href=\"https://github.com/nlohmann/json\">\n"
-"      https://github.com/nlohmann/json\n"
-"    </a>\n"
-"  </p>\n"
-"  <p>\n"
-"    License text:<br>\n"
-"    <a href=\"https://github.com/nlohmann/json/blob/develop/LICENSE.MIT\">\n"
-"      https://github.com/nlohmann/json/blob/develop/LICENSE.MIT\n"
-"    </a>\n"
-"  </p>\n"
-msgstr ""
-
-#: ../src/ard_aboutdlg.cpp:360
-msgid "About"
-msgstr ""
-
-#: ../src/ard_aboutdlg.cpp:381
-msgid "Licenses"
-msgstr ""
-
-#: ../src/main.cpp:342
-msgid "Initializing UI..."
-msgstr ""
-
-#: ../src/main.cpp:395
-msgid ""
-"Thank you for trying Arduino Editor!\n"
-"\n"
-"It looks like this is your first time running the application.\n"
-"\n"
-"You can now either:\n"
-" - Open an existing Arduino sketch directory, or\n"
-" - Create a new sketch in your sketchbook folder.\n"
-"\n"
-"What would you like to do?"
-msgstr ""
-
-#: ../src/main.cpp:401
-msgid "Welcome to Arduino Editor"
-msgstr ""
-
-#: ../src/main.cpp:404
-msgid "Open sketch"
-msgstr ""
-
-#: ../src/main.cpp:427
-#, c-format
-msgid ""
-"Failed to create the default sketchbook folder:\n"
-"\n"
-"%s\n"
-"\n"
-"Please create a sketch folder manually and use 'Open sketch'."
-msgstr ""
-
-#: ../src/main.cpp:430
-msgid "Error creating sketchbook"
-msgstr ""
-
-#: ../src/ard_diff.cpp:40
-msgid "Review AI Changes"
-msgstr ""
-
-#: ../src/ard_diff.cpp:125
-msgid "Apply"
-msgstr ""
-
-#: ../src/ard_diff.cpp:188
-msgid "No changes to review."
-msgstr ""
-
-#: ../src/ard_diff.cpp:190
-msgid "Empty"
-msgstr ""
-
-#: ../src/ard_diff.cpp:203
-#, c-format
-msgid "Existing file: %s"
-msgstr ""
-
-#: ../src/ard_diff.cpp:218
-msgid "Original"
-msgstr ""
-
-#: ../src/ard_diff.cpp:219
-msgid "Patched"
-msgstr ""
-
-#: ../src/ard_diff.cpp:259
-msgid "Show full file"
-msgstr ""
-
-#: ../src/ard_diff.cpp:293
-#, c-format
-msgid "New file: %s"
-msgstr ""
-
-#: ../src/ard_diff.cpp:429
-msgid ""
-"\n"
-"\n"
-"/* --- next hunk --- */\n"
-"\n"
-msgstr ""
-
-#: ../src/ard_diff.cpp:528
-#, c-format
-msgid "-------- hunk #%zu (lines %d-%d) --------"
-msgstr ""
-
-#: ../src/ard_boptdlg.cpp:52
-msgid "<unknown>"
-msgstr ""
-
 #: ../src/ard_update.cpp:354
 msgid "Update available"
 msgstr ""
@@ -3854,40 +3832,63 @@ msgstr ""
 msgid "You are running the latest version (%s)."
 msgstr ""
 
-#: ../src/ard_orginc.cpp:43
+#: ../src/main.cpp:342
+msgid "Initializing UI..."
+msgstr ""
+
+#: ../src/main.cpp:395
 msgid ""
-"The following #include directives are considered unused and are selected for "
-"removal.\n"
-"Uncheck any includes you want to KEEP. Includes that remain unchecked will "
-"stay unchanged."
+"Thank you for trying Arduino Editor!\n"
+"\n"
+"It looks like this is your first time running the application.\n"
+"\n"
+"You can now either:\n"
+" - Open an existing Arduino sketch directory, or\n"
+" - Create a new sketch in your sketchbook folder.\n"
+"\n"
+"What would you like to do?"
 msgstr ""
 
-#: ../src/ard_orginc.cpp:55
-msgid "Remove"
+#: ../src/main.cpp:401
+msgid "Welcome to Arduino Editor"
 msgstr ""
 
-#: ../src/ard_orginc.cpp:56
-msgid "Include"
+#: ../src/main.cpp:404
+msgid "Open sketch"
 msgstr ""
 
-#: ../src/ard_orginc.cpp:58
-msgid "Header file"
+#: ../src/main.cpp:404 ../src/nsketch.cpp:26
+msgid "New sketch"
 msgstr ""
 
-#: ../src/ard_orginc.cpp:69
-msgid "(used)"
-msgstr ""
-
-#: ../src/ard_orginc.cpp:69
-msgid "(unused)"
-msgstr ""
-
-#: ../src/ard_orginc.cpp:83
-msgid "Sort #include directives"
-msgstr ""
-
-#: ../src/ard_orginc.cpp:86
+#: ../src/main.cpp:427
+#, c-format
 msgid ""
-"Sorts includes so that system headers come first, followed by user headers.\n"
-"Within each group, items are ordered alphabetically."
+"Failed to create the default sketchbook folder:\n"
+"\n"
+"%s\n"
+"\n"
+"Please create a sketch folder manually and use 'Open sketch'."
+msgstr ""
+
+#: ../src/main.cpp:430
+msgid "Error creating sketchbook"
+msgstr ""
+
+#: ../src/nsketch.cpp:37
+msgid "Sketch name:"
+msgstr ""
+
+#: ../src/nsketch.cpp:66
+msgid "Change"
+msgstr ""
+
+#: ../src/nsketch.cpp:147
+#, c-format
+msgid "Directory '%s' already exists."
+msgstr ""
+
+#: ../src/sf.cpp:72
+#, c-format
+msgid "Version %s"
 msgstr ""
