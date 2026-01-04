@@ -389,6 +389,9 @@ void ArduinoEditorFrame::OpenSketch(const std::string &skp) {
       f.Close();
 
       forcedFqbn = "arduino:avr:uno";
+
+      AddBoardToHistory(forcedFqbn);
+
       newContentCreated = true;
     } else {
       wxLogError(_("Can't create file '%s'."), inoFullPath);
@@ -420,6 +423,8 @@ void ArduinoEditorFrame::OpenSketch(const std::string &skp) {
       // selected from history
       std::string newFqbn = initDlg.GetSelectedFqbn();
       if (!newFqbn.empty()) {
+        AddBoardToHistory (newFqbn);
+
         UpdateBoard(newFqbn); // inside calls arduinoCli->SetFQBN(...)
       }
     } else if (res == wxID_YES) {
@@ -428,6 +433,8 @@ void ArduinoEditorFrame::OpenSketch(const std::string &skp) {
       if (brdDlg.ShowModal() == wxID_OK) {
         std::string newFqbn = brdDlg.GetSelectedFqbn();
         if (!newFqbn.empty()) {
+          AddBoardToHistory(newFqbn);
+
           UpdateBoard(newFqbn);
         }
       }
@@ -438,6 +445,8 @@ void ArduinoEditorFrame::OpenSketch(const std::string &skp) {
       } else {
         fallbackFqbn = "arduino:avr:uno";
       }
+      AddBoardToHistory(fallbackFqbn);
+
       UpdateBoard(fallbackFqbn);
     }
   }
@@ -701,6 +710,8 @@ void ArduinoEditorFrame::SelectBoard() {
   if (newFqbn.empty() || newFqbn == currentFqbn) {
     return;
   }
+
+  AddBoardToHistory(newFqbn);
 
   UpdateBoard(newFqbn);
 }
@@ -2409,7 +2420,6 @@ void ArduinoEditorFrame::BindEvents() {
   m_statusBar->Bind(EVT_PROCESS_TERMINATE_REQUEST, &ArduinoEditorFrame::OnCliProcessKill, this);
   m_boardChoice->Bind(wxEVT_CHOICE, &ArduinoEditorFrame::OnBoardChoiceChanged, this);
   m_optionsButton->Bind(wxEVT_BUTTON, &ArduinoEditorFrame::OnChangeBoardOptions, this);
-  m_optionsButton->Bind(wxEVT_BUTTON, &ArduinoEditorFrame::OnChangeBoardOptions, this);
 
   m_notebook->Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, &ArduinoEditorFrame::OnNotebookPageChanged, this);
   m_notebook->Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGING, &ArduinoEditorFrame::OnNotebookPageChanging, this);
@@ -4065,6 +4075,20 @@ void ArduinoEditorFrame::LoadBoardHistory() {
   }
 
   m_boardHistory.assign(uniq.begin(), uniq.end());
+  SortBoardHistory();
+}
+
+void ArduinoEditorFrame::AddBoardToHistory(const std::string& fqbn) {
+  std::string newFqbn = BaseFqbn3(fqbn);
+  if (std::find(m_boardHistory.begin(), m_boardHistory.end(), newFqbn) == m_boardHistory.end()) {
+    APP_DEBUG_LOG("FRM: adding new board %s to history", newFqbn.c_str());
+    m_boardHistory.push_back (newFqbn);
+
+    SortBoardHistory();
+  }
+}
+
+void ArduinoEditorFrame::SortBoardHistory() {
   std::sort(m_boardHistory.begin(), m_boardHistory.end(),
             [](const std::string &a, const std::string &b) {
               auto lower = [](unsigned char c) -> unsigned char {

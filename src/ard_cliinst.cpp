@@ -42,6 +42,9 @@
 #include <wx/regex.h>
 #include <wx/richmsgdlg.h>
 #include <wx/stdpaths.h>
+#include <atomic>
+#include <thread>
+#include <wx/utils.h>
 
 #define MIN_CLI_VERSION "1.3.0"
 
@@ -74,7 +77,8 @@ int ArduinoCliInstaller::ModalMsgDialog(const wxString &message, const wxString 
 
 bool ArduinoCliInstaller::CheckBaseToolchainInstalled(const wxString &cliPath,
                                                       bool *outNeedsInstall,
-                                                      bool *outHasAvr) {
+                                                      bool *outHasAvr,
+                                                      wxProgressDialog *prog) {
   if (outNeedsInstall)
     *outNeedsInstall = false;
   if (outHasAvr)
@@ -82,10 +86,34 @@ bool ArduinoCliInstaller::CheckBaseToolchainInstalled(const wxString &cliPath,
 
   std::string output;
 
-  auto tryCoreList = [&](const wxString &args) -> int {
+  const wxString pulseMsg = _("Checking installed cores...");
+
+  auto execPumped = [&](const wxString &cmdWx) -> int {
     output.clear();
+
+    std::atomic_bool done{false};
+    int rc = -1;
+
+    std::thread worker([&] {
+      rc = ArduinoCli::ExecuteCommand(wxToStd(cmdWx), output);
+      done.store(true, std::memory_order_release);
+    });
+
+    while (!done.load(std::memory_order_acquire)) {
+      if (prog) {
+        prog->Pulse(pulseMsg);
+      }
+      wxYieldIfNeeded();
+      wxMilliSleep(25);
+    }
+
+    worker.join();
+    return rc;
+  };
+
+  auto tryCoreList = [&](const wxString &args) -> int {
     wxString cmd = BuildCliCmd(cliPath, args);
-    return ArduinoCli::ExecuteCommand(wxToStd(cmd), output);
+    return execPumped(cmd);
   };
 
   // Prefer "--format json"
@@ -157,19 +185,49 @@ bool ArduinoCliInstaller::InstallBaseToolchain(const wxString &cliPath, wxProgre
     prog = owned.get();
   }
 
+  int currentPct = 0;
+  wxString currentMsg;
+
   auto step = [&](int pct, const wxString &msg) -> bool {
-    ::wxYield();
-    bool cont = prog->Update(pct, msg);
-    ::wxYield();
-    return cont;
+    currentPct = pct;
+    currentMsg = msg;
+    return prog->Update(pct, msg); // jen nastav milestone + text
   };
 
   std::string out;
 
   auto runCli = [&](const wxString &args, const wxString &what) -> bool {
-    wxString cmd = BuildCliCmd(cliPath, args);
+    wxString cmdWx = BuildCliCmd(cliPath, args);
+    std::string cmd = wxToStd(cmdWx);
+
     out.clear();
-    int rc = ArduinoCli::ExecuteCommand(wxToStd(cmd), out);
+
+    std::atomic_bool done{false};
+    std::atomic_bool cancel{false};
+    int rc = -1;
+
+    std::thread worker([&] {
+      rc = ArduinoCli::ExecuteCommand(cmd, out);
+      done.store(true, std::memory_order_release);
+    });
+
+    while (!done.load(std::memory_order_acquire)) {
+      if (!prog->Pulse(currentMsg)) {
+        cancel.store(true, std::memory_order_release);
+      }
+
+      wxYieldIfNeeded();
+      wxMilliSleep(25);
+    }
+
+    worker.join();
+
+    if (cancel.load(std::memory_order_acquire)) {
+      prog->Update(100);
+      ModalMsgDialog(_("Toolchain setup was cancelled."), _("Cancelled"), wxOK | wxICON_INFORMATION);
+      return false;
+    }
+
     if (rc != 0) {
       prog->Update(100);
 
@@ -179,11 +237,12 @@ bool ArduinoCliInstaller::InstallBaseToolchain(const wxString &cliPath, wxProgre
 
       ModalMsgDialog(
           wxString::Format(_("arduino-cli command failed while %s:\n\n%s\n\nOutput:\n%s"),
-                           what, cmd, details),
+                           what, cmdWx, details),
           _("arduino-cli setup error"),
           wxOK | wxICON_ERROR);
       return false;
     }
+
     return true;
   };
 
@@ -213,17 +272,28 @@ bool ArduinoCliInstaller::InstallBaseToolchain(const wxString &cliPath, wxProgre
 }
 
 bool ArduinoCliInstaller::EnsureBaseToolchainInstalled(const wxString &cliPath) {
+  wxBusyCursor busy;
   bool needs = false;
   bool hasAvr = false;
 
-  if (!CheckBaseToolchainInstalled(cliPath, &needs, &hasAvr)) {
+  if (!CheckBaseToolchainInstalled(cliPath, &needs, &hasAvr, nullptr))
     return false;
-  }
-  if (!needs) {
+
+  if (!needs)
     return true;
-  }
-  return InstallBaseToolchain(cliPath, nullptr);
+
+  wxProgressDialog prog(
+      _("Preparing Arduino toolchain"),
+      _("Installing required components..."),
+      100,
+      m_owner,
+      wxPD_APP_MODAL | wxPD_AUTO_HIDE | wxPD_SMOOTH | wxPD_ELAPSED_TIME);
+
+  prog.Update(5, _("Starting installation..."));
+
+  return InstallBaseToolchain(cliPath, &prog);
 }
+
 
 ArduinoCli *ArduinoCliInstaller::GetCli(const std::string &sketchPath) {
   // Try to get the arduino-cli path from the config

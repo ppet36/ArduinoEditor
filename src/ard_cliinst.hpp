@@ -22,6 +22,7 @@
 #include <wx/progdlg.h>
 #include <wx/wx.h>
 
+
 class ArduinoCliInstaller {
 private:
   wxConfigBase *m_config;
@@ -39,7 +40,7 @@ private:
 #endif
 
   bool EnsureBaseToolchainInstalled(const wxString &cliPath);
-  bool CheckBaseToolchainInstalled(const wxString &cliPath, bool *outNeedsInstall, bool *outHasAvr);
+  bool CheckBaseToolchainInstalled(const wxString &cliPath, bool *outNeedsInstall, bool *outHasAvr, wxProgressDialog *prog);
   bool InstallBaseToolchain(const wxString &cliPath, wxProgressDialog *existingProg);
 
 public:

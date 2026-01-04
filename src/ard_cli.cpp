@@ -2756,31 +2756,29 @@ bool ArduinoCli::GetBoardOptions(const std::string &fqbn, std::vector<ArduinoBoa
     return false;
   }
 
-  if (!j.contains("config_options")) {
-    return false;
-  }
-
-  for (auto &opt : j["config_options"]) {
-    ArduinoBoardOption o;
-
-    // correct keys according to JSON
-    o.id = opt.value("option", "");            // e.g. "UploadSpeed"
-    o.label = opt.value("option_label", o.id); // "Upload Speed"
-
-    if (opt.contains("values")) {
-      for (auto &vj : opt["values"]) {
-        ArduinoBoardOptionValue v;
-
-        // here are value / value_label
-        v.id = vj.value("value", "");            // e.g. "921600"
-        v.label = vj.value("value_label", v.id); // "921600"
-        v.selected = vj.value("selected", false);
-
-        o.values.push_back(std::move(v));
+  if (j.contains("config_options")) {
+    for (auto &opt : j["config_options"]) {
+      ArduinoBoardOption o;
+ 
+      // correct keys according to JSON
+      o.id = opt.value("option", "");            // e.g. "UploadSpeed"
+      o.label = opt.value("option_label", o.id); // "Upload Speed"
+ 
+      if (opt.contains("values")) {
+        for (auto &vj : opt["values"]) {
+          ArduinoBoardOptionValue v;
+ 
+          // here are value / value_label
+          v.id = vj.value("value", "");            // e.g. "921600"
+          v.label = vj.value("value_label", v.id); // "921600"
+          v.selected = vj.value("selected", false);
+ 
+          o.values.push_back(std::move(v));
+        }
       }
+ 
+      outOptions.push_back(std::move(o));
     }
-
-    outOptions.push_back(std::move(o));
   }
 
   return true;

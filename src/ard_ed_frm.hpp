@@ -297,6 +297,8 @@ private:
   void OnSysColoursChanged(wxSysColourChangedEvent &evt);
 
   void LoadBoardHistory();
+  void AddBoardToHistory(const std::string& fqbn);
+  void SortBoardHistory();
   void RebuildBoardChoice();
   wxString MakeBoardLabel(const std::string &fqbn) const;
 
