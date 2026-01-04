@@ -66,6 +66,7 @@ General guidelines:
 - One pull request should focus on a single change or feature.
 - Keep commits reasonably small and focused.
 - For larger or architectural changes, please start with an issue first.
+- Translations to other languages are welcome (English is primary; Czech is already available).
 
 The project prioritizes:
 - Correctness over cleverness
