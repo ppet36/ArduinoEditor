@@ -2490,11 +2490,17 @@ void ArduinoEditor::OnDwellStart(wxStyledTextEvent &event) {
     if (frame->GetDiagnosticsAt(m_filename, line, /*column=*/0, diags)) {
       unsigned maxDiagLineLen = 0;
 
+      unsigned count = 0;
       for (auto &diag : diags) {
         std::string diagPart = std::string(diag.SeverityString()) + ": " + diag.message;
         maxDiagLineLen = std::max(maxDiagLineLen, (unsigned)diagPart.size());
         hoverInfo += diagPart;
         hoverInfo += "\n";
+        count++;
+        if (count > 5) {
+          hoverInfo += "...\n";
+          break;
+        }
       }
 
       for (unsigned i = 0; i < maxDiagLineLen; i++) {

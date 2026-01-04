@@ -291,13 +291,6 @@ static std::vector<std::string> SplitArgsKeepingQuotes(const std::string &s) {
   return out;
 }
 
-static std::string StripQuotes(const std::string &s) {
-  if (s.size() >= 2 && s.front() == '"' && s.back() == '"') {
-    return s.substr(1, s.size() - 2);
-  }
-  return s;
-}
-
 static std::string ExpandPropertiesInString(const std::string &input, const std::unordered_map<std::string, std::string> &props, const std::string &sketchPath) {
   std::string s = input;
   size_t pos = 0;
@@ -3232,29 +3225,7 @@ std::string ArduinoCli::GetFQBN() {
 }
 
 std::string ArduinoCli::GetBoardName() const {
-  // If fqbn is empty, return an empty string
-  if (fqbn.empty())
-    return "";
-
-  // Find the first '=' - options start there, so we cut it off
-  size_t eqPos = fqbn.find('=');
-  std::string base = (eqPos == std::string::npos) ? fqbn : fqbn.substr(0, eqPos);
-
-  // Now we take only the first three parts separated by ':' from base
-  int colonCount = 0;
-
-  for (size_t i = 0; i < base.size(); ++i) {
-    if (base[i] == ':') {
-      colonCount++;
-      if (colonCount == 3) {
-        // i is the position of the third colon -> board name ends here
-        return base.substr(0, i);
-      }
-    }
-  }
-
-  // If there are not even three parts, we return what we have
-  return base;
+  return BaseFqbn3(fqbn);
 }
 
 std::string ArduinoCli::GetTargetFromFQBN() const {

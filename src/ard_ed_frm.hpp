@@ -166,7 +166,6 @@ public:
 
 private:
   void UpdateBoard(std::string &fqbn);
-  void UpdateBoardText();
   void SelectBoard();
 
   void OnEditorSettings(wxCommandEvent &);
@@ -298,9 +297,7 @@ private:
   void OnSysColoursChanged(wxSysColourChangedEvent &evt);
 
   void LoadBoardHistory();
-  void SaveBoardHistory();
   void RebuildBoardChoice();
-  void AddBoardToHistory(const std::string &fqbn);
   wxString MakeBoardLabel(const std::string &fqbn) const;
 
   void OnBoardChoiceChanged(wxCommandEvent &event);

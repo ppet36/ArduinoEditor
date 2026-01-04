@@ -20,6 +20,7 @@
 
 #include <chrono>
 #include <cstdint>
+#include <filesystem>
 #include <string>
 #include <string_view>
 #include <unordered_set>
@@ -205,3 +206,10 @@ std::string ExtractBodySnippetFromText(const std::string &fileText, unsigned fro
 void DedupArgs(std::vector<std::string> &argv);
 
 void SetListCtrlStale(wxListCtrl *lc, bool stale);
+
+std::string StripQuotes(const std::string &s);
+
+// arduino:avr:nano:cpu=atmega328old -> arduino:avr:nano
+std::string BaseFqbn3(std::string fqbn);
+
+bool ParseDefaultFqbnFromSketchYaml(const std::filesystem::path &yamlPath, std::string &outBaseFqbn3);

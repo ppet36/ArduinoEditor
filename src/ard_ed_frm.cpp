@@ -27,6 +27,7 @@
 #include "ard_ev.hpp"
 #include "ard_filestree.hpp"
 #include "ard_finsymdlg.hpp"
+#include "ard_initbrdsel.hpp"
 #include "ard_renamedlg.hpp"
 #include "ard_setdlg.hpp"
 #include "ard_update.hpp"
@@ -36,6 +37,9 @@
 #include <algorithm>
 #include <cctype>
 #include <filesystem>
+#include <fstream>
+#include <system_error>
+#include <unordered_set>
 #include <wx/artprov.h>
 #include <wx/clipbrd.h>
 #include <wx/dir.h>
@@ -407,31 +411,35 @@ void ArduinoEditorFrame::OpenSketch(const std::string &skp) {
   if (!fqbn.empty()) {
     UpdateBoard(fqbn);
   } else {
-    // There is no FQBN stored for the current sketch.
-    // We will offer the user the option to directly select a board.
-    wxRichMessageDialog dlg(
-        this,
-        _("No development board is configured for this sketch.\n\n"
-          "Do you want to select a board now?"),
-        _("Select development board"),
-        wxYES_NO | wxYES_DEFAULT | wxICON_INFORMATION);
+    ArduinoInitialBoardSelectDialog initDlg(this, inoFileName);
+    initDlg.SetBoardHistory(m_boardHistory, "");
 
-    dlg.SetYesNoLabels(_("Select board"), _("Continue without board"));
+    int res = initDlg.ShowModal();
 
-    int res = dlg.ShowModal();
-    if (res == wxID_YES) {
-      std::string currentFqbn = arduinoCli->GetBoardName();
-
-      ArduinoBoardSelectDialog brdDlg(this, arduinoCli, config, currentFqbn);
+    if (res == wxID_OK) {
+      // selected from history
+      std::string newFqbn = initDlg.GetSelectedFqbn();
+      if (!newFqbn.empty()) {
+        UpdateBoard(newFqbn); // inside calls arduinoCli->SetFQBN(...)
+      }
+    } else if (res == wxID_YES) {
+      // manual selection
+      ArduinoBoardSelectDialog brdDlg(this, arduinoCli, config, "");
       if (brdDlg.ShowModal() == wxID_OK) {
         std::string newFqbn = brdDlg.GetSelectedFqbn();
-        if (!newFqbn.empty() && newFqbn != currentFqbn) {
-          UpdateBoard(newFqbn); // inside calls arduinoCli->SetFQBN(...)
+        if (!newFqbn.empty()) {
+          UpdateBoard(newFqbn);
         }
       }
+    } else {
+      std::string fallbackFqbn;
+      if (!m_boardHistory.empty()) {
+        fallbackFqbn = m_boardHistory[0];
+      } else {
+        fallbackFqbn = "arduino:avr:uno";
+      }
+      UpdateBoard(fallbackFqbn);
     }
-    // If the user does not select a board or cancels the dialog,
-    // we continue without setting the FQBN.
   }
 
   app.SetSplashMessage(_("Creating completion engine..."));
@@ -588,7 +596,6 @@ void ArduinoEditorFrame::OnClangArgsReady(wxThreadEvent &event) {
     completion->SetReady();
 
     EnableUIActions(true);
-    UpdateBoardText();
 
     UpdateStatus(_("Arduino Clang completion initialized for ") + wxString::FromUTF8(arduinoCli->GetBoardName()));
 
@@ -649,11 +656,11 @@ void ArduinoEditorFrame::UpdateBoard(std::string &fqbn) {
 
   EnableUIActions(false);
 
-  UpdateBoardText();
-
   if (completion) {
     completion->InvalidateTranslationUnit();
   }
+
+  RebuildBoardChoice();
 
   UpdateStatus(_("Initializing Arduino Clang completion..."));
 
@@ -696,7 +703,6 @@ void ArduinoEditorFrame::SelectBoard() {
   }
 
   UpdateBoard(newFqbn);
-  UpdateBoardText();
 }
 
 void ArduinoEditorFrame::OnChangeBoardOptions(wxCommandEvent &) {
@@ -2230,6 +2236,7 @@ void ArduinoEditorFrame::OnAvailableBoardsUpdated(wxThreadEvent &evt) {
     m_libManager->RefreshAvailableBoards(m_availableBoards);
   }
 
+  RebuildBoardChoice();
   RefreshSerialPorts();
 }
 
@@ -4006,79 +4013,77 @@ void ArduinoEditorFrame::RebuildBoardChoice() {
   m_boardChoice->Append(_("--- Select board ---"));
 }
 
-void ArduinoEditorFrame::AddBoardToHistory(const std::string &fqbn) {
-  if (fqbn.empty()) {
-    return;
-  }
-
-  // MRU: if an existing occurrence exists, remove it and put FQBN at the beginning
-  auto it = std::find(m_boardHistory.begin(), m_boardHistory.end(), fqbn);
-  if (it != m_boardHistory.end()) {
-    m_boardHistory.erase(it);
-  }
-
-  m_boardHistory.insert(m_boardHistory.begin(), fqbn);
-
-  const int MAX_BOARD_HISTORY = 20;
-  if (static_cast<int>(m_boardHistory.size()) > MAX_BOARD_HISTORY) {
-    m_boardHistory.resize(MAX_BOARD_HISTORY);
-  }
-
-  SaveBoardHistory();
-  RebuildBoardChoice();
-}
-
-void ArduinoEditorFrame::UpdateBoardText() {
-  if (!arduinoCli) {
-    return;
-  }
-
-  std::string fqbn = arduinoCli->GetBoardName();
-
-  // Adds the current FQBN to the history (if it is not already there)
-  AddBoardToHistory(fqbn);
-
-  // RebuildBoardChoice is called already inside AddBoardToHistory,
-  // so there is no need to do anything else.
-}
-
 void ArduinoEditorFrame::LoadBoardHistory() {
   m_boardHistory.clear();
 
-  if (!config) {
+  wxString sketchesDir;
+  if (!config->Read(wxT("SketchesDir"), &sketchesDir)) {
     return;
   }
 
-  wxString all;
-  if (!config->Read(wxT("BoardHistory"), &all) || all.empty()) {
+  std::unordered_set<std::string> uniq;
+  uniq.reserve(128);
+
+  std::error_code ec;
+  fs::path root(wxToStd(sketchesDir));
+  if (root.empty()) {
     return;
   }
 
-  wxStringTokenizer tk(all, wxT("\n"), wxTOKEN_STRTOK);
-  while (tk.HasMoreTokens()) {
-    wxString token = tk.GetNextToken();
-    token.Trim(true).Trim(false);
-    if (!token.empty()) {
-      m_boardHistory.push_back(wxToStd(token));
+  fs::path absRoot = fs::absolute(root, ec);
+  if (ec) {
+    absRoot = root;
+  }
+
+  if (!fs::exists(absRoot, ec) || !fs::is_directory(absRoot, ec)) {
+    return;
+  }
+
+  fs::recursive_directory_iterator it(
+      absRoot,
+      fs::directory_options::skip_permission_denied,
+      ec);
+  fs::recursive_directory_iterator end;
+
+  for (; it != end && !ec; it.increment(ec)) {
+    const fs::directory_entry &e = *it;
+
+    if (!e.is_directory(ec))
+      continue;
+
+    fs::path yamlPath = e.path() / "sketch.yaml";
+    if (!fs::exists(yamlPath, ec) || !fs::is_regular_file(yamlPath, ec)) {
+      continue;
     }
-  }
-}
 
-void ArduinoEditorFrame::SaveBoardHistory() {
-  if (!config) {
-    return;
-  }
-
-  wxString all;
-  for (size_t i = 0; i < m_boardHistory.size(); ++i) {
-    all += wxString::FromUTF8(m_boardHistory[i].c_str());
-    if (i + 1 < m_boardHistory.size()) {
-      all += wxT("\n");
+    std::string baseFqbn;
+    if (ParseDefaultFqbnFromSketchYaml(yamlPath, baseFqbn) && !baseFqbn.empty()) {
+      uniq.insert(std::move(baseFqbn));
     }
+
+    it.disable_recursion_pending();
   }
 
-  config->Write(wxT("BoardHistory"), all);
-  config->Flush();
+  m_boardHistory.assign(uniq.begin(), uniq.end());
+  std::sort(m_boardHistory.begin(), m_boardHistory.end(),
+            [](const std::string &a, const std::string &b) {
+              auto lower = [](unsigned char c) -> unsigned char {
+                return static_cast<unsigned char>(std::tolower(c));
+              };
+
+              const std::size_t n = std::min(a.size(), b.size());
+              for (std::size_t i = 0; i < n; ++i) {
+                unsigned char ca = lower(static_cast<unsigned char>(a[i]));
+                unsigned char cb = lower(static_cast<unsigned char>(b[i]));
+                if (ca < cb)
+                  return true;
+                if (ca > cb)
+                  return false;
+              }
+              if (a.size() != b.size())
+                return a.size() < b.size();
+              return a < b; // fallback kvůli determinismu ("Nano" vs "nano")
+            });
 }
 
 void ArduinoEditorFrame::OnBoardChoiceChanged(wxCommandEvent &WXUNUSED(event)) {

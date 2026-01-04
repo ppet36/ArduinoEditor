@@ -2099,3 +2099,105 @@ void SetListCtrlStale(wxListCtrl *lc, bool stale) {
   lc->Refresh();
   lc->Thaw();
 }
+
+std::string StripQuotes(const std::string &s) {
+  if (s.size() >= 2 && s.front() == '"' && s.back() == '"') {
+    return s.substr(1, s.size() - 2);
+  }
+  return s;
+}
+
+// arduino:avr:nano:cpu=atmega328old -> arduino:avr:nano
+std::string BaseFqbn3(std::string fqbn) {
+  TrimInPlace(fqbn);
+  fqbn = StripQuotes(fqbn);
+  if (fqbn.empty())
+    return {};
+
+  std::string out;
+  out.reserve(fqbn.size());
+
+  int parts = 0;
+  std::size_t start = 0;
+  while (true) {
+    std::size_t pos = fqbn.find(':', start);
+    std::size_t len = (pos == std::string::npos) ? (fqbn.size() - start) : (pos - start);
+    std::string part = fqbn.substr(start, len);
+    TrimInPlace(part);
+    if (part.empty())
+      break;
+
+    if (!out.empty())
+      out.push_back(':');
+    out += part;
+    parts++;
+
+    if (parts >= 3)
+      break;
+    if (pos == std::string::npos)
+      break;
+    start = pos + 1;
+  }
+
+  return out;
+}
+
+bool ParseDefaultFqbnFromSketchYaml(const fs::path &yamlPath, std::string &outBaseFqbn3) {
+  std::ifstream in(yamlPath);
+  if (!in)
+    return false;
+
+  std::string line;
+  bool waitingIndentedValue = false;
+
+  while (std::getline(in, line)) {
+    // Cut off comment (YAML comment from #; we don't deal with quoting-escape, intentionally simple and fast)
+    if (auto hash = line.find('#'); hash != std::string::npos) {
+      line.erase(hash);
+    }
+
+    // If we are waiting for the value on the next line (default_fqbn: <empty>)
+    if (waitingIndentedValue) {
+      std::string tmp = line;
+      // The value should be on an indented line
+      if (!tmp.empty() && std::isspace(static_cast<unsigned char>(tmp[0]))) {
+        TrimInPlace(tmp);
+        if (!tmp.empty()) {
+          outBaseFqbn3 = BaseFqbn3(tmp);
+          return !outBaseFqbn3.empty();
+        }
+        continue;
+      } else {
+        // it's no longer indented -> end of block
+        waitingIndentedValue = false;
+      }
+    }
+
+    std::string s = line;
+    TrimInPlace(s);
+    if (s.empty())
+      continue;
+
+    // We want a line starting with "default_fqbn:"
+    static constexpr const char *key = "default_fqbn";
+    if (s.rfind(key, 0) == 0) {
+      // must be followed by ':'
+      std::size_t colon = s.find(':', std::strlen(key));
+      if (colon == std::string::npos)
+        continue;
+
+      std::string val = s.substr(colon + 1);
+      TrimInPlace(val);
+
+      if (val.empty()) {
+        waitingIndentedValue = true; // value may be on the next line
+        continue;
+      }
+
+      outBaseFqbn3 = BaseFqbn3(val);
+      return !outBaseFqbn3.empty();
+    }
+  }
+
+  return false;
+}
