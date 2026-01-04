@@ -147,8 +147,6 @@ private:
   int ModalMsgDialog(const wxString &message, const wxString &caption = _("Error"), int styles = wxOK | wxICON_ERROR);
   static bool IsSupportedExtension(const wxString &ext);
 
-  void InitCli(const std::string &path);
-
   void UpdateStatus(const wxString &msg);
 
   void OnStatusBarSize(wxSizeEvent &evt);

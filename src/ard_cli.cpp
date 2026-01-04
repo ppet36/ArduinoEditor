@@ -2035,6 +2035,8 @@ bool ArduinoCli::ApplyConfig(const ArduinoCliConfig &cfg) {
 }
 
 bool ArduinoCli::LoadBoardParameters() {
+  ScopeTimer t("CLI: LoadBoardParameters()");
+
   if (m_cli.empty()) {
     return false;
   }
@@ -2077,6 +2079,7 @@ bool ArduinoCli::LoadBoardParameters() {
   }
 
   clangArgs = std::move(argsVec);
+  APP_DEBUG_LOG("CLI: total %zu clang arguments...", clangArgs.size());
   return true;
 }
 

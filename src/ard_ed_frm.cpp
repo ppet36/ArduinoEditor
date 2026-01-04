@@ -404,18 +404,29 @@ void ArduinoEditorFrame::OpenSketch(const std::string &skp) {
   // At this point we are guaranteed to have one .ino file in the root:
   // inoFileName / inoFullPath
 
-  InitCli(normPath);
+  // Initialize arduino-cli interface
+  ArduinoCliInstaller installer(this, config);
 
+  arduinoCli = installer.GetCli(normPath);
+  if (!arduinoCli) {
+    exit(0);
+  }
+
+  // if no INO file in sketch (new sketch) then set forced fqbn arduino:avr:uno.
   if (!forcedFqbn.empty()) {
     arduinoCli->SetFQBN(forcedFqbn);
   }
 
   std::string fqbn = arduinoCli->GetFQBN();
 
+  // we will ensure that the board is in choice, so that it can be selected
+  AddBoardToHistory(fqbn);
+
   app.SetSplashMessage(_("Updating board..."));
   if (!fqbn.empty()) {
     UpdateBoard(fqbn);
   } else {
+    // if the fqbn for the sketch is not known, we will prompt the user to specify it
     ArduinoInitialBoardSelectDialog initDlg(this, inoFileName);
     initDlg.SetBoardHistory(m_boardHistory, "");
 
@@ -452,6 +463,12 @@ void ArduinoEditorFrame::OpenSketch(const std::string &skp) {
       UpdateBoard(fallbackFqbn);
     }
   }
+
+  StartProcess(_("Loading available boards..."), ID_PROCESS_LOAD_BOARDS, ArduinoActivityState::Background);
+  arduinoCli->GetAvailableBoardsAsync(this);
+
+  StartProcess(_("Loading available cores..."), ID_PROCESS_LOAD_CORES, ArduinoActivityState::Background);
+  arduinoCli->LoadCoresAsync(this);
 
   app.SetSplashMessage(_("Creating completion engine..."));
   completion = new ArduinoCodeCompletion(arduinoCli, m_clangSettings, [this](std::vector<SketchFileBuffer> &out) { this->CollectEditorSources(out); }, /*eventHandler=*/this);
@@ -2759,21 +2776,6 @@ bool ArduinoEditorFrame::IsSupportedExtension(const wxString &ext) {
   return (ext == wxT("c") || ext == wxT("h") ||
           ext == wxT("cpp") || ext == wxT("hpp") || ext == wxT("cxx") ||
           ext == wxT("ino"));
-}
-
-void ArduinoEditorFrame::InitCli(const std::string &path) {
-  ArduinoCliInstaller installer(this, config);
-
-  arduinoCli = installer.GetCli(path);
-  if (!arduinoCli) {
-    exit(0);
-  }
-
-  StartProcess(_("Loading available boards..."), ID_PROCESS_LOAD_BOARDS, ArduinoActivityState::Background);
-  arduinoCli->GetAvailableBoardsAsync(this);
-
-  StartProcess(_("Loading available cores..."), ID_PROCESS_LOAD_CORES, ArduinoActivityState::Background);
-  arduinoCli->LoadCoresAsync(this);
 }
 
 void ArduinoEditorFrame::InitComponents() {
