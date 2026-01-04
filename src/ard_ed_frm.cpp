@@ -4082,7 +4082,7 @@ void ArduinoEditorFrame::LoadBoardHistory() {
               }
               if (a.size() != b.size())
                 return a.size() < b.size();
-              return a < b; // fallback kvůli determinismu ("Nano" vs "nano")
+              return a < b;
             });
 }
 
