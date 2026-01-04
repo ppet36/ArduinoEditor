@@ -425,7 +425,7 @@ void ArduinoEditorFrame::OpenSketch(const std::string &skp) {
       // selected from history
       std::string newFqbn = initDlg.GetSelectedFqbn();
       if (!newFqbn.empty()) {
-        AddBoardToHistory (newFqbn);
+        AddBoardToHistory(newFqbn);
 
         UpdateBoard(newFqbn); // inside calls arduinoCli->SetFQBN(...)
       }
@@ -4079,11 +4079,11 @@ void ArduinoEditorFrame::LoadBoardHistory() {
   SortBoardHistory();
 }
 
-void ArduinoEditorFrame::AddBoardToHistory(const std::string& fqbn) {
+void ArduinoEditorFrame::AddBoardToHistory(const std::string &fqbn) {
   std::string newFqbn = BaseFqbn3(fqbn);
   if (std::find(m_boardHistory.begin(), m_boardHistory.end(), newFqbn) == m_boardHistory.end()) {
     APP_DEBUG_LOG("FRM: adding new board %s to history", newFqbn.c_str());
-    m_boardHistory.push_back (newFqbn);
+    m_boardHistory.push_back(newFqbn);
 
     SortBoardHistory();
   }
@@ -4165,7 +4165,7 @@ void ArduinoEditorFrame::UpdateSketchesDir(const wxString &sketchDir) {
   config->Write(wxT("SketchesDir"), root);
   config->Flush();
 
-  // This is environment for arduino-cli. 
+  // This is environment for arduino-cli.
   wxSetEnv(wxT("ARDUINO_DIRECTORIES_USER"), root);
 
   RebuildSketchesDirMenu();
