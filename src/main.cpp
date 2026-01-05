@@ -485,7 +485,7 @@ void ArduinoEditApp::OpenSketch(const wxString &path) {
   ArduinoEditorFrame *frame = new ArduinoEditorFrame(cfg);
   frame->Show(true);
 
-  std::string stdPath = std::string(path.ToUTF8().data());
+  std::string stdPath = wxToStd(path);
   frame->OpenSketch(stdPath);
 }
 

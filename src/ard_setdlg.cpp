@@ -418,6 +418,7 @@ void EditorSettings::Load(wxConfigBase *cfg) {
   ConfigReadBool(cfg, wxT("Editor/UseTabs"), useTabs, false);
   ConfigReadBool(cfg, wxT("Editor/ShowWhitespace"), showWhitespace, false);
   ConfigReadBool(cfg, wxT("Editor/AutoIndent"), autoIndent, true);
+  ConfigReadBool(cfg, wxT("Editor/KeepOneWindow"), keepOneWindow, false);
   ConfigReadBool(cfg, wxT("Editor/ShowLineNumbers"), showLineNumbers, true);
   ConfigReadBool(cfg, wxT("Editor/WordWrap"), wordWrap, false);
   ConfigReadBool(cfg, wxT("Editor/ShowRightEdge"), showRightEdge, false);
@@ -463,10 +464,11 @@ void EditorSettings::Save(wxConfigBase *cfg) {
   cfg->Write(wxT("Editor/ThemeMode"), (long)ThemeMode::FollowSystem);
   cfg->Write(wxT("Editor/TabWidth"), (long)tabWidth);
   cfg->Write(wxT("Editor/UseTabs"), useTabs);
-  cfg->Write(wxT("Editor/ShowWhitespace"), showWhitespace);
   cfg->Write(wxT("Editor/AutoIndent"), autoIndent);
+  cfg->Write(wxT("Editor/KeepOneWindow"), keepOneWindow);
 
   cfg->Write(wxT("Editor/ShowLineNumbers"), showLineNumbers);
+  cfg->Write(wxT("Editor/ShowWhitespace"), showWhitespace);
   cfg->Write(wxT("Editor/WordWrap"), wordWrap);
   cfg->Write(wxT("Editor/ShowRightEdge"), showRightEdge);
   cfg->Write(wxT("Editor/EdgeColumn"), (long)edgeColumn);
@@ -1361,19 +1363,20 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
   m_useTabs->SetValue(m_settings.useTabs);
   grid2->Add(m_useTabs, 1, wxEXPAND);
 
-  // Show whitespace
-  grid2->Add(new wxStaticText(editorPage, wxID_ANY, _("Show whitespace:")),
-             0, wxALIGN_CENTER_VERTICAL);
-  m_showWhitespace = new wxCheckBox(editorPage, wxID_ANY, wxEmptyString);
-  m_showWhitespace->SetValue(m_settings.showWhitespace);
-  grid2->Add(m_showWhitespace, 1, wxEXPAND);
-
   // Auto indent
   grid2->Add(new wxStaticText(editorPage, wxID_ANY, _("Auto indent:")),
              0, wxALIGN_CENTER_VERTICAL);
   m_autoIndent = new wxCheckBox(editorPage, wxID_ANY, wxEmptyString);
   m_autoIndent->SetValue(m_settings.autoIndent);
   grid2->Add(m_autoIndent, 1, wxEXPAND);
+
+  // Keep one window
+  grid2->Add(new wxStaticText(editorPage, wxID_ANY, _("Open sketches in the same window:")),
+             0, wxALIGN_CENTER_VERTICAL);
+  m_keepOneWindow = new wxCheckBox(editorPage, wxID_ANY, wxEmptyString);
+  m_keepOneWindow->SetToolTip(_("When enabled, opening a sketch will reuse this window and close the currently open sketch. When disabled, each sketch opens in a new editor window (like Arduino IDE)."));
+  m_keepOneWindow->SetValue(m_settings.keepOneWindow);
+  grid2->Add(m_keepOneWindow, 1, wxEXPAND);
 
   // Clang format - advanced setup
   grid2->Add(new wxStaticText(editorPage, wxID_ANY, _("Clang format:")),
@@ -1400,6 +1403,13 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
   m_showLineNumbers->SetValue(m_settings.showLineNumbers);
   grid3->Add(m_showLineNumbers, 1, wxEXPAND);
 
+  // Show whitespace
+  grid3->Add(new wxStaticText(editorPage, wxID_ANY, _("Show whitespace:")),
+             0, wxALIGN_CENTER_VERTICAL);
+  m_showWhitespace = new wxCheckBox(editorPage, wxID_ANY, wxEmptyString);
+  m_showWhitespace->SetValue(m_settings.showWhitespace);
+  grid3->Add(m_showWhitespace, 1, wxEXPAND);
+
   // Word wrap
   grid3->Add(new wxStaticText(editorPage, wxID_ANY, _("Word wrap:")),
              0, wxALIGN_CENTER_VERTICAL);
@@ -1421,6 +1431,9 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
   m_edgeColumn->SetRange(40, 240);
   m_edgeColumn->SetValue(m_settings.edgeColumn);
   grid3->Add(m_edgeColumn, 1, wxEXPAND);
+
+  grid3->AddSpacer(5);
+  grid3->AddSpacer(5);
 
   // Highlight current line
   grid3->Add(new wxStaticText(editorPage, wxID_ANY, _("Highlight current line:")),
@@ -2108,11 +2121,12 @@ EditorSettings ArduinoEditorSettingsDialog::GetSettings() const {
   // general settings
   s.tabWidth = m_tabWidth->GetValue();
   s.useTabs = m_useTabs->GetValue();
-  s.showWhitespace = m_showWhitespace->GetValue();
   s.autoIndent = m_autoIndent->GetValue();
+  s.keepOneWindow = m_keepOneWindow->GetValue();
 
   // behavior
   s.showLineNumbers = m_showLineNumbers->GetValue();
+  s.showWhitespace = m_showWhitespace->GetValue();
   s.wordWrap = m_wordWrap->GetValue();
   s.showRightEdge = m_showRightEdge->GetValue();
   s.edgeColumn = m_edgeColumn->GetValue();

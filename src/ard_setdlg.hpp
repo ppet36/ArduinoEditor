@@ -105,11 +105,12 @@ struct EditorSettings {
 
   int tabWidth = 2;
   bool useTabs = false;
-  bool showWhitespace = false;
   bool autoIndent = true;
+  bool keepOneWindow = false;
   wxString clangFormatOverridesJson;
 
   bool showLineNumbers = true;
+  bool showWhitespace = false;
   bool wordWrap = false;
   bool showRightEdge = false;
   int edgeColumn = 80;
@@ -304,10 +305,11 @@ private:
 
   wxSpinCtrl *m_tabWidth = nullptr;
   wxCheckBox *m_useTabs = nullptr;
-  wxCheckBox *m_showWhitespace = nullptr;
+  wxCheckBox *m_keepOneWindow = nullptr;
   wxCheckBox *m_autoIndent = nullptr;
 
   wxCheckBox *m_showLineNumbers = nullptr;
+  wxCheckBox *m_showWhitespace = nullptr;
   wxCheckBox *m_wordWrap = nullptr;
   wxCheckBox *m_showRightEdge = nullptr;
   wxSpinCtrl *m_edgeColumn = nullptr;

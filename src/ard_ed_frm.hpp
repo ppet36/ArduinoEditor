@@ -163,6 +163,8 @@ public:
   void ApplySettings(const AiSettings &settings);
 
 private:
+  void CloseIfNeeded();
+
   void UpdateBoard(std::string &fqbn);
   void SelectBoard();
 

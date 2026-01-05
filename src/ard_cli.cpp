@@ -1072,6 +1072,61 @@ std::string ArduinoCli::DetectClangTarget(const std::string &compilerPath) const
   return target;
 }
 
+// ensures the definition exists in the output list
+static void EnsureDefine(const std::string &defineArg, std::vector<std::string> &result) {
+  auto startsWith = [](const std::string &s, const char *pfx) -> bool {
+    return s.rfind(pfx, 0) == 0;
+  };
+
+  auto macroNameOf = [&](const std::string &arg) -> std::string {
+    // Accept: "-DNAME", "-DNAME=VAL", "NAME", "NAME=VAL"
+    std::string s = arg;
+    if (startsWith(s, "-D"))
+      s.erase(0, 2);
+    auto eq = s.find('=');
+    if (eq != std::string::npos)
+      s.resize(eq);
+    return s;
+  };
+
+  const std::string macro = macroNameOf(defineArg);
+  if (macro.empty())
+    return;
+
+  auto hasDefine = [&]() -> bool {
+    for (size_t i = 0; i < result.size(); ++i) {
+      const std::string &a = result[i];
+
+      // form: -D NAME or -D NAME=VAL
+      if (a == "-D") {
+        if (i + 1 < result.size()) {
+          const std::string &b = result[i + 1];
+          if (b == macro || startsWith(b, (macro + "=").c_str()))
+            return true;
+        }
+        continue;
+      }
+
+      // form: -DNAME or -DNAME=VAL
+      if (startsWith(a, "-D")) {
+        const std::string rest = a.substr(2);
+        if (rest == macro || startsWith(rest, (macro + "=").c_str()))
+          return true;
+      }
+    }
+    return false;
+  };
+
+  if (hasDefine())
+    return;
+
+  // canonicalize: always store as "-D..."
+  if (startsWith(defineArg, "-D"))
+    result.push_back(defineArg);
+  else
+    result.push_back("-D" + defineArg);
+}
+
 std::vector<std::string> ArduinoCli::BuildClangArgsFromBoardDetails(const nlohmann::json &j) {
   std::vector<std::string> result;
 
@@ -1270,15 +1325,11 @@ std::vector<std::string> ArduinoCli::BuildClangArgsFromBoardDetails(const nlohma
 
   // I couldn't find this define anywhere, but the toolchain needs it,
   // so we'll add it synthetically.
-  bool foundCoreBuild = false;
-  for (const auto &f : result) {
-    if (f == "-DARDUINO_CORE_BUILD") {
-      foundCoreBuild = true;
-      break;
-    }
-  }
-  if (!foundCoreBuild) {
-    result.push_back("-DARDUINO_CORE_BUILD");
+  EnsureDefine("ARDUINO_CORE_BUILD", result);
+
+  // __progmem__ is GCC specific so clang does not know it
+  if (target == "avr") {
+    EnsureDefine("__ATTR_PROGMEM__=", result);
   }
 
   DedupArgs(result);

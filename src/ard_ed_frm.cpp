@@ -419,13 +419,15 @@ void ArduinoEditorFrame::OpenSketch(const std::string &skp) {
 
   std::string fqbn = arduinoCli->GetFQBN();
 
-  // we will ensure that the board is in choice, so that it can be selected
-  AddBoardToHistory(fqbn);
-
   app.SetSplashMessage(_("Updating board..."));
   if (!fqbn.empty()) {
+    // we will ensure that the board is in choice, so that it can be selected
+    AddBoardToHistory(fqbn);
+
     UpdateBoard(fqbn);
   } else {
+    bool boardSelected = false;
+
     // if the fqbn for the sketch is not known, we will prompt the user to specify it
     ArduinoInitialBoardSelectDialog initDlg(this, inoFileName);
     initDlg.SetBoardHistory(m_boardHistory, "");
@@ -439,6 +441,8 @@ void ArduinoEditorFrame::OpenSketch(const std::string &skp) {
         AddBoardToHistory(newFqbn);
 
         UpdateBoard(newFqbn); // inside calls arduinoCli->SetFQBN(...)
+
+        boardSelected = true;
       }
     } else if (res == wxID_YES) {
       // manual selection
@@ -449,17 +453,15 @@ void ArduinoEditorFrame::OpenSketch(const std::string &skp) {
           AddBoardToHistory(newFqbn);
 
           UpdateBoard(newFqbn);
+
+          boardSelected = true;
         }
       }
-    } else {
-      std::string fallbackFqbn;
-      if (!m_boardHistory.empty()) {
-        fallbackFqbn = m_boardHistory[0];
-      } else {
-        fallbackFqbn = "arduino:avr:uno";
-      }
-      AddBoardToHistory(fallbackFqbn);
+    }
 
+    if (!boardSelected) {
+      std::string fallbackFqbn = "arduino:avr:uno";
+      AddBoardToHistory(fallbackFqbn);
       UpdateBoard(fallbackFqbn);
     }
   }
@@ -1097,6 +1099,17 @@ void ArduinoEditorFrame::CreateNewSketchFile(const wxString &filename) {
   m_filesPanel->RefreshTree();
 }
 
+void ArduinoEditorFrame::CloseIfNeeded() {
+  EditorSettings settings;
+  settings.Load(config);
+
+  if (settings.keepOneWindow) {
+    CallAfter([this]() {
+      Close();
+    });
+  }
+}
+
 bool ArduinoEditorFrame::NewSketch(bool inNewWindow) {
   wxString sketchesDir;
 
@@ -1145,6 +1158,8 @@ bool ArduinoEditorFrame::NewSketch(bool inNewWindow) {
   if (inNewWindow) {
     ArduinoEditApp &app = wxGetApp();
     app.OpenSketch(fullSketchPath);
+
+    CloseIfNeeded();
   } else {
     OpenSketch(wxToStd(fullSketchPath));
   }
@@ -1180,6 +1195,8 @@ bool ArduinoEditorFrame::OpenSketchDialog(bool inNewWindow) {
     if (inNewWindow) {
       ArduinoEditApp &app = wxGetApp();
       app.OpenSketch(path);
+
+      CloseIfNeeded();
     } else {
       OpenSketch(wxToStd(path));
     }
@@ -1716,6 +1733,7 @@ void ArduinoEditorFrame::OnDiagnosticsUpdated(wxThreadEvent &evt) {
   m_diagView->SetStale(false);
 
   if (evt.GetInt() == 0) {
+    // diagnosis has not changed.
     return;
   }
 
@@ -2076,11 +2094,17 @@ void ArduinoEditorFrame::OnLibrariesFound(wxThreadEvent &evt) {
     wxString msg;
     msg << _("The following missing headers are claimed to be provided by Arduino libraries:\n\n");
 
+    constexpr size_t kMaxLibsPerHeader = 5;
+
     for (const auto &g : m_foundLibraryGroups) {
       wxString headerWx = wxString::FromUTF8(g.header.c_str());
       msg << wxT("- <") << headerWx << wxT(">\n");
 
-      for (const auto &lib : g.libs) {
+      const size_t showCount = std::min(g.libs.size(), kMaxLibsPerHeader);
+
+      for (size_t i = 0; i < showCount; ++i) {
+        const auto &lib = g.libs[i];
+
         wxString nameWx = wxString::FromUTF8(lib.name.c_str());
         wxString sentWx = wxString::FromUTF8(lib.latest.sentence.c_str());
 
@@ -2089,6 +2113,11 @@ void ArduinoEditorFrame::OnLibrariesFound(wxThreadEvent &evt) {
           msg << wxT(" \u2014 ") << sentWx;
         }
         msg << wxT("\n");
+      }
+
+      if (g.libs.size() > showCount) {
+        const unsigned long more = (unsigned long)(g.libs.size() - showCount);
+        msg << wxT("    \u2022 ") << wxString::Format(_("... and %lu more"), more) << wxT("\n");
       }
 
       msg << wxT("\n");
@@ -2103,6 +2132,8 @@ void ArduinoEditorFrame::OnLibrariesFound(wxThreadEvent &evt) {
         wxYES_NO | wxICON_INFORMATION);
 
     dlg.SetYesNoLabels(_("Open Library Manager"), _("Ignore"));
+    dlg.SetSize(wxSize(820, 520));
+    dlg.CentreOnParent();
 
     int res = dlg.ShowModal();
 
@@ -2165,7 +2196,12 @@ void ArduinoEditorFrame::OnInstalledLibrariesUpdated(wxThreadEvent &evt) {
       }
     }
   } else {
-    ResolveLibrariesOrDiagnostics();
+    if (m_firstInitCompleted) {
+      APP_DEBUG_LOG("FRM: cleaning project after lib install...");
+      CleanProject();
+    } else {
+      ResolveLibrariesOrDiagnostics();
+    }
   }
 }
 
@@ -2287,8 +2323,9 @@ void ArduinoEditorFrame::ResolveLibrariesOrDiagnostics() {
 }
 
 void ArduinoEditorFrame::ScheduleDiagRefresh() {
-  if (m_diagTimer.IsRunning())
+  if (m_diagTimer.IsRunning()) {
     m_diagTimer.Stop();
+  }
 
   if (m_diagView) {
     m_diagView->SetStale();
@@ -3482,6 +3519,8 @@ void ArduinoEditorFrame::OnOpenRecent(wxCommandEvent &event) {
 
   ArduinoEditApp &app = wxGetApp();
   app.OpenSketch(path);
+
+  CloseIfNeeded();
 }
 
 void ArduinoEditorFrame::OnClearRecent(wxCommandEvent &WXUNUSED(event)) {
@@ -3675,6 +3714,8 @@ void ArduinoEditorFrame::OnOpenSketchFromDir(wxCommandEvent &event) {
 
   ArduinoEditApp &app = wxGetApp();
   app.OpenSketch(path);
+
+  CloseIfNeeded();
 }
 
 void ArduinoEditorFrame::OnShowExamples(wxCommandEvent &WXUNUSED(evt)) {
@@ -4415,6 +4456,8 @@ WXLRESULT ArduinoEditorFrame::MSWWindowProc(WXUINT message, WXWPARAM wParam, WXL
           APP_DEBUG_LOG("WM_COPYDATA: OpenSketch(%s)", wxToStd(openPath).c_str());
           ArduinoEditApp &app = wxGetApp();
           app.OpenSketch(openPath);
+
+          CloseIfNeeded();
         }
       }
     }
