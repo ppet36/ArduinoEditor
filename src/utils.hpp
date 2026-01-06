@@ -36,6 +36,10 @@
 #include <wx/listctrl.h>
 #include <wx/log.h>
 #include <wx/menu.h>
+// clang-format off
+#include <wx/treectrl.h>
+#include <wx/generic/treectlg.h>
+// clang-format on
 
 #include <wx/string.h>
 
@@ -213,3 +217,5 @@ std::string StripQuotes(const std::string &s);
 std::string BaseFqbn3(std::string fqbn);
 
 bool ParseDefaultFqbnFromSketchYaml(const std::filesystem::path &yamlPath, std::string &outBaseFqbn3);
+
+void KillUnfocusedColor(wxGenericTreeCtrl *tree);

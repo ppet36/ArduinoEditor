@@ -21,6 +21,7 @@
 #include "ard_ai.hpp"
 #include "ard_aipnl.hpp"
 #include "ard_boptdlg.hpp"
+#include "ard_classbrowser.hpp"
 #include "ard_cli.hpp"
 #include "ard_coreman.hpp"
 #include "ard_diagview.hpp"
@@ -108,6 +109,13 @@ private:
   SketchFilesPanel *m_filesPanel = nullptr;
   ArduinoAiChatPanel *m_aiPanel = nullptr;
 
+  ArduinoClassBrowserPanel *m_classBrowser = nullptr;
+  void UpdateClassBrowserEditor();
+
+public:
+  void UpdateClassBrowserEditorLine(int line);
+
+private:
   // Kill async cli stream
   void OnCliProcessKill(wxCommandEvent &);
 
@@ -260,6 +268,10 @@ private:
   void UpdateOutputTabsFromMenu();
   void RestoreWindowPlacement();
   void OnOpenSerialMonitor(wxCommandEvent &);
+
+  // classview
+  void ShowSymbolsPane(bool show);
+  void OnViewSymbols(wxCommandEvent &evt);
 
   // Ai
   void ShowAiPane(bool show);

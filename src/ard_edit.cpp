@@ -2139,6 +2139,12 @@ void ArduinoEditor::OnEditorUpdateUI(wxStyledTextEvent &event) {
   if (m_symbolOverview) {
     m_symbolOverview->Refresh();
   }
+
+  if (auto *frame = GetOwnerFrame()) {
+    int line, column;
+    GetCurrentCursor(line, column);
+    frame->UpdateClassBrowserEditorLine(line);
+  }
 }
 
 void ArduinoEditor::OnSymbolTimer(wxTimerEvent &WXUNUSED(event)) {

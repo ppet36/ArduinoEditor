@@ -73,6 +73,7 @@ enum {
   ID_MENU_PROJECT_UPLOAD,
   ID_MENU_VIEW_OUTPUT,
   ID_MENU_VIEW_SKETCHES,
+  ID_MENU_VIEW_SYMBOLS,
   ID_MENU_VIEW_AI,
   ID_MENU_LIBRARY_MANAGER,
   ID_MENU_CORE_MANAGER,
@@ -284,6 +285,25 @@ void ArduinoEditorFrame::UpdateAiGlobalEditor() {
   if (edit) {
     APP_DEBUG_LOG("FRM: set AI editor to %s", edit->GetFilePath().c_str());
     m_aiGlobalActions.SetCurrentEditor(edit);
+  }
+}
+
+void ArduinoEditorFrame::UpdateClassBrowserEditor() {
+  // Update class browser symbols
+  if (m_classBrowser && completion) {
+    ArduinoEditor *ed = GetCurrentEditor();
+    if (!ed) {
+      m_classBrowser->Clear();
+    } else {
+      m_classBrowser->SetCompletion(completion);
+      m_classBrowser->SetCurrentEditor(ed);
+    }
+  }
+}
+
+void ArduinoEditorFrame::UpdateClassBrowserEditorLine(int line) {
+  if (m_classBrowser) {
+    m_classBrowser->SetCurrentLine(line);
   }
 }
 
@@ -793,6 +813,7 @@ void ArduinoEditorFrame::OnNotebookPageChanged(wxBookCtrlEvent &event) {
   UpdateFilesTreeSelectedFromNotebook();
 
   UpdateAiGlobalEditor();
+  UpdateClassBrowserEditor();
 
   event.Skip();
 }
@@ -863,6 +884,7 @@ void ArduinoEditorFrame::OnNotebookPageClose(wxAuiNotebookEvent &e) {
       m_notebook->DeletePage(p);
     }
     UpdateAiGlobalEditor();
+    UpdateClassBrowserEditor();
     UpdateFilesTreeSelectedFromNotebook();
   });
 }
@@ -914,6 +936,7 @@ bool ArduinoEditorFrame::ConfirmAndCloseTab(int idx) {
       m_notebook->DeletePage(p);
     }
     UpdateAiGlobalEditor();
+    UpdateClassBrowserEditor();
     UpdateFilesTreeSelectedFromNotebook();
   });
 
@@ -1096,6 +1119,7 @@ void ArduinoEditorFrame::CreateNewSketchFile(const wxString &filename) {
     m_notebook->AddPage(editor, wxString::FromUTF8(filename), /*select=*/true, IMLI_NOTEBOOK_EMPTY);
     m_notebook->SetPageToolTip(m_notebook->GetPageCount() - 1, wxString::FromUTF8(filepath));
     UpdateAiGlobalEditor();
+    UpdateClassBrowserEditor();
   } else {
     // not supported file is opened in external program
     m_clangSettings.OpenExternalSourceFile(filename, 1);
@@ -1741,6 +1765,8 @@ void ArduinoEditorFrame::OnDiagnosticsUpdated(wxThreadEvent &evt) {
     // diagnosis has not changed.
     return;
   }
+
+  UpdateClassBrowserEditor();
 
   int problemsPageIndex = m_bottomNotebook->FindPage(m_diagView);
   if (problemsPageIndex == wxNOT_FOUND) {
@@ -2827,6 +2853,17 @@ wxMenuBar *ArduinoEditorFrame::CreateMenuBar() {
     }
   }
 
+  wxMenuItem *symbolsItem =
+      viewMenu->AppendCheckItem(ID_MENU_VIEW_SYMBOLS,
+                                _("Class browser"),
+                                _("Show symbols tree for current editor"));
+  {
+    wxBitmapBundle bmp = AEGetArtBundle(wxAEArt::ListView);
+    if (bmp.IsOk()) {
+      symbolsItem->SetBitmap(bmp);
+    }
+  }
+
   wxMenuItem *aiItem =
       viewMenu->AppendCheckItem(ID_MENU_VIEW_AI,
                                 _("AI assistant"),
@@ -2887,6 +2924,7 @@ wxMenuBar *ArduinoEditorFrame::CreateMenuBar() {
   Bind(wxEVT_MENU, &ArduinoEditorFrame::OnAbout, this, wxID_ABOUT);
   Bind(wxEVT_MENU, &ArduinoEditorFrame::OnViewOutput, this, ID_MENU_VIEW_OUTPUT);
   Bind(wxEVT_MENU, &ArduinoEditorFrame::OnViewFiles, this, ID_MENU_VIEW_SKETCHES);
+  Bind(wxEVT_MENU, &ArduinoEditorFrame::OnViewSymbols, this, ID_MENU_VIEW_SYMBOLS);
   Bind(wxEVT_MENU, &ArduinoEditorFrame::OnViewAi, this, ID_MENU_VIEW_AI);
   Bind(wxEVT_MENU, &ArduinoEditorFrame::OnOpenRecent, this, ID_MENU_OPEN_RECENT_FIRST, ID_MENU_OPEN_RECENT_LAST);
   Bind(wxEVT_MENU, &ArduinoEditorFrame::OnClearRecent, this, ID_MENU_OPEN_RECENT_CLEAR);
@@ -3039,6 +3077,11 @@ void ArduinoEditorFrame::InitComponents() {
   m_aiPanel = new ArduinoAiChatPanel(this, &m_aiGlobalActions, config);
 
   // ------------------------------------------------------
+  // CLASS BROWSER PANE (AUI on the left, under Sketch files)
+  // ------------------------------------------------------
+  m_classBrowser = new ArduinoClassBrowserPanel(this);
+
+  // ------------------------------------------------------
   // AUI MANAGER: centerPanel + bottomNotebook
   // ------------------------------------------------------
   m_auiManager.SetManagedWindow(this);
@@ -3063,6 +3106,24 @@ void ArduinoEditorFrame::InitComponents() {
           .MaximizeButton(false)
           .Floatable(true)
           .Show());
+
+  // left "Symbols" pane - below Sketch files
+  if (m_classBrowser) {
+    m_auiManager.AddPane(
+        m_classBrowser,
+        wxAuiPaneInfo()
+            .Name(wxT("symbols"))
+            .Left()
+            .Caption(_("Symbols"))
+            .BestSize(260, 240)
+            .MinSize(200, 120)
+            .CloseButton(true)
+            .MaximizeButton(false)
+            .Floatable(true)
+            .Dockable(true)
+            .Show(true)
+            .Row(1));
+  }
 
   // bottom "Output" pane - floatable + closable
   m_auiManager.AddPane(
@@ -3102,6 +3163,8 @@ void ArduinoEditorFrame::InitComponents() {
       for (auto &p : m_auiManager.GetAllPanes()) {
         if (p.name == wxT("files")) {
           p.Caption(_("Sketch files"));
+        } else if (p.name == wxT("symbols")) {
+          p.Caption(_("Class browser"));
         } else if (p.name == wxT("output")) {
           p.Caption(_("Output"));
         } else if (p.name == wxT("ai")) {
@@ -3120,6 +3183,10 @@ void ArduinoEditorFrame::InitComponents() {
   wxAuiPaneInfo &skPane = m_auiManager.GetPane(wxT("files"));
   bool sketchesVisible = skPane.IsOk() && skPane.IsShown();
   m_menuBar->Check(ID_MENU_VIEW_SKETCHES, sketchesVisible);
+
+  wxAuiPaneInfo &symPane = m_auiManager.GetPane(wxT("symbols"));
+  bool symbolsVisible = symPane.IsOk() && symPane.IsShown();
+  m_menuBar->Check(ID_MENU_VIEW_SYMBOLS, symbolsVisible);
 
   wxAuiPaneInfo &aiPane = m_auiManager.GetPane(wxT("ai"));
   bool aiVisible = aiPane.IsOk() && aiPane.IsShown();
@@ -3348,6 +3415,7 @@ void ArduinoEditorFrame::ActivateEditor(ArduinoEditor *editor, int line, int col
     if (ed == editor) {
       m_notebook->SetSelection(i);
       UpdateAiGlobalEditor();
+      UpdateClassBrowserEditor();
       ed->Goto(line, column);
       ed->SetFocus();
       ed->FlashLine(line);
@@ -3363,6 +3431,21 @@ void ArduinoEditorFrame::ShowOutputPane(bool show) {
 
   pane.Show(show);
   m_auiManager.Update();
+}
+
+void ArduinoEditorFrame::ShowSymbolsPane(bool show) {
+  wxAuiPaneInfo &pane = m_auiManager.GetPane(wxT("symbols"));
+  if (!pane.IsOk())
+    return;
+
+  pane.Show(show);
+  m_auiManager.Update();
+
+  UpdateClassBrowserEditor();
+}
+
+void ArduinoEditorFrame::OnViewSymbols(wxCommandEvent &evt) {
+  ShowSymbolsPane(evt.IsChecked());
 }
 
 void ArduinoEditorFrame::OnToggleOutput(wxCommandEvent &event) {
@@ -3418,6 +3501,10 @@ void ArduinoEditorFrame::OnAuiPaneClose(wxAuiManagerEvent &evt) {
   } else if (evt.GetPane()->name == wxT("files")) {
     if (m_menuBar) {
       m_menuBar->Check(ID_MENU_VIEW_SKETCHES, false);
+    }
+  } else if (evt.GetPane()->name == wxT("symbols")) {
+    if (m_menuBar) {
+      m_menuBar->Check(ID_MENU_VIEW_SYMBOLS, false);
     }
   } else if (evt.GetPane()->name == wxT("ai")) {
     if (m_menuBar) {
@@ -3919,6 +4006,7 @@ void ArduinoEditorFrame::OnSysColoursChanged(wxSysColourChangedEvent &evt) {
   ReplaceMenuItemBitmap(ID_MENU_VIEW_SKETCHES, wxAEArt::FolderOpen);
   ReplaceMenuItemBitmap(ID_MENU_VIEW_AI, wxAEArt::Tip);
   ReplaceMenuItemBitmap(ID_MENU_CHECK_FOR_UPDATES, wxAEArt::CheckForUpdates);
+  ReplaceMenuItemBitmap(ID_MENU_VIEW_SYMBOLS, wxAEArt::ListView);
 #ifndef __WXMAC__
   ReplaceMenuItemBitmap(wxID_ABOUT, wxAEArt::Information);
 #endif
@@ -4676,8 +4764,7 @@ void ArduinoEditorFrame::OnStatusBarMotion(wxMouseEvent &e) {
 
   wxRect updRect;
   bool overUpd = m_statusBar->GetFieldRect(1, updRect) && updRect.Contains(pt) &&
-                 (!m_librariesForUpdate.empty() || m_coresForUpdate.empty());
-
+                 (!m_librariesForUpdate.empty() || !m_coresForUpdate.empty());
   m_statusBar->SetCursor(overUpd ? wxCursor(wxCURSOR_HAND) : wxNullCursor);
   e.Skip();
 }

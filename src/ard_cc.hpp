@@ -71,7 +71,7 @@ struct HoverInfo {
   std::string fullComment;  // entire comment block (/** ... */)
   std::vector<ParameterInfo> parameters;
 
-  std::string ToHoverString();
+  std::string ToHoverString() const;
 };
 
 struct JumpTarget {
@@ -273,7 +273,6 @@ private:
 
   void FilterAndSortCompletionsWithPrefix(const std::string &prefix, std::vector<CompletionItem> &inOutCompletions);
 
-  void CollectSketchFiles(std::vector<SketchFileBuffer> &outFiles) const;
   std::vector<std::string> GetCompilerArgs(const std::vector<SketchFileBuffer> &files) const;
   std::vector<std::string> GetCompilerArgs() const;
 
@@ -282,6 +281,9 @@ private:
 public:
   ArduinoCodeCompletion(ArduinoCli *ardCli, const ClangSettings &clangSettings, CollectSketchFilesFn collectSketchFilesFn, wxEvtHandler *eventHandler);
   ~ArduinoCodeCompletion();
+
+  ArduinoCli *GetCli() { return arduinoCli; }
+  void CollectSketchFiles(std::vector<SketchFileBuffer> &outFiles) const;
 
   void ApplySettings(const ClangSettings &settings);
 
@@ -297,6 +299,8 @@ public:
   void ShowAutoCompletionAsync(wxStyledTextCtrl *editor, std::string filename, CompletionMetadata &metadata, wxEvtHandler *handler);
 
   bool GetHoverInfo(const std::string &filename, const std::string &code, int line, int column, HoverInfo &outInfo);
+  bool GetHoverInfo(const std::string &filename, const std::string &code, int line, int column, const std::vector<SketchFileBuffer> files, HoverInfo &outInfo);
+
   bool GetSymbolInfo(const std::string &filename, const std::string &code, int line, int column, SymbolInfo &outInfo);
   bool FindDefinition(const std::string &filename, const std::string &code, int line, int column, JumpTarget &out);
   std::vector<SymbolInfo> GetAllSymbols(const std::string &filename, const std::string &code);

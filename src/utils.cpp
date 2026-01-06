@@ -2201,3 +2201,31 @@ bool ParseDefaultFqbnFromSketchYaml(const fs::path &yamlPath, std::string &outBa
 
   return false;
 }
+
+void KillUnfocusedColor(wxGenericTreeCtrl *tree) {
+  // Keep selection readable even when the control loses focus (dark mode friendly).
+  // We intentionally swallow KILL_FOCUS so wxGenericTreeCtrl doesn't switch to "inactive selection" colors.
+  tree->Bind(wxEVT_KILL_FOCUS, [tree](wxFocusEvent &) {
+    // No e.Skip() on purpose.
+    tree->Refresh(false);
+  });
+
+  tree->Bind(wxEVT_SET_FOCUS, [tree](wxFocusEvent &e) {
+    e.Skip(); // let the control handle focus normally
+    tree->Refresh(false);
+  });
+
+  // Prime the control once so it renders selection using "focused" colors even at startup.
+  // Do it after creation/layout so FindFocus() is meaningful.
+  tree->CallAfter([tree] {
+    wxWindow *prev = wxWindow::FindFocus();
+
+    // Give the tree focus once to switch it into the "focused selection" painting mode.
+    tree->SetFocus();
+    tree->Refresh(false);
+
+    // Restore focus back where it was (so we don't steal focus from editor/text control).
+    if (prev && prev != tree)
+      prev->SetFocus();
+  });
+}

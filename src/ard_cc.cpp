@@ -936,7 +936,7 @@ std::string ArduinoParseError::ToString() const {
   return oss.str();
 }
 
-std::string HoverInfo::ToHoverString() {
+std::string HoverInfo::ToHoverString() const {
   std::string tooltip;
 
   bool sigIsSameAsName = !signature.empty() && signature == name;
@@ -2702,16 +2702,20 @@ void ArduinoCodeCompletion::ShowAutoCompletionAsync(wxStyledTextCtrl *editor, st
   }).detach();
 }
 
-/** Returns hover info for symbol at cursor location. */
 bool ArduinoCodeCompletion::GetHoverInfo(const std::string &filename, const std::string &code, int line, int column, HoverInfo &outInfo) {
+  std::vector<SketchFileBuffer> files;
+  CollectSketchFiles(files);
+  return GetHoverInfo(filename, code, line, column, files, outInfo);
+}
+
+/** Returns hover info for symbol at cursor location. */
+bool ArduinoCodeCompletion::GetHoverInfo(const std::string &filename, const std::string &code, int line, int column, const std::vector<SketchFileBuffer> files, HoverInfo &outInfo) {
   std::lock_guard<std::mutex> lock(m_ccMutex);
 
   if (!m_ready)
     return false;
 
-  std::vector<SketchFileBuffer> filesSnapshot;
-  CollectSketchFiles(filesSnapshot);
-  CcFilesSnapshotGuard guard(&filesSnapshot);
+  CcFilesSnapshotGuard guard(&files);
 
   outInfo = HoverInfo{};
 
@@ -2759,9 +2763,38 @@ bool ArduinoCodeCompletion::GetHoverInfo(const std::string &filename, const std:
   outInfo.kind = cxStringToStd(clang_getCursorKindSpelling(ckind));
 
   // type of symbol
+  auto IsCallableCursorKind = [](CXCursorKind k) {
+    switch (k) {
+      case CXCursor_FunctionDecl:
+      case CXCursor_CXXMethod:
+      case CXCursor_Constructor:
+      case CXCursor_Destructor:
+      case CXCursor_ConversionFunction:
+      case CXCursor_FunctionTemplate:
+        return true;
+      default:
+        return false;
+    }
+  };
+
   CXType ctype = clang_getCursorType(cursor);
-  if (ctype.kind != CXType_Invalid) {
-    outInfo.type = cxStringToStd(clang_getTypeSpelling(ctype));
+
+  if (IsCallableCursorKind(ckind)) {
+    CXType rtype = clang_getResultType(ctype);
+
+    if (rtype.kind == CXType_Invalid) {
+      rtype = clang_getCursorResultType(cursor);
+    }
+
+    if (rtype.kind != CXType_Invalid) {
+      outInfo.type = cxStringToStd(clang_getTypeSpelling(rtype));
+    } else {
+      outInfo.type.clear();
+    }
+  } else {
+    if (ctype.kind != CXType_Invalid) {
+      outInfo.type = cxStringToStd(clang_getTypeSpelling(ctype));
+    }
   }
 
   // signature - from displayName (often already nice)

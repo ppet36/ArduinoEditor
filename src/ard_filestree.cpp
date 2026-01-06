@@ -93,9 +93,11 @@ static void CollectDirEntriesSorted(const wxString &dirPath,
 
 SketchFilesPanel::SketchFilesPanel(wxWindow *parent, wxWindowID id)
     : wxPanel(parent, id) {
-  m_tree = new wxTreeCtrl(
+  m_tree = new wxGenericTreeCtrl(
       this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
       wxTR_HAS_BUTTONS | wxTR_LINES_AT_ROOT | wxTR_SINGLE);
+
+  KillUnfocusedColor(m_tree);
 
   auto *sizer = new wxBoxSizer(wxVERTICAL);
   sizer->Add(m_tree, 1, wxEXPAND);

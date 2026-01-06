@@ -20,7 +20,10 @@
 
 #include <vector>
 #include <wx/panel.h>
+// clang-format off
 #include <wx/treectrl.h>
+#include <wx/generic/treectlg.h>
+// clang-format on
 
 class wxImageList;
 class wxCommandEvent;
@@ -60,7 +63,7 @@ private:
         : path(p), isDir(d), isLibrary(lib) {}
   };
 
-  wxTreeCtrl *m_tree = nullptr;
+  wxGenericTreeCtrl *m_tree = nullptr;
   int m_imgFolder = -1;
   int m_imgFolderOpen = -1;
   int m_imgFile = -1;
