@@ -545,6 +545,10 @@ void ArduinoEditApp::OnUpdateIdleTimer(wxTimerEvent &) {
 
   if (cfg) {
     ArduinoEditorUpdateDialog::CheckAndShowIfNeeded(parent, *cfg);
+
+    if (auto *frame = wxDynamicCast(parent, ArduinoEditorFrame)) {
+      frame->CheckForUpdatesIfNeeded();
+    }
   }
 
   m_updateCheckInProgress.store(false);

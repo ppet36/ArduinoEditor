@@ -67,3 +67,7 @@ wxDECLARE_EVENT(wxEVT_AI_SUMMARIZATION_UPDATED, wxThreadEvent);
 wxDECLARE_EVENT(EVT_STOP_PROCESS, wxThreadEvent);
 
 wxDECLARE_EVENT(EVT_PROCESS_TERMINATE_REQUEST, wxCommandEvent);
+
+// Libs/cores update check
+wxDECLARE_EVENT(EVT_LIBS_UPDATES_AVAILABLE, wxThreadEvent);  // payload: std::vector<ArduinoLibraryInfo>
+wxDECLARE_EVENT(EVT_CORES_UPDATES_AVAILABLE, wxThreadEvent); // payload: std::vector<ArduinoCoreInfo>

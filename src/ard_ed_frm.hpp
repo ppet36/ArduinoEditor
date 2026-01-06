@@ -150,6 +150,10 @@ private:
   void UpdateStatus(const wxString &msg);
 
   void OnStatusBarSize(wxSizeEvent &evt);
+  void OnStatusBarLeftUp(wxMouseEvent &e);
+  void OnStatusBarMotion(wxMouseEvent &e);
+  void OnStatusBarLeave(wxMouseEvent &e);
+
   void LayoutStatusBarIndicator();
 
   void OnDiagJumpFromView(ArduinoDiagnosticsActionEvent &ev);
@@ -307,6 +311,22 @@ private:
   void ResolveLibrariesOrDiagnostics();
 
   void OnCheckForUpdates(wxCommandEvent &);
+
+  std::vector<ArduinoLibraryInfo> m_librariesForUpdate;
+  std::vector<ArduinoCoreInfo> m_coresForUpdate;
+  wxTimer m_updatesTimer;
+
+public:
+  void CheckForUpdatesIfNeeded();
+
+private:
+  void OnLibrariesUpdatesAvailable(wxThreadEvent &event);
+  void OnCoresUpdatesAvailable(wxThreadEvent &event);
+  void ScheduleLibsCoresUpdateInfo();
+  void OnUpdatesLibsCoresAvailable(wxTimerEvent &);
+  void OnLibraryUpdatesFromStatusBar(wxCommandEvent &);
+  void OnCoreUpdatesFromStatusBar(wxCommandEvent &);
+  void UpdateStatusBarUpdates();
 
 #ifdef __WXMSW__
   WXLRESULT MSWWindowProc(WXUINT message, WXWPARAM wParam, WXLPARAM lParam);

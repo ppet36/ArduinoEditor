@@ -19,6 +19,8 @@
 #pragma once
 
 #include "ard_mdwidget.hpp"
+#include <cstdint>
+#include <wx/config.h>
 #include <wx/dialog.h>
 #include <wx/string.h>
 
@@ -66,4 +68,34 @@ private:
 
   // Forward declare to avoid include cycle
   class ArduinoMarkdownPanel *m_md{nullptr};
+};
+
+class ArdUpdateScheduler {
+public:
+  enum class Kind {
+    Libraries,
+    Boards
+  };
+
+  explicit ArdUpdateScheduler(wxConfigBase *cfg);
+
+  // Generic API
+  bool IsDue(Kind kind) const;
+  void MarkCheckedNow(Kind kind) const;
+  void MarkCheckedAt(Kind kind, int64_t unixTime) const;
+
+  // Convenience API
+  bool IsDueLibraries() const { return IsDue(Kind::Libraries); }
+  bool IsDueBoards() const { return IsDue(Kind::Boards); }
+
+  void MarkLibrariesCheckedNow() const { MarkCheckedNow(Kind::Libraries); }
+  void MarkBoardsCheckedNow() const { MarkCheckedNow(Kind::Boards); }
+
+private:
+  wxConfigBase *m_cfg;
+
+  wxString IntervalHoursKey(Kind kind) const;
+  wxString LastCheckUnixKey(Kind kind) const;
+
+  long DefaultIntervalHours(Kind kind) const;
 };

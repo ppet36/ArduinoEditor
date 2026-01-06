@@ -27,6 +27,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
+#include <functional>
 #include <memory>
 #include <nlohmann/json.hpp>
 #include <set>
@@ -3594,6 +3595,313 @@ void ArduinoCli::UpdateLibraryIndexAsync(wxEvtHandler *handler) {
   std::thread([this, weak, args]() {
     this->RunCliStreaming(args, weak, "lib update-index");
   }).detach();
+}
+
+void ArduinoCli::CheckForLibrariesUpdateAsync(wxEvtHandler *handler) {
+  if (!handler) {
+    return;
+  }
+
+  wxWeakRef<wxEvtHandler> outWeak(handler);
+
+  // Small self-contained state machine handler.
+  // It consumes intermediate events (cli output + load events) and emits only EVT_LIBS_UPDATES_AVAILABLE.
+  class LibUpdateCheckHandler final : public wxEvtHandler {
+  public:
+    LibUpdateCheckHandler(ArduinoCli *cli,
+                          const wxWeakRef<wxEvtHandler> &outWeak,
+                          std::function<void(wxEvent *)> postOut)
+        : m_cli(cli), m_outWeak(outWeak), m_postOut(std::move(postOut)) {
+
+      Bind(EVT_COMMANDLINE_OUTPUT_MSG, &LibUpdateCheckHandler::OnCliOutput, this);
+      Bind(EVT_LIBRARIES_UPDATED, &LibUpdateCheckHandler::OnLibrariesLoaded, this);
+      Bind(EVT_INSTALLED_LIBRARIES_UPDATED, &LibUpdateCheckHandler::OnInstalledLibrariesLoaded, this);
+    }
+
+    void Start() {
+      if (!m_cli) {
+        Finish(false);
+        return;
+      }
+      m_phase = Phase::UpdatingIndex;
+      m_cli->UpdateLibraryIndexAsync(this);
+    }
+
+  private:
+    enum class Phase {
+      UpdatingIndex,
+      LoadingAvailable,
+      LoadingInstalled,
+      Done
+    };
+
+    ArduinoCli *m_cli = nullptr;
+    wxWeakRef<wxEvtHandler> m_outWeak;
+    std::function<void(wxEvent *)> m_postOut;
+
+    Phase m_phase = Phase::UpdatingIndex;
+
+    bool m_okAvailable = false;
+    bool m_okInstalled = false;
+
+    void OnCliOutput(wxCommandEvent &e) {
+      if (m_phase != Phase::UpdatingIndex) {
+        return;
+      }
+
+      // RunCliStreaming uses EVT_COMMANDLINE_OUTPUT_MSG for both lines and "finished" summary.
+      const wxString s = e.GetString();
+      if (!s.StartsWith(wxT("[arduino-cli "))) {
+        return; // normal output line -> ignore
+      }
+      if (s.Find(wxT("lib update-index finished")) == wxNOT_FOUND) {
+        return; // some other command -> ignore
+      }
+
+      const int rc = e.GetInt();
+      if (rc != 0) {
+        Finish(false);
+        return;
+      }
+
+      m_phase = Phase::LoadingAvailable;
+      m_cli->LoadLibrariesAsync(this);
+    }
+
+    void OnLibrariesLoaded(wxThreadEvent &e) {
+      if (m_phase != Phase::LoadingAvailable) {
+        return;
+      }
+
+      m_okAvailable = (e.GetInt() != 0);
+
+      // Continue even if not ok; we'll report ok=false.
+      m_phase = Phase::LoadingInstalled;
+      m_cli->LoadInstalledLibrariesAsync(this);
+    }
+
+    void OnInstalledLibrariesLoaded(wxThreadEvent &e) {
+      if (m_phase != Phase::LoadingInstalled) {
+        return;
+      }
+
+      m_okInstalled = (e.GetInt() != 0);
+
+      const bool ok = (m_okAvailable && m_okInstalled);
+      if (!ok) {
+        Finish(false);
+        return;
+      }
+
+      // Compare available(latest) vs installed(version) by name.
+      // NOTE: Installed version is stored in installedLibraries[i].latest.version (see LoadInstalledLibraries()).
+      const auto &available = m_cli->GetLibraries();
+      const auto &installed = m_cli->GetInstalledLibraries();
+
+      std::unordered_map<std::string, std::string> instVer;
+      instVer.reserve(installed.size());
+      for (const auto &li : installed) {
+        if (!li.name.empty()) {
+          instVer[li.name] = li.latest.version;
+        }
+      }
+
+      std::vector<ArduinoLibraryInfo> updates;
+      updates.reserve(64);
+
+      for (const auto &av : available) {
+        auto it = instVer.find(av.name);
+        if (it == instVer.end()) {
+          continue;
+        }
+
+        const std::string &have = it->second;
+        const std::string &want = av.latest.version;
+
+        if (have.empty() || want.empty()) {
+          continue;
+        }
+
+        if (CompareVersions(have, want) < 0) {
+          updates.push_back(av); // payload = "available" record; installed version can be resolved via GetInstalledLibraries()
+        }
+      }
+
+      std::sort(updates.begin(), updates.end(),
+                [](const ArduinoLibraryInfo &a, const ArduinoLibraryInfo &b) {
+                  return a.name < b.name;
+                });
+
+      Finish(true, std::move(updates));
+    }
+
+    void Finish(bool ok, std::vector<ArduinoLibraryInfo> updates = {}) {
+      if (m_phase == Phase::Done) {
+        return;
+      }
+      m_phase = Phase::Done;
+
+      wxThreadEvent evt(EVT_LIBS_UPDATES_AVAILABLE);
+      evt.SetInt(ok ? 1 : 0);
+      evt.SetPayload(std::move(updates));
+
+      if (m_postOut) {
+        m_postOut(evt.Clone());
+      } else {
+        delete evt.Clone();
+      }
+
+      // Safety: drop any pending events for this handler before deletion.
+      DeletePendingEvents();
+
+      if (wxTheApp) {
+        wxTheApp->CallAfter([this]() { delete this; });
+      } else {
+        delete this;
+      }
+    }
+  };
+
+  // We keep "posting to UI" consistent with the rest of ArduinoCli (weak handler + CallAfter).
+  auto postOut = [this, outWeak](wxEvent *ev) {
+    this->QueueUiEvent(outWeak, ev);
+  };
+
+  auto *h = new LibUpdateCheckHandler(this, outWeak, postOut);
+  h->Start();
+}
+
+void ArduinoCli::CheckForCoresUpdateAsync(wxEvtHandler *handler) {
+  if (!handler) {
+    return;
+  }
+
+  wxWeakRef<wxEvtHandler> outWeak(handler);
+
+  class CoreUpdateCheckHandler final : public wxEvtHandler {
+  public:
+    CoreUpdateCheckHandler(ArduinoCli *cli,
+                           const wxWeakRef<wxEvtHandler> &outWeak,
+                           std::function<void(wxEvent *)> postOut)
+        : m_cli(cli), m_outWeak(outWeak), m_postOut(std::move(postOut)) {
+
+      Bind(EVT_COMMANDLINE_OUTPUT_MSG, &CoreUpdateCheckHandler::OnCliOutput, this);
+      Bind(EVT_CORES_LOADED, &CoreUpdateCheckHandler::OnCoresLoaded, this);
+    }
+
+    void Start() {
+      if (!m_cli) {
+        Finish(false);
+        return;
+      }
+      m_phase = Phase::UpdatingIndex;
+      m_cli->UpdateCoreIndexAsync(this);
+    }
+
+  private:
+    enum class Phase {
+      UpdatingIndex,
+      LoadingCores,
+      Done
+    };
+
+    ArduinoCli *m_cli = nullptr;
+    wxWeakRef<wxEvtHandler> m_outWeak;
+    std::function<void(wxEvent *)> m_postOut;
+
+    Phase m_phase = Phase::UpdatingIndex;
+
+    void OnCliOutput(wxCommandEvent &e) {
+      if (m_phase != Phase::UpdatingIndex) {
+        return;
+      }
+
+      const wxString s = e.GetString();
+      if (!s.StartsWith(wxT("[arduino-cli "))) {
+        return;
+      }
+      if (s.Find(wxT("core update-index finished")) == wxNOT_FOUND) {
+        return;
+      }
+
+      const int rc = e.GetInt();
+      if (rc != 0) {
+        Finish(false);
+        return;
+      }
+
+      m_phase = Phase::LoadingCores;
+      m_cli->LoadCoresAsync(this);
+    }
+
+    void OnCoresLoaded(wxThreadEvent &e) {
+      if (m_phase != Phase::LoadingCores) {
+        return;
+      }
+
+      const bool ok = (e.GetInt() != 0);
+      if (!ok) {
+        Finish(false);
+        return;
+      }
+
+      const auto &cores = m_cli->GetCores();
+
+      std::vector<ArduinoCoreInfo> updates;
+      updates.reserve(32);
+
+      for (const auto &c : cores) {
+        if (c.installedVersion.empty()) {
+          continue; // not installed
+        }
+        if (c.latestVersion.empty()) {
+          continue;
+        }
+        if (CompareVersions(c.installedVersion, c.latestVersion) < 0) {
+          updates.push_back(c);
+        }
+      }
+
+      std::sort(updates.begin(), updates.end(),
+                [](const ArduinoCoreInfo &a, const ArduinoCoreInfo &b) {
+                  return a.id < b.id;
+                });
+
+      Finish(true, std::move(updates));
+    }
+
+    void Finish(bool ok, std::vector<ArduinoCoreInfo> updates = {}) {
+      if (m_phase == Phase::Done) {
+        return;
+      }
+      m_phase = Phase::Done;
+
+      wxThreadEvent evt(EVT_CORES_UPDATES_AVAILABLE);
+      evt.SetInt(ok ? 1 : 0);
+      evt.SetPayload(std::move(updates));
+
+      if (m_postOut) {
+        m_postOut(evt.Clone());
+      } else {
+        delete evt.Clone();
+      }
+
+      DeletePendingEvents();
+
+      if (wxTheApp) {
+        wxTheApp->CallAfter([this]() { delete this; });
+      } else {
+        delete this;
+      }
+    }
+  };
+
+  auto postOut = [this, outWeak](wxEvent *ev) {
+    this->QueueUiEvent(outWeak, ev);
+  };
+
+  auto *h = new CoreUpdateCheckHandler(this, outWeak, postOut);
+  h->Start();
 }
 
 const std::vector<ArduinoLibraryInfo> &ArduinoCli::GetLibraries() const {

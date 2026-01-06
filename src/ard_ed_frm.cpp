@@ -79,8 +79,11 @@ enum {
   ID_MENU_SERIAL_MONITOR,
   ID_MENU_SKETCH_EXAMPLES,
   ID_MENU_CHECK_FOR_UPDATES,
+  ID_MENU_LIBRARY_MANAGER_UPDATES,
+  ID_MENU_CORE_MANAGER_UPDATES,
   ID_TIMER_DIAGNOSTIC,
   ID_TIMER_BOTTOM_PAGE_RETURN,
+  ID_TIMER_UPDATES_AVAILABLE,
   ID_TABMENU_CLOSE,
   ID_TABMENU_CLOSE_OTHERS,
   ID_TABMENU_CLOSE_ALL,
@@ -236,7 +239,9 @@ void ArduinoEditorFrame::OnEditorSettings(wxCommandEvent &) {
     ApplySettings(m_aiSettings);
 
     config->Write(wxT("Language"), dlg.GetSelectedLanguage());
-    config->Write(wxT("ArduinoEditor/Updates/check_interval_hours"), dlg.GetUpdateCheckIntervalHours());
+    config->Write(wxT("Updates/check_interval_hours"), dlg.GetUpdateCheckIntervalHours());
+    config->Write(wxT("Updates/libraries_check_interval_hours"), dlg.GetLibrariesUpdateCheckIntervalHours());
+    config->Write(wxT("Updates/boards_check_interval_hours"), dlg.GetBoardsUpdateCheckIntervalHours());
 
     wxString oldSketchesDir;
     config->Read(wxT("SketchesDir"), &oldSketchesDir);
@@ -2182,6 +2187,49 @@ void ArduinoEditorFrame::OnInstalledLibrariesUpdated(wxThreadEvent &evt) {
     m_examplesFrame->RefreshLibraries();
   }
 
+  // If the user installed/uninstalled/updated a library, we may have satisfied
+  // a previously detected update. Drop such entries from m_librariesForUpdate.
+  bool updatesChanged = false;
+
+  if (!m_librariesForUpdate.empty()) {
+    std::unordered_map<std::string, std::string> installedVer;
+    installedVer.reserve(iLibs.size());
+
+    for (const auto &li : iLibs) {
+      if (!li.name.empty()) {
+        installedVer[li.name] = li.latest.version; // installed version is stored here
+      }
+    }
+
+    const size_t before = m_librariesForUpdate.size();
+
+    m_librariesForUpdate.erase(
+        std::remove_if(m_librariesForUpdate.begin(), m_librariesForUpdate.end(),
+                       [&](const ArduinoLibraryInfo &u) {
+                         // If the library is no longer installed, it can't be updated.
+                         auto it = installedVer.find(u.name);
+                         if (it == installedVer.end()) {
+                           return true;
+                         }
+
+                         const std::string &have = it->second;
+                         const std::string &need = u.latest.version;
+                         if (have.empty() || need.empty()) {
+                           return false; // keep it (unknown), conservative
+                         }
+
+                         // Remove if installed version >= version that was requested/expected.
+                         return CompareVersions(have, need) >= 0;
+                       }),
+        m_librariesForUpdate.end());
+
+    updatesChanged = (m_librariesForUpdate.size() != before);
+  }
+
+  if (updatesChanged) {
+    UpdateStatusBarUpdates();
+  }
+
   // Reset successful compile sum
   m_lastSuccessfulCompileCodeSum = 0;
 
@@ -2255,6 +2303,49 @@ void ArduinoEditorFrame::OnInstalledCoresUpdated(wxThreadEvent &evt) {
 
   if (m_coreManager) {
     m_coreManager->RefreshCores();
+  }
+
+  // If the user installed/uninstalled/updated a core, we may have satisfied
+  // a previously detected update. Drop such entries from m_coresForUpdate.
+  bool updatesChanged = false;
+
+  if (!m_coresForUpdate.empty()) {
+    std::unordered_map<std::string, std::string> installedVer;
+    installedVer.reserve(iCores.size());
+
+    for (const auto &c : iCores) {
+      if (!c.id.empty() && !c.installedVersion.empty()) {
+        installedVer[c.id] = c.installedVersion;
+      }
+    }
+
+    const size_t before = m_coresForUpdate.size();
+
+    m_coresForUpdate.erase(
+        std::remove_if(m_coresForUpdate.begin(), m_coresForUpdate.end(),
+                       [&](const ArduinoCoreInfo &u) {
+                         // If the core is no longer installed, it can't be updated.
+                         auto it = installedVer.find(u.id);
+                         if (it == installedVer.end()) {
+                           return true;
+                         }
+
+                         const std::string &have = it->second;
+                         const std::string &need = u.latestVersion;
+                         if (have.empty() || need.empty()) {
+                           return false; // keep it (unknown), conservative
+                         }
+
+                         // Remove if installed version >= version that was requested/expected.
+                         return CompareVersions(have, need) >= 0;
+                       }),
+        m_coresForUpdate.end());
+
+    updatesChanged = (m_coresForUpdate.size() != before);
+  }
+
+  if (updatesChanged) {
+    UpdateStatusBarUpdates();
   }
 
   StartProcess(_("Enumerating available boards..."), ID_PROCESS_LOAD_BOARDS, ArduinoActivityState::Background);
@@ -2472,6 +2563,12 @@ void ArduinoEditorFrame::BindEvents() {
   Bind(EVT_CLANG_ARGS_READY, &ArduinoEditorFrame::OnClangArgsReady, this);
 
   m_statusBar->Bind(wxEVT_SIZE, &ArduinoEditorFrame::OnStatusBarSize, this);
+  m_statusBar->Bind(wxEVT_LEFT_UP, &ArduinoEditorFrame::OnStatusBarLeftUp, this);
+  m_statusBar->Bind(wxEVT_MOTION, &ArduinoEditorFrame::OnStatusBarMotion, this);
+  m_statusBar->Bind(wxEVT_LEAVE_WINDOW, &ArduinoEditorFrame::OnStatusBarLeave, this);
+  Bind(wxEVT_MENU, &ArduinoEditorFrame::OnLibraryUpdatesFromStatusBar, this, ID_MENU_LIBRARY_MANAGER_UPDATES);
+  Bind(wxEVT_MENU, &ArduinoEditorFrame::OnCoreUpdatesFromStatusBar, this, ID_MENU_CORE_MANAGER_UPDATES);
+
   m_statusBar->Bind(EVT_PROCESS_TERMINATE_REQUEST, &ArduinoEditorFrame::OnCliProcessKill, this);
   m_boardChoice->Bind(wxEVT_CHOICE, &ArduinoEditorFrame::OnBoardChoiceChanged, this);
   m_optionsButton->Bind(wxEVT_BUTTON, &ArduinoEditorFrame::OnChangeBoardOptions, this);
@@ -2556,6 +2653,10 @@ void ArduinoEditorFrame::BindEvents() {
   Bind(wxEVT_MENU, &ArduinoEditorFrame::OnTabMenuCloseOthers, this, ID_TABMENU_CLOSE_OTHERS);
   Bind(wxEVT_MENU, &ArduinoEditorFrame::OnTabMenuCloseAll, this, ID_TABMENU_CLOSE_ALL);
   Bind(EVT_ARD_SYMBOL_ACTIVATED, &ArduinoEditorFrame::OnSymbolActivated, this);
+
+  Bind(wxEVT_TIMER, &ArduinoEditorFrame::OnUpdatesLibsCoresAvailable, this, m_updatesTimer.GetId());
+  Bind(EVT_LIBS_UPDATES_AVAILABLE, &ArduinoEditorFrame::OnLibrariesUpdatesAvailable, this);
+  Bind(EVT_CORES_UPDATES_AVAILABLE, &ArduinoEditorFrame::OnCoresUpdatesAvailable, this);
 }
 
 void ArduinoEditorFrame::LoadConfig() {
@@ -2822,12 +2923,15 @@ void ArduinoEditorFrame::InitComponents() {
   Freeze();
 
   // Status bar + menu
-  m_statusBar = CreateStatusBar(2);
+  m_statusBar = CreateStatusBar(3);
 
-  int widths[2] = {
+  int widths[3] = {
       -1,
+      250,
       32};
-  m_statusBar->SetStatusWidths(2, widths);
+  m_statusBar->SetStatusWidths(3, widths);
+
+  m_statusBar->SetStatusText(wxEmptyString, 1);
 
   if (m_statusBar) {
     m_indic = new ArduinoActivityDotCtrl(m_statusBar, wxID_ANY);
@@ -3265,7 +3369,7 @@ void ArduinoEditorFrame::OnToggleOutput(wxCommandEvent &event) {
   ShowOutputPane(event.IsChecked());
 }
 
-ArduinoEditorFrame::ArduinoEditorFrame(wxConfigBase *cfg) : wxFrame(nullptr, wxID_ANY, _("Arduino Editor"), wxDefaultPosition, wxSize(1024, 768)), m_auiManager(this), m_diagTimer(this, ID_TIMER_DIAGNOSTIC), m_returnBottomPageTimer(this, ID_TIMER_BOTTOM_PAGE_RETURN) {
+ArduinoEditorFrame::ArduinoEditorFrame(wxConfigBase *cfg) : wxFrame(nullptr, wxID_ANY, _("Arduino Editor"), wxDefaultPosition, wxSize(1024, 768)), m_auiManager(this), m_diagTimer(this, ID_TIMER_DIAGNOSTIC), m_returnBottomPageTimer(this, ID_TIMER_BOTTOM_PAGE_RETURN), m_updatesTimer(this, ID_TIMER_UPDATES_AVAILABLE) {
   config = cfg;
 
 #ifdef __WXMSW__
@@ -4235,7 +4339,7 @@ void ArduinoEditorFrame::LayoutStatusBarIndicator() {
     return;
 
   wxRect rect;
-  if (!m_statusBar->GetFieldRect(1, rect))
+  if (!m_statusBar->GetFieldRect(2, rect))
     return;
 
   int size = std::min(rect.GetWidth(), rect.GetHeight()) - 4;
@@ -4424,6 +4528,165 @@ void ArduinoEditorFrame::RefactorRenameSymbol(ArduinoEditor *originEditor, int l
 
 void ArduinoEditorFrame::OnCheckForUpdates(wxCommandEvent &) {
   ArduinoEditorUpdateDialog::CheckAndShowIfNeeded(this, *config, /*force=*/true);
+}
+
+void ArduinoEditorFrame::CheckForUpdatesIfNeeded() {
+  if (!arduinoCli) {
+    return;
+  }
+
+  ArdUpdateScheduler scheduler(config);
+
+  if (scheduler.IsDueLibraries()) {
+    arduinoCli->CheckForLibrariesUpdateAsync(this);
+  }
+
+  if (scheduler.IsDueBoards()) {
+    arduinoCli->CheckForCoresUpdateAsync(this);
+  }
+}
+
+void ArduinoEditorFrame::OnLibrariesUpdatesAvailable(wxThreadEvent &event) {
+  if (event.GetInt() == 0) {
+    APP_DEBUG_LOG("FRM: Library update check failed!");
+    return;
+  }
+
+  ArdUpdateScheduler scheduler(config);
+  scheduler.MarkCheckedNow(ArdUpdateScheduler::Kind::Libraries);
+
+  auto libs = event.GetPayload<std::vector<ArduinoLibraryInfo>>();
+
+  m_librariesForUpdate = std::move(libs);
+
+  ScheduleLibsCoresUpdateInfo();
+}
+
+void ArduinoEditorFrame::OnCoresUpdatesAvailable(wxThreadEvent &event) {
+  if (event.GetInt() == 0) {
+    m_coresForUpdate.clear();
+    APP_DEBUG_LOG("FRM: Core update check failed!");
+    return;
+  }
+
+  ArdUpdateScheduler scheduler(config);
+  scheduler.MarkCheckedNow(ArdUpdateScheduler::Kind::Boards);
+
+  auto cores = event.GetPayload<std::vector<ArduinoCoreInfo>>();
+
+  m_coresForUpdate = std::move(cores);
+
+  ScheduleLibsCoresUpdateInfo();
+}
+
+void ArduinoEditorFrame::ScheduleLibsCoresUpdateInfo() {
+  if (m_updatesTimer.IsRunning()) {
+    m_updatesTimer.Stop();
+  }
+
+  APP_DEBUG_LOG("FRM: ScheduleLibsCoresUpdateInfo()");
+  m_updatesTimer.Start(1000, wxTIMER_ONE_SHOT);
+}
+
+void ArduinoEditorFrame::OnUpdatesLibsCoresAvailable(wxTimerEvent &) {
+  UpdateStatusBarUpdates();
+}
+
+void ArduinoEditorFrame::UpdateStatusBarUpdates() {
+  if (!m_statusBar) {
+    return;
+  }
+
+  if (!m_librariesForUpdate.empty() && !m_coresForUpdate.empty()) {
+    m_statusBar->SetStatusText(wxString::Format(_("Updates: %zu libs and %zu boards"), m_librariesForUpdate.size(), m_coresForUpdate.size()), 1);
+  } else if (!m_librariesForUpdate.empty()) {
+    m_statusBar->SetStatusText(wxString::Format(_("Updates: %zu libraries"), m_librariesForUpdate.size()), 1);
+  } else if (!m_coresForUpdate.empty()) {
+    m_statusBar->SetStatusText(wxString::Format(_("Updates: %zu boards"), m_coresForUpdate.size()), 1);
+  } else {
+    m_statusBar->SetStatusText(wxEmptyString, 1);
+  }
+
+  APP_DEBUG_LOG("FRM: Updates: %zu libraries, %zu boards...", m_librariesForUpdate.size(), m_coresForUpdate.size());
+}
+
+void ArduinoEditorFrame::OnStatusBarLeftUp(wxMouseEvent &e) {
+  if (!m_statusBar) {
+    e.Skip();
+    return;
+  }
+
+  wxPoint pt = e.GetPosition();
+  wxPoint screenPt = m_statusBar->ClientToScreen(pt);
+  wxPoint framePt = this->ScreenToClient(screenPt);
+
+  wxRect updRect;
+  if (m_statusBar->GetFieldRect(1, updRect) && updRect.Contains(pt)) {
+    wxMenu menu;
+
+    if (!m_librariesForUpdate.empty()) {
+      menu.Append(ID_MENU_LIBRARY_MANAGER_UPDATES, wxString::Format(_("Library updates (%zu)..."), m_librariesForUpdate.size()));
+    } else {
+      auto *it = menu.Append(ID_MENU_LIBRARY_MANAGER, _("Library updates..."));
+      it->Enable(false);
+    }
+
+    if (!m_coresForUpdate.empty()) {
+      menu.Append(ID_MENU_CORE_MANAGER_UPDATES, wxString::Format(_("Board updates (%zu)..."), m_coresForUpdate.size()));
+    } else {
+      auto *it = menu.Append(ID_MENU_CORE_MANAGER, _("Board updates..."));
+      it->Enable(false);
+    }
+
+    PopupMenu(&menu, framePt);
+    return;
+  }
+
+  e.Skip();
+}
+
+void ArduinoEditorFrame::OnLibraryUpdatesFromStatusBar(wxCommandEvent &) {
+  if (m_librariesForUpdate.empty())
+    return;
+
+  RequestShowLibraries(m_librariesForUpdate);
+}
+
+void ArduinoEditorFrame::OnCoreUpdatesFromStatusBar(wxCommandEvent &) {
+  if (m_coresForUpdate.empty())
+    return;
+
+  if (!m_coreManager) {
+    m_coreManager = new ArduinoCoreManagerFrame(this, arduinoCli, config, _("All"));
+  }
+
+  m_coreManager->Show();
+  m_coreManager->Raise();
+
+  m_coreManager->SetExplicitCores(m_coresForUpdate);
+}
+
+void ArduinoEditorFrame::OnStatusBarMotion(wxMouseEvent &e) {
+  if (!m_statusBar) {
+    e.Skip();
+    return;
+  }
+
+  wxPoint pt = e.GetPosition();
+
+  wxRect updRect;
+  bool overUpd = m_statusBar->GetFieldRect(1, updRect) && updRect.Contains(pt) &&
+                 (!m_librariesForUpdate.empty() || m_coresForUpdate.empty());
+
+  m_statusBar->SetCursor(overUpd ? wxCursor(wxCURSOR_HAND) : wxNullCursor);
+  e.Skip();
+}
+
+void ArduinoEditorFrame::OnStatusBarLeave(wxMouseEvent &e) {
+  if (m_statusBar) {
+    m_statusBar->SetCursor(wxNullCursor);
+  }
+  e.Skip();
 }
 
 ArduinoEditorFrame::~ArduinoEditorFrame() {

@@ -49,6 +49,8 @@ public:
 
   void RefreshCores();
 
+  void SetExplicitCores(const std::vector<ArduinoCoreInfo> &cores);
+
   void ApplySettings(const EditorSettings &settings);
 
   void StartInstallCore(const ArduinoCoreInfo &core, const std::string &version);
@@ -63,6 +65,7 @@ private:
 
   bool MatchesType(const ArduinoCoreInfo &core, const wxString &type) const;
   bool MatchesSearch(const ArduinoCoreInfo &core, const wxString &text) const;
+  bool MatchesListedCores(const ArduinoCoreInfo &core) const;
 
   // ---- event handlers ----
   void OnClose(wxCloseEvent &evt);
@@ -87,6 +90,8 @@ private:
   wxButton *m_bottomCloseBtn = nullptr;
 
   wxTimer m_searchTimer;
+
+  std::vector<ArduinoCoreInfo> m_filterCores;
 
   std::vector<ArduinoCoreInfo> m_allCores;
 

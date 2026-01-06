@@ -212,8 +212,11 @@ public:
   wxString GetSketchesDir() const;
   wxString GetCliPath() const;
   wxString GetSelectedLanguage() const;
-  long GetUpdateCheckIntervalHours() const;
   AiSettings GetAiSettings() const;
+
+  long GetUpdateCheckIntervalHours() const;
+  long GetLibrariesUpdateCheckIntervalHours() const;
+  long GetBoardsUpdateCheckIntervalHours() const;
 
   static void LoadAiModels(wxConfigBase *cfg, std::vector<AiModelSettings> &out);
   static void ApplyModelToAiSettings(const AiModelSettings &isModel, AiSettings &settings);
@@ -329,10 +332,16 @@ private:
   wxSpinCtrl *m_clangAutoDelay = nullptr;
   wxSpinCtrl *m_clangDiagDelay = nullptr;
 
-  // --- Clang widgets ---
+  // General
   wxChoice *m_languageChoice = nullptr;
   wxCheckBox *m_updatesEnable = nullptr;
   wxSpinCtrl *m_updatesDays = nullptr;
+  wxCheckBox *m_libUpdatesEnable = nullptr;
+  wxSpinCtrl *m_libUpdatesDays = nullptr;
+  wxCheckBox *m_boardUpdatesEnable = nullptr;
+  wxSpinCtrl *m_boardUpdatesDays = nullptr;
+
+  // --- Clang widgets ---
   wxChoice *m_clangDiagChoice = nullptr;
   wxChoice *m_clangCompChoice = nullptr;
   wxChoice *m_clangWarnChoice = nullptr;

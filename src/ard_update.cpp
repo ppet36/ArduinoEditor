@@ -56,10 +56,10 @@
 namespace {
 
 // settings keys
-static const wxChar *K_LAST_CHECK = wxT("ArduinoEditor/Updates/last_check_unix");
-static const wxChar *K_SNOOZE_UNTIL = wxT("ArduinoEditor/Updates/snooze_until_unix");
-static const wxChar *K_DISMISSED = wxT("ArduinoEditor/Updates/dismissed_tags_json");
-static const wxChar *K_INTERVAL_HOURS = wxT("ArduinoEditor/Updates/check_interval_hours");
+static const wxChar *K_LAST_CHECK = wxT("Updates/last_check_unix");
+static const wxChar *K_SNOOZE_UNTIL = wxT("Updates/snooze_until_unix");
+static const wxChar *K_DISMISSED = wxT("Updates/dismissed_tags_json");
+static const wxChar *K_INTERVAL_HOURS = wxT("Updates/check_interval_hours");
 
 static long long NowUtcUnix() {
   return static_cast<long long>(std::time(nullptr));
@@ -549,4 +549,73 @@ void ArduinoEditorUpdateDialog::CheckAndShowIfNeeded(wxWindow *parent, wxConfigB
       dlg.ShowModal();
     });
   }).detach();
+}
+
+// ---------------------------------------------------------
+ArdUpdateScheduler::ArdUpdateScheduler(wxConfigBase *cfg) : m_cfg(cfg) {}
+
+wxString ArdUpdateScheduler::IntervalHoursKey(Kind kind) const {
+  switch (kind) {
+    case Kind::Libraries:
+      return wxT("Updates/libraries_check_interval_hours");
+    case Kind::Boards:
+      return wxT("Updates/boards_check_interval_hours");
+  }
+  return wxEmptyString;
+}
+
+wxString ArdUpdateScheduler::LastCheckUnixKey(Kind kind) const {
+  switch (kind) {
+    case Kind::Libraries:
+      return wxT("Updates/libraries_last_check_unixtime");
+    case Kind::Boards:
+      return wxT("Updates/boards_last_check_unixtime");
+  }
+  return wxEmptyString;
+}
+
+long ArdUpdateScheduler::DefaultIntervalHours(Kind kind) const {
+  switch (kind) {
+    case Kind::Libraries:
+      return 168; // 7 days
+    case Kind::Boards:
+      return 168; // 7 days
+  }
+  return 168;
+}
+
+bool ArdUpdateScheduler::IsDue(Kind kind) const {
+  const wxString intervalKey = IntervalHoursKey(kind);
+  const wxString lastKey = LastCheckUnixKey(kind);
+
+  long intervalHours = DefaultIntervalHours(kind);
+  m_cfg->Read(intervalKey, &intervalHours, intervalHours);
+
+  // disabled
+  if (intervalHours <= 0) {
+    return false;
+  }
+
+  const long long now = NowUtcUnix();
+
+  long long last = 0;
+  m_cfg->Read(lastKey, &last, 0);
+
+  // never checked -> due now
+  if (last <= 0) {
+    return true;
+  }
+
+  const int64_t intervalSec = (int64_t)intervalHours * 3600LL;
+  return now >= (last + intervalSec);
+}
+
+void ArdUpdateScheduler::MarkCheckedAt(Kind kind, int64_t unixTime) const {
+  const wxString lastKey = LastCheckUnixKey(kind);
+  m_cfg->Write(lastKey, unixTime);
+  m_cfg->Flush();
+}
+
+void ArdUpdateScheduler::MarkCheckedNow(Kind kind) const {
+  MarkCheckedAt(kind, NowUtcUnix());
 }

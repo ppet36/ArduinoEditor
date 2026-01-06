@@ -329,6 +329,9 @@ public:
   const std::vector<ArduinoLibraryInfo> &GetInstalledLibraries() const;
   bool IsArduinoLibraryInstalled(const ArduinoLibraryInfo &info);
 
+  void CheckForLibrariesUpdateAsync(wxEvtHandler *handler);
+  void CheckForCoresUpdateAsync(wxEvtHandler *handler);
+
   std::vector<SerialPortInfo> GetSerialPorts();
   void SetSerialPort(const std::string &port);
   const std::string &GetSerialPort() const;

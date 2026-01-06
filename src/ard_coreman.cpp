@@ -92,6 +92,11 @@ ArduinoCoreManagerFrame::~ArduinoCoreManagerFrame() {
   m_searchTimer.Stop();
 }
 
+void ArduinoCoreManagerFrame::SetExplicitCores(const std::vector<ArduinoCoreInfo> &cores) {
+  m_filterCores = std::move(cores);
+  ApplyFilter();
+}
+
 void ArduinoCoreManagerFrame::BuildUi() {
   auto *topSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -199,6 +204,8 @@ void ArduinoCoreManagerFrame::ApplyFilter() {
     if (!MatchesType(core, typeSel))
       continue;
     if (!MatchesSearch(core, searchText))
+      continue;
+    if (!MatchesListedCores(core))
       continue;
 
     m_filteredIndices.push_back((int)i);
@@ -400,6 +407,15 @@ bool ArduinoCoreManagerFrame::MatchesSearch(const ArduinoCoreInfo &core,
   return haystack.find(needle) != std::string::npos;
 }
 
+bool ArduinoCoreManagerFrame::MatchesListedCores(const ArduinoCoreInfo &core) const {
+  if (m_filterCores.empty()) {
+    return true;
+  }
+
+  return std::any_of(m_filterCores.begin(), m_filterCores.end(),
+                     [&](const ArduinoCoreInfo &x) { return x.id == core.id; });
+}
+
 // ---- Handlers ----
 
 void ArduinoCoreManagerFrame::OnClose(wxCloseEvent &evt) {
@@ -410,6 +426,7 @@ void ArduinoCoreManagerFrame::OnClose(wxCloseEvent &evt) {
 }
 
 void ArduinoCoreManagerFrame::OnTypeChanged(wxCommandEvent &WXUNUSED(evt)) {
+  m_filterCores.clear();
   ApplyFilter();
 }
 

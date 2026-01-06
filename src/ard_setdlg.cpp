@@ -827,48 +827,81 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
   // --- Updates box ---
   auto *updatesBox = new wxStaticBoxSizer(wxVERTICAL, generalPage, _("Updates"));
 
-  long updHours = 24;
-  if (m_config) {
-    m_config->Read(wxT("ArduinoEditor/Updates/check_interval_hours"), &updHours, 24L);
-  }
-
-  bool updEnabled = (updHours > 0);
-  int updDays = 1;
-  if (updHours > 0) {
-    updDays = (int)((updHours + 23) / 24); // round up
-    if (updDays < 1) {
-      updDays = 1;
+  auto readIntervalDays = [this](const wxString &key, long defHours, bool &outEnabled, int &outDays) {
+    long hours = defHours;
+    if (m_config) {
+      m_config->Read(key, &hours, defHours);
     }
-  }
 
-  auto *updRow = new wxBoxSizer(wxHORIZONTAL);
+    outEnabled = (hours > 0);
+    outDays = 1;
 
-  // left label
-  updRow->Add(new wxStaticText(generalPage, wxID_ANY, _("Automatically check for updates ")),
-              0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
-
-  // right side controls
-  m_updatesEnable = new wxCheckBox(generalPage, wxID_ANY, _("every"));
-  m_updatesEnable->SetValue(updEnabled);
-  updRow->Add(m_updatesEnable, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
-
-  m_updatesDays = new wxSpinCtrl(generalPage, wxID_ANY);
-  m_updatesDays->SetRange(1, 30);
-  m_updatesDays->SetValue(updDays);
-  updRow->Add(m_updatesDays, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
-
-  updRow->Add(new wxStaticText(generalPage, wxID_ANY, _("day(s)")),
-              0, wxALIGN_CENTER_VERTICAL);
-
-  updatesBox->Add(updRow, 0, wxALL | wxEXPAND, 5);
-
-  // enable/disable spin based on checkbox
-  m_updatesDays->Enable(m_updatesEnable->GetValue());
-  m_updatesEnable->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent &) {
-    if (m_updatesDays && m_updatesEnable) {
-      m_updatesDays->Enable(m_updatesEnable->GetValue());
+    if (hours > 0) {
+      outDays = (int)((hours + 23) / 24); // round up
+      if (outDays < 1) {
+        outDays = 1;
+      }
     }
-  });
+  };
+
+  auto addUpdateRow = [&](const wxString &label,
+                          wxCheckBox *&outEnable,
+                          wxSpinCtrl *&outDaysCtrl,
+                          bool enabled,
+                          int days) {
+    auto *row = new wxBoxSizer(wxHORIZONTAL);
+
+    // left label
+    row->Add(new wxStaticText(generalPage, wxID_ANY, label),
+             0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
+
+    // right side controls
+    outEnable = new wxCheckBox(generalPage, wxID_ANY, _("every"));
+    outEnable->SetValue(enabled);
+    row->Add(outEnable, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
+
+    outDaysCtrl = new wxSpinCtrl(generalPage, wxID_ANY);
+    outDaysCtrl->SetRange(1, 365);
+    outDaysCtrl->SetValue(days);
+    row->Add(outDaysCtrl, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
+
+    row->Add(new wxStaticText(generalPage, wxID_ANY, _("day(s)")),
+             0, wxALIGN_CENTER_VERTICAL);
+
+    updatesBox->Add(row, 0, wxALL | wxEXPAND, 5);
+
+    // enable/disable spin based on checkbox
+    outDaysCtrl->Enable(outEnable->GetValue());
+    outEnable->Bind(wxEVT_CHECKBOX, [outEnable, outDaysCtrl](wxCommandEvent &) {
+      if (outEnable && outDaysCtrl) {
+        outDaysCtrl->Enable(outEnable->GetValue());
+      }
+    });
+  };
+
+  // Application updates
+  bool appUpdEnabled = true;
+  int appUpdDays = 1;
+  readIntervalDays(wxT("Updates/check_interval_hours"), 24L, appUpdEnabled, appUpdDays);
+  addUpdateRow(_("Automatically check for application updates "),
+               m_updatesEnable, m_updatesDays,
+               appUpdEnabled, appUpdDays);
+
+  // Library updates
+  bool libUpdEnabled = true;
+  int libUpdDays = 7;
+  readIntervalDays(wxT("Updates/libraries_check_interval_hours"), 168L, libUpdEnabled, libUpdDays);
+  addUpdateRow(_("Automatically check for library updates "),
+               m_libUpdatesEnable, m_libUpdatesDays,
+               libUpdEnabled, libUpdDays);
+
+  // Board/core updates
+  bool boardUpdEnabled = true;
+  int boardUpdDays = 7;
+  readIntervalDays(wxT("Updates/boards_check_interval_hours"), 168L, boardUpdEnabled, boardUpdDays);
+  addUpdateRow(_("Automatically check for board package updates "),
+               m_boardUpdatesEnable, m_boardUpdatesDays,
+               boardUpdEnabled, boardUpdDays);
 
   generalPageSizer->Add(updatesBox, 0, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, 10);
 
@@ -2414,6 +2447,32 @@ long ArduinoEditorSettingsDialog::GetUpdateCheckIntervalHours() const {
     return 0; // disabled
   }
   int days = m_updatesDays->GetValue();
+  if (days < 1)
+    days = 1;
+  return (long)days * 24L;
+}
+
+long ArduinoEditorSettingsDialog::GetLibrariesUpdateCheckIntervalHours() const {
+  if (!m_libUpdatesEnable || !m_libUpdatesDays) {
+    return 168; // default: 7 days
+  }
+  if (!m_libUpdatesEnable->GetValue()) {
+    return 0; // disabled
+  }
+  int days = m_libUpdatesDays->GetValue();
+  if (days < 1)
+    days = 1;
+  return (long)days * 24L;
+}
+
+long ArduinoEditorSettingsDialog::GetBoardsUpdateCheckIntervalHours() const {
+  if (!m_boardUpdatesEnable || !m_boardUpdatesDays) {
+    return 168; // default: 7 days
+  }
+  if (!m_boardUpdatesEnable->GetValue()) {
+    return 0; // disabled
+  }
+  int days = m_boardUpdatesDays->GetValue();
   if (days < 1)
     days = 1;
   return (long)days * 24L;
