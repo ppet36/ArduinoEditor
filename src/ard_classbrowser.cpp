@@ -743,6 +743,79 @@ void ArduinoClassBrowserPanel::RebuildTree() {
     m_itemByIndex[i] = item;
   }
 
+  // 6.5) if order changed (moved existing symbols), do full rebuild instead of moving nodes
+  auto dataLess = [](const ItemData *a, const ItemData *b) -> bool {
+    if (a->sortLine != b->sortLine)
+      return a->sortLine < b->sortLine;
+    if (a->sortCol != b->sortCol)
+      return a->sortCol < b->sortCol;
+    return a->usr < b->usr; // tie-breaker for stability
+  };
+
+  auto isTreeSorted = [&](auto &&self, const wxTreeItemId &parent) -> bool {
+    ItemData *prev = nullptr;
+
+    wxTreeItemIdValue cookie;
+    wxTreeItemId child = m_tree->GetFirstChild(parent, cookie);
+
+    while (child.IsOk()) {
+      auto *d = dynamic_cast<ItemData *>(m_tree->GetItemData(child));
+      if (!d || d->usr.empty()) {
+        return false; // unexpected => force rebuild
+      }
+
+      if (prev && dataLess(d, prev)) {
+        return false; // inversion => ordering changed
+      }
+      prev = d;
+
+      if (!self(self, child)) {
+        return false;
+      }
+
+      child = m_tree->GetNextChild(parent, cookie);
+    }
+
+    return true;
+  };
+
+  if (!isTreeSorted(isTreeSorted, root)) {
+    // We are inside Freeze() right now; thaw first, then do a clean rebuild.
+    m_tree->Thaw();
+
+    m_forceFullRebuildNext = false;
+    doFullRebuild();
+
+    // restore expansion + selection after full rebuild
+    std::unordered_map<std::string, wxTreeItemId> rebuiltByKey;
+    rebuiltByKey.reserve((size_t)n * 2);
+    for (int i = 0; i < n; i++) {
+      if (m_symbols[i].kind == CXCursor_ParmDecl)
+        continue;
+      wxTreeItemId it = (i < (int)m_itemByIndex.size()) ? m_itemByIndex[i] : wxTreeItemId();
+      if (it.IsOk())
+        rebuiltByKey[getKey(m_symbols[i])] = it;
+    }
+
+    for (const auto &k : expandedKeys) {
+      auto it = rebuiltByKey.find(k);
+      if (it != rebuiltByKey.end() && it->second.IsOk())
+        m_tree->Expand(it->second);
+    }
+
+    if (!selectedKey.empty()) {
+      auto it = rebuiltByKey.find(selectedKey);
+      if (it != rebuiltByKey.end() && it->second.IsOk()) {
+        m_internalSelect = true;
+        m_tree->SelectItem(it->second);
+        m_tree->EnsureVisible(it->second);
+        m_internalSelect = false;
+      }
+    }
+
+    return;
+  }
+
   // 7) refresh expanded items
   for (const auto &k : expandedKeys) {
     auto it = itemByKey.find(k);
