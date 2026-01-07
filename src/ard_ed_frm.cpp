@@ -244,6 +244,8 @@ void ArduinoEditorFrame::OnEditorSettings(wxCommandEvent &) {
     config->Write(wxT("Updates/libraries_check_interval_hours"), dlg.GetLibrariesUpdateCheckIntervalHours());
     config->Write(wxT("Updates/boards_check_interval_hours"), dlg.GetBoardsUpdateCheckIntervalHours());
 
+    config->Write(wxT("CompileSuccessDialog"), dlg.GetShowCompilationDialog());
+
     wxString oldSketchesDir;
     config->Read(wxT("SketchesDir"), &oldSketchesDir);
 
@@ -1476,6 +1478,40 @@ void ArduinoEditorFrame::FinalizeCurrentAction(bool successful) {
           m_runUploadAfterCompile = false;
           UploadProject();
           return;
+        } else {
+          bool showDialog;
+          if (!config->Read(wxT("CompileSuccessDialog"), &showDialog)) {
+            showDialog = true;
+          }
+          
+          if (showDialog) {
+            auto memUsage = arduinoCli->GetLastCompileUsage();
+            wxString infoText;
+            if (memUsage.HasFlash()) {
+              infoText += wxString::Format(
+                  _("Sketch uses %lld bytes (%d%%) of program storage space. Maximum is %lld bytes.\n"),
+                  memUsage.flashUsed, std::max(0, memUsage.flashPct), memUsage.flashMax);
+            }
+          
+            if (memUsage.ramUsed >= 0 && memUsage.ramPct >= 0 && memUsage.ramFree >= 0 && memUsage.ramMax >= 0) {
+              infoText += wxString::Format(
+                 _("Global variables use %lld bytes (%d%%) of dynamic memory, leaving %lld bytes for local variables. Maximum is %lld bytes.\n"),
+                 memUsage.ramUsed, memUsage.ramPct, memUsage.ramFree, memUsage.ramMax);
+            }
+           
+            if (!infoText.IsEmpty()) {
+              infoText = _("Build successful.\n\t\n") + infoText;
+           
+               wxRichMessageDialog dlg(this, infoText, _("Information"), wxOK | wxICON_INFORMATION);
+               dlg.ShowCheckBox(_("Don't show again."));
+               dlg.ShowModal();
+           
+               if (dlg.IsCheckBoxChecked()) {
+                 config->Write (wxT("CompileSuccessDialog"), false);
+                 config->Flush();
+               }
+            }
+          }
         }
       } else {
         if (m_buildOutputCtrl) {

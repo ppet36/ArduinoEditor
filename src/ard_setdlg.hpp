@@ -217,6 +217,7 @@ public:
   long GetUpdateCheckIntervalHours() const;
   long GetLibrariesUpdateCheckIntervalHours() const;
   long GetBoardsUpdateCheckIntervalHours() const;
+  bool GetShowCompilationDialog() const;
 
   static void LoadAiModels(wxConfigBase *cfg, std::vector<AiModelSettings> &out);
   static void ApplyModelToAiSettings(const AiModelSettings &isModel, AiSettings &settings);
@@ -325,6 +326,7 @@ private:
   wxTextCtrl *m_sketchesDirCtrl = nullptr;
   wxTextCtrl *m_cliUrls = nullptr;
   wxCheckBox *m_cliUnsafe = nullptr;
+  wxCheckBox *m_cliDisplayCompSuccDial = nullptr;
   wxTextCtrl *m_cliProxy = nullptr;
   wxSpinCtrl *m_cliTimeout = nullptr;
   wxTextCtrl *m_cliPathCtrl = nullptr;

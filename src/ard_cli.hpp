@@ -158,6 +158,20 @@ struct ArduinoBoardOption {
   std::vector<ArduinoBoardOptionValue> values;
 };
 
+struct MemUsage {
+  long long flashUsed = -1;
+  int flashPct = -1;
+  long long flashMax = -1;
+
+  long long ramUsed = -1;
+  int ramPct = -1;
+  long long ramFree = -1;
+  long long ramMax = -1;
+
+  bool HasFlash() const { return flashUsed >= 0 && flashMax >= 0; }
+  bool HasRam() const { return (ramUsed >= 0 && ramMax >= 0) || ramFree >= 0; }
+};
+
 class ArduinoCli {
 private:
   struct ResolveLibInfo {
@@ -201,6 +215,9 @@ private:
   std::vector<ArduinoCoreInfo> cores;
   std::vector<std::string> m_compileCommandsResolvedLibraries;
 
+  mutable std::mutex m_usageMtx;
+  MemUsage m_lastCompileUsage;
+
   std::atomic<bool> m_cancelAsync{false};
 
   int RunCliStreaming(const std::string &args, const wxWeakRef<wxEvtHandler> &weak, const char *finishedLabel);
@@ -222,6 +239,8 @@ private:
   void InitAttachedBoard();
 
   void QueueUiEvent(const wxWeakRef<wxEvtHandler> &weak, wxEvent *event);
+
+  void TryParseCompileUsageLine(const std::string &line);
 
 public:
   ArduinoCli(const std::string &sketchPath_, const std::string &cliPath = std::string());
@@ -281,6 +300,9 @@ public:
   void GetBoardOptionsAsync(wxEvtHandler *handler);
 
   void CompileAsync(wxEvtHandler *handler);
+  MemUsage GetLastCompileUsage() const;
+  void ClearLastCompileUsage();
+
   void UploadAsync(wxEvtHandler *handler);
   void BurnBootloaderAsync(wxEvtHandler *handler);
 

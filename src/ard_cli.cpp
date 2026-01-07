@@ -646,6 +646,8 @@ int ArduinoCli::RunCliStreaming(const std::string &args, const wxWeakRef<wxEvtHa
 
   int rc = -1;
 
+  const bool captureUsage = (finishedLabel && std::string(finishedLabel) == "compile");
+
   m_cancelRequested.store(false);
 
 #if defined(__WXMSW__)
@@ -757,6 +759,12 @@ int ArduinoCli::RunCliStreaming(const std::string &args, const wxWeakRef<wxEvtHa
       std::string line = partial.substr(pos, newlinePos - pos);
       pos = newlinePos + 1;
 
+      if (captureUsage) {
+        if (hasPrefix(line, "Sketch uses") || hasPrefix(line, "Global variables use")) {
+          TryParseCompileUsageLine(line);
+        }
+      }
+
       // Strip '\r'
       if (!line.empty() && line.back() == '\r') {
         line.pop_back();
@@ -847,6 +855,12 @@ int ArduinoCli::RunCliStreaming(const std::string &args, const wxWeakRef<wxEvtHa
 
       std::string line = partial.substr(pos, newlinePos - pos);
       pos = newlinePos + 1;
+
+      if (captureUsage) {
+        if (hasPrefix(line, "Sketch uses") || hasPrefix(line, "Global variables use")) {
+          TryParseCompileUsageLine(line);
+        }
+      }
 
       if (!line.empty() && line.back() == '\r') {
         line.pop_back();
@@ -2964,6 +2978,8 @@ void ArduinoCli::CompileAsync(wxEvtHandler *handler) {
     return;
   }
 
+  ClearLastCompileUsage();
+
   wxWeakRef<wxEvtHandler> weak(handler);
 
   // CACHE: sketchPath/.ardedit/build
@@ -2985,6 +3001,58 @@ void ArduinoCli::CompileAsync(wxEvtHandler *handler) {
   std::thread([this, weak, args]() {
     this->RunCliStreaming(args, weak, "compile");
   }).detach();
+}
+
+MemUsage ArduinoCli::GetLastCompileUsage() const {
+  std::lock_guard<std::mutex> lk(m_usageMtx);
+  return m_lastCompileUsage;
+}
+
+void ArduinoCli::ClearLastCompileUsage() {
+  std::lock_guard<std::mutex> lk(m_usageMtx);
+  m_lastCompileUsage = MemUsage{};
+}
+
+void ArduinoCli::TryParseCompileUsageLine(const std::string &line) {
+  // Hrubý filtr je venku (hasPrefix), tady už jen rychlé parsování.
+
+  if (hasPrefix(line, "Sketch uses")) {
+    long long used = -1, max = -1;
+    int pct = -1;
+
+    // s tečkou na konci i bez ní
+    if (std::sscanf(line.c_str(),
+                    "Sketch uses %lld bytes (%d%%) of program storage space. Maximum is %lld bytes.",
+                    &used, &pct, &max) == 3 ||
+        std::sscanf(line.c_str(),
+                    "Sketch uses %lld bytes (%d%%) of program storage space. Maximum is %lld bytes",
+                    &used, &pct, &max) == 3) {
+      std::lock_guard<std::mutex> lk(m_usageMtx);
+      m_lastCompileUsage.flashUsed = used;
+      m_lastCompileUsage.flashPct  = pct;
+      m_lastCompileUsage.flashMax  = max;
+    }
+    return;
+  }
+
+  if (hasPrefix(line, "Global variables use")) {
+    long long used = -1, free = -1, max = -1;
+    int pct = -1;
+
+    if (std::sscanf(line.c_str(),
+                    "Global variables use %lld bytes (%d%%) of dynamic memory, leaving %lld bytes for local variables. Maximum is %lld bytes.",
+                    &used, &pct, &free, &max) == 4 ||
+        std::sscanf(line.c_str(),
+                    "Global variables use %lld bytes (%d%%) of dynamic memory, leaving %lld bytes for local variables. Maximum is %lld bytes",
+                    &used, &pct, &free, &max) == 4) {
+      std::lock_guard<std::mutex> lk(m_usageMtx);
+      m_lastCompileUsage.ramUsed = used;
+      m_lastCompileUsage.ramPct  = pct;
+      m_lastCompileUsage.ramFree = free;
+      m_lastCompileUsage.ramMax  = max;
+    }
+    return;
+  }
 }
 
 void ArduinoCli::UploadAsync(wxEvtHandler *handler) {

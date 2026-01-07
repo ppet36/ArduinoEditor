@@ -1063,10 +1063,26 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
 
   cliSizer->Add(m_cliUrls, 1, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, 8);
 
+
+  auto *cliChbSizer = new wxBoxSizer(wxHORIZONTAL);
+
   // Unsafe installation
   m_cliUnsafe = new wxCheckBox(cliPage, wxID_ANY, _("Allow unsafe install"));
   m_cliUnsafe->SetValue(m_cliCfg.boardManagerEnableUnsafeInstall);
-  cliSizer->Add(m_cliUnsafe, 0, wxLEFT | wxRIGHT | wxBOTTOM, 8);
+
+  // Comp success dialog
+  bool shDial;
+  if (!config->Read(wxT("CompileSuccessDialog"), &shDial)) {
+    shDial = true;
+  }
+
+  m_cliDisplayCompSuccDial = new wxCheckBox(cliPage, wxID_ANY, _("Show resource usage after successful build"));
+  m_cliDisplayCompSuccDial->SetValue(shDial);
+
+  cliChbSizer->Add(m_cliUnsafe, 0, wxLEFT | wxRIGHT | wxBOTTOM, 8);
+  cliChbSizer->Add(m_cliDisplayCompSuccDial, 0, wxRIGHT | wxBOTTOM, 8);
+
+  cliSizer->Add(cliChbSizer);
 
   // Proxy
   cliSizer->Add(new wxStaticText(cliPage, wxID_ANY, _("Network proxy:")),
@@ -2477,3 +2493,11 @@ long ArduinoEditorSettingsDialog::GetBoardsUpdateCheckIntervalHours() const {
     days = 1;
   return (long)days * 24L;
 }
+
+bool ArduinoEditorSettingsDialog::GetShowCompilationDialog() const {
+  if (m_cliDisplayCompSuccDial) {
+    return m_cliDisplayCompSuccDial->GetValue();
+  }
+  return true;
+}
+
