@@ -49,6 +49,26 @@ struct CcFilesSnapshotGuard {
   }
 };
 
+
+static std::string cxStringToStd(CXString s) {
+  const char *c = clang_getCString(s);
+  std::string out = c ? c : "";
+  clang_disposeString(s);
+  return out;
+}
+
+static std::string GetCursorUsr(CXCursor c) {
+  if (clang_Cursor_isNull(c))
+    return {};
+
+  // Canonical cursor gives stable USR across decl/def/ref.
+  CXCursor canon = clang_getCanonicalCursor(c);
+  if (!clang_Cursor_isNull(canon))
+    c = canon;
+
+  return cxStringToStd(clang_getCursorUSR(c));
+}
+
 static std::string MakeBriefFromFull(const std::string &full) {
   // first non-empty line / paragraph as a brief
   std::string s = full;
@@ -179,8 +199,6 @@ static void LogDiagnosticsDebug(CXTranslationUnit tu, unsigned maxDiags = 50) {
   }
 }
 
-} // namespace
-
 // Helpers for symbol search
 struct LocKey {
   std::string file;
@@ -217,12 +235,6 @@ struct LocKeyHash {
   }
 };
 
-static std::string cxStringToStd(CXString s) {
-  const char *c = clang_getCString(s);
-  std::string out = c ? c : "";
-  clang_disposeString(s);
-  return out;
-}
 
 // 0 = best, higher = worse
 static int kindScore(CXCursorKind kind) {
@@ -514,6 +526,7 @@ static void CollectSymbolsInTUForParent(CXTranslationUnit tu,
         si.display = cxStringToStd(clang_getCursorDisplayName(cursor));
         if (si.display.empty())
           si.display = si.name;
+        si.usr = GetCursorUsr(cursor);
         si.file = std::move(fileName);
         si.line = (int)line;
         si.column = (int)column;
@@ -888,6 +901,8 @@ static std::string InjectParameterNamesIntoSignature(const std::string &sig, con
   out.append(sig, close, std::string::npos);
   return out;
 }
+
+} // namespace
 
 // -------------------------------------------------------------------------------
 
@@ -2755,6 +2770,8 @@ bool ArduinoCodeCompletion::GetHoverInfo(const std::string &filename, const std:
     return false;
   }
 
+  outInfo.usr = GetCursorUsr(cursor);
+
   // Filling HoverInfo
   outInfo.name = cxStringToStd(clang_getCursorSpelling(cursor));
 
@@ -2957,6 +2974,8 @@ bool ArduinoCodeCompletion::GetSymbolInfo(const std::string &filename,
   if (clang_Cursor_isNull(target)) {
     return false;
   }
+
+  outInfo.usr = GetCursorUsr(target);
 
   // Get declaration of target symbol.
   CXSourceLocation tloc = clang_getCursorLocation(target);

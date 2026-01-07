@@ -63,10 +63,11 @@ struct ParameterInfo {
 };
 
 struct HoverInfo {
-  std::string name;         // symbol name (Serial, digitalWrite, ...)
-  std::string kind;         // type of symbol (function, variable, macro, ...)
-  std::string type;         // type (int, HardwareSerial, ...)
-  std::string signature;    // nicer signature (e.g. "void digitalWrite(uint8_t pin, uint8_t val)")
+  std::string name;      // symbol name (Serial, digitalWrite, ...)
+  std::string kind;      // type of symbol (function, variable, macro, ...)
+  std::string type;      // type (int, HardwareSerial, ...)
+  std::string signature; // nicer signature (e.g. "void digitalWrite(uint8_t pin, uint8_t val)")
+  std::string usr;
   std::string briefComment; // short comment (doxygen @brief, ///)
   std::string fullComment;  // entire comment block (/** ... */)
   std::vector<ParameterInfo> parameters;
@@ -84,6 +85,7 @@ struct SymbolInfo {
   std::string name;    // name (digitalWrite, dsTempObyvak, MyClass...)
   std::string display; // nicer text (signature, etc.)
   std::string file;    // full path to the file
+  std::string usr;
   int line = 0;
   int column = 0;
   CXCursorKind kind; // for icons / filter
