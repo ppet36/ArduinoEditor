@@ -301,9 +301,9 @@ void ArduinoEditorFrame::UpdateClassBrowserEditor() {
   }
 }
 
-void ArduinoEditorFrame::UpdateClassBrowserEditorLine(int line) {
+void ArduinoEditorFrame::UpdateClassBrowserEditor(int line, int col) {
   if (m_classBrowser) {
-    m_classBrowser->SetCurrentLine(line);
+    m_classBrowser->SetCurrentLine(line, col);
   }
 }
 
@@ -1755,6 +1755,8 @@ void ArduinoEditorFrame::ShowSingleDiagMessage(const wxString &message) {
 void ArduinoEditorFrame::OnDiagnosticsUpdated(wxThreadEvent &evt) {
   StopProcess(ID_PROCESS_DIAG_EVAL);
 
+  UpdateClassBrowserEditor();
+
   if (!completion || !m_diagView || !m_bottomNotebook) {
     return;
   }
@@ -1765,8 +1767,6 @@ void ArduinoEditorFrame::OnDiagnosticsUpdated(wxThreadEvent &evt) {
     // diagnosis has not changed.
     return;
   }
-
-  UpdateClassBrowserEditor();
 
   int problemsPageIndex = m_bottomNotebook->FindPage(m_diagView);
   if (problemsPageIndex == wxNOT_FOUND) {

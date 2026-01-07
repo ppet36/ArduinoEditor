@@ -250,6 +250,7 @@ ArduinoEditor::ArduinoEditor(wxWindow *parent,
       m_flashTimer(this, ID_TIMER_FLASH),
       m_symbolTimer(this, ID_TIMER_SYMBOL_HIGHLIGHT),
       m_lastSymbolPos(-1) {
+
   this->arduinoCli = cli;
   this->m_config = config;
   this->m_filename = filename;
@@ -2143,7 +2144,7 @@ void ArduinoEditor::OnEditorUpdateUI(wxStyledTextEvent &event) {
   if (auto *frame = GetOwnerFrame()) {
     int line, column;
     GetCurrentCursor(line, column);
-    frame->UpdateClassBrowserEditorLine(line);
+    frame->UpdateClassBrowserEditor(line, column);
   }
 }
 

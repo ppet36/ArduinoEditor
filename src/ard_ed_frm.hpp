@@ -113,7 +113,7 @@ private:
   void UpdateClassBrowserEditor();
 
 public:
-  void UpdateClassBrowserEditorLine(int line);
+  void UpdateClassBrowserEditor(int line, int column);
 
 private:
   // Kill async cli stream

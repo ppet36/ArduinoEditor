@@ -49,7 +49,6 @@ struct CcFilesSnapshotGuard {
   }
 };
 
-
 static std::string cxStringToStd(CXString s) {
   const char *c = clang_getCString(s);
   std::string out = c ? c : "";
@@ -235,7 +234,6 @@ struct LocKeyHash {
   }
 };
 
-
 // 0 = best, higher = worse
 static int kindScore(CXCursorKind kind) {
   switch (kind) {
@@ -316,7 +314,8 @@ static void FillParameterInfoFromCursor(CXCursor cursor,
   }
 }
 
-static bool GetBodyRangeForCursor(CXCursor cursor,
+static bool GetBodyRangeForCursor(CXTranslationUnit tu,
+                                  CXCursor cursor,
                                   unsigned &fromLine,
                                   unsigned &fromCol,
                                   unsigned &toLine,
@@ -402,37 +401,77 @@ static bool GetBodyRangeForCursor(CXCursor cursor,
       kind == CXCursor_UnionDecl ||
       kind == CXCursor_ClassTemplate) {
 
-    // Only definitions, no forward declaration
-    if (!clang_isCursorDefinition(cursor)) {
+    if (!clang_isCursorDefinition(cursor))
+      return false;
+
+    if (!tu)
+      return false;
+
+    CXSourceRange range = clang_getCursorExtent(cursor);
+
+    CXToken *tokens = nullptr;
+    unsigned numTokens = 0;
+    clang_tokenize(tu, range, &tokens, &numTokens);
+    if (!tokens || numTokens == 0) {
+      if (tokens)
+        clang_disposeTokens(tu, tokens, numTokens);
       return false;
     }
 
-    CXSourceRange range = clang_getCursorExtent(cursor);
-    CXSourceLocation startLoc = clang_getRangeStart(range);
-    CXSourceLocation endLoc = clang_getRangeEnd(range);
+    bool haveOpen = false;
+    CXSourceLocation openLoc = clang_getNullLocation();
+    CXSourceLocation closeLoc = clang_getNullLocation();
+    int depth = 0;
+
+    for (unsigned i = 0; i < numTokens; ++i) {
+      CXString sp = clang_getTokenSpelling(tu, tokens[i]);
+      const char *csp = clang_getCString(sp);
+
+      if (csp && csp[0] == '{' && csp[1] == '\0') {
+        if (!haveOpen) {
+          openLoc = clang_getTokenLocation(tu, tokens[i]);
+          haveOpen = true;
+        }
+        depth++;
+      } else if (csp && csp[0] == '}' && csp[1] == '\0') {
+        if (haveOpen) {
+          depth--;
+          if (depth == 0) {
+            closeLoc = clang_getTokenLocation(tu, tokens[i]);
+            clang_disposeString(sp);
+            break;
+          }
+        }
+      }
+
+      clang_disposeString(sp);
+    }
+
+    clang_disposeTokens(tu, tokens, numTokens);
+
+    if (!haveOpen || clang_equalLocations(closeLoc, clang_getNullLocation()))
+      return false;
 
     CXFile fStart = nullptr, fEnd = nullptr;
     unsigned sl = 0, sc = 0, so = 0;
     unsigned el = 0, ec = 0, eo = 0;
 
-    clang_getSpellingLocation(startLoc, &fStart, &sl, &sc, &so);
-    clang_getSpellingLocation(endLoc, &fEnd, &el, &ec, &eo);
+    clang_getSpellingLocation(openLoc, &fStart, &sl, &sc, &so);
+    clang_getSpellingLocation(closeLoc, &fEnd, &el, &ec, &eo);
 
-    if (!fStart || !fEnd) {
+    if (!fStart || !fEnd)
       return false;
-    }
-
-    if (clang_File_isEqual(fStart, fEnd) == 0) {
+    if (clang_File_isEqual(fStart, fEnd) == 0)
       return false;
-    }
 
     fromLine = sl;
     fromCol = sc;
     toLine = el;
     toCol = ec;
-    if (outFile) {
+
+    if (outFile)
       *outFile = fStart;
-    }
+
     return true;
   }
 
@@ -459,12 +498,13 @@ static void CollectSymbolsInTUForParent(CXTranslationUnit tu,
   }
 
   struct VisitorData {
+    CXTranslationUnit *tu;
     std::vector<SymbolInfo> *symbols;
     std::string mainFile;
     int addedLines;
     CXCursor parentFilter;
     bool useParentFilter;
-  } data{&symbols, mainFile, addedLines, parentFilter, useParentFilter};
+  } data{&tu, &symbols, mainFile, addedLines, parentFilter, useParentFilter};
 
   CXCursor tuCursor = clang_getTranslationUnitCursor(tu);
 
@@ -491,7 +531,7 @@ static void CollectSymbolsInTUForParent(CXTranslationUnit tu,
           case CXCursor_EnumDecl:
           case CXCursor_TypedefDecl:
           case CXCursor_MacroDefinition:
-            break; // we take
+            break;
           default:
             return CXChildVisit_Recurse;
         }
@@ -558,7 +598,7 @@ static void CollectSymbolsInTUForParent(CXTranslationUnit tu,
         // Body scope { ... } for functions/methods
         {
           unsigned blFrom = 0, bcFrom = 0, blTo = 0, bcTo = 0;
-          if (GetBodyRangeForCursor(cursor, blFrom, bcFrom, blTo, bcTo)) {
+          if (GetBodyRangeForCursor(*data->tu, cursor, blFrom, bcFrom, blTo, bcTo)) {
             // correction .ino addedLines, same as si.line
             if (!data->mainFile.empty() &&
                 si.file == data->mainFile &&
@@ -2867,7 +2907,7 @@ bool ArduinoCodeCompletion::GetHoverInfo(const std::string &filename, const std:
               outInfo.briefComment = MakeBriefFromFull(extracted);
             } else {
               unsigned blFrom = 0, bcFrom = 0, blTo = 0, bcTo = 0;
-              if (GetBodyRangeForCursor(target, blFrom, bcFrom, blTo, bcTo)) {
+              if (GetBodyRangeForCursor(tu, target, blFrom, bcFrom, blTo, bcTo)) {
                 codeBlock = ExtractBodySnippetFromText(txt, blFrom, blTo);
               } else {
                 codeBlock = ExtractBodySnippetFromText(txt, cline, cline);
@@ -3032,7 +3072,7 @@ bool ArduinoCodeCompletion::GetSymbolInfo(const std::string &filename,
   // Body { ... } for funcs/methods
   {
     unsigned blFrom = 0, bcFrom = 0, blTo = 0, bcTo = 0;
-    if (GetBodyRangeForCursor(target, blFrom, bcFrom, blTo, bcTo)) {
+    if (GetBodyRangeForCursor(tu, target, blFrom, bcFrom, blTo, bcTo)) {
       // Korekce .ino addedLines pro hlavn soubor
       if (!mainFile.empty() &&
           fileName == mainFile &&

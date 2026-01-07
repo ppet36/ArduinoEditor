@@ -31,7 +31,6 @@ static std::string BuildFunctionLabelFromHover(const HoverInfo &info) {
       out.append(", ");
     first = false;
 
-    // Zobrazení jen typů (bez jména parametru) – to chceš.
     out.append(t);
   }
 
@@ -89,32 +88,6 @@ uint64_t ArduinoClassBrowserPanel::Hash64_FNV1a(const std::string &s) {
   return h;
 }
 
-std::string ArduinoClassBrowserPanel::MakeHoverKey(const SymbolInfo &s) const {
-  int col = s.column > 0 ? s.column : 1;
-
-  std::string key;
-  key.reserve(s.name.size() + 64);
-  key.append(std::to_string((int)s.kind)).append("|");
-  key.append(std::to_string(s.line)).append("|");
-  key.append(std::to_string(col)).append("|");
-  key.append(s.name);
-  return key;
-}
-
-bool ArduinoClassBrowserPanel::IsSameEditorContext(ArduinoEditor *ed, const std::string &file, uint64_t snapshotHash) const {
-  return ed == m_cachedEditor && file == m_cachedFile && snapshotHash == m_cachedSnapshotHash;
-}
-
-void ArduinoClassBrowserPanel::ResetHoverCacheForNewContext(ArduinoEditor *ed, const std::string &file, uint64_t snapshotHash) {
-  {
-    std::lock_guard<std::mutex> lk(m_hoverCacheMutex);
-    m_hoverCache.clear();
-  }
-  m_cachedEditor = ed;
-  m_cachedFile = file;
-  m_cachedSnapshotHash = snapshotHash;
-}
-
 void ArduinoClassBrowserPanel::StopHoverWorker() {
   m_cancel.store(true, std::memory_order_relaxed);
 
@@ -150,16 +123,6 @@ void ArduinoClassBrowserPanel::BuildImageList() {
   m_tree->AssignImageList(m_images);
 }
 
-int ArduinoClassBrowserPanel::KindToImage(CXCursorKind kind) const {
-  if (IsMacroKind(kind))
-    return 3;
-  if (IsContainerKind(kind))
-    return 2;
-  if (IsFunctionKind(kind))
-    return 0;
-  return 1; // "variable / everything else"
-}
-
 bool ArduinoClassBrowserPanel::IsMacroKind(CXCursorKind kind) const {
   return kind == CXCursor_MacroDefinition;
 }
@@ -167,6 +130,7 @@ bool ArduinoClassBrowserPanel::IsMacroKind(CXCursorKind kind) const {
 bool ArduinoClassBrowserPanel::IsContainerKind(CXCursorKind kind) const {
   return (kind == CXCursor_ClassDecl ||
           kind == CXCursor_StructDecl ||
+          kind == CXCursor_EnumDecl ||
           kind == CXCursor_UnionDecl);
 }
 
@@ -191,22 +155,28 @@ void ArduinoClassBrowserPanel::Clear() {
   m_tree->DeleteAllItems();
   m_tree->AddRoot(wxT("root"));
   m_tree->Thaw();
+
+  m_forceFullRebuildNext = true;
 }
 
 void ArduinoClassBrowserPanel::SetCompletion(ArduinoCodeCompletion *cc) {
   m_completion = cc;
 }
 
-static bool EndsWith(const std::string &s, const std::string &suf) {
-  if (suf.empty())
-    return true;
-  if (s.size() < suf.size())
-    return false;
-  return s.compare(s.size() - suf.size(), suf.size(), suf) == 0;
+void ArduinoClassBrowserPanel::ResetHoverCacheForNewContext(ArduinoEditor *ed, const std::string &file, uint64_t snapshotHash) {
+  {
+    std::lock_guard<std::mutex> lk(m_hoverCacheMutex);
+    m_hoverCache.clear();
+  }
+  m_cachedEditor = ed;
+  m_cachedFile = file;
+  m_cachedSnapshotHash = snapshotHash;
 }
 
 void ArduinoClassBrowserPanel::SetCurrentEditor(ArduinoEditor *ed) {
   StopHoverWorker();
+
+  bool editorChanged = (m_editor != ed);
 
   m_editor = ed;
 
@@ -226,7 +196,8 @@ void ArduinoClassBrowserPanel::SetCurrentEditor(ArduinoEditor *ed) {
 
   const uint64_t snapshotHash = Hash64_FNV1a(m_codeSnapshot);
 
-  if (!IsSameEditorContext(m_editor, curFile, snapshotHash)) {
+  if (editorChanged) {
+    m_forceFullRebuildNext = true;
     ResetHoverCacheForNewContext(m_editor, curFile, snapshotHash);
   }
 
@@ -239,7 +210,7 @@ void ArduinoClassBrowserPanel::SetCurrentEditor(ArduinoEditor *ed) {
   filtered.reserve(all.size());
 
   for (auto &s : all) {
-    if (EndsWith(s.file, ".ino.hpp")) {
+    if (hasSuffix(s.file, ".ino.hpp")) {
       continue; // synthetic header
     }
 
@@ -264,6 +235,8 @@ void ArduinoClassBrowserPanel::SetCurrentEditor(ArduinoEditor *ed) {
 void ArduinoClassBrowserPanel::SetSymbols(const std::string &currentFile, std::vector<SymbolInfo> symbols) {
   m_currentFile = currentFile;
 
+  APP_DEBUG_LOG("CB: SetSymbols(file=%s, sym.count=%zu)", currentFile.c_str(), symbols.size());
+
   std::sort(symbols.begin(), symbols.end(), [](const SymbolInfo &a, const SymbolInfo &b) {
     if (a.line != b.line)
       return a.line < b.line;
@@ -279,13 +252,7 @@ void ArduinoClassBrowserPanel::SetSymbols(const std::string &currentFile, std::v
 
     for (auto &s : symbols) {
       if (s.kind == CXCursor_EnumConstantDecl) {
-        // key: file|name|line|col (col can be 0, but it's still stable)
-        std::string key;
-        key.reserve(s.file.size() + s.name.size() + 64);
-        key.append(s.file).append("|").append(s.name).append("|");
-        key.append(std::to_string(s.line)).append("|").append(std::to_string(s.column));
-
-        if (!seen.insert(key).second) {
+        if (!seen.insert(s.usr).second) {
           continue; // dup
         }
       }
@@ -297,16 +264,12 @@ void ArduinoClassBrowserPanel::SetSymbols(const std::string &currentFile, std::v
 
   m_symbols = std::move(symbols);
 
-  m_hoverKeyByIndex.clear();
-  m_hoverKeyByIndex.reserve(m_symbols.size());
-  for (const auto &s : m_symbols) {
-    m_hoverKeyByIndex.push_back(MakeHoverKey(s));
-  }
-
   RebuildTree();
 }
 
 void ArduinoClassBrowserPanel::RebuildTree() {
+  APP_DEBUG_LOG("CB: RebuildTree()");
+
   auto isScope = [](const SymbolInfo &s) -> bool {
     return (s.bodyLineFrom > 0 && s.bodyLineTo >= s.bodyLineFrom);
   };
@@ -315,13 +278,11 @@ void ArduinoClassBrowserPanel::RebuildTree() {
     if (!isScope(scope))
       return false;
 
-    // Column can be unknown (0). BodyColFrom/To can also be 0.
     auto afterStart = [&]() -> bool {
       if (line > scope.bodyLineFrom)
         return true;
       if (line < scope.bodyLineFrom)
         return false;
-      // same line
       if (scope.bodyColFrom <= 0 || col <= 0)
         return true;
       return col >= scope.bodyColFrom;
@@ -332,7 +293,6 @@ void ArduinoClassBrowserPanel::RebuildTree() {
         return true;
       if (line > scope.bodyLineTo)
         return false;
-      // same line
       if (scope.bodyColTo <= 0 || col <= 0)
         return true;
       return col <= scope.bodyColTo;
@@ -341,8 +301,26 @@ void ArduinoClassBrowserPanel::RebuildTree() {
     return afterStart() && beforeEnd();
   };
 
+  auto posLess = [](int l1, int c1, int l2, int c2) -> bool {
+    if (l1 != l2)
+      return l1 < l2;
+    return c1 < c2;
+  };
+
+  auto findInsertBefore = [&](const wxTreeItemId &parent, int line, int col) -> wxTreeItemId {
+    wxTreeItemIdValue cookie;
+    wxTreeItemId child = m_tree->GetFirstChild(parent, cookie);
+    while (child.IsOk()) {
+      if (auto *d = dynamic_cast<ItemData *>(m_tree->GetItemData(child))) {
+        if (posLess(line, col, d->sortLine, d->sortCol))
+          return child;
+      }
+      child = m_tree->GetNextChild(parent, cookie);
+    }
+    return wxTreeItemId(); // invalid => Append
+  };
+
   auto scopeSpanKey = [](const SymbolInfo &s) -> long long {
-    // small spans first (innermost)
     long long dl = (long long)s.bodyLineTo - (long long)s.bodyLineFrom;
     long long dc = (long long)s.bodyColTo - (long long)s.bodyColFrom;
     if (dc < 0)
@@ -350,150 +328,448 @@ void ArduinoClassBrowserPanel::RebuildTree() {
     return dl * 100000LL + dc;
   };
 
-  m_tree->Freeze();
-  m_tree->DeleteAllItems();
+  auto getKey = [](const SymbolInfo &s) -> std::string {
+    if (!s.usr.empty())
+      return s.usr;
 
-  wxTreeItemId root = m_tree->AddRoot(wxT("root"));
-  m_itemByIndex.assign(m_symbols.size(), wxTreeItemId());
+    std::string k;
+    k.reserve(s.name.size() + s.file.size() + 64);
+    k.append("fallback:");
+    k.append(std::to_string((int)s.kind));
+    k.push_back(':');
+    k.append(s.file);
+    k.push_back(':');
+    k.append(s.name);
+    k.push_back(':');
+    k.append(std::to_string(s.line));
+    k.push_back(':');
+    k.append(std::to_string(s.column));
+    return k;
+  };
 
-  m_tooltipByIndex.assign(m_symbols.size(), std::string());
-  m_lastTipItem = wxTreeItemId();
-  m_tree->SetToolTip((wxToolTip *)nullptr);
+  auto imgFor = [this](const SymbolInfo &s) -> int {
+    if (IsMacroKind(s.kind))
+      return 3;
+    if (IsContainerKind(s.kind))
+      return 2;
+    if (IsFunctionKind(s.kind))
+      return 0;
+    return 1;
+  };
 
-  const int n = (int)m_symbols.size();
-  std::vector<int> scopes;
-  scopes.reserve(n);
+  auto computeParentIdx = [&](std::vector<int> &parentIdx) {
+    const int n = (int)m_symbols.size();
+    parentIdx.assign(n, -1);
 
-  // collect all scopes (anything with valid body range)
-  for (int i = 0; i < n; i++) {
-    if (isScope(m_symbols[i])) {
-      scopes.push_back(i);
-    }
-  }
+    std::vector<int> scopes;
+    scopes.reserve(n);
 
-  // sort scopes by size (innermost first)
-  std::sort(scopes.begin(), scopes.end(), [&](int a, int b) {
-    const auto &A = m_symbols[a];
-    const auto &B = m_symbols[b];
-    long long sa = scopeSpanKey(A);
-    long long sb = scopeSpanKey(B);
-    if (sa != sb)
-      return sa < sb;
-    if (A.bodyLineFrom != B.bodyLineFrom)
-      return A.bodyLineFrom < B.bodyLineFrom;
-    return A.bodyColFrom < B.bodyColFrom;
-  });
-
-  // for every symbol, pick the innermost scope that contains its declaration position
-  std::vector<int> parentIdx(n, -1);
-  for (int i = 0; i < n; i++) {
-    const auto &sym = m_symbols[i];
-
-    if (sym.kind == CXCursor_ParmDecl) {
-      continue;
+    for (int i = 0; i < n; i++) {
+      if (isScope(m_symbols[i]))
+        scopes.push_back(i);
     }
 
-    for (int sc : scopes) {
-      if (sc == i)
+    std::sort(scopes.begin(), scopes.end(), [&](int a, int b) {
+      const auto &A = m_symbols[a];
+      const auto &B = m_symbols[b];
+      long long sa = scopeSpanKey(A);
+      long long sb = scopeSpanKey(B);
+      if (sa != sb)
+        return sa < sb;
+      if (A.bodyLineFrom != B.bodyLineFrom)
+        return A.bodyLineFrom < B.bodyLineFrom;
+      return A.bodyColFrom < B.bodyColFrom;
+    });
+
+    for (int i = 0; i < n; i++) {
+      const auto &sym = m_symbols[i];
+      if (sym.kind == CXCursor_ParmDecl)
         continue;
 
-      const auto &scope = m_symbols[sc];
+      for (int sc : scopes) {
+        if (sc == i)
+          continue;
 
-      if (posInBody(scope, sym.line, sym.column)) {
-        parentIdx[i] = sc;
-        break; // first match = innermost (scopes are sorted by span)
+        const auto &scope = m_symbols[sc];
+        if (posInBody(scope, sym.line, sym.column)) {
+          parentIdx[i] = sc;
+          break; // innermost
+        }
       }
     }
-  }
 
-  // ------------------------------------------------------------
-  // Special case: EnumConstantDecl doesn't have body-range.
-  // Group enum constants under the nearest preceding EnumDecl
-  // within the same immediate scope (class/function/namespace...).
-  // ------------------------------------------------------------
-  for (int i = 0; i < n; i++) {
-    const auto &sym = m_symbols[i];
-    if (sym.kind != CXCursor_EnumConstantDecl)
-      continue;
-
-    const int scopeParent = parentIdx[i]; // např. class/function scope (ne enum!)
-    int bestEnum = -1;
-
-    for (int j = i - 1; j >= 0; j--) {
-      const auto &cand = m_symbols[j];
-      if (cand.kind != CXCursor_EnumDecl)
+    // EnumConstantDecl special-case
+    for (int i = 0; i < n; i++) {
+      const auto &sym = m_symbols[i];
+      if (sym.kind != CXCursor_EnumConstantDecl)
         continue;
 
-      // musí být ve stejném souboru a ve stejném "nad-scope"
-      if (cand.file != sym.file)
+      const int scopeParent = parentIdx[i];
+      int bestEnum = -1;
+
+      for (int j = i - 1; j >= 0; j--) {
+        const auto &cand = m_symbols[j];
+        if (cand.kind != CXCursor_EnumDecl)
+          continue;
+        if (cand.file != sym.file)
+          continue;
+        if (parentIdx[j] != scopeParent)
+          continue;
+
+        bestEnum = j;
+        break;
+      }
+
+      if (bestEnum >= 0)
+        parentIdx[i] = bestEnum;
+    }
+  };
+
+  // -----------------------------------------
+  // Full rebuild (if needed)
+  // -----------------------------------------
+  auto doFullRebuild = [&]() {
+    m_tree->Freeze();
+    m_tree->DeleteAllItems();
+
+    wxTreeItemId root = m_tree->AddRoot(wxT("root"));
+
+    m_itemByIndex.assign(m_symbols.size(), wxTreeItemId());
+    m_tooltipByIndex.assign(m_symbols.size(), std::string());
+    m_lastTipItem = wxTreeItemId();
+    m_tree->SetToolTip((wxToolTip *)nullptr);
+
+    const int n = (int)m_symbols.size();
+
+    std::vector<int> parentIdx;
+    computeParentIdx(parentIdx);
+
+    std::vector<wxTreeItemId> itemByIndex(n, wxTreeItemId());
+
+    for (int i = 0; i < n; i++) {
+      const auto &s = m_symbols[i];
+      if (s.kind == CXCursor_ParmDecl)
         continue;
 
-      if (parentIdx[j] != scopeParent)
-        continue;
+      wxTreeItemId parentItem = root;
+      int p = parentIdx[i];
+      if (p >= 0 && p < n && itemByIndex[p].IsOk())
+        parentItem = itemByIndex[p];
 
-      // nejbližší EnumDecl nad konstantou
-      bestEnum = j;
-      break;
+      wxString label = MakeBaseLabel(s);
+
+      // hover cache enrichment
+      HoverCacheEntry cached;
+      bool hasCached = false;
+      const std::string key = getKey(s);
+      if (!key.empty()) {
+        std::lock_guard<std::mutex> lk(m_hoverCacheMutex);
+        auto it = m_hoverCache.find(key);
+        if (it != m_hoverCache.end()) {
+          cached = it->second;
+          hasCached = true;
+        }
+      }
+
+      if (hasCached) {
+        wxString enriched = MakeLabelFromHover(s, cached.info);
+        if (!enriched.empty())
+          label = enriched;
+
+        if (!cached.tooltip.empty())
+          m_tooltipByIndex[i] = cached.tooltip;
+      }
+
+      const int img = imgFor(s);
+      wxTreeItemId item = m_tree->AppendItem(
+          parentItem,
+          label,
+          img,
+          img,
+          new ItemData(i, getKey(s), s.line, s.column));
+
+      itemByIndex[i] = item;
+      m_itemByIndex[i] = item;
     }
 
-    if (bestEnum >= 0) {
-      parentIdx[i] = bestEnum;
-    }
+    m_tree->Expand(root);
+    m_tree->Thaw();
+  };
+
+  if (m_forceFullRebuildNext) {
+    m_forceFullRebuildNext = false;
+    doFullRebuild();
+    return;
   }
 
-  // create tree items in file order (m_symbols are already sorted by line/col in SetSymbols)
-  std::vector<wxTreeItemId> itemByIndex(n, wxTreeItemId());
+  // -----------------------------------------
+  // Diff rebuild
+  // -----------------------------------------
+
+  wxTreeItemId root = m_tree->GetRootItem();
+  if (!root.IsOk()) {
+    doFullRebuild();
+    return;
+  }
+
+  // 1) remember expanded nodes
+  std::unordered_set<std::string> expandedKeys;
+  std::string selectedKey;
+
+  {
+    wxTreeItemId sel = m_tree->GetSelection();
+    if (sel.IsOk()) {
+      if (auto *d = dynamic_cast<ItemData *>(m_tree->GetItemData(sel))) {
+        selectedKey = d->usr;
+      }
+    }
+
+    auto collectExpanded = [&](auto &&self, const wxTreeItemId &item) -> void {
+      if (!item.IsOk())
+        return;
+
+      if (item != root && m_tree->IsExpanded(item)) {
+        if (auto *d = dynamic_cast<ItemData *>(m_tree->GetItemData(item))) {
+          if (!d->usr.empty())
+            expandedKeys.insert(d->usr);
+        }
+      }
+
+      wxTreeItemIdValue cookie;
+      wxTreeItemId child = m_tree->GetFirstChild(item, cookie);
+      while (child.IsOk()) {
+        self(self, child);
+        child = m_tree->GetNextChild(item, cookie);
+      }
+    };
+
+    collectExpanded(collectExpanded, root);
+  }
+
+  // 2) calculate parent for new symbols
+  std::vector<int> parentIdx;
+  computeParentIdx(parentIdx);
+
+  // 3) prepare keys
+  const int n = (int)m_symbols.size();
+  std::unordered_set<std::string> keepKeys;
+  keepKeys.reserve((size_t)n * 2);
 
   for (int i = 0; i < n; i++) {
     const auto &s = m_symbols[i];
     if (s.kind == CXCursor_ParmDecl)
       continue;
+    keepKeys.insert(getKey(s));
+  }
 
-    wxTreeItemId parentItem = root;
+  // 4) prune
+  m_tree->Freeze();
 
-    int p = parentIdx[i];
-    if (p >= 0 && p < n && itemByIndex[p].IsOk()) {
-      parentItem = itemByIndex[p];
+  m_itemByIndex.assign(m_symbols.size(), wxTreeItemId());
+  m_tooltipByIndex.assign(m_symbols.size(), std::string());
+  m_lastTipItem = wxTreeItemId();
+  m_tree->SetToolTip((wxToolTip *)nullptr);
+
+  {
+    auto prune = [&](auto &&self, const wxTreeItemId &item) -> void {
+      if (!item.IsOk())
+        return;
+
+      // children first (post-order)
+      std::vector<wxTreeItemId> kids;
+      kids.reserve(16);
+
+      wxTreeItemIdValue cookie;
+      wxTreeItemId child = m_tree->GetFirstChild(item, cookie);
+      while (child.IsOk()) {
+        kids.push_back(child);
+        child = m_tree->GetNextChild(item, cookie);
+      }
+
+      for (auto &c : kids)
+        self(self, c);
+
+      if (item == root)
+        return;
+
+      auto *d = dynamic_cast<ItemData *>(m_tree->GetItemData(item));
+      if (!d)
+        return;
+
+      if (!d->usr.empty() && keepKeys.find(d->usr) == keepKeys.end()) {
+        m_tree->Delete(item);
+      }
+    };
+
+    prune(prune, root);
+  }
+
+  // 5) map of existing items by USR
+  std::unordered_map<std::string, wxTreeItemId> itemByKey;
+  itemByKey.reserve(keepKeys.size() * 2);
+
+  {
+    auto indexExisting = [&](auto &&self, const wxTreeItemId &item) -> void {
+      if (!item.IsOk())
+        return;
+
+      if (item != root) {
+        if (auto *d = dynamic_cast<ItemData *>(m_tree->GetItemData(item))) {
+          if (!d->usr.empty())
+            itemByKey[d->usr] = item;
+        }
+      }
+
+      wxTreeItemIdValue cookie;
+      wxTreeItemId child = m_tree->GetFirstChild(item, cookie);
+      while (child.IsOk()) {
+        self(self, child);
+        child = m_tree->GetNextChild(item, cookie);
+      }
+    };
+
+    indexExisting(indexExisting, root);
+  }
+
+  auto getParentItem = [&](int idx) -> wxTreeItemId {
+    int p = parentIdx[idx];
+    if (p < 0 || p >= n)
+      return root;
+
+    const std::string pk = getKey(m_symbols[p]);
+    auto it = itemByKey.find(pk);
+    if (it != itemByKey.end() && it->second.IsOk())
+      return it->second;
+
+    return root;
+  };
+
+  auto computeLabelAndTooltip = [&](int i, wxString &outLabel, std::string &outTooltip) {
+    const auto &s = m_symbols[i];
+
+    outLabel = MakeBaseLabel(s);
+    outTooltip.clear();
+
+    const std::string key = getKey(s);
+    if (!key.empty()) {
+      HoverCacheEntry cached;
+      bool hasCached = false;
+
+      {
+        std::lock_guard<std::mutex> lk(m_hoverCacheMutex);
+        auto it = m_hoverCache.find(key);
+        if (it != m_hoverCache.end()) {
+          cached = it->second;
+          hasCached = true;
+        }
+      }
+
+      if (hasCached) {
+        wxString enriched = MakeLabelFromHover(s, cached.info);
+        if (!enriched.empty())
+          outLabel = enriched;
+        outTooltip = cached.tooltip;
+      }
     }
+  };
 
-    wxString label = MakeBaseLabel(s);
+  // 6) create/update items for all symbols
+  for (int i = 0; i < n; i++) {
+    const auto &s = m_symbols[i];
+    if (s.kind == CXCursor_ParmDecl)
+      continue;
 
-    HoverCacheEntry cached;
-    bool hasCached = false;
+    const std::string key = getKey(s);
+    wxTreeItemId parentItem = getParentItem(i);
 
-    if (i >= 0 && i < (int)m_hoverKeyByIndex.size()) {
-      std::lock_guard<std::mutex> lk(m_hoverCacheMutex);
-      auto it = m_hoverCache.find(m_hoverKeyByIndex[i]);
-      if (it != m_hoverCache.end()) {
-        cached = it->second; // kopie je OK, HoverInfo je malý struct se stringy
-        hasCached = true;
+    wxString label;
+    std::string tooltip;
+    computeLabelAndTooltip(i, label, tooltip);
+    if (!tooltip.empty())
+      m_tooltipByIndex[i] = tooltip;
+
+    const int img = imgFor(s);
+
+    wxTreeItemId item;
+    auto it = itemByKey.find(key);
+    if (it != itemByKey.end())
+      item = it->second;
+
+    // exists, but is under a different parent? -> delete + recreate
+    if (item.IsOk()) {
+      wxTreeItemId curParent = m_tree->GetItemParent(item);
+      if (curParent.IsOk() && curParent != parentItem) {
+        m_tree->Delete(item);
+        item = wxTreeItemId();
+        itemByKey.erase(key);
       }
     }
 
-    if (hasCached) {
-      wxString enriched = MakeLabelFromHover(s, cached.info);
-      if (!enriched.empty())
-        label = enriched;
+    if (!item.IsOk()) {
+      wxTreeItemId before = findInsertBefore(parentItem, s.line, s.column);
 
-      if (i >= 0 && i < (int)m_tooltipByIndex.size() && !cached.tooltip.empty()) {
-        m_tooltipByIndex[i] = cached.tooltip;
+      if (before.IsOk()) {
+        item = m_tree->InsertItem(
+            parentItem, before, label, img, img,
+            new ItemData(i, key, s.line, s.column));
+      } else {
+        item = m_tree->AppendItem(
+            parentItem, label, img, img,
+            new ItemData(i, key, s.line, s.column));
+      }
+
+      itemByKey[key] = item;
+    } else {
+      // update text
+      wxString old = m_tree->GetItemText(item);
+      if (old != label)
+        m_tree->SetItemText(item, label);
+
+      // update image
+      m_tree->SetItemImage(item, img, wxTreeItemIcon_Normal);
+      m_tree->SetItemImage(item, img, wxTreeItemIcon_Selected);
+
+      // update data
+      if (auto *d = dynamic_cast<ItemData *>(m_tree->GetItemData(item))) {
+        d->index = i;
+        d->sortLine = s.line;
+        d->sortCol = s.column;
+        d->usr = key;
+      } else {
+        m_tree->SetItemData(item, new ItemData(i, key, s.line, s.column));
       }
     }
 
-    int img = KindToImage(s.kind);
-
-    wxTreeItemId item = m_tree->AppendItem(parentItem, label, img, img, new ItemData(i));
-    itemByIndex[i] = item;
     m_itemByIndex[i] = item;
   }
 
-  m_tree->Expand(root);
+  // 7) refresh expanded items
+  for (const auto &k : expandedKeys) {
+    auto it = itemByKey.find(k);
+    if (it != itemByKey.end() && it->second.IsOk()) {
+      m_tree->Expand(it->second);
+    }
+  }
+
+  // 8) refresh selection
+  if (!selectedKey.empty()) {
+    auto it = itemByKey.find(selectedKey);
+    if (it != itemByKey.end() && it->second.IsOk()) {
+      m_internalSelect = true;
+      m_tree->SelectItem(it->second);
+      m_tree->EnsureVisible(it->second);
+      m_internalSelect = false;
+    }
+  }
+
   m_tree->Thaw();
 }
 
 wxString ArduinoClassBrowserPanel::MakeBaseLabel(const SymbolInfo &s) const {
-  if (!s.display.empty())
+  if (!s.display.empty()) {
     return wxString::FromUTF8(s.display);
+  }
+
   return wxString::FromUTF8(s.name);
 }
 
@@ -533,8 +809,6 @@ void ArduinoClassBrowserPanel::ApplyHoverInfo(uint64_t gen, int symbolIndex, con
     return;
   if (symbolIndex >= (int)m_itemByIndex.size())
     return;
-  if (symbolIndex < 0 || symbolIndex >= (int)m_tooltipByIndex.size())
-    return;
 
   wxTreeItemId item = m_itemByIndex[symbolIndex];
   if (!item.IsOk())
@@ -542,35 +816,26 @@ void ArduinoClassBrowserPanel::ApplyHoverInfo(uint64_t gen, int symbolIndex, con
 
   // tooltip
   {
-    std::string hover = info.ToHoverString();
-    if (!hover.empty()) {
+    const std::string tip = info.ToHoverString();
+    if (!tip.empty()) {
+      m_tooltipByIndex[symbolIndex] = tip;
 
-      if (symbolIndex >= 0 && symbolIndex < (int)m_hoverKeyByIndex.size()) {
+      const std::string &key = m_symbols[symbolIndex].usr;
+      if (!key.empty()) {
         HoverCacheEntry e;
         e.info = info;
-        e.tooltip = info.ToHoverString();
+        e.tooltip = tip;
 
-        {
-          std::lock_guard<std::mutex> lk(m_hoverCacheMutex);
-          m_hoverCache[m_hoverKeyByIndex[symbolIndex]] = e;
-        }
-
-        if (!e.tooltip.empty()) {
-          m_tooltipByIndex[symbolIndex] = e.tooltip;
-
-          if (m_lastTipItem.IsOk() && m_lastTipItem == item) {
-            m_tree->SetToolTip(wxString::FromUTF8(e.tooltip));
-          }
-        }
+        std::lock_guard<std::mutex> lk(m_hoverCacheMutex);
+        m_hoverCache[key] = std::move(e);
       }
 
-      // if we are currently hovering over this item, update the tooltip immediately
       if (m_lastTipItem.IsOk() && m_lastTipItem == item) {
-        if (!m_tooltipByIndex[symbolIndex].empty()) {
-          m_tree->SetToolTip(wxString::FromUTF8(m_tooltipByIndex[symbolIndex]));
-        } else {
-          m_tree->SetToolTip((wxToolTip *)nullptr);
-        }
+        m_tree->SetToolTip(wxString::FromUTF8(m_tooltipByIndex[symbolIndex]));
+      }
+    } else {
+      if (m_lastTipItem.IsOk() && m_lastTipItem == item) {
+        m_tree->SetToolTip((wxToolTip *)nullptr);
       }
     }
   }
@@ -631,8 +896,8 @@ void ArduinoClassBrowserPanel::StartHoverWorker(uint64_t gen, std::string file, 
         continue;
 
       // skip if hover in cache
-      if (i >= 0 && i < (int)m_hoverKeyByIndex.size()) {
-        const std::string &key = m_hoverKeyByIndex[i];
+      const std::string &key = s.usr;
+      if (!key.empty()) {
         bool already = false;
         {
           std::lock_guard<std::mutex> lk(m_hoverCacheMutex);
@@ -660,43 +925,100 @@ void ArduinoClassBrowserPanel::StartHoverWorker(uint64_t gen, std::string file, 
 }
 
 int ArduinoClassBrowserPanel::FindBestSymbolForLine(int line) const {
+  return FindBestSymbolForPos(line, 0);
+}
+
+int ArduinoClassBrowserPanel::FindBestSymbolForPos(int line, int col) const {
   if (line <= 0)
     return -1;
 
-  int best = -1;
+  const int n = (int)m_symbols.size();
+
+  int bestOnLine = -1;
+  int bestDist = INT_MAX;
+
+  for (int i = 0; i < n; i++) {
+    const auto &s = m_symbols[i];
+    if (s.kind == CXCursor_ParmDecl)
+      continue;
+    if (s.line != line)
+      continue;
+
+    if (s.column <= 0 || col <= 0) {
+      return i;
+    }
+
+    int dist;
+    if (s.column <= col) {
+      dist = col - s.column;
+    } else {
+      dist = 1000000 + (s.column - col);
+    }
+
+    if (dist < bestDist) {
+      bestDist = dist;
+      bestOnLine = i;
+    }
+  }
+
+  if (bestOnLine >= 0)
+    return bestOnLine;
+
+  auto containsPosInBody = [&](const SymbolInfo &scope) -> bool {
+    if (!(scope.bodyLineFrom > 0 && scope.bodyLineTo >= scope.bodyLineFrom))
+      return false;
+
+    if (line < scope.bodyLineFrom || line > scope.bodyLineTo)
+      return false;
+
+    if (col <= 0 || scope.bodyColFrom <= 0 || scope.bodyColTo <= 0)
+      return true;
+
+    if (line == scope.bodyLineFrom && col < scope.bodyColFrom)
+      return false;
+    if (line == scope.bodyLineTo && col > scope.bodyColTo)
+      return false;
+
+    return true;
+  };
+
+  int bestScope = -1;
   int bestSpan = INT_MAX;
 
-  for (int i = 0; i < (int)m_symbols.size(); i++) {
+  for (int i = 0; i < n; i++) {
     const auto &s = m_symbols[i];
+    if (!containsPosInBody(s))
+      continue;
 
-    if (s.bodyLineFrom > 0 && s.bodyLineTo >= s.bodyLineFrom) {
-      if (line >= s.bodyLineFrom && line <= s.bodyLineTo) {
-        int span = s.bodyLineTo - s.bodyLineFrom;
-        if (span < bestSpan) {
-          bestSpan = span;
-          best = i;
-        }
-      }
+    int span = s.bodyLineTo - s.bodyLineFrom;
+    if (span < bestSpan) {
+      bestSpan = span;
+      bestScope = i;
     }
   }
 
-  if (best < 0) {
-    for (int i = 0; i < (int)m_symbols.size(); i++) {
-      if (m_symbols[i].line == line) {
-        best = i;
-        break;
-      }
-    }
+  if (bestScope >= 0)
+    return bestScope;
+
+  for (int i = 0; i < n; i++) {
+    if (m_symbols[i].kind == CXCursor_ParmDecl)
+      continue;
+    if (m_symbols[i].line == line)
+      return i;
   }
 
-  return best;
+  return -1;
 }
 
 void ArduinoClassBrowserPanel::SetCurrentLine(int line) {
+  SetCurrentLine(line, 0);
+}
+
+void ArduinoClassBrowserPanel::SetCurrentLine(int line, int col) {
   if (m_internalSelect)
     return;
 
-  int idx = FindBestSymbolForLine(line);
+  int idx = FindBestSymbolForPos(line, col);
   if (idx < 0 || idx >= (int)m_itemByIndex.size())
     return;
 

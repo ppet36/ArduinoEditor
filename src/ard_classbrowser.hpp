@@ -27,13 +27,19 @@ public:
   void SetCurrentEditor(ArduinoEditor *ed);
 
   void SetCurrentLine(int line);
+  void SetCurrentLine(int line, int col);
 
   void Clear();
 
 private:
   struct ItemData : public wxTreeItemData {
     int index = -1;
-    explicit ItemData(int i) : index(i) {}
+    int sortLine = 0;
+    int sortCol = 0;
+    std::string usr;
+
+    ItemData(int idx, std::string u, int line, int col)
+        : index(idx), sortLine(line), sortCol(col), usr(std::move(u)) {}
   };
 
   struct HoverCacheEntry {
@@ -59,6 +65,7 @@ private:
   bool IsFunctionKind(CXCursorKind kind) const;
 
   int FindBestSymbolForLine(int line) const;
+  int FindBestSymbolForPos(int line, int col) const;
 
   void OnItemActivated(wxTreeEvent &e);
   void OnTreeGetToolTip(wxTreeEvent &e);
@@ -75,13 +82,13 @@ private:
   ArduinoEditor *m_cachedEditor = nullptr;
   std::string m_cachedFile;
   uint64_t m_cachedSnapshotHash = 0;
+  bool m_forceFullRebuildNext = true;
 
   std::vector<std::string> m_tooltipByIndex;
   wxTreeItemId m_lastTipItem;
 
   std::mutex m_hoverCacheMutex;
   std::unordered_map<std::string, HoverCacheEntry> m_hoverCache;
-  std::vector<std::string> m_hoverKeyByIndex;
 
   ArduinoCodeCompletion *m_completion = nullptr; // non-owning
   ArduinoEditor *m_editor = nullptr;             // non-owning
