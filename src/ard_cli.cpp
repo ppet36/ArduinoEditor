@@ -2100,8 +2100,10 @@ bool ArduinoCli::ApplyConfig(const ArduinoCliConfig &cfg) {
   return ok;
 }
 
-bool ArduinoCli::LoadBoardParameters() {
+bool ArduinoCli::LoadBoardParameters(std::string &errorOut) {
   ScopeTimer t("CLI: LoadBoardParameters()");
+
+  errorOut.clear();
 
   if (m_cli.empty()) {
     return false;
@@ -2126,7 +2128,24 @@ bool ArduinoCli::LoadBoardParameters() {
   int rc = ExecuteCommand(cmd, output);
 
   if (rc != 0 || output.empty()) {
-    APP_DEBUG_LOG("arduino-cli board details failed in LoadBoardParameters (rc=%d).", rc);
+    if (!output.empty()) {
+      nlohmann::json j;
+      try {
+        j = nlohmann::json::parse(output);
+
+        if (j.contains("error") && j["error"].is_string()) {
+          std::string error = j["error"].get<std::string>();
+
+          errorOut = error;
+
+          APP_DEBUG_LOG("CLI: error = %s", error.c_str());
+        }
+      } catch(...) {
+        // Ignore
+      }
+    }
+
+    APP_DEBUG_LOG("CLI: arduino-cli board details failed in LoadBoardParameters (rc=%d).", rc);
     return false;
   }
 
@@ -2134,8 +2153,7 @@ bool ArduinoCli::LoadBoardParameters() {
   try {
     j = nlohmann::json::parse(output);
   } catch (const std::exception &e) {
-    wxLogWarning(wxT("LoadBoardParameters: failed to parse board details JSON: %s"),
-                 wxString::FromUTF8(e.what()));
+    errorOut = wxToStd(wxString::Format(_("Failed to parse board details JSON: %s"), wxString::FromUTF8(e.what())));
     return false;
   }
 
@@ -2158,10 +2176,13 @@ void ArduinoCli::LoadBoardParametersAsync(wxEvtHandler *handler) {
   APP_DEBUG_LOG("LoadBoardParametersAsync()");
 
   std::thread([this, weak]() {
-    bool ok = this->LoadBoardParameters();
+    std::string errorOut;
+
+    bool ok = this->LoadBoardParameters(errorOut);
 
     wxThreadEvent evt(EVT_CLANG_ARGS_READY);
     evt.SetInt(ok ? 1 : 0);
+    evt.SetString(wxString::FromUTF8(errorOut));
 
     QueueUiEvent(weak, evt.Clone());
   }).detach();

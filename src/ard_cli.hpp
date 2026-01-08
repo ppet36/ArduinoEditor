@@ -268,7 +268,7 @@ public:
   inline bool IsInitializedFromCompileCommands() { return m_initializedFromCompileCommands; }
 
   // board details
-  bool LoadBoardParameters();
+  bool LoadBoardParameters(std::string &errorOut);
   void LoadBoardParametersAsync(wxEvtHandler *handler);
 
   // resolve libs

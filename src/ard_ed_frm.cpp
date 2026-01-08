@@ -683,7 +683,18 @@ void ArduinoEditorFrame::OnClangArgsReady(wxThreadEvent &event) {
       m_cleanTried = true;
       CleanProject();
     } else {
+      m_firstInitCompleted = true;
+
       UpdateStatus(_("Failed create Arduino Clang completion!"));
+
+      wxString detailErr = event.GetString();
+      if (detailErr.IsEmpty()) {
+        ShowSingleDiagMessage(_("Failed create Arduino Clang completion!"));
+      } else {
+        ShowSingleDiagMessage(detailErr);
+      }
+
+      EnableUIActions(true);
     }
   }
 }
