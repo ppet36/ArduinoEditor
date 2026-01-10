@@ -14,6 +14,9 @@
 #include <wx/filedlg.h>
 #include <wx/filename.h>
 #include <wx/image.h>
+#include <wx/imagpng.h>
+#include <wx/imagjpeg.h>
+#include <wx/imagbmp.h>
 #include <wx/menu.h>
 #include <wx/msgdlg.h>
 #include <wx/richmsgdlg.h>
@@ -485,7 +488,9 @@ void ArduinoPlotView::OnMenuFixedYRange(wxCommandEvent &WXUNUSED(evt)) {
 void ArduinoPlotView::OnMenuSaveImage(wxCommandEvent &WXUNUSED(evt)) {
   static bool s_imgHandlersInited = false;
   if (!s_imgHandlersInited) {
-    wxInitAllImageHandlers();
+    wxImage::AddHandler(new wxPNGHandler);
+    wxImage::AddHandler(new wxJPEGHandler);
+    wxImage::AddHandler(new wxBMPHandler);
     s_imgHandlersInited = true;
   }
 
