@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ArduinoEditor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-10 20:00+0100\n"
+"POT-Creation-Date: 2026-01-10 22:03+0100\n"
 "PO-Revision-Date: 2025-12-09 22:52:00+0100\n"
 "Last-Translator: Pavel Petržela <r17c@seznam.cz>\n"
 "Language-Team: -\n"
@@ -3453,65 +3453,65 @@ msgstr ""
 "Setřídění předřadí systémové direktivy #include před uživatelské.\n"
 "V rámci skupin jsou direktivy setříděny abecedně."
 
-#: ../src/ard_plotview.cpp:59
+#: ../src/ard_plotview.cpp:62
 msgid "Fixed Y range"
 msgstr "Pevný rozsah Y"
 
-#: ../src/ard_plotview.cpp:63
+#: ../src/ard_plotview.cpp:66
 msgid "Enable fixed Y range"
 msgstr "Povolit pevný rozsah Y"
 
-#: ../src/ard_plotview.cpp:70
+#: ../src/ard_plotview.cpp:73
 msgid "Y min:"
 msgstr "Y minimum:"
 
-#: ../src/ard_plotview.cpp:72
+#: ../src/ard_plotview.cpp:75
 msgid "Y max:"
 msgstr "Y maximum:"
 
-#: ../src/ard_plotview.cpp:109
+#: ../src/ard_plotview.cpp:112
 msgid "Please enter valid numbers for Y min / Y max."
 msgstr "Zadejte prosím platná čísla pro minimum/maximum Y."
 
-#: ../src/ard_plotview.cpp:109
+#: ../src/ard_plotview.cpp:112
 msgid "Invalid input"
 msgstr "Chybný vstup"
 
-#: ../src/ard_plotview.cpp:188
+#: ../src/ard_plotview.cpp:191
 msgid "Visible time window (seconds)"
 msgstr "Viditelné časové okno (sekundy)"
 
-#: ../src/ard_plotview.cpp:449
+#: ../src/ard_plotview.cpp:452
 msgid "Fixed Y range..."
 msgstr "Pevný rozsah Y..."
 
-#: ../src/ard_plotview.cpp:454
+#: ../src/ard_plotview.cpp:457
 msgid "Save plot as image..."
 msgstr "Uložit graf průběhů jako obrázek..."
 
-#: ../src/ard_plotview.cpp:460 ../src/ard_sermon.cpp:684
-#: ../src/ard_sermon.cpp:732
+#: ../src/ard_plotview.cpp:463 ../src/ard_sermon.cpp:686
+#: ../src/ard_sermon.cpp:734
 msgid "Clear"
 msgstr "Vymazat"
 
-#: ../src/ard_plotview.cpp:516
+#: ../src/ard_plotview.cpp:521
 msgid "Unable to create bitmap for export."
 msgstr "Chyba při vytváření bitmapy pro export."
 
-#: ../src/ard_plotview.cpp:516 ../src/ard_plotview.cpp:528
-#: ../src/ard_plotview.cpp:587
+#: ../src/ard_plotview.cpp:521 ../src/ard_plotview.cpp:533
+#: ../src/ard_plotview.cpp:592
 msgid "Save plot"
 msgstr "Uložit graf průběhů"
 
-#: ../src/ard_plotview.cpp:528
+#: ../src/ard_plotview.cpp:533
 msgid "Unable to create graphics context for export."
 msgstr "Nelze vytvořit grafický kontext pro export."
 
-#: ../src/ard_plotview.cpp:544
+#: ../src/ard_plotview.cpp:549
 msgid "Save plot as image"
 msgstr "Uložit graf průběhů jako obrázek"
 
-#: ../src/ard_plotview.cpp:547
+#: ../src/ard_plotview.cpp:552
 msgid ""
 "PNG image (*.png)|*.png|JPEG image (*.jpg;*.jpeg)|*.jpg;*.jpeg|BMP image (*."
 "bmp)|*.bmp"
@@ -3519,7 +3519,7 @@ msgstr ""
 "PNG obrázek (*.png)|*.png|JPEG obrázek (*.jpg;*.jpeg)|*.jpg;*.jpeg|BMP "
 "obrázek (*.bmp)|*.bmp"
 
-#: ../src/ard_plotview.cpp:587
+#: ../src/ard_plotview.cpp:592
 msgid "Failed to save image file."
 msgstr "Chyba při ukládání obrázku."
 
@@ -3805,103 +3805,103 @@ msgstr "Chyba čtení ze sériového portu (Win): %lu"
 msgid "Serial Monitor [%s]"
 msgstr "Sériový monitor [%s]"
 
-#: ../src/ard_sermon.cpp:609
+#: ../src/ard_sermon.cpp:611
 #, c-format
 msgid "Port: %s"
 msgstr "Port: %s"
 
-#: ../src/ard_sermon.cpp:647
+#: ../src/ard_sermon.cpp:649
 msgid "Baud:"
 msgstr "Rychlost přenosu:"
 
-#: ../src/ard_sermon.cpp:653 ../src/ard_sermon.cpp:980
+#: ../src/ard_sermon.cpp:655 ../src/ard_sermon.cpp:982
 msgid "None"
 msgstr "Žádný"
 
-#: ../src/ard_sermon.cpp:654 ../src/ard_sermon.cpp:660
-#: ../src/ard_sermon.cpp:982
+#: ../src/ard_sermon.cpp:656 ../src/ard_sermon.cpp:662
+#: ../src/ard_sermon.cpp:984
 msgid "<LF>"
 msgstr "<LF>"
 
-#: ../src/ard_sermon.cpp:655 ../src/ard_sermon.cpp:984
+#: ../src/ard_sermon.cpp:657 ../src/ard_sermon.cpp:986
 msgid "<CR>"
 msgstr "<CR>"
 
-#: ../src/ard_sermon.cpp:656 ../src/ard_sermon.cpp:986
+#: ../src/ard_sermon.cpp:658 ../src/ard_sermon.cpp:988
 msgid "<CR><LF>"
 msgstr "<CR><LF>"
 
-#: ../src/ard_sermon.cpp:665
+#: ../src/ard_sermon.cpp:667
 msgid "Line ending:"
 msgstr "Zakončení řádků:"
 
-#: ../src/ard_sermon.cpp:670
+#: ../src/ard_sermon.cpp:672
 msgid "Autoscroll"
 msgstr "Automatické posouvání"
 
-#: ../src/ard_sermon.cpp:673
+#: ../src/ard_sermon.cpp:675
 msgid "Show timestamps"
 msgstr "Zobrazit časová razítka"
 
-#: ../src/ard_sermon.cpp:681 ../src/ard_sermon.cpp:1007
-#: ../src/ard_sermon.cpp:1597
+#: ../src/ard_sermon.cpp:683 ../src/ard_sermon.cpp:1009
+#: ../src/ard_sermon.cpp:1599
 msgid "Pause"
 msgstr "Pozastavit"
 
-#: ../src/ard_sermon.cpp:715
+#: ../src/ard_sermon.cpp:717
 msgid "Copy\tCtrl+C"
 msgstr "Kopírovat\tCtrl+C"
 
-#: ../src/ard_sermon.cpp:721 ../src/ard_sermon.cpp:764
+#: ../src/ard_sermon.cpp:723 ../src/ard_sermon.cpp:766
 msgid "Save selection..."
 msgstr "Uložit výběr..."
 
-#: ../src/ard_sermon.cpp:726 ../src/ard_sermon.cpp:764
+#: ../src/ard_sermon.cpp:728 ../src/ard_sermon.cpp:766
 msgid "Save all..."
 msgstr "Uložit vše..."
 
-#: ../src/ard_sermon.cpp:767
+#: ../src/ard_sermon.cpp:769
 msgid "Text files (*.txt)|*.txt|Log files (*.log)|*.log|All files (*.*)|*.*"
 msgstr ""
 "Textové soubory (*.txt)|*.txt|Soubory logů (*.log)|*.log|Všechny soubory (*."
 "*)|*.*"
 
-#: ../src/ard_sermon.cpp:775
+#: ../src/ard_sermon.cpp:777
 #, c-format
 msgid "Failed to save file: %s"
 msgstr "Chyba při ukládání souboru: %s"
 
-#: ../src/ard_sermon.cpp:822
+#: ../src/ard_sermon.cpp:824
 msgid "Log"
 msgstr "Log"
 
-#: ../src/ard_sermon.cpp:829
+#: ../src/ard_sermon.cpp:831
 msgid "Open this tab to start plotting serial values."
 msgstr ""
 "Otevřením této záložky zahájíte vykreslování hodnot ze sériového portu."
 
-#: ../src/ard_sermon.cpp:833
+#: ../src/ard_sermon.cpp:835
 msgid "Plot"
 msgstr "Graf"
 
-#: ../src/ard_sermon.cpp:869
+#: ../src/ard_sermon.cpp:871
 msgid "Failed to start serial monitor thread"
 msgstr "Nepodařilo se spustit vlákno sériového monitoru"
 
-#: ../src/ard_sermon.cpp:971
+#: ../src/ard_sermon.cpp:973
 msgid "Failed to write to serial port"
 msgstr "Nepodařilo se zapsat do sériového portu"
 
-#: ../src/ard_sermon.cpp:998
+#: ../src/ard_sermon.cpp:1000
 msgid "Resume"
 msgstr "Pokračovat"
 
-#: ../src/ard_sermon.cpp:1582
+#: ../src/ard_sermon.cpp:1584
 #, c-format
 msgid "Serial monitor error: %s"
 msgstr "Chyba sériového monitoru: %s"
 
-#: ../src/ard_sermon.cpp:1583
+#: ../src/ard_sermon.cpp:1585
 #, c-format
 msgid ""
 "\n"
@@ -3910,7 +3910,7 @@ msgstr ""
 "\n"
 "[CHYBA] %s\n"
 
-#: ../src/ard_sermon.cpp:1616
+#: ../src/ard_sermon.cpp:1618
 msgid ""
 "\n"
 "[INFO] Serial monitor blocked - port released.\n"
@@ -3918,7 +3918,7 @@ msgstr ""
 "\n"
 "[INFO] Sériový monitor zablokován – port uvolněn.\n"
 
-#: ../src/ard_sermon.cpp:1644
+#: ../src/ard_sermon.cpp:1646
 msgid ""
 "\n"
 "[INFO] Serial monitor unblocked - port re-opened.\n"

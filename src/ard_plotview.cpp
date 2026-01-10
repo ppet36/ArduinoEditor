@@ -13,10 +13,10 @@
 #include <wx/dialog.h>
 #include <wx/filedlg.h>
 #include <wx/filename.h>
-#include <wx/image.h>
-#include <wx/imagpng.h>
-#include <wx/imagjpeg.h>
 #include <wx/imagbmp.h>
+#include <wx/image.h>
+#include <wx/imagjpeg.h>
+#include <wx/imagpng.h>
 #include <wx/menu.h>
 #include <wx/msgdlg.h>
 #include <wx/richmsgdlg.h>
