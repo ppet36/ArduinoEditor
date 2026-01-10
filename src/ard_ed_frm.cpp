@@ -3592,7 +3592,7 @@ void ArduinoEditorFrame::OnOpenSerialMonitor(wxCommandEvent &) {
   }
 
   wxString portName = wxString::FromUTF8(arduinoCli->GetSerialPort());
-  long baud = 115200; // XXX
+  long baud = 0; // XXX - autodetect from Serial.begin in sketch?
 
   if (!m_serialMonitor) {
     if (CanPerformAction(openserialmon, true)) {

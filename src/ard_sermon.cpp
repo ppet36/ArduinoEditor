@@ -591,10 +591,12 @@ void ArduinoSerialMonitorFrame::CreateControls() {
   bool showTimestamps = false;
 
   if (m_sketchConfig) {
-    if (m_baudRate == 0) {
-      long savedBaud = 0;
-      if (m_sketchConfig->Read(wxT("SerialMonitorBaud"), &savedBaud) && savedBaud > 0) {
-        m_baudRate = savedBaud;
+    long savedBaud = 0;
+    if (m_sketchConfig->Read(wxT("SerialMonitorBaud"), &savedBaud) && (savedBaud > 0)) {
+      m_baudRate = savedBaud;
+    } else {
+      if (m_baudRate == 0) {
+        m_baudRate = 115200; // default
       }
     }
 
