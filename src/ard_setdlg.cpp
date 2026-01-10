@@ -1063,7 +1063,6 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
 
   cliSizer->Add(m_cliUrls, 1, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, 8);
 
-
   auto *cliChbSizer = new wxBoxSizer(wxHORIZONTAL);
 
   // Unsafe installation
@@ -2500,4 +2499,3 @@ bool ArduinoEditorSettingsDialog::GetShowCompilationDialog() const {
   }
   return true;
 }
-

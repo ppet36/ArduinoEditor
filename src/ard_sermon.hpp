@@ -18,8 +18,21 @@
 
 #pragma once
 
+#include <memory>
+#include <string>
+#include <vector>
 #include <wx/config.h>
+#include <wx/stc/stc.h>
 #include <wx/wx.h>
+
+class wxNotebook;
+class wxPanel;
+class wxBookCtrlEvent;
+
+class ArduinoPlotView;
+class ArduinoPlotParser;
+struct BufferedPlotLine;
+struct EditorSettings;
 
 class SerialMonitorWorker : public wxThread {
 public:
@@ -29,6 +42,7 @@ public:
   ~SerialMonitorWorker() override;
 
   void RequestStop();
+  void InterruptIo();
 
   // simple sync write - parent is called from the GUI thread
   bool Write(const std::string &data);
@@ -65,6 +79,7 @@ class ArduinoSerialMonitorFrame : public wxFrame {
 public:
   ArduinoSerialMonitorFrame(wxWindow *parent,
                             wxConfigBase *config,
+                            wxConfigBase *sketchConfig,
                             const wxString &portName,
                             long baudRate);
   ~ArduinoSerialMonitorFrame() override;
@@ -75,6 +90,12 @@ public:
   void Close();
 
 private:
+  void OnNotebookPageChanged(wxBookCtrlEvent &event);
+  void EnsurePlotterStarted();
+  void FeedPlotChunkUtf8(const std::string &chunkUtf8, double time);
+  void BufferPlotChunkUtf8(const std::string &chunkUtf8, double time);
+  void NormalizeLineEndings(wxString &chunk);
+
   void CreateControls();
   void StartWorker();
   void StopWorker();
@@ -90,13 +111,23 @@ private:
   void OnClear(wxCommandEvent &event);
   void OnPause(wxCommandEvent &event);
 
+  void SetupOutputCtrl(const EditorSettings &settings);
+
+  void OnOutputUpdateUI(wxStyledTextEvent &event);
+
+  void ScrollOutputToEnd();
+  bool IsOutputAtBottom() const;
+  bool m_programmaticScroll = false;
+  int m_lastFirstVisibleLine = -1;
+
   void OnSysColourChanged(wxSysColourChangedEvent &event);
 
   wxConfigBase *m_config{nullptr};
+  wxConfigBase *m_sketchConfig{nullptr};
   wxString m_portName;
   long m_baudRate{115200};
 
-  wxTextCtrl *m_outputCtrl{nullptr};
+  wxStyledTextCtrl *m_outputCtrl{nullptr};
   wxTextCtrl *m_inputCtrl{nullptr};
   wxComboBox *m_baudCombo{nullptr};
   wxComboBox *m_lineEndCombo{nullptr};
@@ -105,12 +136,40 @@ private:
   wxCheckBox *m_timestampCheck{nullptr};
   wxButton *m_pauseButton = nullptr;
   wxButton *m_clearButton{nullptr};
+  wxNotebook *m_notebook = nullptr;
+  wxPanel *m_logPage = nullptr;
+  wxPanel *m_plotPage = nullptr;
 
   SerialMonitorWorker *m_worker{nullptr};
 
   LineEndingMode m_lineEndingMode{LineEndingMode::LF};
 
   std::vector<wxString> m_pausedBuffer;
+  size_t m_pausedTextChars = 0;
   bool m_isBlocked = false;
   bool m_paused = false;
+  bool m_pendingCR = false;
+
+  // --- text output throttling ---
+  wxTimer m_textFlushTimer;
+  bool m_textFlushScheduled = false;
+  wxString m_textPending;
+  void QueueTextAppend(const wxString &s);
+  void FlushPendingText(bool force = false);
+  void OnTextFlushTimer(wxTimerEvent &);
+
+  // plot (lazy)
+  ArduinoPlotView *m_plotView = nullptr;
+  std::unique_ptr<ArduinoPlotParser> m_plotParser;
+  bool m_plotStarted = false;
+
+  // buffering for plot line parsing
+  std::string m_plotLineBuf;
+  std::vector<BufferedPlotLine> m_pausedPlotBuffer;
+
+  // --- timestamps state ---
+  bool m_tsAtLineStart = true;
+  bool m_tsPending = false;
+  time_t m_tsLastPrintedSec = (time_t)-1;
+  time_t m_tsPendingSec = (time_t)-1;
 };

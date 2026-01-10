@@ -615,25 +615,7 @@ wxFileConfig *ArduinoEditorFrame::OpenWorkspaceConfig() {
     return nullptr;
   }
 
-  // ensure <sketchdir>/.ardedit exists
-  wxString sketchDir = wxString::FromUTF8(arduinoCli->GetSketchPath());
-  wxFileName dirFn(sketchDir, wxEmptyString);
-  dirFn.AppendDir(wxT(".ardedit"));
-  wxString dirPath = dirFn.GetPath();
-
-  if (!wxDirExists(dirPath)) {
-    wxFileName::Mkdir(dirPath, wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
-  }
-
-  dirFn.SetFullName(wxT("workspace.ini"));
-
-  // local file only
-  return new wxFileConfig(
-      wxEmptyString,
-      wxEmptyString,
-      dirFn.GetFullPath(),
-      wxEmptyString,
-      wxCONFIG_USE_LOCAL_FILE);
+  return ::OpenWorkspaceConfig(arduinoCli->GetSketchPath());
 }
 
 void ArduinoEditorFrame::OnClangArgsReady(wxThreadEvent &event) {
@@ -1494,7 +1476,7 @@ void ArduinoEditorFrame::FinalizeCurrentAction(bool successful) {
           if (!config->Read(wxT("CompileSuccessDialog"), &showDialog)) {
             showDialog = true;
           }
-          
+
           if (showDialog) {
             auto memUsage = arduinoCli->GetLastCompileUsage();
             wxString infoText;
@@ -1503,24 +1485,24 @@ void ArduinoEditorFrame::FinalizeCurrentAction(bool successful) {
                   _("Sketch uses %lld bytes (%d%%) of program storage space. Maximum is %lld bytes.\n"),
                   memUsage.flashUsed, std::max(0, memUsage.flashPct), memUsage.flashMax);
             }
-          
+
             if (memUsage.ramUsed >= 0 && memUsage.ramPct >= 0 && memUsage.ramFree >= 0 && memUsage.ramMax >= 0) {
               infoText += wxString::Format(
-                 _("Global variables use %lld bytes (%d%%) of dynamic memory, leaving %lld bytes for local variables. Maximum is %lld bytes.\n"),
-                 memUsage.ramUsed, memUsage.ramPct, memUsage.ramFree, memUsage.ramMax);
+                  _("Global variables use %lld bytes (%d%%) of dynamic memory, leaving %lld bytes for local variables. Maximum is %lld bytes.\n"),
+                  memUsage.ramUsed, memUsage.ramPct, memUsage.ramFree, memUsage.ramMax);
             }
-           
+
             if (!infoText.IsEmpty()) {
               infoText = _("Build successful.\n\t\n") + infoText;
-           
-               wxRichMessageDialog dlg(this, infoText, _("Information"), wxOK | wxICON_INFORMATION);
-               dlg.ShowCheckBox(_("Don't show again."));
-               dlg.ShowModal();
-           
-               if (dlg.IsCheckBoxChecked()) {
-                 config->Write (wxT("CompileSuccessDialog"), false);
-                 config->Flush();
-               }
+
+              wxRichMessageDialog dlg(this, infoText, _("Information"), wxOK | wxICON_INFORMATION);
+              dlg.ShowCheckBox(_("Don't show again."));
+              dlg.ShowModal();
+
+              if (dlg.IsCheckBoxChecked()) {
+                config->Write(wxT("CompileSuccessDialog"), false);
+                config->Flush();
+              }
             }
           }
         }
@@ -3610,11 +3592,13 @@ void ArduinoEditorFrame::OnOpenSerialMonitor(wxCommandEvent &) {
   }
 
   wxString portName = wxString::FromUTF8(arduinoCli->GetSerialPort());
-  long baud = 115200;
+  long baud = 115200; // XXX
 
   if (!m_serialMonitor) {
     if (CanPerformAction(openserialmon, true)) {
-      m_serialMonitor = new ArduinoSerialMonitorFrame(this, config, portName, baud);
+      wxFileConfig *sketchConfig = OpenWorkspaceConfig();
+
+      m_serialMonitor = new ArduinoSerialMonitorFrame(this, config, sketchConfig, portName, baud);
       m_serialMonitor->Show();
       FinalizeCurrentAction(true);
     }

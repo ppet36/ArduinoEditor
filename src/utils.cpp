@@ -2229,3 +2229,76 @@ void KillUnfocusedColor(wxGenericTreeCtrl *tree) {
       prev->SetFocus();
   });
 }
+
+wxFileConfig *OpenWorkspaceConfig(const std::string &sketchPath) {
+  // ensure <sketchdir>/.ardedit exists
+  wxString sketchDir = wxString::FromUTF8(sketchPath);
+  wxFileName dirFn(sketchDir, wxEmptyString);
+  dirFn.AppendDir(wxT(".ardedit"));
+  wxString dirPath = dirFn.GetPath();
+
+  if (!wxDirExists(dirPath)) {
+    wxFileName::Mkdir(dirPath, wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
+  }
+
+  dirFn.SetFullName(wxT("workspace.ini"));
+
+  // local file only
+  return new wxFileConfig(
+      wxEmptyString,
+      wxEmptyString,
+      dirFn.GetFullPath(),
+      wxEmptyString,
+      wxCONFIG_USE_LOCAL_FILE);
+}
+
+// Join: ["a","b","c"] -> "a|b|c"
+wxString JoinWxStrings(const std::vector<wxString> &items, wxChar sep) {
+  wxString out;
+  if (items.empty())
+    return out;
+
+  // Rough reserve: sum of lengths + separators
+  size_t total = 0;
+  for (const auto &s : items)
+    total += s.length();
+  total += (items.size() > 0 ? items.size() - 1 : 0);
+  out.reserve(total);
+
+  for (size_t i = 0; i < items.size(); ++i) {
+    if (i)
+      out.Append(sep);
+    out += items[i];
+  }
+  return out;
+}
+
+// Split: "a|b|c" -> ["a","b","c"]
+std::vector<wxString> SplitWxString(const wxString &s, wxChar sep, bool trim, bool skipEmpty) {
+  std::vector<wxString> out;
+  if (s.empty())
+    return out;
+
+  wxString cur;
+  cur.reserve(s.length());
+
+  auto push_cur = [&]() {
+    wxString part = cur;
+    if (trim)
+      part.Trim(true).Trim(false);
+    if (!skipEmpty || !part.empty())
+      out.push_back(part);
+    cur.clear();
+  };
+
+  for (wxUniChar ch : s) {
+    if (ch == sep) {
+      push_cur();
+    } else {
+      cur.Append((wxChar)ch.GetValue());
+    }
+  }
+  push_cur();
+
+  return out;
+}

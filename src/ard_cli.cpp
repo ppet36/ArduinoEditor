@@ -2140,7 +2140,7 @@ bool ArduinoCli::LoadBoardParameters(std::string &errorOut) {
 
           APP_DEBUG_LOG("CLI: error = %s", error.c_str());
         }
-      } catch(...) {
+      } catch (...) {
         // Ignore
       }
     }
@@ -3050,8 +3050,8 @@ void ArduinoCli::TryParseCompileUsageLine(const std::string &line) {
                     &used, &pct, &max) == 3) {
       std::lock_guard<std::mutex> lk(m_usageMtx);
       m_lastCompileUsage.flashUsed = used;
-      m_lastCompileUsage.flashPct  = pct;
-      m_lastCompileUsage.flashMax  = max;
+      m_lastCompileUsage.flashPct = pct;
+      m_lastCompileUsage.flashMax = max;
     }
     return;
   }
@@ -3068,9 +3068,9 @@ void ArduinoCli::TryParseCompileUsageLine(const std::string &line) {
                     &used, &pct, &free, &max) == 4) {
       std::lock_guard<std::mutex> lk(m_usageMtx);
       m_lastCompileUsage.ramUsed = used;
-      m_lastCompileUsage.ramPct  = pct;
+      m_lastCompileUsage.ramPct = pct;
       m_lastCompileUsage.ramFree = free;
-      m_lastCompileUsage.ramMax  = max;
+      m_lastCompileUsage.ramMax = max;
     }
     return;
   }

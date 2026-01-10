@@ -20,27 +20,143 @@
 #include "ard_ap.hpp"
 #include "ard_ed_frm.hpp"
 #include "ard_ev.hpp"
+#include "ard_plotpars.hpp"
+#include "ard_plotview.hpp"
 #include "ard_setdlg.hpp"
 #include "utils.hpp"
 #include <errno.h>
+#include <memory>
 #include <wx/datetime.h>
+#include <wx/file.h>
+#include <wx/filedlg.h>
+#include <wx/notebook.h>
+#include <wx/stc/stc.h>
+#include <wx/wupdlock.h>
 
 #if defined(__unix__) || defined(__APPLE__)
 #include <fcntl.h>
+#include <sys/select.h>
+#include <sys/time.h>
 #include <termios.h>
 #include <unistd.h>
 #else
 #include <windows.h>
 #endif
 
+// The devil knows why I wrote it in CamelCase but I'll leave it at that :)
 enum {
   ID_BaudCombo = wxID_HIGHEST + 100,
   ID_SendButton,
   ID_InputCtrl,
   ID_LineEndingCombo,
   ID_PauseButton,
-  ID_ClearButton
+  ID_ClearButton,
+  ID_OutputMenuCopy,
+  ID_OutputMenuSaveSelection,
+  ID_OutputMenuSaveAll,
+  ID_OutputMenuClear
 };
+
+// Limits to prevent uncontrollable growth.
+namespace {
+constexpr int kMaxOutputLines = 20000;              // safe number of rows
+constexpr int kMaxOutputChars = 4 * 1024 * 1024;    // cca 4 MB inner stc buffer in bytes
+constexpr size_t kMaxPausedTextChars = 1024 * 1024; // 1 MB paused text buffer (in "wxChar" length)
+constexpr size_t kMaxPausedPlotLines = 50000;       // paused plot buffer limie
+} // namespace
+
+#if defined(__unix__) || defined(__APPLE__)
+
+struct BaudMapItem {
+  long baud;
+  speed_t speed;
+};
+
+static const BaudMapItem kBaudMap[] = {
+#ifdef B1200
+    {1200, B1200},
+#endif
+#ifdef B2400
+    {2400, B2400},
+#endif
+#ifdef B4800
+    {4800, B4800},
+#endif
+#ifdef B9600
+    {9600, B9600},
+#endif
+#ifdef B19200
+    {19200, B19200},
+#endif
+#ifdef B38400
+    {38400, B38400},
+#endif
+#ifdef B57600
+    {57600, B57600},
+#endif
+#ifdef B115200
+    {115200, B115200},
+#endif
+#ifdef B230400
+    {230400, B230400},
+#endif
+#ifdef B460800
+    {460800, B460800},
+#endif
+#ifdef B500000
+    {500000, B500000},
+#endif
+#ifdef B576000
+    {576000, B576000},
+#endif
+#ifdef B921600
+    {921600, B921600},
+#endif
+#ifdef B1000000
+    {1000000, B1000000},
+#endif
+#ifdef B1152000
+    {1152000, B1152000},
+#endif
+#ifdef B1500000
+    {1500000, B1500000},
+#endif
+#ifdef B2000000
+    {2000000, B2000000},
+#endif
+#ifdef B2500000
+    {2500000, B2500000},
+#endif
+#ifdef B3000000
+    {3000000, B3000000},
+#endif
+#ifdef B3500000
+    {3500000, B3500000},
+#endif
+#ifdef B4000000
+    {4000000, B4000000},
+#endif
+};
+
+static bool TryGetSpeedForBaud(long baud, speed_t &outSpeed) {
+  for (const auto &it : kBaudMap) {
+    if (it.baud == baud) {
+      outSpeed = it.speed;
+      return true;
+    }
+  }
+  return false;
+}
+
+static wxArrayString BuildBaudChoicesPosix() {
+  wxArrayString out;
+  for (const auto &it : kBaudMap) {
+    out.Add(wxString::Format(wxT("%ld"), it.baud));
+  }
+  return out;
+}
+
+#endif
 
 SerialMonitorWorker::SerialMonitorWorker(wxEvtHandler *handler,
                                          const wxString &port,
@@ -85,25 +201,9 @@ bool SerialMonitorWorker::OpenPort() {
   cfmakeraw(&tio);
 
   speed_t speed;
-  switch (m_baud) {
-    case 9600:
-      speed = B9600;
-      break;
-    case 19200:
-      speed = B19200;
-      break;
-    case 38400:
-      speed = B38400;
-      break;
-    case 57600:
-      speed = B57600;
-      break;
-    case 115200:
-      speed = B115200;
-      break;
-    default:
-      speed = B115200;
-      break;
+  if (!TryGetSpeedForBaud(m_baud, speed)) {
+    // fallback
+    speed = B115200;
   }
 
   cfsetispeed(&tio, speed);
@@ -112,11 +212,6 @@ bool SerialMonitorWorker::OpenPort() {
   tio.c_cflag |= (CLOCAL | CREAD);
   tio.c_cflag &= ~CSIZE;
   tio.c_cflag |= CS8;
-
-  if (tcsetattr(m_fd, TCSANOW, &tio) != 0) {
-    ClosePort();
-    return false;
-  }
 
   if (tcsetattr(m_fd, TCSANOW, &tio) != 0) {
     ClosePort();
@@ -278,14 +373,75 @@ wxThread::ExitCode SerialMonitorWorker::Entry() {
     }
 
 #if defined(__unix__) || defined(__APPLE__)
-    ssize_t n = ::read(m_fd, buf, BUF_SIZE);
+    // Copy fd under lock so InterruptIo()/ClosePort() can safely invalidate it.
+    int fd = -1;
+    bool stopping = false;
+    {
+      wxMutexLocker lock(m_mutex);
+      fd = m_fd;
+      stopping = m_stopRequested;
+    }
+
+    // If fd is already invalid, treat it as normal shutdown when stopping.
+    if (fd < 0) {
+      if (stopping) {
+        break;
+      }
+      auto *evt = new wxThreadEvent(wxEVT_SERIAL_MONITOR_ERROR);
+      evt->SetString(_("Serial port handle invalid"));
+      wxQueueEvent(m_handler, evt);
+      break;
+    }
+
+    fd_set rfds;
+    FD_ZERO(&rfds);
+    FD_SET(fd, &rfds);
+
+    // Timeout so we periodically re-check stop flag.
+    timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 200 * 1000; // 200ms
+
+    int rc = ::select(fd + 1, &rfds, nullptr, nullptr, &tv);
+    if (rc == 0) {
+      // timeout
+      continue;
+    }
+    if (rc < 0) {
+      if (errno == EINTR) {
+        continue;
+      }
+
+      // If we're stopping and fd was closed from another thread, select() may fail with EBADF.
+      {
+        wxMutexLocker lock(m_mutex);
+        stopping = m_stopRequested;
+      }
+      if (stopping && (errno == EBADF || errno == EIO)) {
+        break;
+      }
+
+      auto *evt = new wxThreadEvent(wxEVT_SERIAL_MONITOR_ERROR);
+      evt->SetString(wxString::Format(_("Serial select error: %d"), errno));
+      wxQueueEvent(m_handler, evt);
+      break;
+    }
+
+    if (!FD_ISSET(fd, &rfds)) {
+      continue;
+    }
+
+    ssize_t n = ::read(fd, buf, BUF_SIZE);
     if (n > 0) {
       wxString chunk(buf, wxConvUTF8, (int)n);
       auto *evt = new wxThreadEvent(wxEVT_SERIAL_MONITOR_DATA);
       evt->SetString(chunk);
+
+      time_t nowSec = wxDateTime::Now().GetTicks();
+      evt->SetPayload<time_t>(nowSec);
+
       wxQueueEvent(m_handler, evt);
     } else if (n == 0) {
-      // EOF - port closed?
       auto *evt = new wxThreadEvent(wxEVT_SERIAL_MONITOR_ERROR);
       evt->SetString(_("Serial port closed"));
       wxQueueEvent(m_handler, evt);
@@ -295,10 +451,19 @@ wxThread::ExitCode SerialMonitorWorker::Entry() {
         continue;
       }
       if (errno == EAGAIN || errno == EWOULDBLOCK) {
-        // nothing to read - wait a moment and check the stop flag
-        wxThread::Sleep(10);
+        // Rare after select(), but harmless.
         continue;
       }
+
+      // If we're stopping and InterruptIo()/ClosePort() closed fd, read() often returns EBADF/EIO.
+      {
+        wxMutexLocker lock(m_mutex);
+        stopping = m_stopRequested;
+      }
+      if (stopping && (errno == EBADF || errno == EIO)) {
+        break;
+      }
+
       auto *evt = new wxThreadEvent(wxEVT_SERIAL_MONITOR_ERROR);
       evt->SetString(wxString::Format(_("Serial read error: %d"), errno));
       wxQueueEvent(m_handler, evt);
@@ -319,6 +484,10 @@ wxThread::ExitCode SerialMonitorWorker::Entry() {
       wxString chunk(buf, wxConvUTF8, (int)bytesRead);
       auto *evt = new wxThreadEvent(wxEVT_SERIAL_MONITOR_DATA);
       evt->SetString(chunk);
+
+      time_t nowSec = wxDateTime::Now().GetTicks();
+      evt->SetPayload<time_t>(nowSec);
+
       wxQueueEvent(m_handler, evt);
     } else if (!ok) {
       DWORD err = GetLastError();
@@ -341,8 +510,11 @@ wxThread::ExitCode SerialMonitorWorker::Entry() {
   return nullptr;
 }
 
+// -----------------------------------------------------------------------------------------------
+
 ArduinoSerialMonitorFrame::ArduinoSerialMonitorFrame(wxWindow *parent,
                                                      wxConfigBase *config,
+                                                     wxConfigBase *sketchConfig,
                                                      const wxString &portName,
                                                      long baudRate)
     : wxFrame(parent,
@@ -352,8 +524,10 @@ ArduinoSerialMonitorFrame::ArduinoSerialMonitorFrame(wxWindow *parent,
               wxSize(700, 500),
               wxDEFAULT_FRAME_STYLE | wxRESIZE_BORDER),
       m_config(config),
+      m_sketchConfig(sketchConfig),
       m_portName(portName),
-      m_baudRate(baudRate) {
+      m_baudRate(baudRate),
+      m_textFlushTimer(this) {
   CreateControls();
 
   // ---- Bindings for GUI events ----
@@ -371,6 +545,14 @@ ArduinoSerialMonitorFrame::ArduinoSerialMonitorFrame(wxWindow *parent,
   Bind(wxEVT_SERIAL_MONITOR_DATA, &ArduinoSerialMonitorFrame::OnData, this);
   Bind(wxEVT_SERIAL_MONITOR_ERROR, &ArduinoSerialMonitorFrame::OnError, this);
 
+  m_textFlushScheduled = false;
+  Bind(wxEVT_TIMER, &ArduinoSerialMonitorFrame::OnTextFlushTimer, this);
+
+  // ---- User scrolling ----
+  m_outputCtrl->Bind(wxEVT_STC_UPDATEUI, &ArduinoSerialMonitorFrame::OnOutputUpdateUI, this);
+
+  m_notebook->Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, &ArduinoSerialMonitorFrame::OnNotebookPageChanged, this);
+
   // default LF
   m_lineEndingMode = LineEndingMode::LF;
 
@@ -381,12 +563,42 @@ ArduinoSerialMonitorFrame::~ArduinoSerialMonitorFrame() {
   StopWorker();
 }
 
+void ArduinoSerialMonitorFrame::SetupOutputCtrl(const EditorSettings &settings) {
+  EditorColorScheme c = settings.GetColors();
+
+  // Serial output behaves like a log: no wrapping and no undo stack.
+  m_outputCtrl->SetWrapMode(wxSTC_WRAP_NONE);
+  m_outputCtrl->SetUndoCollection(false);
+  m_outputCtrl->SetReadOnly(true);
+
+  // Hide all margins (line numbers, folding, etc.)
+  for (int i = 0; i < 5; ++i) {
+    m_outputCtrl->SetMarginWidth(i, 0);
+  }
+
+  // ---- Default style: fonts + colors ----
+  m_outputCtrl->StyleSetFont(wxSTC_STYLE_DEFAULT, settings.GetFont());
+  m_outputCtrl->StyleSetForeground(wxSTC_STYLE_DEFAULT, c.text);
+  m_outputCtrl->StyleSetBackground(wxSTC_STYLE_DEFAULT, c.background);
+
+  m_outputCtrl->StyleClearAll();
+
+  m_outputCtrl->SetBackgroundColour(c.background);
+  m_outputCtrl->SetCaretForeground(c.text);
+}
+
 void ArduinoSerialMonitorFrame::CreateControls() {
-  if (m_config) {
-    long savedBaud = 0;
-    if (m_config->Read(wxT("SerialMonitorBaud"), &savedBaud) && savedBaud > 0) {
-      m_baudRate = savedBaud;
+  bool showTimestamps = false;
+
+  if (m_sketchConfig) {
+    if (m_baudRate == 0) {
+      long savedBaud = 0;
+      if (m_sketchConfig->Read(wxT("SerialMonitorBaud"), &savedBaud) && savedBaud > 0) {
+        m_baudRate = savedBaud;
+      }
     }
+
+    m_sketchConfig->Read(wxT("SerialShowTimestamps"), &showTimestamps);
   }
 
   auto *topSizer = new wxBoxSizer(wxVERTICAL);
@@ -398,12 +610,24 @@ void ArduinoSerialMonitorFrame::CreateControls() {
                    0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
 
   wxArrayString baudChoices;
+#if defined(__unix__) || defined(__APPLE__)
+  baudChoices = BuildBaudChoicesPosix();
+#else
+  // Windows
+  baudChoices.Add(wxT("1200"));
+  baudChoices.Add(wxT("2400"));
+  baudChoices.Add(wxT("4800"));
   baudChoices.Add(wxT("9600"));
   baudChoices.Add(wxT("19200"));
   baudChoices.Add(wxT("38400"));
   baudChoices.Add(wxT("57600"));
   baudChoices.Add(wxT("115200"));
   baudChoices.Add(wxT("230400"));
+  baudChoices.Add(wxT("460800"));
+  baudChoices.Add(wxT("921600"));
+  baudChoices.Add(wxT("1000000"));
+  baudChoices.Add(wxT("2000000"));
+#endif
 
   m_baudCombo = new wxComboBox(this,
                                ID_BaudCombo,
@@ -447,7 +671,7 @@ void ArduinoSerialMonitorFrame::CreateControls() {
   m_autoscrollCheck->SetValue(true);
 
   m_timestampCheck = new wxCheckBox(this, wxID_ANY, _("Show timestamps"));
-  m_timestampCheck->SetValue(false);
+  m_timestampCheck->SetValue(showTimestamps);
 
   headerSizer->AddStretchSpacer(1);
   headerSizer->Add(m_autoscrollCheck, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
@@ -462,19 +686,153 @@ void ArduinoSerialMonitorFrame::CreateControls() {
 
   topSizer->Add(headerSizer, 0, wxEXPAND | wxALL, 8);
 
-  // Text output
-  m_outputCtrl = new wxTextCtrl(this,
-                                wxID_ANY,
-                                wxEmptyString,
-                                wxDefaultPosition,
-                                wxDefaultSize,
-                                wxTE_MULTILINE | wxTE_READONLY | wxTE_DONTWRAP);
-  topSizer->Add(m_outputCtrl, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 8);
+  // Output notebook (Log + Plot)
+  m_notebook = new wxNotebook(this, wxID_ANY);
+
+  // --- Log page ---
+  m_logPage = new wxPanel(m_notebook);
+  auto *logSizer = new wxBoxSizer(wxVERTICAL);
+
+  m_outputCtrl = new wxStyledTextCtrl(m_logPage, wxID_ANY, wxDefaultPosition,
+                                      wxDefaultSize, wxBORDER_NONE);
 
   EditorSettings settings;
   settings.Load(m_config);
+  SetupOutputCtrl(settings);
 
-  m_outputCtrl->SetFont(settings.GetFont());
+  // --- Custom popup menu for the output control ---
+  m_outputCtrl->UsePopUp(false); // disable the default STC popup menu
+
+  m_outputCtrl->Bind(wxEVT_CONTEXT_MENU, [this](wxContextMenuEvent &e) {
+    if (!m_outputCtrl)
+      return;
+
+    const bool hasSel = (m_outputCtrl->GetSelectionStart() != m_outputCtrl->GetSelectionEnd());
+
+    wxMenu menu;
+    AddMenuItemWithArt(&menu,
+                       ID_OutputMenuCopy,
+                       _("Copy\tCtrl+C"),
+                       wxEmptyString,
+                       wxAEArt::Copy);
+    menu.AppendSeparator();
+    AddMenuItemWithArt(&menu,
+                       ID_OutputMenuSaveSelection,
+                       _("Save selection..."),
+                       wxEmptyString,
+                       wxAEArt::FileSave);
+    AddMenuItemWithArt(&menu,
+                       ID_OutputMenuSaveAll,
+                       _("Save all..."),
+                       wxEmptyString,
+                       wxAEArt::FileSaveAs);
+    menu.AppendSeparator();
+    AddMenuItemWithArt(&menu,
+                       ID_OutputMenuClear,
+                       _("Clear"),
+                       wxEmptyString,
+                       wxAEArt::Delete);
+
+    menu.Enable(ID_OutputMenuCopy, hasSel);
+    menu.Enable(ID_OutputMenuSaveSelection, hasSel);
+
+    auto sanitizeFilePart = [](wxString s) {
+      for (wxUniCharRef ch : s) {
+        if (!wxIsalnum(ch))
+          ch = wxChar('_');
+      }
+      if (s.length() > 32)
+        s = s.Mid(0, 32);
+      return s;
+    };
+
+    auto saveText = [this, &sanitizeFilePart](const wxString &text, bool selectionOnly) {
+      if (text.empty()) {
+        wxBell();
+        return;
+      }
+
+      wxString base = sanitizeFilePart(m_portName);
+      if (base.empty())
+        base = wxT("serial");
+
+      wxString defaultName = selectionOnly
+                                 ? wxString::Format(wxT("%s_selection.txt"), base)
+                                 : wxString::Format(wxT("%s.log"), base);
+
+      wxFileDialog dlg(this,
+                       selectionOnly ? _("Save selection...") : _("Save all..."),
+                       wxEmptyString,
+                       defaultName,
+                       _("Text files (*.txt)|*.txt|Log files (*.log)|*.log|All files (*.*)|*.*"),
+                       wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+
+      if (dlg.ShowModal() != wxID_OK)
+        return;
+
+      wxFile file;
+      if (!file.Create(dlg.GetPath(), true)) {
+        wxLogWarning(_("Failed to save file: %s"), dlg.GetPath());
+        return;
+      }
+
+      const wxCharBuffer buf = text.ToUTF8();
+      if (buf.data() && buf.length() > 0) {
+        file.Write(buf.data(), buf.length());
+      }
+      file.Close();
+    };
+
+    // Handlers
+    menu.Bind(wxEVT_MENU, [this](wxCommandEvent &) {
+      if (m_outputCtrl)
+        m_outputCtrl->Copy(); }, ID_OutputMenuCopy);
+
+    menu.Bind(wxEVT_MENU, [this, &saveText](wxCommandEvent &) {
+      if (!m_outputCtrl)
+        return;
+      saveText(m_outputCtrl->GetSelectedText(), true); }, ID_OutputMenuSaveSelection);
+
+    menu.Bind(wxEVT_MENU, [this, &saveText](wxCommandEvent &) {
+      if (!m_outputCtrl)
+        return;
+      saveText(m_outputCtrl->GetText(), false); }, ID_OutputMenuSaveAll);
+
+    menu.Bind(wxEVT_MENU, [this](wxCommandEvent &) {
+      wxCommandEvent dummy(wxEVT_BUTTON, ID_ClearButton);
+      dummy.SetEventObject(this);
+      OnClear(dummy); // same handler as the Clear button
+    },
+              ID_OutputMenuClear);
+
+    wxPoint pt = e.GetPosition(); // screen coords
+    if (pt == wxDefaultPosition) {
+      pt = wxGetMousePosition();
+    }
+    pt = m_outputCtrl->ScreenToClient(pt);
+    m_outputCtrl->PopupMenu(&menu, pt);
+  });
+
+  // ------
+
+  logSizer->Add(m_outputCtrl, 1, wxEXPAND);
+
+  m_logPage->SetSizer(logSizer);
+
+  m_notebook->AddPage(m_logPage, _("Log"), true);
+
+  // --- Plot page (created lazily on first activation) ---
+  m_plotPage = new wxPanel(m_notebook);
+  auto *plotSizer = new wxBoxSizer(wxVERTICAL);
+  plotSizer->Add(new wxStaticText(m_plotPage,
+                                  wxID_ANY,
+                                  _("Open this tab to start plotting serial values.")),
+                 1, wxALIGN_CENTER | wxALL, 12);
+  m_plotPage->SetSizer(plotSizer);
+
+  m_notebook->AddPage(m_plotPage, _("Plot"), false);
+
+  topSizer->Add(m_notebook, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 8);
 
   // Bottom line - input + send
   auto *bottomSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -517,20 +875,55 @@ void ArduinoSerialMonitorFrame::StartWorker() {
 void ArduinoSerialMonitorFrame::StopWorker() {
   if (m_worker) {
     m_worker->RequestStop();
+    m_worker->InterruptIo();
 
     // wait until the thread terminates
     if (m_worker->IsRunning()) {
       m_worker->Wait(); // blocks until Entry() finishes
     }
 
+    delete m_worker;
     m_worker = nullptr;
   }
+}
+
+void SerialMonitorWorker::InterruptIo() {
+#ifndef __WXMSW__
+  wxMutexLocker lock(m_mutex);
+  if (m_fd >= 0) {
+    ::close(m_fd);
+    m_fd = -1;
+  }
+#else
+  wxMutexLocker lock(m_mutex);
+  HANDLE h = static_cast<HANDLE>(m_handle);
+  if (h) {
+    CloseHandle(h);
+    m_handle = nullptr;
+  }
+#endif
 }
 
 void ArduinoSerialMonitorFrame::Close() {
   StopWorker();
 
   SaveWindowSize(wxT("SerialMonitorFrame"), this, m_config);
+
+  if (m_sketchConfig) {
+    if (m_plotView) {
+      m_sketchConfig->Write(wxT("SerialPlotDuration"), m_plotView->GetTimeWindowMs());
+      m_sketchConfig->Write(wxT("SerialPlotHiddenSignals"), JoinWxStrings(m_plotView->GetHiddenSignals(), wxChar('\t')));
+      m_sketchConfig->Write(wxT("SerialFixedYRange"), m_plotView->HasFixedYRange());
+      if (m_plotView->HasFixedYRange()) {
+        double yMin, yMax;
+        m_plotView->GetFixedYRange(&yMin, &yMax);
+        m_sketchConfig->Write(wxT("SerialFixedYRangeMin"), yMin);
+        m_sketchConfig->Write(wxT("SerialFixedYRangeMax"), yMax);
+      }
+    }
+    m_sketchConfig->Write(wxT("SerialShowTimestamps"), m_timestampCheck->IsChecked());
+    m_sketchConfig->Flush();
+  }
 
   ArduinoEditorFrame *f = wxDynamicCast(GetParent(), ArduinoEditorFrame);
   if (f) {
@@ -598,48 +991,86 @@ void ArduinoSerialMonitorFrame::OnLineEndingChanged(wxCommandEvent &WXUNUSED(eve
 }
 
 void ArduinoSerialMonitorFrame::OnPause(wxCommandEvent &WXUNUSED(event)) {
-  // toggle state
   m_paused = !m_paused;
 
   if (m_paused) {
-    // transition to pause
     if (m_pauseButton) {
       m_pauseButton->SetLabel(_("Resume"));
-      // soft red
       m_pauseButton->SetBackgroundColour(wxColour(255, 200, 200));
       m_pauseButton->Refresh();
     }
-  } else {
-    // return from pause -> flush buffer
-    if (m_pauseButton) {
-      m_pauseButton->SetLabel(_("Pause"));
-      // return default
-      m_pauseButton->SetBackgroundColour(wxNullColour);
-      m_pauseButton->Refresh();
+    return;
+  }
+
+  // --- resume ---
+  if (m_pauseButton) {
+    m_pauseButton->SetLabel(_("Pause"));
+    m_pauseButton->SetBackgroundColour(wxNullColour);
+    m_pauseButton->Refresh();
+  }
+
+  // 1) Flush text in one shot
+  bool didAppendText = false;
+  if (m_outputCtrl && !m_pausedBuffer.empty()) {
+    wxString all;
+    for (const auto &s : m_pausedBuffer) {
+      all += s;
     }
 
-    if (m_outputCtrl && !m_pausedBuffer.empty()) {
-      for (const auto &s : m_pausedBuffer) {
-        m_outputCtrl->AppendText(s);
-      }
-      m_pausedBuffer.clear();
+    QueueTextAppend(all);
+    m_pausedBuffer.clear();
+    m_pausedTextChars = 0;
+    didAppendText = true;
+  }
 
-      if (m_autoscrollCheck->GetValue()) {
-        long lastPos = m_outputCtrl->GetLastPosition();
-        m_outputCtrl->ShowPosition(lastPos);
-      }
-    }
+  // 2) Flush plot batch (independent of text)
+  if (m_plotStarted && m_plotParser && m_plotView && !m_pausedPlotBuffer.empty()) {
+    wxWindowUpdateLocker lock(m_plotView);
+    m_plotParser->ApplyBatch(m_pausedPlotBuffer);
+    m_pausedPlotBuffer.clear();
+  }
+
+  // 3) Autoscroll
+  if (didAppendText && m_autoscrollCheck && m_autoscrollCheck->GetValue()) {
+    ScrollOutputToEnd();
   }
 }
 
 void ArduinoSerialMonitorFrame::OnClear(wxCommandEvent &WXUNUSED(event)) {
-  if (m_outputCtrl) {
-    m_outputCtrl->Clear();
+  switch (m_notebook->GetSelection()) {
+    case 0:
+      if (m_outputCtrl) {
+        m_outputCtrl->SetReadOnly(false);
+        m_outputCtrl->ClearAll();
+        m_outputCtrl->SetReadOnly(true);
+      }
+      if (m_textFlushTimer.IsRunning())
+        m_textFlushTimer.Stop();
+      m_textFlushScheduled = false;
+      m_textPending.clear();
+      m_pendingCR = false;
+      m_pausedBuffer.clear();
+      m_tsAtLineStart = true;
+      m_tsPending = false;
+      m_tsLastPrintedSec = (time_t)-1;
+      m_tsPendingSec = (time_t)-1;
+      break;
+    case 1:
+      if (m_plotView) {
+        m_plotView->Clear();
+      }
+      if (m_plotParser) {
+        m_plotParser->Reset();
+      }
+      m_plotLineBuf.clear();
+      m_pausedPlotBuffer.clear();
+      break;
+    default:
+      break;
   }
 }
 
 void ArduinoSerialMonitorFrame::OnInputEnter(wxCommandEvent &event) {
-  (void)event;
   OnSend(event);
 }
 
@@ -652,60 +1083,512 @@ void ArduinoSerialMonitorFrame::OnBaudChanged(wxCommandEvent &WXUNUSED(event)) {
 
   m_baudRate = baud;
 
-  if (m_config) {
-    m_config->Write(wxT("SerialMonitorBaud"), m_baudRate);
-    m_config->Flush();
+  if (m_sketchConfig) {
+    m_sketchConfig->Write(wxT("SerialMonitorBaud"), m_baudRate);
+    m_sketchConfig->Flush();
   }
 
   // simplest: restart the worker -> reconnect with a new baud rate
   StartWorker();
 }
 
+void ArduinoSerialMonitorFrame::OnNotebookPageChanged(wxBookCtrlEvent &event) {
+  if (m_notebook && m_plotPage) {
+    int sel = event.GetSelection();
+    if (sel != wxNOT_FOUND && m_notebook->GetPage((size_t)sel) == m_plotPage) {
+      EnsurePlotterStarted();
+    }
+  }
+  event.Skip();
+}
+
+void ArduinoSerialMonitorFrame::EnsurePlotterStarted() {
+  if (m_plotStarted) {
+    return;
+  }
+  m_plotStarted = true;
+
+  if (!m_plotPage) {
+    return;
+  }
+
+  // Replace placeholder content with the actual plot view.
+  m_plotPage->Freeze();
+
+  m_plotPage->DestroyChildren();
+
+  auto *sizer = new wxBoxSizer(wxVERTICAL);
+  m_plotView = new ArduinoPlotView(m_plotPage);
+  sizer->Add(m_plotView, 1, wxEXPAND);
+
+  wxString hs;
+  if (m_sketchConfig->Read(wxT("SerialPlotHiddenSignals"), &hs, wxEmptyString)) {
+    m_plotView->SetHiddenSignals(SplitWxString(hs, wxChar('\t')));
+  }
+  double pd;
+  if (m_sketchConfig->Read(wxT("SerialPlotDuration"), &pd, 10000.0)) {
+    m_plotView->SetTimeWindowMs(pd);
+  }
+
+  bool fyr;
+  if (m_sketchConfig->Read(wxT("SerialFixedYRange"), &fyr, false)) {
+    if (fyr) {
+      double yMin, yMax;
+      if (m_sketchConfig->Read(wxT("SerialFixedYRangeMin"), &yMin, 0.0) && m_sketchConfig->Read(wxT("SerialFixedYRangeMax"), &yMax, 1023.0)) {
+        m_plotView->SetFixedYRange(fyr, yMin, yMax);
+      }
+    }
+  }
+
+  m_plotPage->SetSizer(sizer);
+  m_plotPage->Layout();
+
+  if (m_notebook) {
+    m_notebook->Layout();
+  }
+
+  m_plotParser = std::make_unique<ArduinoPlotParser>(m_plotView);
+
+  // Reset parser/buffers on first start so it locks onto format from "now".
+  m_plotLineBuf.clear();
+  m_pausedPlotBuffer.clear();
+
+  m_plotPage->Thaw();
+}
+
+void ArduinoSerialMonitorFrame::FeedPlotChunkUtf8(const std::string &chunkUtf8, double time) {
+  if (!m_plotParser) {
+    return;
+  }
+
+  // Hard cap to avoid pathological growth on missing newlines.
+  if (chunkUtf8.size() > 16 * 1024) {
+    // If someone spams a megabyte without newlines, just drop it.
+    return;
+  }
+
+  m_plotLineBuf += chunkUtf8;
+
+  // Consume complete lines
+  size_t pos = 0;
+  while ((pos = m_plotLineBuf.find('\n')) != std::string::npos) {
+    std::string line = m_plotLineBuf.substr(0, pos);
+    // Normalize any stray CR (shouldn't happen after OnData normalization, but harmless)
+    if (!line.empty() && line.back() == '\r') {
+      line.pop_back();
+    }
+
+    m_plotParser->ApplyLine(line, time);
+    m_plotLineBuf.erase(0, pos + 1);
+  }
+
+  // Keep tail bounded (in case line never ends)
+  if (m_plotLineBuf.size() > kMaxPausedPlotLines) {
+    m_plotLineBuf.erase(0, m_plotLineBuf.size() - kMaxPausedPlotLines);
+  }
+}
+
+void ArduinoSerialMonitorFrame::BufferPlotChunkUtf8(const std::string &chunkUtf8, double time) {
+  if (!m_plotParser)
+    return;
+
+  m_plotLineBuf += chunkUtf8;
+
+  size_t pos = 0;
+  while ((pos = m_plotLineBuf.find('\n')) != std::string::npos) {
+    std::string line = m_plotLineBuf.substr(0, pos);
+
+    // Normalize any stray CR
+    if (!line.empty() && line.back() == '\r')
+      line.pop_back();
+
+    // Push ONLY complete lines
+    BufferedPlotLine bpl;
+    bpl.line = std::move(line);
+    bpl.time = time;
+    m_pausedPlotBuffer.push_back(std::move(bpl));
+
+    m_plotLineBuf.erase(0, pos + 1);
+  }
+
+  // Keep tail bounded (same as FeedPlotChunkUtf8)
+  if (m_plotLineBuf.size() > kMaxPausedPlotLines) {
+    m_plotLineBuf.erase(0, m_plotLineBuf.size() - kMaxPausedPlotLines);
+  }
+}
+
+void ArduinoSerialMonitorFrame::NormalizeLineEndings(wxString &chunk) {
+  wxString out;
+  out.reserve(chunk.length() + 1);
+
+  size_t i = 0;
+
+  if (m_pendingCR) {
+    m_pendingCR = false;
+    if (i < chunk.length() && chunk[i] == '\n') {
+      i++;
+    }
+    out += '\n';
+  }
+
+  for (; i < chunk.length(); ++i) {
+    wxUniChar c = chunk[i];
+
+    if (c == '\r') {
+      if (i + 1 < chunk.length()) {
+        if (chunk[i + 1] == '\n') {
+          out += '\n';
+          i++; // skip '\n'
+        } else {
+          out += '\n';
+        }
+      } else {
+        m_pendingCR = true;
+      }
+      continue;
+    }
+
+    out += c;
+  }
+
+  chunk.swap(out);
+}
+
+void ArduinoSerialMonitorFrame::OnTextFlushTimer(wxTimerEvent &) {
+  m_textFlushScheduled = false;
+  FlushPendingText(false);
+}
+
+static int TrimStyledTextCtrl(wxStyledTextCtrl *stc, int maxLines, int maxChars, bool keepAtEnd) {
+  if (!stc)
+    return 0;
+
+  const int firstVisibleBefore = stc->GetFirstVisibleLine();
+
+  bool wasRO = stc->GetReadOnly();
+  if (wasRO)
+    stc->SetReadOnly(false);
+
+  int removedLines = 0;
+
+  // --- 1) limit rows ---
+  const int lineCount = stc->GetLineCount();
+  if (maxLines > 0 && lineCount > maxLines) {
+    removedLines = lineCount - maxLines;
+    const int cutPos = stc->PositionFromLine(removedLines);
+    stc->SetTargetStart(0);
+    stc->SetTargetEnd(cutPos);
+    stc->ReplaceTarget(wxEmptyString);
+  }
+
+  // --- 2) limit bytes ---
+  const int len = stc->GetTextLength();
+  if (maxChars > 0 && len > maxChars) {
+    const int start = len - maxChars;
+    const int cutLine = stc->LineFromPosition(start);
+    const int cutPos = stc->PositionFromLine(cutLine);
+    stc->SetTargetStart(0);
+    stc->SetTargetEnd(cutPos);
+    stc->ReplaceTarget(wxEmptyString);
+
+    removedLines = wxMax(removedLines, cutLine);
+  }
+
+  if (wasRO)
+    stc->SetReadOnly(true);
+
+  if (keepAtEnd) {
+    stc->GotoPos(stc->GetTextLength());
+    stc->EnsureCaretVisible();
+  } else if (removedLines > 0) {
+    const int newFirst = wxMax(0, firstVisibleBefore - removedLines);
+    stc->ScrollToLine(newFirst);
+  }
+
+  return removedLines;
+}
+
+void ArduinoSerialMonitorFrame::QueueTextAppend(const wxString &s) {
+  if (!m_outputCtrl || s.empty())
+    return;
+
+  m_textPending += s;
+
+  if (!m_textFlushScheduled) {
+    m_textFlushScheduled = true;
+    m_textFlushTimer.StartOnce(250);
+  }
+
+  if (m_textPending.length() > 256 * 1024) {
+    FlushPendingText(true);
+  }
+}
+
+void ArduinoSerialMonitorFrame::FlushPendingText(bool force) {
+  if (!m_outputCtrl || m_textPending.empty())
+    return;
+
+  if (force) {
+    if (m_textFlushTimer.IsRunning())
+      m_textFlushTimer.Stop();
+    m_textFlushScheduled = false;
+  }
+
+  const bool autoscroll = (m_autoscrollCheck && m_autoscrollCheck->GetValue());
+
+  // Save view/caret state when autoscroll is OFF.
+  int firstLine = 0;
+  int xOffset = 0;
+  int curPos = 0;
+  int anchorPos = 0;
+  int selStart = 0;
+  int selEnd = 0;
+  bool hadSel = false;
+
+  if (!autoscroll) {
+    firstLine = m_outputCtrl->GetFirstVisibleLine();
+    xOffset = m_outputCtrl->GetXOffset();
+    curPos = m_outputCtrl->GetCurrentPos();
+    anchorPos = m_outputCtrl->GetAnchor();
+    selStart = m_outputCtrl->GetSelectionStart();
+    selEnd = m_outputCtrl->GetSelectionEnd();
+    hadSel = (selStart != selEnd);
+  }
+
+  wxString toAppend;
+  toAppend.swap(m_textPending);
+
+  wxWindowUpdateLocker lock(m_outputCtrl);
+
+  m_outputCtrl->SetReadOnly(false);
+  m_programmaticScroll = true;
+
+  // Insert at the end without touching the user's caret/viewport.
+  const int insertPos = m_outputCtrl->GetTextLength();
+  m_outputCtrl->InsertText(insertPos, toAppend);
+
+  m_programmaticScroll = false;
+  m_outputCtrl->SetReadOnly(true);
+
+  if (autoscroll) {
+    ScrollOutputToEnd();
+
+    m_programmaticScroll = true;
+    TrimStyledTextCtrl(m_outputCtrl, kMaxOutputLines, kMaxOutputChars, autoscroll /*keepAtEnd*/);
+    m_programmaticScroll = false;
+    return;
+  }
+
+  // ---- no autoscroll path ----
+  // Restore caret/selection.
+  m_outputCtrl->SetCurrentPos(curPos);
+  m_outputCtrl->SetAnchor(anchorPos);
+  if (hadSel) {
+    m_outputCtrl->SetSelection(selStart, selEnd);
+  } else {
+    m_outputCtrl->SetSelection(curPos, curPos);
+  }
+
+  // Restore viewport (line & horizontal offset).
+  const int newFirstLine = m_outputCtrl->GetFirstVisibleLine();
+  if (newFirstLine != firstLine) {
+    m_programmaticScroll = true;
+    m_outputCtrl->LineScroll(0, firstLine - newFirstLine);
+    m_programmaticScroll = false;
+  }
+
+  if (m_outputCtrl->GetXOffset() != xOffset) {
+    m_outputCtrl->SetXOffset(xOffset);
+  }
+
+  // --- Safety trim (avoid unbounded growth) ---
+  m_programmaticScroll = true;
+  TrimStyledTextCtrl(m_outputCtrl, kMaxOutputLines, kMaxOutputChars, autoscroll /*keepAtEnd*/);
+  m_programmaticScroll = false;
+}
+
+bool ArduinoSerialMonitorFrame::IsOutputAtBottom() const {
+  if (!m_outputCtrl)
+    return true;
+
+  const int lastLine = m_outputCtrl->GetLineCount() - 1;
+  if (lastLine < 0)
+    return true;
+
+  const int first = m_outputCtrl->GetFirstVisibleLine();
+  const int onScreen = m_outputCtrl->LinesOnScreen();
+  const int bottomVisible = first + onScreen;
+
+  return bottomVisible >= lastLine;
+}
+
+void ArduinoSerialMonitorFrame::OnOutputUpdateUI(wxStyledTextEvent &event) {
+  event.Skip();
+
+  if (!m_outputCtrl || !m_autoscrollCheck)
+    return;
+
+  if ((event.GetUpdated() & wxSTC_UPDATE_V_SCROLL) == 0)
+    return;
+
+  if (m_programmaticScroll)
+    return;
+
+  const int first = m_outputCtrl->GetFirstVisibleLine();
+  if (m_lastFirstVisibleLine < 0) {
+    m_lastFirstVisibleLine = first;
+    return;
+  }
+
+  const bool moved = (first != m_lastFirstVisibleLine);
+  m_lastFirstVisibleLine = first;
+
+  if (!moved)
+    return;
+
+  const bool atBottom = IsOutputAtBottom();
+  const bool autoOn = m_autoscrollCheck->GetValue();
+
+  if (autoOn && !atBottom) {
+    m_autoscrollCheck->SetValue(false);
+    wxCommandEvent ev(wxEVT_CHECKBOX, m_autoscrollCheck->GetId());
+    ev.SetEventObject(m_autoscrollCheck);
+    wxPostEvent(this, ev);
+  } else if (!autoOn && atBottom) {
+    m_autoscrollCheck->SetValue(true);
+    wxCommandEvent ev(wxEVT_CHECKBOX, m_autoscrollCheck->GetId());
+    ev.SetEventObject(m_autoscrollCheck);
+    wxPostEvent(this, ev);
+  }
+}
+
+void ArduinoSerialMonitorFrame::ScrollOutputToEnd() {
+  m_programmaticScroll = true;
+
+  const int endPos = m_outputCtrl->GetTextLength();
+  m_outputCtrl->SetCurrentPos(endPos);
+  m_outputCtrl->SetAnchor(endPos);
+
+  // This keeps the view at the end without forcing horizontal repositioning.
+  const int endLine = m_outputCtrl->LineFromPosition(endPos);
+  m_outputCtrl->ScrollToLine(endLine);
+  m_outputCtrl->EnsureCaretVisible();
+
+  m_programmaticScroll = false;
+}
+
 void ArduinoSerialMonitorFrame::OnData(wxThreadEvent &event) {
   wxString chunk = event.GetString();
+  time_t chunkTime = event.GetPayload<time_t>();
 
-  // --- Normalization of line endings ---
-  // 1) CRLF -> LF
-  chunk.Replace(wxT("\r\n"), wxT("\n"));
-  // 2) the CR itself -> nothing (or "\n", depending on preference)
-  chunk.Replace(wxT("\r"), wxEmptyString);
+  // --- Correct normalization of line endings ---
+  NormalizeLineEndings(chunk);
+
+  // This is the raw chunk that goes into the plotter (NO timestamps).
+  const std::string plotChunkUtf8 = wxToStd(chunk);
+
+  const bool timestamps = (m_timestampCheck && m_timestampCheck->GetValue());
+
+  // Decide if we need a timestamp for this second (but don't print it mid-line)
+  if (timestamps) {
+    if (m_tsLastPrintedSec != chunkTime) {
+      m_tsPending = true;
+      m_tsPendingSec = chunkTime;
+    }
+  } else {
+    // timestamps disabled => don't keep a pending one around
+    m_tsPending = false;
+  }
 
   wxString textToAppend;
 
-  if (m_timestampCheck && m_timestampCheck->GetValue()) {
-    wxDateTime now = wxDateTime::Now();
-    wxString ts = now.Format(wxT("[%H:%M:%S] "));
-    textToAppend += ts;
+  auto flushTimestampIfNeeded = [&]() {
+    if (!timestamps)
+      return;
+    if (!m_tsPending)
+      return;
+    if (!m_tsAtLineStart)
+      return;
+
+    wxDateTime t((time_t)m_tsPendingSec);
+    textToAppend += t.Format(wxT("[%H:%M:%S]"));
+    textToAppend += wxT("\n");
+
+    m_tsLastPrintedSec = m_tsPendingSec;
+    m_tsPending = false;
+    m_tsAtLineStart = true;
+  };
+
+  // If we're already at line start, we may print the timestamp immediately
+  flushTimestampIfNeeded();
+
+  // Append the chunk, but only allow timestamp insertion AFTER a newline
+  for (size_t i = 0; i < chunk.length(); ++i) {
+    wxUniChar c = chunk[i];
+    textToAppend += c;
+
+    if (c == '\n') {
+      m_tsAtLineStart = true;
+      flushTimestampIfNeeded(); // safe point: end of line reached
+    } else {
+      m_tsAtLineStart = false;
+    }
   }
 
-  textToAppend += chunk;
-
-  // If there is a pause, we just store it in the buffer and do not write anything
+  // If paused, buffer output (and plot, if already started) and do not update controls.
   if (m_paused) {
+    // --- Cap paused text buffer ---
+    if (textToAppend.length() > kMaxPausedTextChars) {
+      textToAppend = textToAppend.Right(kMaxPausedTextChars);
+    }
+
+    const size_t add = (size_t)textToAppend.length();
+    if (m_pausedTextChars + add > kMaxPausedTextChars) {
+      const size_t need = (m_pausedTextChars + add) - kMaxPausedTextChars;
+
+      size_t freed = 0;
+      size_t count = 0;
+      while (count < m_pausedBuffer.size() && freed < need) {
+        freed += (size_t)m_pausedBuffer[count].length();
+        ++count;
+      }
+      if (count > 0) {
+        m_pausedBuffer.erase(m_pausedBuffer.begin(), m_pausedBuffer.begin() + (ptrdiff_t)count);
+        m_pausedTextChars -= freed;
+      }
+    }
+
     m_pausedBuffer.push_back(textToAppend);
+    m_pausedTextChars += add;
+
+    if (m_plotStarted && m_plotParser) {
+      BufferPlotChunkUtf8(plotChunkUtf8, m_plotView->GetCurrentTime());
+    }
     return;
   }
 
   if (m_outputCtrl) {
-    m_outputCtrl->AppendText(textToAppend);
+    QueueTextAppend(textToAppend);
+  }
 
-    if (m_autoscrollCheck->GetValue()) {
-      long lastPos = m_outputCtrl->GetLastPosition();
-      m_outputCtrl->ShowPosition(lastPos);
-    }
+  // Feed plotter only after the user opened the Plot tab at least once.
+  if (m_plotStarted && m_plotParser) {
+    FeedPlotChunkUtf8(plotChunkUtf8, m_plotView->GetCurrentTime());
   }
 }
 
 void ArduinoSerialMonitorFrame::OnError(wxThreadEvent &event) {
   wxString msg = event.GetString();
   wxLogWarning(_("Serial monitor error: %s"), msg);
-  m_outputCtrl->AppendText(wxString::Format(_("\n[ERROR] %s\n"), msg));
+  QueueTextAppend(wxString::Format(_("\n[ERROR] %s\n"), msg));
 }
 
 void ArduinoSerialMonitorFrame::Block() {
   if (m_isBlocked) {
     return;
   }
+
+  ScopeTimer t("SERMON: Block()");
 
   m_isBlocked = true;
 
@@ -716,6 +1599,7 @@ void ArduinoSerialMonitorFrame::Block() {
     m_pauseButton->Refresh();
   }
   m_pausedBuffer.clear();
+  m_pausedTextChars = 0;
 
   // disconnect worker -> release port
   StopWorker();
@@ -723,15 +1607,16 @@ void ArduinoSerialMonitorFrame::Block() {
   // we gray out input/output and the send button
   if (m_inputCtrl)
     m_inputCtrl->Enable(false);
-  if (m_outputCtrl)
-    m_outputCtrl->Enable(false);
+  if (m_notebook)
+    m_notebook->Enable(false);
   if (m_sendButton)
     m_sendButton->Enable(false);
 
   if (m_outputCtrl) {
-    m_outputCtrl->AppendText(_("\n[INFO] Serial monitor blocked - port released.\n"));
-    long lastPos = m_outputCtrl->GetLastPosition();
-    m_outputCtrl->ShowPosition(lastPos);
+    QueueTextAppend(_("\n[INFO] Serial monitor blocked - port released.\n"));
+    if (m_autoscrollCheck && m_autoscrollCheck->GetValue()) {
+      ScrollOutputToEnd();
+    }
   }
 }
 
@@ -739,6 +1624,8 @@ void ArduinoSerialMonitorFrame::Unblock() {
   if (!m_isBlocked) {
     return;
   }
+
+  ScopeTimer t("SERMON: Unblock()");
 
   m_isBlocked = false;
 
@@ -748,20 +1635,26 @@ void ArduinoSerialMonitorFrame::Unblock() {
   // re-enable input/output and send button
   if (m_inputCtrl)
     m_inputCtrl->Enable(true);
-  if (m_outputCtrl)
-    m_outputCtrl->Enable(true);
+  if (m_notebook)
+    m_notebook->Enable(true);
   if (m_sendButton)
     m_sendButton->Enable(true);
 
   if (m_outputCtrl) {
-    m_outputCtrl->AppendText(_("\n[INFO] Serial monitor unblocked - port re-opened.\n"));
-    long lastPos = m_outputCtrl->GetLastPosition();
-    m_outputCtrl->ShowPosition(lastPos);
+    QueueTextAppend(_("\n[INFO] Serial monitor unblocked - port re-opened.\n"));
+    if (m_autoscrollCheck && m_autoscrollCheck->GetValue()) {
+      ScrollOutputToEnd();
+    }
   }
 }
 
 void ArduinoSerialMonitorFrame::OnSysColourChanged(wxSysColourChangedEvent &event) {
   m_sendButton->SetBitmap(AEGetArtBundle(wxAEArt::GoForward));
+
+  EditorSettings settings;
+  settings.Load(m_config);
+  SetupOutputCtrl(settings);
+
   Layout();
   event.Skip();
 }

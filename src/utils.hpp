@@ -30,6 +30,7 @@
 #include <wx/dialog.h>
 #include <wx/dir.h>
 #include <wx/ffile.h>
+#include <wx/fileconf.h>
 #include <wx/filefn.h>
 #include <wx/filename.h>
 #include <wx/imaglist.h>
@@ -219,3 +220,8 @@ std::string BaseFqbn3(std::string fqbn);
 bool ParseDefaultFqbnFromSketchYaml(const std::filesystem::path &yamlPath, std::string &outBaseFqbn3);
 
 void KillUnfocusedColor(wxGenericTreeCtrl *tree);
+
+wxFileConfig *OpenWorkspaceConfig(const std::string &sketchPath);
+
+std::vector<wxString> SplitWxString(const wxString &s, wxChar sep, bool trim = true, bool skipEmpty = true);
+wxString JoinWxStrings(const std::vector<wxString> &items, wxChar sep);

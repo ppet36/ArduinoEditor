@@ -44,7 +44,6 @@
 #error "AE_VERSION must be defined (e.g. -DAE_VERSION=\"1.0.0\")"
 #endif
 
-// Configure repo at build time (recommended)
 #ifndef AE_GITHUB_OWNER
 #define AE_GITHUB_OWNER "ppet36"
 #endif
