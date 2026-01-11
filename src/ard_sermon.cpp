@@ -35,6 +35,7 @@
 
 #if defined(__unix__) || defined(__APPLE__)
 #include <fcntl.h>
+#include <sys/ioctl.h>
 #include <sys/select.h>
 #include <sys/time.h>
 #include <termios.h>
@@ -51,6 +52,7 @@ enum {
   ID_LineEndingCombo,
   ID_PauseButton,
   ID_ClearButton,
+  ID_ResetButton,
   ID_OutputMenuCopy,
   ID_OutputMenuSaveSelection,
   ID_OutputMenuSaveAll,
@@ -539,6 +541,7 @@ ArduinoSerialMonitorFrame::ArduinoSerialMonitorFrame(wxWindow *parent,
   m_baudCombo->Bind(wxEVT_COMBOBOX, &ArduinoSerialMonitorFrame::OnBaudChanged, this);
   m_lineEndCombo->Bind(wxEVT_COMBOBOX, &ArduinoSerialMonitorFrame::OnLineEndingChanged, this);
   m_pauseButton->Bind(wxEVT_BUTTON, &ArduinoSerialMonitorFrame::OnPause, this);
+  m_resetButton->Bind(wxEVT_BUTTON, &ArduinoSerialMonitorFrame::OnReset, this);
   m_clearButton->Bind(wxEVT_BUTTON, &ArduinoSerialMonitorFrame::OnClear, this);
 
   // ---- Bindings for thread events ----
@@ -679,9 +682,13 @@ void ArduinoSerialMonitorFrame::CreateControls() {
   headerSizer->Add(m_autoscrollCheck, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
   headerSizer->Add(m_timestampCheck, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
 
-  // --- Pause / Resume ---
+  // --- Pause / Reset / Resume ---
   m_pauseButton = new wxButton(this, ID_PauseButton, _("Pause"));
   headerSizer->Add(m_pauseButton, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
+
+  m_resetButton = new wxButton(this, ID_ResetButton, _("Reset (DTR/RTS)"));
+  m_resetButton->SetToolTip(_("Resets the connected device (DTR/RTS pulse). Same behavior as opening the serial port."));
+  headerSizer->Add(m_resetButton, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
 
   m_clearButton = new wxButton(this, ID_ClearButton, _("Clear"));
   headerSizer->Add(m_clearButton, 0, wxALIGN_CENTER_VERTICAL);
@@ -906,6 +913,57 @@ void SerialMonitorWorker::InterruptIo() {
 #endif
 }
 
+bool SerialMonitorWorker::PulseResetLines(int pulseMs /*= 50*/, bool dtr /*= true*/, bool rts /*= true*/) {
+#if defined(__unix__) || defined(__APPLE__)
+  int fd = -1;
+  {
+    wxMutexLocker lock(m_mutex);
+    fd = m_fd;
+  }
+  if (fd < 0) return false;
+
+  int status = 0;
+  if (ioctl(fd, TIOCMGET, &status) != 0) return false;
+
+  auto pulseOne = [&](int bit) -> bool {
+    const bool wasSet = (status & bit) != 0;
+    int b = bit;
+
+    // Toggle away from the current state, wait, then restore.
+    if (wasSet) {
+      if (ioctl(fd, TIOCMBIC, &b) != 0) return false; // clear
+      ::usleep(pulseMs * 1000);
+      if (ioctl(fd, TIOCMBIS, &b) != 0) return false; // set back
+    } else {
+      if (ioctl(fd, TIOCMBIS, &b) != 0) return false; // set
+      ::usleep(pulseMs * 1000);
+      if (ioctl(fd, TIOCMBIC, &b) != 0) return false; // clear back
+    }
+    return true;
+  };
+
+  bool ok = true;
+  if (dtr) ok = ok && pulseOne(TIOCM_DTR);
+  if (rts) ok = ok && pulseOne(TIOCM_RTS);
+  return ok;
+#else
+  HANDLE h = nullptr;
+  {
+    wxMutexLocker lock(m_mutex);
+    h = static_cast<HANDLE>(m_handle);
+  }
+  if (!h) return false;
+
+  // On Windows, it's typically enough to do a short "drop" and return.
+  if (dtr) EscapeCommFunction(h, CLRDTR);
+  if (rts) EscapeCommFunction(h, CLRRTS);
+  ::Sleep((DWORD)pulseMs);
+  if (dtr) EscapeCommFunction(h, SETDTR);
+  if (rts) EscapeCommFunction(h, SETRTS);
+  return true;
+#endif
+}
+
 void ArduinoSerialMonitorFrame::Close() {
   StopWorker();
 
@@ -1037,6 +1095,20 @@ void ArduinoSerialMonitorFrame::OnPause(wxCommandEvent &WXUNUSED(event)) {
     ScrollOutputToEnd();
   }
 }
+
+void ArduinoSerialMonitorFrame::OnReset(wxCommandEvent &) {
+  if (!m_worker) {
+    return;
+  }
+
+  if (!m_worker->PulseResetLines(50, true, true)) {
+    // Fallback: the crudest but functional option is "reconnect",
+    // because board resets open ports as often.
+    StopWorker();
+    StartWorker();
+  }
+}
+
 
 void ArduinoSerialMonitorFrame::OnClear(wxCommandEvent &WXUNUSED(event)) {
   switch (m_notebook->GetSelection()) {

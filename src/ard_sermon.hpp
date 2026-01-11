@@ -43,6 +43,7 @@ public:
 
   void RequestStop();
   void InterruptIo();
+  bool PulseResetLines(int pulseMs = 50, bool dtr = true, bool rts = true);
 
   // simple sync write - parent is called from the GUI thread
   bool Write(const std::string &data);
@@ -109,6 +110,7 @@ private:
 
   void OnLineEndingChanged(wxCommandEvent &event);
   void OnClear(wxCommandEvent &event);
+  void OnReset(wxCommandEvent &event);
   void OnPause(wxCommandEvent &event);
 
   void SetupOutputCtrl(const EditorSettings &settings);
@@ -135,7 +137,8 @@ private:
   wxCheckBox *m_autoscrollCheck{nullptr};
   wxCheckBox *m_timestampCheck{nullptr};
   wxButton *m_pauseButton = nullptr;
-  wxButton *m_clearButton{nullptr};
+  wxButton *m_resetButton = nullptr;
+  wxButton *m_clearButton = nullptr;
   wxNotebook *m_notebook = nullptr;
   wxPanel *m_logPage = nullptr;
   wxPanel *m_plotPage = nullptr;

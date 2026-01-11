@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ArduinoEditor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-10 22:03+0100\n"
+"POT-Creation-Date: 2026-01-11 18:01+0100\n"
 "PO-Revision-Date: 2025-12-09 22:52:00+0100\n"
 "Last-Translator: Pavel Petržela <r17c@seznam.cz>\n"
 "Language-Team: -\n"
@@ -3489,8 +3489,8 @@ msgstr "Pevný rozsah Y..."
 msgid "Save plot as image..."
 msgstr "Uložit graf průběhů jako obrázek..."
 
-#: ../src/ard_plotview.cpp:463 ../src/ard_sermon.cpp:686
-#: ../src/ard_sermon.cpp:734
+#: ../src/ard_plotview.cpp:463 ../src/ard_sermon.cpp:693
+#: ../src/ard_sermon.cpp:741
 msgid "Clear"
 msgstr "Vymazat"
 
@@ -3773,135 +3773,147 @@ msgstr "Nelze analyzovat vybraný blok kódu."
 msgid "Preview"
 msgstr "Náhled"
 
-#: ../src/ard_sermon.cpp:359
+#: ../src/ard_sermon.cpp:361
 msgid "Failed to open serial port"
 msgstr "Nepodařilo se otevřít sériový port"
 
-#: ../src/ard_sermon.cpp:391 ../src/ard_sermon.cpp:476
+#: ../src/ard_sermon.cpp:393 ../src/ard_sermon.cpp:478
 msgid "Serial port handle invalid"
 msgstr "Neplatný ovladač sériového portu"
 
-#: ../src/ard_sermon.cpp:425
+#: ../src/ard_sermon.cpp:427
 #, c-format
 msgid "Serial select error: %d"
 msgstr "Chyba select() na sériovém portu: %d"
 
-#: ../src/ard_sermon.cpp:446
+#: ../src/ard_sermon.cpp:448
 msgid "Serial port closed"
 msgstr "Sériový port uzavřen"
 
-#: ../src/ard_sermon.cpp:468
+#: ../src/ard_sermon.cpp:470
 #, c-format
 msgid "Serial read error: %d"
 msgstr "Chyba čtení ze sériového portu: %d"
 
-#: ../src/ard_sermon.cpp:499
+#: ../src/ard_sermon.cpp:501
 #, c-format
 msgid "Serial read error (Win): %lu"
 msgstr "Chyba čtení ze sériového portu (Win): %lu"
 
-#: ../src/ard_sermon.cpp:522
+#: ../src/ard_sermon.cpp:524
 #, c-format
 msgid "Serial Monitor [%s]"
 msgstr "Sériový monitor [%s]"
 
-#: ../src/ard_sermon.cpp:611
+#: ../src/ard_sermon.cpp:614
 #, c-format
 msgid "Port: %s"
 msgstr "Port: %s"
 
-#: ../src/ard_sermon.cpp:649
+#: ../src/ard_sermon.cpp:652
 msgid "Baud:"
 msgstr "Rychlost přenosu:"
 
-#: ../src/ard_sermon.cpp:655 ../src/ard_sermon.cpp:982
+#: ../src/ard_sermon.cpp:658 ../src/ard_sermon.cpp:1040
 msgid "None"
 msgstr "Žádný"
 
-#: ../src/ard_sermon.cpp:656 ../src/ard_sermon.cpp:662
-#: ../src/ard_sermon.cpp:984
+#: ../src/ard_sermon.cpp:659 ../src/ard_sermon.cpp:665
+#: ../src/ard_sermon.cpp:1042
 msgid "<LF>"
 msgstr "<LF>"
 
-#: ../src/ard_sermon.cpp:657 ../src/ard_sermon.cpp:986
+#: ../src/ard_sermon.cpp:660 ../src/ard_sermon.cpp:1044
 msgid "<CR>"
 msgstr "<CR>"
 
-#: ../src/ard_sermon.cpp:658 ../src/ard_sermon.cpp:988
+#: ../src/ard_sermon.cpp:661 ../src/ard_sermon.cpp:1046
 msgid "<CR><LF>"
 msgstr "<CR><LF>"
 
-#: ../src/ard_sermon.cpp:667
+#: ../src/ard_sermon.cpp:670
 msgid "Line ending:"
 msgstr "Zakončení řádků:"
 
-#: ../src/ard_sermon.cpp:672
+#: ../src/ard_sermon.cpp:675
 msgid "Autoscroll"
 msgstr "Automatické posouvání"
 
-#: ../src/ard_sermon.cpp:675
+#: ../src/ard_sermon.cpp:678
 msgid "Show timestamps"
 msgstr "Zobrazit časová razítka"
 
-#: ../src/ard_sermon.cpp:683 ../src/ard_sermon.cpp:1009
-#: ../src/ard_sermon.cpp:1599
+#: ../src/ard_sermon.cpp:686 ../src/ard_sermon.cpp:1067
+#: ../src/ard_sermon.cpp:1671
 msgid "Pause"
 msgstr "Pozastavit"
 
-#: ../src/ard_sermon.cpp:717
+#: ../src/ard_sermon.cpp:689
+msgid "Reset (DTR/RTS)"
+msgstr "Reset (DTR/RTS)"
+
+#: ../src/ard_sermon.cpp:690
+msgid ""
+"Resets the connected device (DTR/RTS pulse). Same behavior as opening the "
+"serial port."
+msgstr ""
+"Resetuje připojené zařízení (pulz DTR/RTS). Stejné chování jako při otevření "
+"sériového portu."
+
+#: ../src/ard_sermon.cpp:724
 msgid "Copy\tCtrl+C"
 msgstr "Kopírovat\tCtrl+C"
 
-#: ../src/ard_sermon.cpp:723 ../src/ard_sermon.cpp:766
+#: ../src/ard_sermon.cpp:730 ../src/ard_sermon.cpp:773
 msgid "Save selection..."
 msgstr "Uložit výběr..."
 
-#: ../src/ard_sermon.cpp:728 ../src/ard_sermon.cpp:766
+#: ../src/ard_sermon.cpp:735 ../src/ard_sermon.cpp:773
 msgid "Save all..."
 msgstr "Uložit vše..."
 
-#: ../src/ard_sermon.cpp:769
+#: ../src/ard_sermon.cpp:776
 msgid "Text files (*.txt)|*.txt|Log files (*.log)|*.log|All files (*.*)|*.*"
 msgstr ""
 "Textové soubory (*.txt)|*.txt|Soubory logů (*.log)|*.log|Všechny soubory (*."
 "*)|*.*"
 
-#: ../src/ard_sermon.cpp:777
+#: ../src/ard_sermon.cpp:784
 #, c-format
 msgid "Failed to save file: %s"
 msgstr "Chyba při ukládání souboru: %s"
 
-#: ../src/ard_sermon.cpp:824
+#: ../src/ard_sermon.cpp:831
 msgid "Log"
 msgstr "Log"
 
-#: ../src/ard_sermon.cpp:831
+#: ../src/ard_sermon.cpp:838
 msgid "Open this tab to start plotting serial values."
 msgstr ""
 "Otevřením této záložky zahájíte vykreslování hodnot ze sériového portu."
 
-#: ../src/ard_sermon.cpp:835
+#: ../src/ard_sermon.cpp:842
 msgid "Plot"
 msgstr "Graf"
 
-#: ../src/ard_sermon.cpp:871
+#: ../src/ard_sermon.cpp:878
 msgid "Failed to start serial monitor thread"
 msgstr "Nepodařilo se spustit vlákno sériového monitoru"
 
-#: ../src/ard_sermon.cpp:973
+#: ../src/ard_sermon.cpp:1031
 msgid "Failed to write to serial port"
 msgstr "Nepodařilo se zapsat do sériového portu"
 
-#: ../src/ard_sermon.cpp:1000
+#: ../src/ard_sermon.cpp:1058
 msgid "Resume"
 msgstr "Pokračovat"
 
-#: ../src/ard_sermon.cpp:1584
+#: ../src/ard_sermon.cpp:1656
 #, c-format
 msgid "Serial monitor error: %s"
 msgstr "Chyba sériového monitoru: %s"
 
-#: ../src/ard_sermon.cpp:1585
+#: ../src/ard_sermon.cpp:1657
 #, c-format
 msgid ""
 "\n"
@@ -3910,7 +3922,7 @@ msgstr ""
 "\n"
 "[CHYBA] %s\n"
 
-#: ../src/ard_sermon.cpp:1618
+#: ../src/ard_sermon.cpp:1690
 msgid ""
 "\n"
 "[INFO] Serial monitor blocked - port released.\n"
@@ -3918,7 +3930,7 @@ msgstr ""
 "\n"
 "[INFO] Sériový monitor zablokován – port uvolněn.\n"
 
-#: ../src/ard_sermon.cpp:1646
+#: ../src/ard_sermon.cpp:1718
 msgid ""
 "\n"
 "[INFO] Serial monitor unblocked - port re-opened.\n"
