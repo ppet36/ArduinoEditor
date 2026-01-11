@@ -1,5 +1,4 @@
 #include "ard_plotpars.hpp"
-#include "ard_plotview.hpp"
 #include "utils.hpp"
 
 #include <algorithm>
@@ -7,8 +6,8 @@
 #include <cmath>
 #include <cstdlib>
 
-ArduinoPlotParser::ArduinoPlotParser(ArduinoPlotView *view)
-    : m_view(view) {
+ArduinoPlotParser::ArduinoPlotParser(ArduinoPlotSink *sink)
+    : m_sink(sink) {
   Reset();
 }
 
@@ -327,13 +326,13 @@ bool ArduinoPlotParser::IsLikelyHeaderLine(const std::string &line, std::vector<
 }
 
 void ArduinoPlotParser::EmitSample(const std::string &name, double value) {
-  if (!m_view)
+  if (!m_sink)
     return;
-  m_view->AddSampleAt(wxString::FromUTF8(name.c_str()), value, m_time);
+  m_sink->AddSampleAt(name, value, m_time, /*refresh=*/true);
 }
 
 void ArduinoPlotParser::EmitColumns(const std::vector<double> &values) {
-  if (!m_view)
+  if (!m_sink)
     return;
   if (values.empty())
     return;
@@ -373,29 +372,10 @@ void ArduinoPlotParser::ApplyLine(const std::string &lineRaw, double time) {
 }
 
 void ArduinoPlotParser::ApplyBatch(const std::vector<BufferedPlotLine> &lines) {
-  if (!m_view || lines.empty())
+  if (lines.empty())
     return;
 
   bool anyEmitted = false;
-
-  // Cache for tagged names (avoid repeated UTF-8 conversions).
-  // (Columns use a separate fast cache below.)
-  std::unordered_map<std::string, wxString> wxNameCache;
-  wxNameCache.reserve(64);
-
-  auto toWxCached = [&](const std::string &name) -> const wxString & {
-    auto it = wxNameCache.find(name);
-    if (it != wxNameCache.end())
-      return it->second;
-
-    auto ins = wxNameCache.emplace(name, wxString::FromUTF8(name.c_str()));
-    return ins.first->second;
-  };
-
-  auto emitSampleNR = [&](const std::string &name, double value, double t_ms) {
-    m_view->AddSampleAt(toWxCached(name), value, t_ms, /*refresh=*/false);
-    anyEmitted = true;
-  };
 
   // Reused scratch buffers (reduce allocations).
   std::vector<std::pair<std::string, double>> pairs;
@@ -407,21 +387,12 @@ void ArduinoPlotParser::ApplyBatch(const std::vector<BufferedPlotLine> &lines) {
   std::vector<std::string> header;
   header.reserve(16);
 
-  // Fast cache for column names (no hashing, just parallel vector).
-  std::vector<wxString> colWxNames;
-  colWxNames.reserve(16);
-  bool colCacheDirty = true;
-
-  auto rebuildColCacheIfNeeded = [&]() {
-    if (!colCacheDirty && (int)colWxNames.size() == (int)m_columnNames.size())
+  auto emitSampleNR = [&](const std::string &name, double value, double t_ms) {
+    if (!m_sink)
       return;
 
-    colWxNames.clear();
-    colWxNames.reserve(m_columnNames.size());
-    for (const auto &n : m_columnNames)
-      colWxNames.push_back(wxString::FromUTF8(n.c_str()));
-
-    colCacheDirty = false;
+    m_sink->AddSampleAt(name, value, t_ms, /*refresh=*/false);
+    anyEmitted = true;
   };
 
   auto processTaggedNR = [&](const std::string &line, double t_ms) {
@@ -440,7 +411,7 @@ void ArduinoPlotParser::ApplyBatch(const std::vector<BufferedPlotLine> &lines) {
       return;
     }
 
-    // In tagged mode: if not parseable, ignore (same behavior as ProcessLine_Tagged).
+    // In tagged mode: if not parseable, ignore.
   };
 
   auto processColumnsNR = [&](const std::string &line, double t_ms) {
@@ -448,7 +419,6 @@ void ArduinoPlotParser::ApplyBatch(const std::vector<BufferedPlotLine> &lines) {
     if (IsLikelyHeaderLine(line, header)) {
       m_columnNames = header;
       m_lastColumnCount = (int)m_columnNames.size();
-      colCacheDirty = true;
       return;
     }
 
@@ -465,7 +435,6 @@ void ArduinoPlotParser::ApplyBatch(const std::vector<BufferedPlotLine> &lines) {
     if (!m_pendingHeaderNames.empty() && (int)m_pendingHeaderNames.size() == (int)n) {
       m_columnNames = m_pendingHeaderNames;
       m_pendingHeaderNames.clear();
-      colCacheDirty = true;
     }
 
     // Ensure names count matches.
@@ -474,22 +443,20 @@ void ArduinoPlotParser::ApplyBatch(const std::vector<BufferedPlotLine> &lines) {
       m_columnNames.reserve(n);
       for (size_t i = 0; i < n; i++)
         m_columnNames.push_back("v" + std::to_string(i));
-      colCacheDirty = true;
     }
 
     m_lastColumnCount = (int)n;
 
-    rebuildColCacheIfNeeded();
+    if (!m_sink)
+      return;
 
-    // Emit columns without refresh.
     for (size_t i = 0; i < n; i++) {
-      m_view->AddSampleAt(colWxNames[i], colVals[i], t_ms, /*refresh=*/false);
+      m_sink->AddSampleAt(m_columnNames[i], colVals[i], t_ms, /*refresh=*/false);
       anyEmitted = true;
     }
   };
 
   auto processUnknownNR = [&](const std::string &line, double t_ms) {
-    // Same logic as ProcessLine_Unknown, but flush uses NR processors.
     header.clear();
     if (IsLikelyHeaderLine(line, header)) {
       m_pendingHeaderNames = header;
@@ -516,7 +483,6 @@ void ArduinoPlotParser::ApplyBatch(const std::vector<BufferedPlotLine> &lines) {
     }
   };
 
-  // Main loop
   for (const auto &bl : lines) {
     m_time = bl.time;
 
@@ -537,8 +503,8 @@ void ArduinoPlotParser::ApplyBatch(const std::vector<BufferedPlotLine> &lines) {
     }
   }
 
-  if (anyEmitted) {
-    m_view->Refresh(false);
+  if (anyEmitted && m_sink) {
+    m_sink->Refresh(false);
   }
 }
 

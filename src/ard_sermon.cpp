@@ -26,6 +26,7 @@
 #include "utils.hpp"
 #include <errno.h>
 #include <memory>
+#include <unordered_map>
 #include <wx/datetime.h>
 #include <wx/file.h>
 #include <wx/filedlg.h>
@@ -65,6 +66,43 @@ constexpr int kMaxOutputLines = 20000;              // safe number of rows
 constexpr int kMaxOutputChars = 4 * 1024 * 1024;    // cca 4 MB inner stc buffer in bytes
 constexpr size_t kMaxPausedTextChars = 1024 * 1024; // 1 MB paused text buffer (in "wxChar" length)
 constexpr size_t kMaxPausedPlotLines = 50000;       // paused plot buffer limie
+} // namespace
+
+namespace {
+
+class ArduinoPlotViewSink final : public ArduinoPlotSink {
+public:
+  explicit ArduinoPlotViewSink(ArduinoPlotView *view) : m_view(view) {}
+
+  void SetView(ArduinoPlotView *view) { m_view = view; }
+
+  void AddSampleAt(const std::string &name, double value, double t_ms, bool refresh) override {
+    if (!m_view)
+      return;
+
+    const wxString &wxName = ToWxCached(name);
+    m_view->AddSampleAt(wxName, value, t_ms, refresh);
+  }
+
+  void Refresh(bool eraseBackground) override {
+    if (m_view)
+      m_view->Refresh(eraseBackground);
+  }
+
+private:
+  const wxString &ToWxCached(const std::string &name) {
+    auto it = m_cache.find(name);
+    if (it != m_cache.end())
+      return it->second;
+
+    auto ins = m_cache.emplace(name, wxString::FromUTF8(name.c_str()));
+    return ins.first->second;
+  }
+
+  ArduinoPlotView *m_view = nullptr;
+  std::unordered_map<std::string, wxString> m_cache;
+};
+
 } // namespace
 
 #if defined(__unix__) || defined(__APPLE__)
@@ -920,10 +958,12 @@ bool SerialMonitorWorker::PulseResetLines(int pulseMs /*= 50*/, bool dtr /*= tru
     wxMutexLocker lock(m_mutex);
     fd = m_fd;
   }
-  if (fd < 0) return false;
+  if (fd < 0)
+    return false;
 
   int status = 0;
-  if (ioctl(fd, TIOCMGET, &status) != 0) return false;
+  if (ioctl(fd, TIOCMGET, &status) != 0)
+    return false;
 
   auto pulseOne = [&](int bit) -> bool {
     const bool wasSet = (status & bit) != 0;
@@ -931,20 +971,26 @@ bool SerialMonitorWorker::PulseResetLines(int pulseMs /*= 50*/, bool dtr /*= tru
 
     // Toggle away from the current state, wait, then restore.
     if (wasSet) {
-      if (ioctl(fd, TIOCMBIC, &b) != 0) return false; // clear
+      if (ioctl(fd, TIOCMBIC, &b) != 0)
+        return false; // clear
       ::usleep(pulseMs * 1000);
-      if (ioctl(fd, TIOCMBIS, &b) != 0) return false; // set back
+      if (ioctl(fd, TIOCMBIS, &b) != 0)
+        return false; // set back
     } else {
-      if (ioctl(fd, TIOCMBIS, &b) != 0) return false; // set
+      if (ioctl(fd, TIOCMBIS, &b) != 0)
+        return false; // set
       ::usleep(pulseMs * 1000);
-      if (ioctl(fd, TIOCMBIC, &b) != 0) return false; // clear back
+      if (ioctl(fd, TIOCMBIC, &b) != 0)
+        return false; // clear back
     }
     return true;
   };
 
   bool ok = true;
-  if (dtr) ok = ok && pulseOne(TIOCM_DTR);
-  if (rts) ok = ok && pulseOne(TIOCM_RTS);
+  if (dtr)
+    ok = ok && pulseOne(TIOCM_DTR);
+  if (rts)
+    ok = ok && pulseOne(TIOCM_RTS);
   return ok;
 #else
   HANDLE h = nullptr;
@@ -952,14 +998,19 @@ bool SerialMonitorWorker::PulseResetLines(int pulseMs /*= 50*/, bool dtr /*= tru
     wxMutexLocker lock(m_mutex);
     h = static_cast<HANDLE>(m_handle);
   }
-  if (!h) return false;
+  if (!h)
+    return false;
 
   // On Windows, it's typically enough to do a short "drop" and return.
-  if (dtr) EscapeCommFunction(h, CLRDTR);
-  if (rts) EscapeCommFunction(h, CLRRTS);
+  if (dtr)
+    EscapeCommFunction(h, CLRDTR);
+  if (rts)
+    EscapeCommFunction(h, CLRRTS);
   ::Sleep((DWORD)pulseMs);
-  if (dtr) EscapeCommFunction(h, SETDTR);
-  if (rts) EscapeCommFunction(h, SETRTS);
+  if (dtr)
+    EscapeCommFunction(h, SETDTR);
+  if (rts)
+    EscapeCommFunction(h, SETRTS);
   return true;
 #endif
 }
@@ -1107,37 +1158,48 @@ void ArduinoSerialMonitorFrame::OnReset(wxCommandEvent &) {
     StopWorker();
     StartWorker();
   }
+
+  ClearLog();
+  ClearChart();
 }
 
+void ArduinoSerialMonitorFrame::ClearLog() {
+  if (m_outputCtrl) {
+    m_outputCtrl->SetReadOnly(false);
+    m_outputCtrl->ClearAll();
+    m_outputCtrl->SetReadOnly(true);
+  }
+  if (m_textFlushTimer.IsRunning()) {
+    m_textFlushTimer.Stop();
+  }
+  m_textFlushScheduled = false;
+  m_textPending.clear();
+  m_pendingCR = false;
+  m_pausedBuffer.clear();
+  m_tsAtLineStart = true;
+  m_tsPending = false;
+  m_tsLastPrintedSec = (time_t)-1;
+  m_tsPendingSec = (time_t)-1;
+}
+
+void ArduinoSerialMonitorFrame::ClearChart() {
+  if (m_plotView) {
+    m_plotView->Clear();
+  }
+  if (m_plotParser) {
+    m_plotParser->Reset();
+  }
+  m_plotLineBuf.clear();
+  m_pausedPlotBuffer.clear();
+}
 
 void ArduinoSerialMonitorFrame::OnClear(wxCommandEvent &WXUNUSED(event)) {
   switch (m_notebook->GetSelection()) {
     case 0:
-      if (m_outputCtrl) {
-        m_outputCtrl->SetReadOnly(false);
-        m_outputCtrl->ClearAll();
-        m_outputCtrl->SetReadOnly(true);
-      }
-      if (m_textFlushTimer.IsRunning())
-        m_textFlushTimer.Stop();
-      m_textFlushScheduled = false;
-      m_textPending.clear();
-      m_pendingCR = false;
-      m_pausedBuffer.clear();
-      m_tsAtLineStart = true;
-      m_tsPending = false;
-      m_tsLastPrintedSec = (time_t)-1;
-      m_tsPendingSec = (time_t)-1;
+      ClearLog();
       break;
     case 1:
-      if (m_plotView) {
-        m_plotView->Clear();
-      }
-      if (m_plotParser) {
-        m_plotParser->Reset();
-      }
-      m_plotLineBuf.clear();
-      m_pausedPlotBuffer.clear();
+      ClearChart();
       break;
     default:
       break;
@@ -1221,7 +1283,8 @@ void ArduinoSerialMonitorFrame::EnsurePlotterStarted() {
     m_notebook->Layout();
   }
 
-  m_plotParser = std::make_unique<ArduinoPlotParser>(m_plotView);
+  m_plotSink = std::make_unique<ArduinoPlotViewSink>(m_plotView);
+  m_plotParser = std::make_unique<ArduinoPlotParser>(m_plotSink.get());
 
   // Reset parser/buffers on first start so it locks onto format from "now".
   m_plotLineBuf.clear();

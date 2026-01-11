@@ -30,6 +30,7 @@ class wxPanel;
 class wxBookCtrlEvent;
 
 class ArduinoPlotView;
+class ArduinoPlotSink;
 class ArduinoPlotParser;
 struct BufferedPlotLine;
 struct EditorSettings;
@@ -108,6 +109,9 @@ private:
   void OnData(wxThreadEvent &event);
   void OnError(wxThreadEvent &event);
 
+  void ClearLog();
+  void ClearChart();
+
   void OnLineEndingChanged(wxCommandEvent &event);
   void OnClear(wxCommandEvent &event);
   void OnReset(wxCommandEvent &event);
@@ -163,6 +167,7 @@ private:
 
   // plot (lazy)
   ArduinoPlotView *m_plotView = nullptr;
+  std::unique_ptr<ArduinoPlotSink> m_plotSink;
   std::unique_ptr<ArduinoPlotParser> m_plotParser;
   bool m_plotStarted = false;
 

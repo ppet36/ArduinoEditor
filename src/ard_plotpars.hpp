@@ -1,20 +1,34 @@
 #pragma once
 
+#include <cstddef>
 #include <deque>
 #include <string>
 #include <utility>
 #include <vector>
-
-class ArduinoPlotView;
 
 struct BufferedPlotLine {
   std::string line;
   double time;
 };
 
+class ArduinoPlotSink {
+public:
+  virtual ~ArduinoPlotSink() = default;
+
+  // Called for each sample. If refresh=false, the sink should batch and repaint on Refresh().
+  virtual void AddSampleAt(const std::string &name, double value, double t_ms, bool refresh) = 0;
+
+  // Called after a batch (or when the parser wants the sink to repaint).
+  // Semantics match wxWindow::Refresh(eraseBackground).
+  virtual void Refresh(bool eraseBackground) = 0;
+};
+
 class ArduinoPlotParser {
 public:
-  explicit ArduinoPlotParser(ArduinoPlotView *view);
+  explicit ArduinoPlotParser(ArduinoPlotSink *sink = nullptr);
+
+  void SetSink(ArduinoPlotSink *sink) { m_sink = sink; }
+  ArduinoPlotSink *GetSink() const { return m_sink; }
 
   // Feed one serial line (UTF-8 expected). Stateful autodetection.
   void ApplyLine(const std::string &line, double time);
@@ -74,7 +88,7 @@ private:
   void EmitColumns(const std::vector<double> &values);
 
 private:
-  ArduinoPlotView *m_view = nullptr;
+  ArduinoPlotSink *m_sink = nullptr;
 
   Mode m_mode = Mode::Unknown;
 
