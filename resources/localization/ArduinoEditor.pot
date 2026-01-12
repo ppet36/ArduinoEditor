@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-11 18:01+0100\n"
+"POT-Creation-Date: 2026-01-12 10:38+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2998,8 +2998,8 @@ msgstr ""
 msgid "Save plot as image..."
 msgstr ""
 
-#: ../src/ard_plotview.cpp:463 ../src/ard_sermon.cpp:693
-#: ../src/ard_sermon.cpp:741
+#: ../src/ard_plotview.cpp:463 ../src/ard_sermon.cpp:789
+#: ../src/ard_sermon.cpp:837
 msgid "Clear"
 msgstr ""
 
@@ -3260,155 +3260,159 @@ msgstr ""
 msgid "Preview"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:361
+#: ../src/ard_sermon.cpp:456
 msgid "Failed to open serial port"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:393 ../src/ard_sermon.cpp:478
+#: ../src/ard_sermon.cpp:488 ../src/ard_sermon.cpp:573
 msgid "Serial port handle invalid"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:427
+#: ../src/ard_sermon.cpp:522
 #, c-format
 msgid "Serial select error: %d"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:448
+#: ../src/ard_sermon.cpp:543
 msgid "Serial port closed"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:470
+#: ../src/ard_sermon.cpp:565
 #, c-format
 msgid "Serial read error: %d"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:501
+#: ../src/ard_sermon.cpp:596
 #, c-format
 msgid "Serial read error (Win): %lu"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:524
+#: ../src/ard_sermon.cpp:619
 #, c-format
 msgid "Serial Monitor [%s]"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:614
+#: ../src/ard_sermon.cpp:710
 #, c-format
 msgid "Port: %s"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:652
+#: ../src/ard_sermon.cpp:748
 msgid "Baud:"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:658 ../src/ard_sermon.cpp:1040
+#: ../src/ard_sermon.cpp:754 ../src/ard_sermon.cpp:1176
 msgid "None"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:659 ../src/ard_sermon.cpp:665
-#: ../src/ard_sermon.cpp:1042
+#: ../src/ard_sermon.cpp:755 ../src/ard_sermon.cpp:761
+#: ../src/ard_sermon.cpp:1178
 msgid "<LF>"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:660 ../src/ard_sermon.cpp:1044
+#: ../src/ard_sermon.cpp:756 ../src/ard_sermon.cpp:1180
 msgid "<CR>"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:661 ../src/ard_sermon.cpp:1046
+#: ../src/ard_sermon.cpp:757 ../src/ard_sermon.cpp:1182
 msgid "<CR><LF>"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:670
+#: ../src/ard_sermon.cpp:766
 msgid "Line ending:"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:675
+#: ../src/ard_sermon.cpp:771
 msgid "Autoscroll"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:678
+#: ../src/ard_sermon.cpp:774
 msgid "Show timestamps"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:686 ../src/ard_sermon.cpp:1067
-#: ../src/ard_sermon.cpp:1671
+#: ../src/ard_sermon.cpp:782 ../src/ard_sermon.cpp:1203
+#: ../src/ard_sermon.cpp:1841
 msgid "Pause"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:689
+#: ../src/ard_sermon.cpp:785
 msgid "Reset (DTR/RTS)"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:690
+#: ../src/ard_sermon.cpp:786
 msgid ""
 "Resets the connected device (DTR/RTS pulse). Same behavior as opening the "
 "serial port."
 msgstr ""
 
-#: ../src/ard_sermon.cpp:724
+#: ../src/ard_sermon.cpp:820
 msgid "Copy\tCtrl+C"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:730 ../src/ard_sermon.cpp:773
+#: ../src/ard_sermon.cpp:826 ../src/ard_sermon.cpp:873
 msgid "Save selection..."
 msgstr ""
 
-#: ../src/ard_sermon.cpp:735 ../src/ard_sermon.cpp:773
+#: ../src/ard_sermon.cpp:831 ../src/ard_sermon.cpp:873
 msgid "Save all..."
 msgstr ""
 
-#: ../src/ard_sermon.cpp:776
+#: ../src/ard_sermon.cpp:842
+msgid "Display values"
+msgstr ""
+
+#: ../src/ard_sermon.cpp:876
 msgid "Text files (*.txt)|*.txt|Log files (*.log)|*.log|All files (*.*)|*.*"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:784
+#: ../src/ard_sermon.cpp:884
 #, c-format
 msgid "Failed to save file: %s"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:831
+#: ../src/ard_sermon.cpp:942
 msgid "Log"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:838
+#: ../src/ard_sermon.cpp:949
 msgid "Open this tab to start plotting serial values."
 msgstr ""
 
-#: ../src/ard_sermon.cpp:842
+#: ../src/ard_sermon.cpp:953
 msgid "Plot"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:878
+#: ../src/ard_sermon.cpp:1001
 msgid "Failed to start serial monitor thread"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:1031
+#: ../src/ard_sermon.cpp:1167
 msgid "Failed to write to serial port"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:1058
+#: ../src/ard_sermon.cpp:1194
 msgid "Resume"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:1656
+#: ../src/ard_sermon.cpp:1826
 #, c-format
 msgid "Serial monitor error: %s"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:1657
+#: ../src/ard_sermon.cpp:1827
 #, c-format
 msgid ""
 "\n"
 "[ERROR] %s\n"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:1690
+#: ../src/ard_sermon.cpp:1860
 msgid ""
 "\n"
 "[INFO] Serial monitor blocked - port released.\n"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:1718
+#: ../src/ard_sermon.cpp:1888
 msgid ""
 "\n"
 "[INFO] Serial monitor unblocked - port re-opened.\n"

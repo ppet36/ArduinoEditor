@@ -23,6 +23,7 @@
 #include "ard_plotpars.hpp"
 #include "ard_plotview.hpp"
 #include "ard_setdlg.hpp"
+#include "ard_valsview.hpp"
 #include "utils.hpp"
 #include <errno.h>
 #include <memory>
@@ -57,6 +58,7 @@ enum {
   ID_OutputMenuCopy,
   ID_OutputMenuSaveSelection,
   ID_OutputMenuSaveAll,
+  ID_OutputMenuDisplayValues,
   ID_OutputMenuClear
 };
 
@@ -68,20 +70,48 @@ constexpr size_t kMaxPausedTextChars = 1024 * 1024; // 1 MB paused text buffer (
 constexpr size_t kMaxPausedPlotLines = 50000;       // paused plot buffer limie
 } // namespace
 
-namespace {
+// --- Telemetry sinks (Plot parser -> UI consumers) ---
+class ArduinoFanoutSink final : public ArduinoPlotSink {
+public:
+  ArduinoFanoutSink(ArduinoPlotSink *a = nullptr, ArduinoPlotSink *b = nullptr)
+      : m_a(a), m_b(b) {}
+
+  void Set(ArduinoPlotSink *a, ArduinoPlotSink *b) {
+    m_a = a;
+    m_b = b;
+  }
+
+  void AddSampleAt(const std::string &name, double value, double t_ms, bool refresh) override {
+    if (m_a)
+      m_a->AddSampleAt(name, value, t_ms, refresh);
+    if (m_b)
+      m_b->AddSampleAt(name, value, t_ms, refresh);
+  }
+
+  void Refresh(bool eraseBackground) override {
+    if (m_a)
+      m_a->Refresh(eraseBackground);
+    if (m_b)
+      m_b->Refresh(eraseBackground);
+  }
+
+private:
+  ArduinoPlotSink *m_a = nullptr;
+  ArduinoPlotSink *m_b = nullptr;
+};
 
 class ArduinoPlotViewSink final : public ArduinoPlotSink {
 public:
   explicit ArduinoPlotViewSink(ArduinoPlotView *view) : m_view(view) {}
 
-  void SetView(ArduinoPlotView *view) { m_view = view; }
+  // Map external time base (serial monitor clock) to the plot view internal clock.
+  void SetTimeOffset(double offsetMs) { m_timeOffsetMs = offsetMs; }
 
   void AddSampleAt(const std::string &name, double value, double t_ms, bool refresh) override {
     if (!m_view)
       return;
-
     const wxString &wxName = ToWxCached(name);
-    m_view->AddSampleAt(wxName, value, t_ms, refresh);
+    m_view->AddSampleAt(wxName, value, t_ms + m_timeOffsetMs, refresh);
   }
 
   void Refresh(bool eraseBackground) override {
@@ -94,16 +124,43 @@ private:
     auto it = m_cache.find(name);
     if (it != m_cache.end())
       return it->second;
-
     auto ins = m_cache.emplace(name, wxString::FromUTF8(name.c_str()));
     return ins.first->second;
   }
 
   ArduinoPlotView *m_view = nullptr;
   std::unordered_map<std::string, wxString> m_cache;
+  double m_timeOffsetMs = 0.0;
 };
 
-} // namespace
+class ArduinoValuesViewSink final : public ArduinoPlotSink {
+public:
+  explicit ArduinoValuesViewSink(ArduinoValuesView *view) : m_view(view) {}
+
+  void AddSampleAt(const std::string &name, double value, double /*t_ms*/, bool refresh) override {
+    if (!m_view)
+      return;
+    const wxString &wxName = ToWxCached(name);
+    m_view->AddSample(wxName, value, refresh);
+  }
+
+  void Refresh(bool eraseBackground) override {
+    if (m_view)
+      m_view->Refresh(eraseBackground);
+  }
+
+private:
+  const wxString &ToWxCached(const std::string &name) {
+    auto it = m_cache.find(name);
+    if (it != m_cache.end())
+      return it->second;
+    auto ins = m_cache.emplace(name, wxString::FromUTF8(name.c_str()));
+    return ins.first->second;
+  }
+
+  ArduinoValuesView *m_view = nullptr;
+  std::unordered_map<std::string, wxString> m_cache;
+};
 
 #if defined(__unix__) || defined(__APPLE__)
 
@@ -642,6 +699,7 @@ void ArduinoSerialMonitorFrame::CreateControls() {
     }
 
     m_sketchConfig->Read(wxT("SerialShowTimestamps"), &showTimestamps);
+    m_sketchConfig->Read(wxT("SerialDisplayValues"), &m_displayValues, false);
   }
 
   auto *topSizer = new wxBoxSizer(wxVERTICAL);
@@ -780,6 +838,10 @@ void ArduinoSerialMonitorFrame::CreateControls() {
                        wxEmptyString,
                        wxAEArt::Delete);
 
+    menu.AppendSeparator();
+    menu.AppendCheckItem(ID_OutputMenuDisplayValues, _("Display values"));
+    menu.Check(ID_OutputMenuDisplayValues, m_displayValues);
+
     menu.Enable(ID_OutputMenuCopy, hasSel);
     menu.Enable(ID_OutputMenuSaveSelection, hasSel);
 
@@ -852,6 +914,17 @@ void ArduinoSerialMonitorFrame::CreateControls() {
     },
               ID_OutputMenuClear);
 
+    menu.Bind(wxEVT_MENU, [this](wxCommandEvent &evt) {
+      m_displayValues = evt.IsChecked();
+      if (m_valuesView) {
+        m_valuesView->Show(m_displayValues);
+      }
+      if (m_sketchConfig) {
+        m_sketchConfig->Write(wxT("SerialDisplayValues"), m_displayValues);
+        m_sketchConfig->Flush();
+      }
+      Layout(); }, ID_OutputMenuDisplayValues);
+
     wxPoint pt = e.GetPosition(); // screen coords
     if (pt == wxDefaultPosition) {
       pt = wxGetMousePosition();
@@ -881,6 +954,11 @@ void ArduinoSerialMonitorFrame::CreateControls() {
 
   topSizer->Add(m_notebook, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 8);
 
+  // Live values (outside notebook)
+  m_valuesView = new ArduinoValuesView(this);
+  m_valuesView->Show(m_displayValues);
+  topSizer->Add(m_valuesView, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 8);
+
   // Bottom line - input + send
   auto *bottomSizer = new wxBoxSizer(wxHORIZONTAL);
 
@@ -901,6 +979,13 @@ void ArduinoSerialMonitorFrame::CreateControls() {
   topSizer->Add(bottomSizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 8);
 
   SetSizer(topSizer);
+
+  // Telemetry parser (always-on) + sinks
+  m_telemetryWatch.Start();
+  m_valuesSink = std::make_unique<ArduinoValuesViewSink>(m_valuesView);
+  m_telemetrySink = std::make_unique<ArduinoFanoutSink>(m_valuesSink.get(), nullptr);
+  m_plotParser = std::make_unique<ArduinoPlotParser>(m_telemetrySink.get());
+
   topSizer->SetSizeHints(this);
 
   m_inputCtrl->SetFocus();
@@ -1180,11 +1265,16 @@ void ArduinoSerialMonitorFrame::ClearLog() {
   m_tsPending = false;
   m_tsLastPrintedSec = (time_t)-1;
   m_tsPendingSec = (time_t)-1;
+
+  if (m_valuesView) {
+    m_valuesView->Clear();
+  }
 }
 
 void ArduinoSerialMonitorFrame::ClearChart() {
   if (m_plotView) {
     m_plotView->Clear();
+    AlignPlotTimeBase();
   }
   if (m_plotParser) {
     m_plotParser->Reset();
@@ -1284,13 +1374,28 @@ void ArduinoSerialMonitorFrame::EnsurePlotterStarted() {
   }
 
   m_plotSink = std::make_unique<ArduinoPlotViewSink>(m_plotView);
-  m_plotParser = std::make_unique<ArduinoPlotParser>(m_plotSink.get());
+  AlignPlotTimeBase();
 
-  // Reset parser/buffers on first start so it locks onto format from "now".
-  m_plotLineBuf.clear();
-  m_pausedPlotBuffer.clear();
+  // Attach plot sink to the always-on parser (fanout values + plot).
+  m_telemetrySink = std::make_unique<ArduinoFanoutSink>(m_valuesSink.get(), m_plotSink.get());
+  if (m_plotParser) {
+    m_plotParser->SetSink(m_telemetrySink.get());
+  }
 
   m_plotPage->Thaw();
+}
+
+void ArduinoSerialMonitorFrame::AlignPlotTimeBase() {
+  if (!m_plotView || !m_plotSink)
+    return;
+
+  auto *vsink = dynamic_cast<ArduinoPlotViewSink *>(m_plotSink.get());
+  if (!vsink)
+    return;
+
+  const double nowMonMs = (double)m_telemetryWatch.Time();
+  const double nowViewMs = (double)m_plotView->GetCurrentTime();
+  vsink->SetTimeOffset(nowViewMs - nowMonMs);
 }
 
 void ArduinoSerialMonitorFrame::FeedPlotChunkUtf8(const std::string &chunkUtf8, double time) {
@@ -1698,8 +1803,9 @@ void ArduinoSerialMonitorFrame::OnData(wxThreadEvent &event) {
     m_pausedBuffer.push_back(textToAppend);
     m_pausedTextChars += add;
 
-    if (m_plotStarted && m_plotParser) {
-      BufferPlotChunkUtf8(plotChunkUtf8, m_plotView->GetCurrentTime());
+    if (m_plotParser) {
+      const double t_ms = (double)m_telemetryWatch.Time();
+      BufferPlotChunkUtf8(plotChunkUtf8, t_ms);
     }
     return;
   }
@@ -1708,9 +1814,10 @@ void ArduinoSerialMonitorFrame::OnData(wxThreadEvent &event) {
     QueueTextAppend(textToAppend);
   }
 
-  // Feed plotter only after the user opened the Plot tab at least once.
-  if (m_plotStarted && m_plotParser) {
-    FeedPlotChunkUtf8(plotChunkUtf8, m_plotView->GetCurrentTime());
+  // Feed telemetry parser (always-on). Plot and values sinks receive samples if attached.
+  if (m_plotParser) {
+    const double t_ms = (double)m_telemetryWatch.Time();
+    FeedPlotChunkUtf8(plotChunkUtf8, t_ms);
   }
 }
 

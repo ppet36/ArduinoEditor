@@ -23,6 +23,7 @@
 #include <vector>
 #include <wx/config.h>
 #include <wx/stc/stc.h>
+#include <wx/stopwatch.h>
 #include <wx/wx.h>
 
 class wxNotebook;
@@ -31,6 +32,7 @@ class wxBookCtrlEvent;
 
 class ArduinoPlotView;
 class ArduinoPlotSink;
+class ArduinoValuesView;
 class ArduinoPlotParser;
 struct BufferedPlotLine;
 struct EditorSettings;
@@ -94,6 +96,7 @@ public:
 private:
   void OnNotebookPageChanged(wxBookCtrlEvent &event);
   void EnsurePlotterStarted();
+  void AlignPlotTimeBase();
   void FeedPlotChunkUtf8(const std::string &chunkUtf8, double time);
   void BufferPlotChunkUtf8(const std::string &chunkUtf8, double time);
   void NormalizeLineEndings(wxString &chunk);
@@ -165,11 +168,20 @@ private:
   void FlushPendingText(bool force = false);
   void OnTextFlushTimer(wxTimerEvent &);
 
-  // plot (lazy)
+  // plot / telemetry
   ArduinoPlotView *m_plotView = nullptr;
   std::unique_ptr<ArduinoPlotSink> m_plotSink;
+
+  ArduinoValuesView *m_valuesView = nullptr;
+  std::unique_ptr<ArduinoPlotSink> m_valuesSink;
+
+  std::unique_ptr<ArduinoPlotSink> m_telemetrySink;
   std::unique_ptr<ArduinoPlotParser> m_plotParser;
+
   bool m_plotStarted = false;
+  bool m_displayValues = false;
+
+  wxStopWatch m_telemetryWatch;
 
   // buffering for plot line parsing
   std::string m_plotLineBuf;
