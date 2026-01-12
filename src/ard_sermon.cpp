@@ -59,6 +59,8 @@ enum {
   ID_OutputMenuSaveSelection,
   ID_OutputMenuSaveAll,
   ID_OutputMenuDisplayValues,
+  ID_OutputMenuAutoScroll,
+  ID_OutputMenuTimestamps,
   ID_OutputMenuClear
 };
 
@@ -686,8 +688,6 @@ void ArduinoSerialMonitorFrame::SetupOutputCtrl(const EditorSettings &settings) 
 }
 
 void ArduinoSerialMonitorFrame::CreateControls() {
-  bool showTimestamps = false;
-
   if (m_sketchConfig) {
     long savedBaud = 0;
     if (m_sketchConfig->Read(wxT("SerialMonitorBaud"), &savedBaud) && (savedBaud > 0)) {
@@ -698,7 +698,7 @@ void ArduinoSerialMonitorFrame::CreateControls() {
       }
     }
 
-    m_sketchConfig->Read(wxT("SerialShowTimestamps"), &showTimestamps);
+    m_sketchConfig->Read(wxT("SerialShowTimestamps"), &m_timestamps, false);
     m_sketchConfig->Read(wxT("SerialDisplayValues"), &m_displayValues, false);
   }
 
@@ -767,16 +767,7 @@ void ArduinoSerialMonitorFrame::CreateControls() {
                    wxALIGN_CENTER_VERTICAL | wxRIGHT, 4);
   headerSizer->Add(m_lineEndCombo, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 12);
 
-  // Autoscroll + timestamps + Pause + Clear
-  m_autoscrollCheck = new wxCheckBox(this, wxID_ANY, _("Autoscroll"));
-  m_autoscrollCheck->SetValue(true);
-
-  m_timestampCheck = new wxCheckBox(this, wxID_ANY, _("Show timestamps"));
-  m_timestampCheck->SetValue(showTimestamps);
-
   headerSizer->AddStretchSpacer(1);
-  headerSizer->Add(m_autoscrollCheck, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
-  headerSizer->Add(m_timestampCheck, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
 
   // --- Pause / Reset / Resume ---
   m_pauseButton = new wxButton(this, ID_PauseButton, _("Pause"));
@@ -821,6 +812,15 @@ void ArduinoSerialMonitorFrame::CreateControls() {
                        wxEmptyString,
                        wxAEArt::Copy);
     menu.AppendSeparator();
+
+    menu.AppendCheckItem(ID_OutputMenuDisplayValues, _("Display values"));
+    menu.Check(ID_OutputMenuDisplayValues, m_displayValues);
+    menu.AppendCheckItem(ID_OutputMenuAutoScroll, _("Autoscroll"));
+    menu.Check(ID_OutputMenuAutoScroll, m_autoScroll);
+    menu.AppendCheckItem(ID_OutputMenuTimestamps, _("Show timestamps"));
+    menu.Check(ID_OutputMenuTimestamps, m_timestamps);
+
+    menu.AppendSeparator();
     AddMenuItemWithArt(&menu,
                        ID_OutputMenuSaveSelection,
                        _("Save selection..."),
@@ -838,9 +838,7 @@ void ArduinoSerialMonitorFrame::CreateControls() {
                        wxEmptyString,
                        wxAEArt::Delete);
 
-    menu.AppendSeparator();
-    menu.AppendCheckItem(ID_OutputMenuDisplayValues, _("Display values"));
-    menu.Check(ID_OutputMenuDisplayValues, m_displayValues);
+
 
     menu.Enable(ID_OutputMenuCopy, hasSel);
     menu.Enable(ID_OutputMenuSaveSelection, hasSel);
@@ -895,7 +893,8 @@ void ArduinoSerialMonitorFrame::CreateControls() {
     // Handlers
     menu.Bind(wxEVT_MENU, [this](wxCommandEvent &) {
       if (m_outputCtrl)
-        m_outputCtrl->Copy(); }, ID_OutputMenuCopy);
+        m_outputCtrl->Copy();
+    }, ID_OutputMenuCopy);
 
     menu.Bind(wxEVT_MENU, [this, &saveText](wxCommandEvent &) {
       if (!m_outputCtrl)
@@ -911,8 +910,7 @@ void ArduinoSerialMonitorFrame::CreateControls() {
       wxCommandEvent dummy(wxEVT_BUTTON, ID_ClearButton);
       dummy.SetEventObject(this);
       OnClear(dummy); // same handler as the Clear button
-    },
-              ID_OutputMenuClear);
+    }, ID_OutputMenuClear);
 
     menu.Bind(wxEVT_MENU, [this](wxCommandEvent &evt) {
       m_displayValues = evt.IsChecked();
@@ -923,9 +921,22 @@ void ArduinoSerialMonitorFrame::CreateControls() {
         m_sketchConfig->Write(wxT("SerialDisplayValues"), m_displayValues);
         m_sketchConfig->Flush();
       }
-      Layout(); }, ID_OutputMenuDisplayValues);
+      Layout();
+    }, ID_OutputMenuDisplayValues);
 
-    wxPoint pt = e.GetPosition(); // screen coords
+    menu.Bind(wxEVT_MENU, [this](wxCommandEvent &evt) {
+      m_autoScroll = evt.IsChecked();
+    }, ID_OutputMenuAutoScroll);
+
+    menu.Bind(wxEVT_MENU, [this](wxCommandEvent &evt) {
+      m_timestamps = evt.IsChecked();
+      if (m_sketchConfig) {
+        m_sketchConfig->Write(wxT("SerialShowTimestamps"), m_timestamps);
+        m_sketchConfig->Flush();
+      }
+    }, ID_OutputMenuTimestamps);
+
+    wxPoint pt = e.GetPosition();
     if (pt == wxDefaultPosition) {
       pt = wxGetMousePosition();
     }
@@ -1117,7 +1128,7 @@ void ArduinoSerialMonitorFrame::Close() {
         m_sketchConfig->Write(wxT("SerialFixedYRangeMax"), yMax);
       }
     }
-    m_sketchConfig->Write(wxT("SerialShowTimestamps"), m_timestampCheck->IsChecked());
+    m_sketchConfig->Write(wxT("SerialShowTimestamps"), m_timestamps);
     m_sketchConfig->Flush();
   }
 
@@ -1227,7 +1238,7 @@ void ArduinoSerialMonitorFrame::OnPause(wxCommandEvent &WXUNUSED(event)) {
   }
 
   // 3) Autoscroll
-  if (didAppendText && m_autoscrollCheck && m_autoscrollCheck->GetValue()) {
+  if (didAppendText && m_autoScroll) {
     ScrollOutputToEnd();
   }
 }
@@ -1576,7 +1587,7 @@ void ArduinoSerialMonitorFrame::FlushPendingText(bool force) {
     m_textFlushScheduled = false;
   }
 
-  const bool autoscroll = (m_autoscrollCheck && m_autoscrollCheck->GetValue());
+  const bool autoscroll = m_autoScroll;
 
   // Save view/caret state when autoscroll is OFF.
   int firstLine = 0;
@@ -1667,7 +1678,7 @@ bool ArduinoSerialMonitorFrame::IsOutputAtBottom() const {
 void ArduinoSerialMonitorFrame::OnOutputUpdateUI(wxStyledTextEvent &event) {
   event.Skip();
 
-  if (!m_outputCtrl || !m_autoscrollCheck)
+  if (!m_outputCtrl)
     return;
 
   if ((event.GetUpdated() & wxSTC_UPDATE_V_SCROLL) == 0)
@@ -1685,22 +1696,17 @@ void ArduinoSerialMonitorFrame::OnOutputUpdateUI(wxStyledTextEvent &event) {
   const bool moved = (first != m_lastFirstVisibleLine);
   m_lastFirstVisibleLine = first;
 
-  if (!moved)
+  if (!moved) {
     return;
+  }
 
   const bool atBottom = IsOutputAtBottom();
-  const bool autoOn = m_autoscrollCheck->GetValue();
+  const bool autoOn = m_autoScroll;
 
   if (autoOn && !atBottom) {
-    m_autoscrollCheck->SetValue(false);
-    wxCommandEvent ev(wxEVT_CHECKBOX, m_autoscrollCheck->GetId());
-    ev.SetEventObject(m_autoscrollCheck);
-    wxPostEvent(this, ev);
+    m_autoScroll = false;
   } else if (!autoOn && atBottom) {
-    m_autoscrollCheck->SetValue(true);
-    wxCommandEvent ev(wxEVT_CHECKBOX, m_autoscrollCheck->GetId());
-    ev.SetEventObject(m_autoscrollCheck);
-    wxPostEvent(this, ev);
+    m_autoScroll = true;
   }
 }
 
@@ -1729,10 +1735,8 @@ void ArduinoSerialMonitorFrame::OnData(wxThreadEvent &event) {
   // This is the raw chunk that goes into the plotter (NO timestamps).
   const std::string plotChunkUtf8 = wxToStd(chunk);
 
-  const bool timestamps = (m_timestampCheck && m_timestampCheck->GetValue());
-
   // Decide if we need a timestamp for this second (but don't print it mid-line)
-  if (timestamps) {
+  if (m_timestamps) {
     if (m_tsLastPrintedSec != chunkTime) {
       m_tsPending = true;
       m_tsPendingSec = chunkTime;
@@ -1745,7 +1749,7 @@ void ArduinoSerialMonitorFrame::OnData(wxThreadEvent &event) {
   wxString textToAppend;
 
   auto flushTimestampIfNeeded = [&]() {
-    if (!timestamps)
+    if (!m_timestamps)
       return;
     if (!m_tsPending)
       return;
@@ -1858,7 +1862,7 @@ void ArduinoSerialMonitorFrame::Block() {
 
   if (m_outputCtrl) {
     QueueTextAppend(_("\n[INFO] Serial monitor blocked - port released.\n"));
-    if (m_autoscrollCheck && m_autoscrollCheck->GetValue()) {
+    if (m_autoScroll) {
       ScrollOutputToEnd();
     }
   }
@@ -1886,7 +1890,7 @@ void ArduinoSerialMonitorFrame::Unblock() {
 
   if (m_outputCtrl) {
     QueueTextAppend(_("\n[INFO] Serial monitor unblocked - port re-opened.\n"));
-    if (m_autoscrollCheck && m_autoscrollCheck->GetValue()) {
+    if (m_autoScroll) {
       ScrollOutputToEnd();
     }
   }

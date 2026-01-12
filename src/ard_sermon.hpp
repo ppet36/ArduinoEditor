@@ -136,13 +136,11 @@ private:
   wxString m_portName;
   long m_baudRate{115200};
 
-  wxStyledTextCtrl *m_outputCtrl{nullptr};
-  wxTextCtrl *m_inputCtrl{nullptr};
-  wxComboBox *m_baudCombo{nullptr};
-  wxComboBox *m_lineEndCombo{nullptr};
-  wxBitmapButton *m_sendButton{nullptr};
-  wxCheckBox *m_autoscrollCheck{nullptr};
-  wxCheckBox *m_timestampCheck{nullptr};
+  wxStyledTextCtrl *m_outputCtrl = nullptr;
+  wxTextCtrl *m_inputCtrl = nullptr;
+  wxComboBox *m_baudCombo = nullptr;
+  wxComboBox *m_lineEndCombo = nullptr;
+  wxBitmapButton *m_sendButton = nullptr;
   wxButton *m_pauseButton = nullptr;
   wxButton *m_resetButton = nullptr;
   wxButton *m_clearButton = nullptr;
@@ -159,6 +157,8 @@ private:
   bool m_isBlocked = false;
   bool m_paused = false;
   bool m_pendingCR = false;
+  bool m_autoScroll = true;
+  bool m_timestamps = false;
 
   // --- text output throttling ---
   wxTimer m_textFlushTimer;
