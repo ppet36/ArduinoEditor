@@ -40,6 +40,8 @@ private:
 
   // Periodic UI upkeep: update relative times & faded colors even when no new samples arrive.
   void OnTimer(wxTimerEvent &e);
+  void OnSysColourChanged(wxSysColourChangedEvent &event);
+  void ApplyColorScheme();
 
   // Helpers
   static wxString FormatValue(double value);

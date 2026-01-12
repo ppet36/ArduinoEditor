@@ -291,6 +291,9 @@ public:
 
   static bool IsClangTargetSupported(const std::string &target);
 
+  long AutoDetectSerialBaudRate(const std::vector<SketchFileBuffer> &files);
+  long AutoDetectSerialBaudRate();
+
   bool IsReady() { return m_ready; }
   void SetReady(bool ready = true) { m_ready = ready; }
 

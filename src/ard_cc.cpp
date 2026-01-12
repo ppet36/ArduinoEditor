@@ -25,6 +25,7 @@
 #include <thread>
 #include <unordered_map>
 #include <unordered_set>
+#include <set>
 
 namespace fs = std::filesystem;
 
@@ -940,6 +941,149 @@ static std::string InjectParameterNamesIntoSignature(const std::string &sig, con
   // suffix including ')', plus any trailing qualifiers (const/noexcept/...)
   out.append(sig, close, std::string::npos);
   return out;
+}
+
+static bool IsInSetupFunction(CXCursor cur) {
+  while (!clang_Cursor_isNull(cur)) {
+    CXCursorKind k = clang_getCursorKind(cur);
+    if (k == CXCursor_FunctionDecl || k == CXCursor_CXXMethod ||
+        k == CXCursor_Constructor || k == CXCursor_FunctionTemplate) {
+      std::string nm = cxStringToStd(clang_getCursorSpelling(cur));
+      return nm == "setup";
+    }
+    CXCursor parent = clang_getCursorSemanticParent(cur);
+    if (clang_equalCursors(parent, cur))
+      break;
+    cur = parent;
+  }
+  return false;
+}
+
+static bool TryGetSerialBaseFromCallTokens(CXTranslationUnit tu, CXCursor callCur, std::string &outBase) {
+  outBase.clear();
+
+  CXSourceRange r = clang_getCursorExtent(callCur);
+
+  CXToken *tokens = nullptr;
+  unsigned nt = 0;
+  clang_tokenize(tu, r, &tokens, &nt);
+  if (!tokens || nt == 0) {
+    if (tokens)
+      clang_disposeTokens(tu, tokens, nt);
+    return false;
+  }
+
+  auto tok = [&](unsigned i) -> std::string {
+    return cxStringToStd(clang_getTokenSpelling(tu, tokens[i]));
+  };
+
+  // we are looking for a pattern: <SerialX> ( . | -> ) begin
+  // we only take "Serial" and "SerialUSB" and "SerialN" (Serial1/2/3...) as candidates
+  auto isSerialLike = [](const std::string &s) -> bool {
+    if (s == "Serial" || s == "SerialUSB")
+      return true;
+    if (s.rfind("Serial", 0) == 0 && s.size() > 6) {
+      // Serial + number
+      for (size_t i = 6; i < s.size(); ++i) {
+        if (!std::isdigit((unsigned char)s[i]))
+          return false;
+      }
+      return true;
+    }
+    return false;
+  };
+
+  bool hit = false;
+  for (unsigned i = 2; i < nt; ++i) {
+    std::string t = tok(i);
+    if (t != "begin")
+      continue;
+
+    std::string op = tok(i - 1);
+    if (op != "." && op != "->")
+      continue;
+
+    std::string base = tok(i - 2);
+    if (!isSerialLike(base))
+      continue;
+
+    outBase = base;
+    hit = true;
+    break;
+  }
+
+  clang_disposeTokens(tu, tokens, nt);
+  return hit;
+}
+
+static std::optional<long> EvalArg0AsLong(CXCursor callCur) {
+  const int argc = clang_Cursor_getNumArguments(callCur);
+  if (argc < 1)
+    return std::nullopt;
+
+  CXCursor arg0 = clang_Cursor_getArgument(callCur, 0);
+  if (clang_Cursor_isNull(arg0))
+    return std::nullopt;
+
+  CXEvalResult er = clang_Cursor_Evaluate(arg0);
+  if (!er)
+    return std::nullopt;
+
+  std::optional<long> out;
+  CXEvalResultKind k = clang_EvalResult_getKind(er);
+  if (k == CXEval_Int) {
+    long long v = clang_EvalResult_getAsLongLong(er);
+    if (v > 0 && v < 10000000)
+      out = (long)v;
+  }
+
+  clang_EvalResult_dispose(er);
+  return out;
+}
+
+struct BaudDetectData {
+  CXTranslationUnit tu = nullptr;
+  std::string mainFileNorm;
+  std::unordered_map<std::string, std::set<long>> found;
+};
+
+static CXChildVisitResult BaudDetectVisitor(CXCursor cur, CXCursor, CXClientData client_data) {
+  auto *d = static_cast<BaudDetectData *>(client_data);
+
+  CXSourceLocation loc = clang_getCursorLocation(cur);
+  CXFile file;
+  unsigned line = 0, col = 0, off = 0;
+  clang_getSpellingLocation(loc, &file, &line, &col, &off);
+  if (file) {
+    std::string fn = cxStringToStd(clang_getFileName(file));
+    if (!fn.empty()) {
+      std::string fnNorm = NormalizePathForClangCompare(fn);
+      if (fnNorm != d->mainFileNorm)
+        return CXChildVisit_Recurse;
+    }
+  }
+
+  if (clang_getCursorKind(cur) == CXCursor_CallExpr) {
+    CXCursor ref = clang_getCursorReferenced(cur);
+    if (clang_Cursor_isNull(ref))
+      ref = clang_getCursorDefinition(cur);
+
+    if (!clang_Cursor_isNull(ref)) {
+      std::string calleeName = cxStringToStd(clang_getCursorSpelling(ref));
+      if (calleeName == "begin") {
+        if (IsInSetupFunction(cur)) {
+          std::string base;
+          if (TryGetSerialBaseFromCallTokens(d->tu, cur, base)) {
+            if (auto b = EvalArg0AsLong(cur)) {
+              d->found[base].insert(*b);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return CXChildVisit_Recurse;
 }
 
 } // namespace
@@ -5142,6 +5286,64 @@ bool ArduinoCodeCompletion::IsClangTargetSupported(const std::string &target) {
   APP_DEBUG_LOG("CC: IsClangTargetSupported (%s) -> %d", target.c_str(), ok);
 
   return ok;
+}
+
+long ArduinoCodeCompletion::AutoDetectSerialBaudRate(const std::vector<SketchFileBuffer> &files) {
+  std::lock_guard<std::mutex> lock(m_ccMutex);
+
+  ScopeTimer t("CC: AutoDetectSerialBaudRate(%zu files)", files.size());
+
+  if (!m_ready || files.empty())
+    return 0;
+
+  const SketchFileBuffer *ino = nullptr;
+  for (const auto &f : files) {
+    if (hasSuffix(f.filename, ".ino")) {
+      ino = &f;
+      break;
+    }
+  }
+  if (!ino)
+    return 0;
+
+  CcFilesSnapshotGuard guard(&files);
+
+  int addedLines = 0;
+  std::string mainFile;
+  CXTranslationUnit tu = GetTranslationUnitNoReparse(ino->filename, ino->code, &addedLines, &mainFile);
+  if (!tu)
+    return 0;
+
+  std::string clangMain = !mainFile.empty() ? mainFile : GetClangFilename(ino->filename);
+  BaudDetectData data;
+  data.tu = tu;
+  data.mainFileNorm = NormalizePathForClangCompare(clangMain);
+
+  CXCursor root = clang_getTranslationUnitCursor(tu);
+  clang_visitChildren(root, &BaudDetectVisitor, &data);
+
+  auto pickUnique = [&](const char *key) -> long {
+    auto it = data.found.find(key);
+    if (it == data.found.end())
+      return 0;
+    if (it->second.size() != 1)
+      return 0;
+    return (long)*it->second.begin();
+  };
+
+  // priority: Serial (typical serial monitor) -> SerialUSB
+  if (long b = pickUnique("Serial"))
+    return b;
+  if (long b = pickUnique("SerialUSB"))
+    return b;
+
+  return 0;
+}
+
+long ArduinoCodeCompletion::AutoDetectSerialBaudRate() {
+  std::vector<SketchFileBuffer> files;
+  CollectSketchFiles(files);
+  return AutoDetectSerialBaudRate(files);
 }
 
 void ArduinoCodeCompletion::ApplySettings(const ClangSettings &settings) {

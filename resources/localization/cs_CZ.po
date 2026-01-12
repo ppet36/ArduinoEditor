@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ArduinoEditor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-12 14:05+0100\n"
+"POT-Creation-Date: 2026-01-12 18:21+0100\n"
 "PO-Revision-Date: 2025-12-09 22:52:00+0100\n"
 "Last-Translator: Pavel Petržela <r17c@seznam.cz>\n"
 "Language-Team: -\n"
@@ -19,8 +19,8 @@ msgstr ""
 
 #: ../src/ai_client.cpp:74
 msgid ""
-"Extra JSON request parameters must be a JSON object (e.g. {\"temperature"
-"\":0.2})."
+"Extra JSON request parameters must be a JSON object (e.g. "
+"{\"temperature\":0.2})."
 msgstr ""
 "Dodatečné JSON parametry požadavku musí být validní JSON objekt (např. "
 "{\"temperature\":0.2})."
@@ -129,8 +129,9 @@ msgid ""
 "   <hr>\n"
 "\n"
 "   <p>\n"
-"     <b>Project homepage and source code:&nbsp;</b><a href=\"https://github."
-"com/ppet36/ArduinoEditor\">https://github.com/ppet36/ArduinoEditor</a>\n"
+"     <b>Project homepage and source code:&nbsp;</b><a href=\"https://"
+"github.com/ppet36/ArduinoEditor\">https://github.com/ppet36/ArduinoEditor</"
+"a>\n"
 "   </p>\n"
 "\n"
 "   <hr>\n"
@@ -196,8 +197,8 @@ msgid ""
 "   <a name=\"project\"></a>\n"
 "   <h3>Project-wide Multi-file Support</h3>\n"
 "   <p>\n"
-"     Full support for structured sketches and multiple files (.ino/.cpp/."
-"hpp), including\n"
+"     Full support for structured sketches and multiple files "
+"(.ino/.cpp/.hpp), including\n"
 "     project-wide indexing, navigation and explicit support for structured "
 "Arduino projects.\n"
 "   </p>\n"
@@ -306,8 +307,8 @@ msgstr ""
 "   <hr>\n"
 "\n"
 "   <p>\n"
-"     <b>Domovská stránka projektu a zdrojové kódy:&nbsp;</b><a href="
-"\"https://github.com/ppet36/ArduinoEditor\">https://github.com/ppet36/"
+"     <b>Domovská stránka projektu a zdrojové kódy:&nbsp;</b><a "
+"href=\"https://github.com/ppet36/ArduinoEditor\">https://github.com/ppet36/"
 "ArduinoEditor</a>\n"
 "   </p>\n"
 "\n"
@@ -626,8 +627,8 @@ msgid ""
 "  </p>\n"
 "  <p>\n"
 "    For the full license text see:<br>\n"
-"    <a href=\"https://github.com/arduino/arduino-cli/blob/master/LICENSE.txt"
-"\">\n"
+"    <a href=\"https://github.com/arduino/arduino-cli/blob/master/"
+"LICENSE.txt\">\n"
 "      https://github.com/arduino/arduino-cli/blob/master/LICENSE.txt\n"
 "    </a>\n"
 "  </p>\n"
@@ -642,8 +643,8 @@ msgstr ""
 "  </p>\n"
 "  <p>\n"
 "    Úplné znění licence najdete zde:<br>\n"
-"    <a href=\"https://github.com/arduino/arduino-cli/blob/master/LICENSE.txt"
-"\">\n"
+"    <a href=\"https://github.com/arduino/arduino-cli/blob/master/"
+"LICENSE.txt\">\n"
 "      https://github.com/arduino/arduino-cli/blob/master/LICENSE.txt\n"
 "    </a>\n"
 "  </p>\n"
@@ -1051,7 +1052,7 @@ msgstr "API klíč je ukládán pomocí systémového zabezpečeného úložišt
 msgid "Extra request JSON"
 msgstr "Dodatečné JSON parametry"
 
-#: ../src/ard_aimdldlg.cpp:173 ../src/ard_ed_frm.cpp:4162
+#: ../src/ard_aimdldlg.cpp:173 ../src/ard_ed_frm.cpp:4168
 msgid "Delete"
 msgstr "Smazat"
 
@@ -1251,7 +1252,7 @@ msgstr "<nahrávají se programátory...>"
 msgid "<default>"
 msgstr "<výchozí>"
 
-#: ../src/ard_cc.cpp:2941
+#: ../src/ard_cc.cpp:3085
 msgid "Declaration:"
 msgstr "Deklarace:"
 
@@ -1696,7 +1697,7 @@ msgstr "Typ:"
 #: ../src/ard_coreman.cpp:110 ../src/ard_coreman.cpp:193
 #: ../src/ard_coreman.cpp:351 ../src/ard_coreman.cpp:454
 #: ../src/ard_ed_frm.cpp:1766 ../src/ard_ed_frm.cpp:2339
-#: ../src/ard_ed_frm.cpp:2428 ../src/ard_ed_frm.cpp:4779
+#: ../src/ard_ed_frm.cpp:2428 ../src/ard_ed_frm.cpp:4785
 #: ../src/ard_libman.cpp:145 ../src/ard_libman.cpp:262
 #: ../src/ard_libman.cpp:433 ../src/ard_libman.cpp:598
 msgid "All"
@@ -1863,8 +1864,8 @@ msgstr "Varování"
 msgid "Initializing..."
 msgstr "Inicializuji..."
 
-#: ../src/ard_ed_frm.cpp:346 ../src/ard_ed_frm.cpp:3733
-#: ../src/ard_ed_frm.cpp:3930
+#: ../src/ard_ed_frm.cpp:346 ../src/ard_ed_frm.cpp:3739
+#: ../src/ard_ed_frm.cpp:3936
 #, c-format
 msgid "Directory '%s' does not exist."
 msgstr "Adresář '%s' neexistuje."
@@ -2190,8 +2191,8 @@ msgid ""
 "In this mode, libraries are detected from the last project build, so newly "
 "added #include directives won't be picked up until you rebuild.\n"
 "\n"
-"Rebuild will regenerate the build configuration (including compile_commands."
-"json) and attach libraries to this sketch.\n"
+"Rebuild will regenerate the build configuration (including "
+"compile_commands.json) and attach libraries to this sketch.\n"
 "\n"
 "Rebuild now?"
 msgstr ""
@@ -2201,8 +2202,8 @@ msgstr ""
 "V tomto režimu se knihovny zjišťují až při sestavení projektu, takže nově "
 "přidané #include se projeví až po dalším buildu.\n"
 "\n"
-"Znovusestavení přegeneruje konfiguraci sestavení (včetně compile_commands."
-"json) a znovu napojí knihovny ke sketchi.\n"
+"Znovusestavení přegeneruje konfiguraci sestavení (včetně "
+"compile_commands.json) a znovu napojí knihovny ke sketchi.\n"
 "\n"
 "Chcete projekt nyní znovu sestavit?"
 
@@ -2544,198 +2545,198 @@ msgstr ""
 "\n"
 "Vyberte sériový port na panelu nástrojů."
 
-#: ../src/ard_ed_frm.cpp:3691
+#: ../src/ard_ed_frm.cpp:3697
 msgid "(Empty)"
 msgstr "(Prázdné)"
 
-#: ../src/ard_ed_frm.cpp:3694 ../src/ard_ed_frm.cpp:3720
-#: ../src/ard_ed_frm.cpp:3752
+#: ../src/ard_ed_frm.cpp:3700 ../src/ard_ed_frm.cpp:3726
+#: ../src/ard_ed_frm.cpp:3758
 msgid "Clear history"
 msgstr "Vymazat historii"
 
-#: ../src/ard_ed_frm.cpp:3752
+#: ../src/ard_ed_frm.cpp:3758
 msgid "Do you really want to clear the recent sketches history?"
 msgstr "Opravdu chcete vymazat historii nedávných sketchů?"
 
-#: ../src/ard_ed_frm.cpp:3817
+#: ../src/ard_ed_frm.cpp:3823
 msgid "(SketchesDir does not exist)"
 msgstr "(SketchesDir neexistuje)"
 
-#: ../src/ard_ed_frm.cpp:3824
+#: ../src/ard_ed_frm.cpp:3830
 msgid "(Cannot open SketchesDir)"
 msgstr "(Nelze otevřít SketchesDir)"
 
-#: ../src/ard_ed_frm.cpp:3888
+#: ../src/ard_ed_frm.cpp:3894
 msgid "(No sketches found)"
 msgstr "(Nebyly nalezeny žádné sketche)"
 
-#: ../src/ard_ed_frm.cpp:4084 ../src/ard_ed_frm.cpp:4235
+#: ../src/ard_ed_frm.cpp:4090 ../src/ard_ed_frm.cpp:4241
 #, c-format
 msgid "Cannot open '%s' in associated application."
 msgstr "Nelze otevřít '%s' v přidružené aplikaci."
 
-#: ../src/ard_ed_frm.cpp:4084 ../src/ard_ed_frm.cpp:4235
+#: ../src/ard_ed_frm.cpp:4090 ../src/ard_ed_frm.cpp:4241
 msgid "Open file"
 msgstr "Otevřít soubor"
 
-#: ../src/ard_ed_frm.cpp:4095
+#: ../src/ard_ed_frm.cpp:4101
 msgid "Enter new file name:"
 msgstr "Zadejte nový název souboru:"
 
-#: ../src/ard_ed_frm.cpp:4095 ../src/ard_filestree.cpp:423
+#: ../src/ard_ed_frm.cpp:4101 ../src/ard_filestree.cpp:423
 msgid "New file"
 msgstr "Nový soubor"
 
-#: ../src/ard_ed_frm.cpp:4095
+#: ../src/ard_ed_frm.cpp:4101
 msgid "new_file.cpp"
 msgstr "new_file.cpp"
 
-#: ../src/ard_ed_frm.cpp:4104
+#: ../src/ard_ed_frm.cpp:4110
 msgid "File name must not contain path separators."
 msgstr "Název souboru nesmí obsahovat oddělovače cest."
 
-#: ../src/ard_ed_frm.cpp:4120
+#: ../src/ard_ed_frm.cpp:4126
 msgid "Folder name:"
 msgstr "Název složky:"
 
-#: ../src/ard_ed_frm.cpp:4121 ../src/ard_filestree.cpp:424
+#: ../src/ard_ed_frm.cpp:4127 ../src/ard_filestree.cpp:424
 msgid "New folder"
 msgstr "Nová složka"
 
-#: ../src/ard_ed_frm.cpp:4122
+#: ../src/ard_ed_frm.cpp:4128
 msgid "new_folder"
 msgstr "nová_slozka"
 
-#: ../src/ard_ed_frm.cpp:4131
+#: ../src/ard_ed_frm.cpp:4137
 msgid "Invalid folder name."
 msgstr "Neplatný název složky."
 
-#: ../src/ard_ed_frm.cpp:4137
+#: ../src/ard_ed_frm.cpp:4143
 msgid "Cannot create folder."
 msgstr "Nelze vytvořit složku."
 
-#: ../src/ard_ed_frm.cpp:4153
+#: ../src/ard_ed_frm.cpp:4159
 msgid "Cannot delete .ino file of sketch."
 msgstr "Nelze smazat .ino soubor sketche."
 
-#: ../src/ard_ed_frm.cpp:4158
+#: ../src/ard_ed_frm.cpp:4164
 #, c-format
 msgid "Do you want to delete folder %s and all its contents?"
 msgstr "Chcete smazat složku %s a veškerý její obsah?"
 
-#: ../src/ard_ed_frm.cpp:4159
+#: ../src/ard_ed_frm.cpp:4165
 #, c-format
 msgid "Do you want to delete file %s?"
 msgstr "Opravdu chcete smazat soubor %s?"
 
-#: ../src/ard_ed_frm.cpp:4170
+#: ../src/ard_ed_frm.cpp:4176
 msgid "Failed to delete: "
 msgstr "Nepodařilo se odstranit: "
 
-#: ../src/ard_ed_frm.cpp:4187 ../src/ard_renamedlg.cpp:121
+#: ../src/ard_ed_frm.cpp:4193 ../src/ard_renamedlg.cpp:121
 msgid "New name:"
 msgstr "Nový název:"
 
-#: ../src/ard_ed_frm.cpp:4187
+#: ../src/ard_ed_frm.cpp:4193
 msgid "Rename"
 msgstr "Přejmenovat"
 
-#: ../src/ard_ed_frm.cpp:4221
+#: ../src/ard_ed_frm.cpp:4227
 msgid "Rename failed."
 msgstr "Přejmenování se nezdařilo."
 
-#: ../src/ard_ed_frm.cpp:4242
+#: ../src/ard_ed_frm.cpp:4248
 msgid "No board selected"
 msgstr "Není vybrána žádná deska"
 
-#: ../src/ard_ed_frm.cpp:4290 ../src/ard_ed_frm.cpp:4390
+#: ../src/ard_ed_frm.cpp:4296 ../src/ard_ed_frm.cpp:4396
 msgid "--- Select board ---"
 msgstr "--- Vyberte desku ---"
 
-#: ../src/ard_ed_frm.cpp:4505
+#: ../src/ard_ed_frm.cpp:4511
 msgid "Code completion engine is not available."
 msgstr "Prostředí pro dokončování není inicializováno."
 
-#: ../src/ard_ed_frm.cpp:4515
+#: ../src/ard_ed_frm.cpp:4521
 msgid "Translation unit is not valid."
 msgstr "Překladová jednotka není připravena."
 
-#: ../src/ard_ed_frm.cpp:4515 ../src/ard_ed_frm.cpp:4536
-#: ../src/ard_ed_frm.cpp:4549 ../src/ard_ed_frm.cpp:4558
-#: ../src/ard_ed_frm.cpp:4579 ../src/ard_ed_frm.cpp:4589
-#: ../src/ard_ed_frm.cpp:4596 ../src/ard_ed_frm.cpp:4610
-#: ../src/ard_ed_frm.cpp:4638 ../src/ard_refactor.cpp:473
+#: ../src/ard_ed_frm.cpp:4521 ../src/ard_ed_frm.cpp:4542
+#: ../src/ard_ed_frm.cpp:4555 ../src/ard_ed_frm.cpp:4564
+#: ../src/ard_ed_frm.cpp:4585 ../src/ard_ed_frm.cpp:4595
+#: ../src/ard_ed_frm.cpp:4602 ../src/ard_ed_frm.cpp:4616
+#: ../src/ard_ed_frm.cpp:4644 ../src/ard_refactor.cpp:473
 #: ../src/ard_refactor.cpp:483 ../src/ard_renamedlg.cpp:71
 msgid "Rename symbol"
 msgstr "Přejmenovat symbol"
 
-#: ../src/ard_ed_frm.cpp:4536
+#: ../src/ard_ed_frm.cpp:4542
 msgid "Sources contains compilation errors."
 msgstr "Zdrojové soubory obsahují chyby překladu."
 
-#: ../src/ard_ed_frm.cpp:4549
+#: ../src/ard_ed_frm.cpp:4555
 msgid "No usages of this symbol were found."
 msgstr "Nebyly nalezeny žádné výskyty symbolu."
 
-#: ../src/ard_ed_frm.cpp:4558
+#: ../src/ard_ed_frm.cpp:4564
 msgid "Symbol is declared outside of sketch directory."
 msgstr "Symbol je deklarován mimo sketch."
 
-#: ../src/ard_ed_frm.cpp:4579
+#: ../src/ard_ed_frm.cpp:4585
 msgid "New name cannot be empty."
 msgstr "Název nesmí být prázdný."
 
-#: ../src/ard_ed_frm.cpp:4589
+#: ../src/ard_ed_frm.cpp:4595
 msgid "New name is not a valid identifier."
 msgstr "Zadaný název není platným identifikátorem."
 
-#: ../src/ard_ed_frm.cpp:4596
+#: ../src/ard_ed_frm.cpp:4602
 msgid "No occurrences selected."
 msgstr "Nebyly vybrány žádné výskyty."
 
-#: ../src/ard_ed_frm.cpp:4610
+#: ../src/ard_ed_frm.cpp:4616
 msgid "No usages of this symbol were found inside the current sketch."
 msgstr "Nebyly nalezeny žádné výskyty symbolu v aktuálním sketchi."
 
-#: ../src/ard_ed_frm.cpp:4638
+#: ../src/ard_ed_frm.cpp:4644
 msgid "No matching occurrences to rename were found."
 msgstr "Žádné odpovídající výskyty pro přejmenování nebyly nalezeny."
 
-#: ../src/ard_ed_frm.cpp:4642
+#: ../src/ard_ed_frm.cpp:4648
 #, c-format
 msgid "Renamed %d occurrences."
 msgstr "Přejmenováno %d výskytů."
 
-#: ../src/ard_ed_frm.cpp:4720
+#: ../src/ard_ed_frm.cpp:4726
 #, c-format
 msgid "Updates: %zu libs and %zu boards"
 msgstr "Aktualizace: %zu knihoven a %zu desek"
 
-#: ../src/ard_ed_frm.cpp:4722
+#: ../src/ard_ed_frm.cpp:4728
 #, c-format
 msgid "Updates: %zu libraries"
 msgstr "Aktualizace: %zu knihoven"
 
-#: ../src/ard_ed_frm.cpp:4724
+#: ../src/ard_ed_frm.cpp:4730
 #, c-format
 msgid "Updates: %zu boards"
 msgstr "Aktualizace: %zu desek"
 
-#: ../src/ard_ed_frm.cpp:4747
+#: ../src/ard_ed_frm.cpp:4753
 #, c-format
 msgid "Library updates (%zu)..."
 msgstr "Aktualizace knihoven (%zu)..."
 
-#: ../src/ard_ed_frm.cpp:4749
+#: ../src/ard_ed_frm.cpp:4755
 msgid "Library updates..."
 msgstr "Aktualizace knihoven..."
 
-#: ../src/ard_ed_frm.cpp:4754
+#: ../src/ard_ed_frm.cpp:4760
 #, c-format
 msgid "Board updates (%zu)..."
 msgstr "Aktualizace desek (%zu)..."
 
-#: ../src/ard_ed_frm.cpp:4756
+#: ../src/ard_ed_frm.cpp:4762
 msgid "Board updates..."
 msgstr "Aktualizace desek..."
 
@@ -3302,8 +3303,8 @@ msgstr "Zip soubor..."
 
 #: ../src/ard_libman.cpp:758
 msgid ""
-"Enter Git repository URL (e.g. https://github.com/arduino-libraries/WiFi101."
-"git or with #version):"
+"Enter Git repository URL (e.g. https://github.com/arduino-libraries/"
+"WiFi101.git or with #version):"
 msgstr ""
 "Zadejte URL Git repozitáře (např. https://github.com/arduino-libraries/"
 "WiFi101.git nebo s #version):"
@@ -3513,8 +3514,8 @@ msgstr "Uložit graf průběhů jako obrázek"
 
 #: ../src/ard_plotview.cpp:552
 msgid ""
-"PNG image (*.png)|*.png|JPEG image (*.jpg;*.jpeg)|*.jpg;*.jpeg|BMP image (*."
-"bmp)|*.bmp"
+"PNG image (*.png)|*.png|JPEG image (*.jpg;*.jpeg)|*.jpg;*.jpeg|BMP image "
+"(*.bmp)|*.bmp"
 msgstr ""
 "PNG obrázek (*.png)|*.png|JPEG obrázek (*.jpg;*.jpeg)|*.jpg;*.jpeg|BMP "
 "obrázek (*.bmp)|*.bmp"
@@ -3671,8 +3672,8 @@ msgstr "Vytvořit deklaraci v hlavičce"
 msgid ""
 "This refactoring can only be used in a C/C++ source file (.cpp, .c, ...)."
 msgstr ""
-"Tento refaktoring může být použit pouze v C/C++ zdrojovém souboru (.cpp, ."
-"c, ...)."
+"Tento refaktoring může být použit pouze v C/C++ zdrojovém souboru "
+"(.cpp, .c, ...)."
 
 #: ../src/ard_refactor.cpp:1110
 msgid "Unable to locate or create a header file for this source file."
@@ -3879,8 +3880,8 @@ msgstr "Uložit vše..."
 #: ../src/ard_sermon.cpp:874
 msgid "Text files (*.txt)|*.txt|Log files (*.log)|*.log|All files (*.*)|*.*"
 msgstr ""
-"Textové soubory (*.txt)|*.txt|Soubory logů (*.log)|*.log|Všechny soubory (*."
-"*)|*.*"
+"Textové soubory (*.txt)|*.txt|Soubory logů (*.log)|*.log|Všechny soubory "
+"(*.*)|*.*"
 
 #: ../src/ard_sermon.cpp:882
 #, c-format
@@ -4034,8 +4035,8 @@ msgstr "Spustitelný soubor arduino-cli:"
 
 #: ../src/ard_setdlg.cpp:1026
 msgid ""
-"arduino-cli.exe|arduino-cli.exe|Executable files (*.exe)|*.exe|All files (*."
-"*)|*.*"
+"arduino-cli.exe|arduino-cli.exe|Executable files (*.exe)|*.exe|All files "
+"(*.*)|*.*"
 msgstr ""
 "arduino-cli.exe|arduino-cli.exe|Spustitelné soubory (*.exe)|*.exe|Všechny "
 "soubory (*.*)|*.*"
@@ -4627,6 +4628,31 @@ msgstr "Data vrácená GitHubem nejsou v očekávaném formátu."
 #, c-format
 msgid "You are running the latest version (%s)."
 msgstr "Vaše verze je aktuální (%s)."
+
+#: ../src/ard_valsview.cpp:89
+#, c-format
+msgid "Last update: %s ago"
+msgstr "Poslední aktualizace před %s"
+
+#: ../src/ard_valsview.cpp:300
+#, c-format
+msgid "%ld ms"
+msgstr "%ld ms"
+
+#: ../src/ard_valsview.cpp:308
+#, c-format
+msgid "%ld sec"
+msgstr "%ld sek"
+
+#: ../src/ard_valsview.cpp:316
+#, c-format
+msgid "%ld:%02ld min"
+msgstr "%ld:%02ld min"
+
+#: ../src/ard_valsview.cpp:322
+#, c-format
+msgid "%ld:%02ld hour"
+msgstr "%ld:%02ld hod"
 
 #: ../src/main.cpp:342
 msgid "Initializing UI..."

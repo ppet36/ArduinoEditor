@@ -1,5 +1,7 @@
 #include "ard_valsview.hpp"
 #include "utils.hpp"
+#include "ard_setdlg.hpp"
+#include "ard_ap.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -18,27 +20,19 @@ public:
   ValueChip(wxWindow *parent,
             const wxString &name,
             const wxFont &baseFont,
-            const wxFont &valueFont,
-            const wxFont &timeFont)
+            const wxFont &valueFont)
       : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER),
         m_name(name) {
 
     m_nameText = new wxStaticText(this, wxID_ANY, name + wxT(":"));
     m_valueText = new wxStaticText(this, wxID_ANY, wxT("—"));
-    m_timeText = new wxStaticText(this, wxID_ANY, wxEmptyString);
-    m_timeText->Hide();
 
     m_nameText->SetFont(baseFont);
     m_valueText->SetFont(valueFont);
-    m_timeText->SetFont(timeFont);
 
-    auto *row1 = new wxBoxSizer(wxHORIZONTAL);
-    row1->Add(m_nameText, 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 4);
-    row1->Add(m_valueText, 0, wxALIGN_CENTER_VERTICAL, 0);
-
-    auto *root = new wxBoxSizer(wxVERTICAL);
-    root->Add(row1, 0, wxLEFT | wxRIGHT | wxTOP, 6);
-    root->Add(m_timeText, 0, wxLEFT | wxRIGHT | wxBOTTOM, 6);
+    auto *root = new wxBoxSizer(wxHORIZONTAL);
+    root->Add(m_nameText, 0, wxLEFT | wxRIGHT | wxTOP | wxBOTTOM | wxALIGN_CENTER_VERTICAL, 6);
+    root->Add(m_valueText, 0, wxRIGHT | wxTOP | wxBOTTOM | wxALIGN_CENTER_VERTICAL, 6);
 
     SetSizer(root);
     root->Fit(this);
@@ -60,39 +54,13 @@ public:
     }
 
     m_lastUpdateMs = nowMs;
+    m_tooltipDirty = true;
     m_dirty = true;
   }
 
   bool HasSample() const { return m_lastUpdateMs != wxLongLong(0); }
-
   wxLongLong GetLastUpdateMs() const { return m_lastUpdateMs; }
-
   double GetEmaPeriodMs() const { return m_emaPeriodMs; }
-
-  double GetShowAgeAfterMs() const {
-    // Hide noisy age label for fast-updating signals. Show only when value is stale.
-    const double ema = m_emaPeriodMs;
-    const double derived = (ema > 0.0) ? (2.0 * ema) : 0.0;
-    return std::max(2000.0, derived);
-  }
-
-  void SetTimeVisible(bool visible) {
-    if (visible == m_timeVisible)
-      return;
-    m_timeVisible = visible;
-    m_timeText->Show(visible);
-    m_needsFit = true;
-    m_dirty = true;
-  }
-
-  void SetAgeText(const wxString &s) {
-    if (s == m_lastAgeText)
-      return;
-    m_lastAgeText = s;
-    m_timeText->SetLabel(s);
-    m_needsFit = true;
-    m_dirty = true;
-  }
 
   void SetValueText(const wxString &s) {
     if (s == m_lastValueText)
@@ -107,10 +75,33 @@ public:
     if (m_lastText.IsOk() && c == m_lastText)
       return;
     m_lastText = c;
-    // m_nameText->SetForegroundColour(c);
     m_valueText->SetForegroundColour(c);
-    // m_timeText->SetForegroundColour(c);
     m_dirty = true;
+  }
+
+  void UpdateTooltipIfNeeded(wxLongLong nowMs, double ageMs) {
+    if (!m_tooltipDirty && (nowMs - m_lastTooltipUpdateMs) < wxLongLong(1000))
+      return;
+    if ((nowMs - m_lastTooltipUpdateMs) < wxLongLong(1000))
+      return;
+
+    const wxString age = ArduinoValuesView::FormatAge(ageMs);
+    const wxString tip = wxString::Format(_("Last update: %s ago"), age);
+
+    if (tip == m_lastTooltip && !m_tooltipDirty) {
+      m_lastTooltipUpdateMs = nowMs;
+      return;
+    }
+
+    m_lastTooltip = tip;
+    m_lastTooltipUpdateMs = nowMs;
+    m_tooltipDirty = false;
+
+    SetToolTip(tip);
+    if (m_nameText)
+      m_nameText->SetToolTip(tip);
+    if (m_valueText)
+      m_valueText->SetToolTip(tip);
   }
 
   bool ConsumeDirty() {
@@ -132,19 +123,21 @@ private:
 
   wxStaticText *m_nameText = nullptr;
   wxStaticText *m_valueText = nullptr;
-  wxStaticText *m_timeText = nullptr;
 
   double m_value = 0.0;
   wxLongLong m_lastUpdateMs = 0;
 
   wxString m_lastValueText;
-  wxString m_lastAgeText;
   wxColour m_lastText;
   double m_emaPeriodMs = 0.0;
-  bool m_timeVisible = false;
-  bool m_needsFit = true;
 
+  bool m_needsFit = true;
   bool m_dirty = true;
+
+  // Tooltip throttling
+  bool m_tooltipDirty = true;
+  wxLongLong m_lastTooltipUpdateMs = 0;
+  wxString m_lastTooltip;
 };
 
 // -------------------------------------------------------------------------------------------------
@@ -169,8 +162,6 @@ ArduinoValuesView::ArduinoValuesView(wxWindow *parent,
     : wxPanel(parent, id, pos, size, style, name),
       m_timer(this) {
 
-  m_baseColor = wxColour(200, 255, 200);
-
   m_scroller = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                     wxHSCROLL | wxVSCROLL | wxBORDER_NONE);
   m_scroller->SetScrollRate(10, 10);
@@ -178,12 +169,13 @@ ArduinoValuesView::ArduinoValuesView(wxWindow *parent,
   m_scroller->SetAutoLayout(false);
   m_scroller->Bind(wxEVT_SIZE, &ArduinoValuesView::OnScrollerSize, this);
 
+  Bind(wxEVT_SYS_COLOUR_CHANGED, &ArduinoValuesView::OnSysColourChanged, this);
+
   auto *root = new wxBoxSizer(wxVERTICAL);
   root->Add(m_scroller, 1, wxEXPAND, 0);
   SetSizer(root);
 
-  // Ensure a visible height even when empty; parent sizer uses our best/min size.
-  SetMinSize(wxSize(-1, FromDIP(60)));
+  ApplyColorScheme();
 
   Bind(wxEVT_TIMER, &ArduinoValuesView::OnTimer, this);
   m_timer.Start(100);
@@ -204,11 +196,7 @@ ArduinoValuesView::ValueChip *ArduinoValuesView::GetOrCreateChip(const wxString 
   wxFont valueFont = baseFont;
   valueFont.SetWeight(wxFONTWEIGHT_BOLD);
 
-  wxFont timeFont = baseFont;
-  const int pts = std::max(6, baseFont.GetPointSize() - 2);
-  timeFont.SetPointSize(pts);
-
-  auto *chip = new ValueChip(m_scroller, name, baseFont, valueFont, timeFont);
+  auto *chip = new ValueChip(m_scroller, name, baseFont, valueFont);
   chip->Layout();
   chip->Fit();
   chip->SetMinSize(chip->GetBestSize());
@@ -241,20 +229,24 @@ void ArduinoValuesView::AddSample(const wxString &name, double value, bool refre
 
   chip->SetSample(value, nowMs);
   chip->SetValueText(FormatValue(value));
-  // Age text is updated by timer (and shown only when stale).
-  chip->SetTimeVisible(false);
-  chip->SetAgeText(wxEmptyString);
+
+  // Tooltip with last-update age is updated by timer (throttled to ~1 Hz).
   chip->SetTextColor(ComputeFadeColor(0.0));
 
-  if (refresh) {
-    // Refresh the chip and keep the scroller's virtual size in sync.    if (chip->ConsumeNeedsFit()) {
+  if (!refresh)
+    return;
+
+  const bool needFit = chip->ConsumeNeedsFit();
+  if (needFit) {
     chip->Layout();
     chip->Fit();
     chip->SetMinSize(chip->GetBestSize());
   }
 
   chip->Refresh(false);
-  RelayoutChips();
+  if (needFit)
+    RelayoutChips();
+
   Layout();
   if (wxWindow *p = GetParent()) {
     p->Layout();
@@ -302,21 +294,32 @@ wxString ArduinoValuesView::FormatAge(double ageMs) {
   if (ageMs < 0)
     ageMs = 0;
 
+  // 0..999 ms
   if (ageMs <= 999.0) {
-    return wxString::Format(wxT("%.0f ms"), ageMs);
+    const long ms = (long)llround(ageMs);
+    return wxString::Format(_("%ld ms"), ms);
   }
 
-  const double sec = ageMs / 1000.0;
-  if (sec < 60.0) {
-    if (sec < 10.0)
-      return wxString::Format(wxT("%.2f s"), sec);
-    return wxString::Format(wxT("%.1f s"), sec);
+  // Work in whole seconds from here (stable + readable).
+  const long totalSec = (long)llround(ageMs / 1000.0);
+
+  // 1..59 s
+  if (totalSec < 60) {
+    return wxString::Format(_("%ld sec"), totalSec);
   }
 
-  const double min = sec / 60.0;
-  if (min < 10.0)
-    return wxString::Format(wxT("%.2f min"), min);
-  return wxString::Format(wxT("%.1f min"), min);
+  // 1:00 .. 59:59  -> m:ssmin
+  const long totalMin = totalSec / 60;
+  const long sec = totalSec % 60;
+
+  if (totalMin < 60) {
+    return wxString::Format(_("%ld:%02ld min"), totalMin, sec);
+  }
+
+  // 60:00+ -> h:mmhod
+  const long totalHr = totalMin / 60;
+  const long min = totalMin % 60;
+  return wxString::Format(_("%ld:%02ld hour"), totalHr, min);
 }
 
 wxColour ArduinoValuesView::ComputeFadeColor(double ageMs) const {
@@ -408,7 +411,8 @@ void ArduinoValuesView::OnTimer(wxTimerEvent &e) {
     return;
 
   const wxLongLong nowMs = NowMs();
-  bool anyDirty = false;
+  bool anyFit = false;
+  bool anyRepaint = false;
 
   for (auto &kv : m_chips) {
     ValueChip *chip = kv.second;
@@ -422,32 +426,49 @@ void ArduinoValuesView::OnTimer(wxTimerEvent &e) {
     // Fade is applied to text color (not background).
     chip->SetTextColor(ComputeFadeColor(ageMs));
 
-    // Show age only when value is "stale" relative to its typical update period.
-    const bool showAge = (ageMs >= chip->GetShowAgeAfterMs());
-    chip->SetTimeVisible(showAge);
-    if (showAge)
-      chip->SetAgeText(FormatAge(ageMs));
-    else
-      chip->SetAgeText(wxEmptyString);
+    // Show last-update age in a tooltip; throttle to ~1 Hz per chip.
+    chip->UpdateTooltipIfNeeded(nowMs, ageMs);
 
     const bool dirty = chip->ConsumeDirty();
     const bool needFit = chip->ConsumeNeedsFit();
-    if (dirty || needFit) {
+
+    if (needFit) {
       if (wxSizer *sz = chip->GetSizer())
         sz->Layout();
       chip->Fit();
       chip->SetMinSize(chip->GetBestSize());
-      chip->Layout();
-      chip->Fit();
-      chip->SetMinSize(chip->GetBestSize());
       chip->SetSize(chip->GetBestSize());
       chip->Refresh(false);
-      anyDirty = true;
+      anyFit = true;
+      anyRepaint = true;
+    } else if (dirty) {
+      chip->Refresh(false);
+      anyRepaint = true;
     }
   }
 
-  if (anyDirty) {
+  // Only relayout if chip geometry might have changed (i.e. label length changed).
+  if (anyFit) {
     RelayoutChips();
     Layout();
+  } else if (anyRepaint) {
+    m_scroller->Refresh(false);
   }
 }
+
+void ArduinoValuesView::ApplyColorScheme() {
+  auto *config = wxConfigBase::Get();
+  EditorSettings settings;
+  settings.Load(config);
+
+  EditorColorScheme scheme = settings.GetColors();
+  m_baseColor = scheme.note;
+  m_fadeFactorMs = IsDarkMode() ? 3000 : -3000;
+}
+
+void ArduinoValuesView::OnSysColourChanged(wxSysColourChangedEvent &event) {
+  ApplyColorScheme();
+  Refresh();
+  event.Skip();
+}
+
