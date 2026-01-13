@@ -42,6 +42,10 @@ enum {
   TIMER_UPDATE
 };
 
+#ifdef __APPLE__
+extern "C" void OSXDisableServicesMenu();
+#endif
+
 #if defined(__WXMSW__)
 #include <fstream>
 #include <windows.h>
@@ -293,6 +297,7 @@ bool ArduinoEditApp::OnInit() {
   Bind(wxEVT_TIMER, &ArduinoEditApp::OnStopTimer, this, TIMER_STOP);
   Bind(wxEVT_TIMER, &ArduinoEditApp::OnUpdateIdleTimer, this, TIMER_UPDATE);
 
+
   m_startTimer.Start(100, true);
 
   return true;
@@ -343,6 +348,10 @@ void ArduinoEditApp::OnStartTimer(wxTimerEvent &WXUNUSED(event)) {
 
   auto frame = new ArduinoEditorFrame(cfg);
   frame->Show(true);
+
+#ifdef __APPLE__
+  OSXDisableServicesMenu();
+#endif
 
   // updates
   SetTopWindow(frame);

@@ -17,8 +17,20 @@ PLATFORM      := $(UNAME_S)-$(ARCH)
 BUILD_DIR     := $(PLATFORM)
 
 # Source files (sources in ../src, objects + deps in current dir)
-SRCS := $(wildcard $(SOURCE_DIR)/*.cpp)
-OBJS := $(patsubst $(SOURCE_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
+SRCS_CPP := $(wildcard $(SOURCE_DIR)/*.cpp)
+
+ifeq ($(UNAME_S),Darwin)
+  SRCS_MM := $(wildcard $(SOURCE_DIR)/*.mm)
+else
+  SRCS_MM :=
+endif
+
+SRCS := $(SRCS_CPP) $(SRCS_MM)
+
+OBJS := \
+  $(patsubst $(SOURCE_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(filter %.cpp,$(SRCS))) \
+  $(patsubst $(SOURCE_DIR)/%.mm, $(BUILD_DIR)/%.o,$(filter %.mm, $(SRCS)))
+
 DEPS := $(OBJS:.o=.d)
 
 TARGET := $(BUILD_DIR)/$(APP_NAME)
@@ -106,6 +118,8 @@ ifeq ($(UNAME_S),Darwin)
     LDFLAGS  += -L$(CURL_PREFIX)/lib
     LDLIBS   += -lcurl
 
+    LDFLAGS += -framework AppKit -framework Foundation
+
 else ifeq ($(UNAME_S),Linux)
 
     # -----------------------------------------------------
@@ -172,6 +186,10 @@ $(TARGET): $(OBJS) | $(BUILD_DIR)
 
 $(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.cpp | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+$(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.mm | $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) -x objective-c++ -c -o $@ $<
+
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
