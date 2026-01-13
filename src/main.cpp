@@ -297,7 +297,6 @@ bool ArduinoEditApp::OnInit() {
   Bind(wxEVT_TIMER, &ArduinoEditApp::OnStopTimer, this, TIMER_STOP);
   Bind(wxEVT_TIMER, &ArduinoEditApp::OnUpdateIdleTimer, this, TIMER_UPDATE);
 
-
   m_startTimer.Start(100, true);
 
   return true;

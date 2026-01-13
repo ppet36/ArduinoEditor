@@ -434,8 +434,8 @@ std::string ArduinoEditor::GetText() const {
   return wxToStd(m_editor->GetText());
 }
 
-void ArduinoEditor::SetText(const std::string& text) {
-  m_editor->SetText (wxString::FromUTF8(text));
+void ArduinoEditor::SetText(const std::string &text) {
+  m_editor->SetText(wxString::FromUTF8(text));
 }
 
 void ArduinoEditor::OpenFindDialog(bool replace) {

@@ -303,7 +303,7 @@ wxPanel *ArduinoDiffDialog::CreateExistingFileTab(wxNotebook *nb,
   std::string sketchPath = m_cli->GetSketchPath();
 
   std::string pageTitle = StripFilename(sketchPath, wxToStd(v.fileKey));
-  
+
   nb->AddPage(panel, wxString::FromUTF8(pageTitle), nb->GetPageCount() == 0);
 
   return panel;

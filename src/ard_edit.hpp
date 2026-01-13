@@ -214,7 +214,7 @@ public:
   std::string GetFileName() const;
   std::string GetFilePath() const;
   std::string GetText() const;
-  void SetText(const std::string& text);
+  void SetText(const std::string &text);
 
   // Tool method for circular bitmap
   static wxBitmap MakeCircleBitmap(int diameter,

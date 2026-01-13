@@ -3279,8 +3279,6 @@ bool ArduinoAiActions::ApplyAiModelSolution(const wxString &reply) {
   std::vector<AiInfoRequest> infoRequests;
   std::vector<AiPatchHunk> patches;
 
-
-
   if (ParseAiPatch(reply, patches, &assistantText)) {
     assistantText.Trim(true).Trim(false);
     if (!assistantText.IsEmpty()) {
@@ -3408,7 +3406,6 @@ bool ArduinoAiActions::ApplyAiModelSolution(const wxString &reply) {
       // Keep assistant plaintext in transcript (helps continuity)
       AppendAssistantPlaintextToTranscript(assistantText);
     }
-
 
     // UI summary: one line per request
     for (const auto &req : infoRequests) {
@@ -3845,7 +3842,7 @@ void ArduinoAiActions::OnDiagnosticsUpdated(wxThreadEvent &evt) {
         }
       }
 
-      pathEd->SetText (newSfb.code);
+      pathEd->SetText(newSfb.code);
 
       // 3) summary to chat
       m_interactiveChatPayload.Append(
@@ -3954,4 +3951,3 @@ void ArduinoAiActions::AppendChatEvent(const char *type, const wxString &text, i
     SaveIndexJsonAtomic(sketchRoot, idx);
   }
 }
-

@@ -101,15 +101,15 @@ private:
   wxString JoinLines(const std::vector<wxString> &lines);
 
   void BuildAlignedExistingFileView(const wxString &oldText,
-                                   const wxString &newText,
-                                   wxString &outOldAligned,
-                                   wxString &outNewAligned);
+                                    const wxString &newText,
+                                    wxString &outOldAligned,
+                                    wxString &outNewAligned);
 
   void BuildContextAlignedExistingFileView(const wxString &oldText,
-                                          const wxString &newText,
-                                          int contextLines,
-                                          wxString &outLeft,
-                                          wxString &outRight);
+                                           const wxString &newText,
+                                           int contextLines,
+                                           wxString &outLeft,
+                                           wxString &outRight);
 
   void UpdateExistingTabView(FileViewData &v);
 
