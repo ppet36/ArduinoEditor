@@ -29,6 +29,7 @@
 #include <nlohmann/json.hpp>
 #include <random>
 #include <thread>
+#include <algorithm>
 #include <wx/arrstr.h>
 #include <wx/datetime.h>
 #include <wx/dir.h>
@@ -662,18 +663,26 @@ wxString AiChatUiItem::GetTokenInfo() const {
 
 // -------------------------------------------------------------------------------
 ArduinoAiActions::ArduinoAiActions(ArduinoEditor *editor)
-    : m_currentAction(Action::None), m_editor(editor), m_docCommentTargetLine(-1) {
+    : m_currentAction(Action::None), m_docCommentTargetLine(-1) {
 
   // events
   Bind(wxEVT_AI_SIMPLE_CHAT_SUCCESS, &ArduinoAiActions::OnAiSimpleChatSuccess, this);
   Bind(wxEVT_AI_SIMPLE_CHAT_ERROR, &ArduinoAiActions::OnAiSimpleChatError, this);
   Bind(wxEVT_AI_SUMMARIZATION_UPDATED, &ArduinoAiActions::OnAiSummarizationUpdated, this);
+  SetCurrentEditor(editor);
 }
 
 ArduinoAiActions::~ArduinoAiActions() {
   if (m_client) {
     delete m_client;
     m_client = nullptr;
+  }
+
+  if (m_editor) {
+    auto *frame = m_editor->GetOwnerFrame();
+    if (frame) {
+      frame->Unbind(EVT_DIAGNOSTICS_UPDATED, &ArduinoAiActions::OnDiagnosticsUpdated, this);
+    }
   }
 }
 
@@ -691,6 +700,11 @@ AiClient *ArduinoAiActions::GetClient() {
 
 void ArduinoAiActions::SetCurrentEditor(ArduinoEditor *editor) {
   m_editor = editor;
+
+  if (m_editor) {
+    auto *frame = m_editor->GetOwnerFrame();
+    frame->Bind(EVT_DIAGNOSTICS_UPDATED, &ArduinoAiActions::OnDiagnosticsUpdated, this);
+  }
 }
 
 AiSettings ArduinoAiActions::GetSettings() const {
@@ -1404,6 +1418,7 @@ void ArduinoAiActions::OptimizeFunctionOrMethod() {
   m_solveSession.bodyFromLine = info.bodyLineFrom;
   m_solveSession.bodyToLine = info.bodyLineTo;
   m_solveSession.seen.AddSeen(wxString::FromUTF8(m_editor->GetFileName()), fromLine, toLine, ChecksumText(wxToStd(stc->GetText())));
+  m_editor->GetOwnerFrame()->CollectEditorSources(m_solveSession.workingFiles);
 
   if (!client->SimpleChatAsync(optimizeFunctionSystemPrompt, userPrompt, this)) {
     StopCurrentAction();
@@ -1473,6 +1488,7 @@ void ArduinoAiActions::SolveProjectError(const ArduinoParseError &compilerError)
   m_solveSession.maxIterations = m_editor->m_aiSettings.maxIterations;
   m_solveSession.finished = false;
   m_solveSession.transcript = userPrompt;
+  m_editor->GetOwnerFrame()->CollectEditorSources(m_solveSession.workingFiles);
 
   if (!raw.IsEmpty()) {
     m_solveSession.seen.AddSeen(wxBasename, std::max(1, (int)error.line - radius), std::min(stc->GetLineCount(), (int)error.line + radius), ChecksumText(wxToStd(stc->GetText())));
@@ -1739,6 +1755,7 @@ bool ArduinoAiActions::StartInteractiveChat(const wxString &userText, wxEvtHandl
   if (!raw.IsEmpty()) {
     m_solveSession.seen.AddSeen(basename, seenIntervalFrom, seenIntervalTo, ChecksumText(wxToStd(stc->GetText())));
   }
+  m_editor->GetOwnerFrame()->CollectEditorSources(m_solveSession.workingFiles);
 
   if (!m_chatTranscript.IsEmpty()) {
     m_chatTranscript << wxT("\n\n");
@@ -2082,16 +2099,20 @@ void ArduinoAiActions::RestoreInteractiveChatFromTranscript(const wxString &tran
 wxString ArduinoAiActions::HandleInfoRequest(const AiInfoRequest &req) {
 
   if (req.type == wxT("includes")) {
-    wxStyledTextCtrl *stc = GetStc();
+
+    std::string code = GetCurrentCode();
 
     wxString includes;
-    int lineCount = stc->GetLineCount();
-    for (int i = 0; i < lineCount; ++i) {
-      wxString line = stc->GetLine(i);
+    wxArrayString lines = wxSplit(wxString::FromUTF8(code), '\n', '\0');
+    for (size_t i = 0; i < lines.size(); ++i) {
+      wxString line = lines[i];
       wxString trimmed = line;
       trimmed.Trim(true).Trim(false);
       if (trimmed.StartsWith(wxT("#include"))) {
         includes << line;
+        if (!line.EndsWith(wxT("\n"))) {
+          includes << wxT("\n");
+        }
       }
     }
 
@@ -2099,7 +2120,9 @@ wxString ArduinoAiActions::HandleInfoRequest(const AiInfoRequest &req) {
     resp << wxT("*** BEGIN INFO_RESPONSE\n");
     resp << wxT("ID: ") << req.id << wxT("\n");
     resp << wxT("TYPE: includes\n");
-    resp << wxT("FILE: ") << req.file << wxT("\n");
+    if (!req.file.IsEmpty()) {
+      resp << wxT("FILE: ") << req.file << wxT("\n");
+    }
     resp << wxT("CONTENT:\n");
     resp << includes;
     resp << wxT("*** END INFO_RESPONSE\n");
@@ -2107,8 +2130,7 @@ wxString ArduinoAiActions::HandleInfoRequest(const AiInfoRequest &req) {
 
   } else if (req.type == wxT("symbol_declaration")) {
     // all symbols from current translation unit
-    ArduinoCodeCompletion *completion = m_editor->completion;
-    std::vector<SymbolInfo> allSyms = completion->GetAllSymbols(m_editor->GetFilePath(), m_editor->GetText());
+    std::vector<SymbolInfo> allSyms = m_editor->completion->GetAllSymbols();
 
     wxArrayString symsInfos;
     wxString needle = req.symbol;
@@ -2158,62 +2180,88 @@ wxString ArduinoAiActions::HandleInfoRequest(const AiInfoRequest &req) {
 
   } else if (req.type == wxT("search")) {
 
-    wxStyledTextCtrl *stc = GetStc();
-
-    wxString needle = req.query;
-    needle.Trim(true).Trim(false);
-    if (needle.IsEmpty()) {
+    wxString needleWx = req.query;
+    needleWx.Trim(true).Trim(false);
+    if (needleWx.IsEmpty()) {
       return wxString();
     }
 
-    wxString text = stc->GetText();
+    const std::string needle = wxToStd(needleWx);
 
     wxString content;
     int matchCount = 0;
 
-    int fromPos = 0;
-    const int textLen = (int)text.length();
+    for (const auto &b : m_solveSession.workingFiles) {
+      const std::string text = b.code;
 
-    while (fromPos < textLen) {
-      int pos = text.find(needle, fromPos);
-      if (pos == wxNOT_FOUND) {
-        break;
+      // Precompute line starts for fast line/col computations
+      std::vector<size_t> lineStarts;
+      lineStarts.reserve(128);
+      lineStarts.push_back(0);
+      for (size_t i = 0; i < text.size(); ++i) {
+        if (text[i] == '\n') {
+          lineStarts.push_back(i + 1);
+        }
       }
 
-      int line0 = stc->LineFromPosition(pos);        // 0-based
-      int col0 = pos - stc->PositionFromLine(line0); // 0-based
-      int line1 = line0 + 1;                         // 1-based
-      int col1 = col0 + 1;                           // 1-based
+      size_t fromPos = 0;
+      while (fromPos < text.size()) {
+        size_t pos = text.find(needle, fromPos);
+        if (pos == std::string::npos) {
+          break;
+        }
 
-      wxString lineText = stc->GetLine(line0);
-      lineText.Trim(true).Trim(false);
+        // line0 = last lineStart <= pos
+        auto it = std::upper_bound(lineStarts.begin(), lineStarts.end(), pos);
+        size_t line0 = (it == lineStarts.begin()) ? 0 : (size_t)((it - lineStarts.begin()) - 1);
 
-      if (matchCount > 0) {
-        content << wxT("\n");
+        size_t col0 = pos - lineStarts[line0];
+
+        int line1 = (int)line0 + 1; // 1-based
+        int col1 = (int)col0 + 1;   // 1-based
+
+        size_t lineStart = lineStarts[line0];
+        size_t lineEnd = text.size();
+        if (line0 + 1 < lineStarts.size()) {
+          // points to next line start (after '\n')
+          lineEnd = lineStarts[line0 + 1];
+        }
+
+        // Extract line text (trim \r and \n)
+        std::string lineText = text.substr(lineStart, lineEnd - lineStart);
+        TrimInPlace(lineText);
+
+        if (matchCount > 0) {
+          content << wxT("\n");
+        }
+
+        // AI block
+        const std::string rel = StripFilename(GetSketchRoot(), b.filename);
+        content << wxT("MATCH:\n");
+        content << wxT("  FILE: ") << wxString::FromUTF8(rel) << wxT("\n");
+        content << wxT("  LINE: ") << line1 << wxT("\n");
+        content << wxT("  COLUMN: ") << col1 << wxT("\n");
+        content << wxT("  CONTEXT: ") << wxString::FromUTF8(lineText) << wxT("\n");
+
+        matchCount++;
+
+        // move search index after current match
+        fromPos = pos + needle.length();
+
+        // Limit results for extreme situations
+        if (matchCount >= 100) {
+          content << wxT("\nMAX_MATCHES_REACHED: 100\n");
+          break;
+        }
       }
 
-      // IA block
-      content << wxT("MATCH:\n");
-      content << wxT("  FILE: ")
-              << wxString::FromUTF8(m_editor->GetFileName()) << wxT("\n");
-      content << wxT("  LINE: ") << line1 << wxT("\n");
-      content << wxT("  COLUMN: ") << col1 << wxT("\n");
-      content << wxT("  CONTEXT: ") << lineText << wxT("\n");
-
-      matchCount++;
-
-      // move search index after current match
-      fromPos = pos + needle.length();
-
-      // Limit results for extreme situations
       if (matchCount >= 100) {
-        content << wxT("\nMAX_MATCHES_REACHED: 100\n");
         break;
       }
     }
 
     if (matchCount == 0) {
-      content << wxT("NO_MATCH_FOR_QUERY: ") << needle << wxT("\n");
+      content << wxT("NO_MATCH_FOR_QUERY: ") << needleWx << wxT("\n");
     }
 
     wxString resp;
@@ -2223,7 +2271,7 @@ wxString ArduinoAiActions::HandleInfoRequest(const AiInfoRequest &req) {
     if (!req.kind.IsEmpty()) {
       resp << wxT("KIND: ") << req.kind << wxT("\n");
     }
-    resp << wxT("QUERY: ") << needle << wxT("\n");
+    resp << wxT("QUERY: ") << needleWx << wxT("\n");
     resp << wxT("CONTENT:\n");
     resp << content;
     resp << wxT("*** END INFO_RESPONSE\n");
@@ -2237,18 +2285,9 @@ wxString ArduinoAiActions::HandleInfoRequest(const AiInfoRequest &req) {
       return wxString();
     }
 
-    ArduinoEditorFrame *frame = m_editor->GetOwnerFrame();
-    if (!frame) {
-      return wxString();
-    }
+    const SketchFileBuffer *buf = FindBufferWithFile(wxToStd(req.file));
 
-    // find existing editor for file, if not found - exit
-    ArduinoEditor *ed = frame->FindEditorWithFile(wxToStd(req.file), /*allowCreate=*/false);
-    wxStyledTextCtrl *stc = nullptr;
-
-    if (ed) {
-      stc = ed->m_editor;
-    } else {
+    if (!buf) {
       wxString resp;
       resp << wxT("*** BEGIN INFO_RESPONSE\n");
       resp << wxT("ID: ") << req.id << wxT("\n");
@@ -2262,25 +2301,46 @@ wxString ArduinoAiActions::HandleInfoRequest(const AiInfoRequest &req) {
       return resp;
     }
 
-    int lineCount = stc->GetLineCount();
+    const std::string &text = buf->code;
+
+    // Build line starts
+    std::vector<size_t> lineStarts;
+    lineStarts.reserve(128);
+    lineStarts.push_back(0);
+    for (size_t i = 0; i < text.size(); ++i) {
+      if (text[i] == '\n') {
+        lineStarts.push_back(i + 1);
+      }
+    }
+
+    int lineCount = (int)lineStarts.size();
     int fromLine = std::max(1, req.fromLine);
     int toLine = std::min(lineCount, req.toLine);
 
     wxString content, raw;
 
     for (int l = fromLine; l <= toLine; ++l) {
-      wxString lineText = stc->GetLine(l - 1); // stc is 0-based
-      lineText.Replace(wxT("\r"), wxEmptyString);
-      if (lineText.EndsWith(wxT("\n"))) {
-        lineText.RemoveLast();
+      size_t idx0 = (size_t)(l - 1);
+      size_t start = lineStarts[idx0];
+      size_t end = text.size();
+      if (idx0 + 1 < lineStarts.size()) {
+        end = lineStarts[idx0 + 1];
       }
+
+      std::string lineTextStd = text.substr(start, end - start);
+      // remove line endings
+      while (!lineTextStd.empty() && (lineTextStd.back() == '\n' || lineTextStd.back() == '\r')) {
+        lineTextStd.pop_back();
+      }
+
+      wxString lineText = wxString::FromUTF8(lineTextStd);
       raw << lineText << wxT("\n"); // no numbering
       content << wxString::Format(wxT("%d: %s\n"), l, lineText);
     }
 
     std::string basename = StripFilename(GetSketchRoot(), wxToStd(req.file));
 
-    m_solveSession.seen.AddSeen(wxString::FromUTF8(basename), fromLine, toLine, ChecksumText(wxToStd(stc->GetText())));
+    m_solveSession.seen.AddSeen(wxString::FromUTF8(basename), fromLine, toLine, ChecksumText(text));
 
     wxString resp;
     resp << wxT("*** BEGIN INFO_RESPONSE\n");
@@ -2493,6 +2553,143 @@ bool ArduinoAiActions::ApplyAiPatchToEditor(wxStyledTextCtrl *stc,
 
   return true;
 }
+
+// Applies a multi-file AI patch into in-memory buffers (UTF-8).
+// Returns true if at least one hunk was applied.
+bool ArduinoAiActions::ApplyAiPatchToFiles(const std::vector<AiPatchHunk> &patches) {
+
+  auto computeLineStarts = [](const std::string &text, std::vector<size_t> &starts) {
+    starts.clear();
+    starts.reserve(256);
+    starts.push_back(0);
+
+    for (size_t i = 0; i < text.size(); ++i) {
+      if (text[i] == '\n') {
+        // next line starts after '\n'
+        starts.push_back(i + 1);
+      }
+    }
+  };
+
+  // Convert 1-based (fromLine, toLine) to [startPos, endPos) in bytes.
+  auto rangeToByteOffsets = [](const std::vector<size_t> &lineStarts,
+                               const std::string &text,
+                               int fromLine,
+                               int toLine,
+                               bool emptyRange,
+                               size_t &outStart,
+                               size_t &outEnd) -> bool {
+    if (emptyRange) {
+      outStart = 0;
+      outEnd = 0;
+      return true;
+    }
+
+    if (fromLine < 1) {
+      return false;
+    }
+    if (toLine < fromLine) {
+      return false;
+    }
+
+    const int lineCount = (int)lineStarts.size(); // lines are 1..lineCount
+
+    if (fromLine > lineCount) {
+      // start beyond EOF => nothing to apply
+      return false;
+    }
+
+    // start at beginning of (fromLine-1)
+    outStart = lineStarts[(size_t)(fromLine - 1)];
+
+    // end at beginning of (toLine) if exists, else EOF
+    if (toLine < lineCount) {
+      outEnd = lineStarts[(size_t)toLine];
+    } else {
+      outEnd = text.size();
+    }
+
+    if (outEnd < outStart) {
+      return false;
+    }
+    return true;
+  };
+
+  // Group hunks by file (normalized)
+  std::string sketchRoot = GetSketchRoot();
+  std::unordered_map<std::string, std::vector<AiPatchHunk>> byFile;
+  byFile.reserve(patches.size());
+
+  for (const auto &h : patches) {
+    if (h.file.IsEmpty()) {
+      continue;
+    }
+    std::string path = NormalizeFilename (sketchRoot, wxToStd(h.file));
+    if (path.empty()) {
+      continue;
+    }
+    byFile[path].push_back(h);
+  }
+
+  if (byFile.empty()) {
+    APP_DEBUG_LOG("AI: No files for patch collected!");
+    return false;
+  }
+
+  bool anyApplied = false;
+
+  for (auto &kv : byFile) {
+    auto &hun = kv.second;
+
+    SketchFileBuffer *buf = FindBufferWithFile(kv.first, /*allowCreate=*/true);
+    if (!buf) {
+      continue;
+    }
+
+    // Apply from end to avoid shifting
+    std::sort(hun.begin(), hun.end(),
+              [](const AiPatchHunk &a, const AiPatchHunk &b) {
+                return a.fromLine > b.fromLine;
+              });
+
+    std::string &text = buf->code;
+
+    // Precompute line starts once per file (but must refresh after each replace if ranges might depend on updated text).
+    // Because we apply from end, we can recompute each time cheaply and stay correct even if earlier hunks change line structure.
+    for (const auto &h : hun) {
+      const bool emptyRange = (h.toLine == 0);
+
+      std::vector<size_t> lineStarts;
+      computeLineStarts(text, lineStarts);
+
+      size_t startPos = 0, endPos = 0;
+      if (!rangeToByteOffsets(lineStarts, text, h.fromLine, h.toLine, emptyRange, startPos, endPos)) {
+        // nothing / invalid range
+        continue;
+      }
+
+      // Replacement text in UTF-8
+      std::string repl = wxToStd(h.replacement);
+
+      if (startPos > text.size() || endPos > text.size() || startPos > endPos) {
+        continue;
+      }
+
+      APP_DEBUG_LOG ("AI: replace range %zu - %zu", startPos, endPos);
+      APP_TRACE_LOG ("AI: replacement text:\n%s", repl.c_str());
+
+      text.replace(startPos, endPos - startPos, repl);
+      anyApplied = true;
+    }
+  }
+
+  if (!anyApplied) {
+    APP_DEBUG_LOG("AI: No hunks applied (ranges out of file bounds or empty patch).");
+  }
+
+  return anyApplied;
+}
+
 
 static bool AiIsInfoMarker(const wxString &trimmedLine, const wxString &tokenA, const wxString &tokenB) {
   wxString t = trimmedLine;
@@ -3003,6 +3200,7 @@ void ArduinoAiActions::TrimTranscriptToLastPatchWindow(wxString &transcript) con
 
 // Returns true if no further action expected
 bool ArduinoAiActions::ApplyAiModelSolution(const wxString &reply) {
+  // XXX: rework
   if (reply.IsEmpty()) {
     return true;
   }
@@ -3113,8 +3311,7 @@ bool ArduinoAiActions::ApplyAiModelSolution(const wxString &reply) {
       }
     }
 
-    std::vector<SketchFileBuffer> files;
-    frame->CollectEditorSources(files);
+    const std::vector<SketchFileBuffer>& files = m_solveSession.workingFiles;
 
     ArduinoPatchStraightener ps(sketchPath, patches, files);
 
@@ -3357,6 +3554,43 @@ std::string ArduinoAiActions::GetSketchRoot() const {
   return m_editor->arduinoCli->GetSketchPath();
 }
 
+std::string ArduinoAiActions::GetCurrentCode() {
+  if (m_solveSession.basename.empty() || m_solveSession.workingFiles.size() < 1) {
+    return m_editor->GetText();
+  } else {
+    std::string sketchRoot = GetSketchRoot();
+    std::string normName = NormalizeFilename(sketchRoot, wxToStd(m_solveSession.basename));
+
+    for (auto &buff : m_solveSession.workingFiles) {
+      if (normName == NormalizeFilename(sketchRoot, buff.filename)) {
+        return buff.code;
+      }
+    }
+
+    return {};
+  }
+}
+
+SketchFileBuffer *ArduinoAiActions::FindBufferWithFile(const std::string& filename, bool allowCreate) {
+  std::string sketchRoot = GetSketchRoot();
+  std::string normName = NormalizeFilename(sketchRoot, filename);
+  for (auto &buff : m_solveSession.workingFiles) {
+    if (normName == NormalizeFilename(sketchRoot, wxToStd(m_solveSession.basename))) {
+      return (SketchFileBuffer *) &buff;
+    }
+  }
+
+  if (allowCreate) {
+    SketchFileBuffer buff;
+    buff.filename = normName;
+    buff.code.clear();
+    m_solveSession.workingFiles.push_back(buff);
+    return &m_solveSession.workingFiles.back();
+  } else {
+    return nullptr;
+  }
+}
+
 wxStyledTextCtrl *ArduinoAiActions::GetStc() {
   return m_editor->m_editor;
 }
@@ -3367,8 +3601,7 @@ void ArduinoAiActions::OnAiSimpleChatSuccess(wxThreadEvent &event) {
     return;
   }
 
-  wxString reply = event.GetString();
-  reply.Trim(true).Trim(false);
+  wxString reply = TrimCopy(event.GetString());
   if (reply.IsEmpty()) {
     StopCurrentAction();
     return;
@@ -3543,6 +3776,12 @@ void ArduinoAiActions::OnAiSimpleChatError(wxThreadEvent &event) {
           wxOK | wxICON_ERROR);
       break;
   }
+}
+
+void ArduinoAiActions::OnDiagnosticsUpdated(wxThreadEvent &evt) {
+  APP_DEBUG_LOG("AI: OnDiagnosticsUpdated()");
+  // TODO
+  evt.Skip();
 }
 
 void ArduinoAiActions::AppendChatEvent(const char *type, const wxString &text, int inputTokens, int outputTokens, int totalTokens) {

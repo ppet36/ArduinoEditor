@@ -30,6 +30,7 @@ class AiExplainPopup;
 struct ArduinoParseError;
 class wxStyledTextCtrl;
 struct AiSettings;
+struct SketchFileBuffer;
 
 struct AiPatchHunk {
   wxString file;    // relative/absolute path within the sketch (.ino, .cpp, .hpp...)
@@ -127,6 +128,7 @@ private:
     int bodyFromLine = 0; // 1-based
     int bodyToLine = 0;   // 1-based
     AiSeenIntervals seen;
+    std::vector<SketchFileBuffer> workingFiles;
   };
 
   struct AiInfoRequest {
@@ -158,6 +160,9 @@ private:
   wxStyledTextCtrl *GetStc();
   std::string GetSketchRoot() const;
   bool CheckNumberOfIterations();
+
+  std::string GetCurrentCode();
+  SketchFileBuffer *FindBufferWithFile (const std::string &filename, bool allowCreate = false);
 
   // Interactive chat machinery
   bool m_chatActive = false;
@@ -197,6 +202,7 @@ private:
 
   void OnAiSimpleChatSuccess(wxThreadEvent &event);
   void OnAiSimpleChatError(wxThreadEvent &event);
+  void OnDiagnosticsUpdated(wxThreadEvent &evt);
 
   void InsertAiGeneratedDocComment(const wxString &reply);
   bool ApplyAiModelSolution(const wxString &reply);
@@ -204,6 +210,7 @@ private:
   bool ParseAiInfoRequests(const wxString &raw, std::vector<AiInfoRequest> &out, wxString *payload = nullptr);
   bool ParseAiPatch(const wxString &rawPatch, std::vector<AiPatchHunk> &out, wxString *payload = nullptr);
   bool ApplyAiPatchToEditor(wxStyledTextCtrl *stc, const wxString &currentFileBasename, const std::vector<AiPatchHunk> &patches);
+  bool ApplyAiPatchToFiles(const std::vector<AiPatchHunk> &patches);
 
   wxString FormatSymbolInfoForAi(const SymbolInfo &s);
 
