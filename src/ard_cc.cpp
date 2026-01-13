@@ -22,10 +22,10 @@
 #include <cctype>
 #include <fstream>
 #include <regex>
+#include <set>
 #include <thread>
 #include <unordered_map>
 #include <unordered_set>
-#include <set>
 
 namespace fs = std::filesystem;
 
@@ -2044,28 +2044,6 @@ std::vector<ArduinoParseError> ArduinoCodeCompletion::ParseCode(const std::strin
   return CollectDiagnosticsLocked(tu);
 }
 
-std::size_t ArduinoCodeCompletion::DiagHashLocked(const std::vector<ArduinoParseError> &errs, const std::string &sketchDir) const {
-
-  std::size_t h = 1469598103934665603ull; // FNV-1a
-
-  for (const auto &e : errs) {
-    // filter only files within the sketch dir:
-    if (!e.file.empty() && e.file.rfind(sketchDir, 0) == 0) {
-      // primitive hash - file+line+column+message
-      for (char c : e.file)
-        h ^= (unsigned char)c, h *= 1099511628211ull;
-      h ^= (unsigned)e.line;
-      h *= 1099511628211ull;
-      h ^= (unsigned)e.column;
-      h *= 1099511628211ull;
-      for (char c : e.message)
-        h ^= (unsigned char)c, h *= 1099511628211ull;
-    }
-  }
-
-  return h;
-}
-
 std::size_t ArduinoCodeCompletion::HashCode(const std::string &code) {
   std::size_t h = 1469598103934665603ull; // FNV-1a offset
 
@@ -2376,18 +2354,6 @@ std::size_t ArduinoCodeCompletion::ComputeDiagHash(const std::vector<ArduinoPars
   return h;
 }
 
-void ArduinoCodeCompletion::NotifyDiagnosticsChangedLocked(const std::vector<ArduinoParseError> &errs) {
-  std::size_t newHash = ComputeDiagHash(errs);
-
-  bool diagChanged = (m_lastDiagHash == 0) || (newHash != m_lastDiagHash);
-
-  m_lastDiagHash = newHash;
-
-  wxThreadEvent evt(EVT_DIAGNOSTICS_UPDATED);
-  evt.SetInt(diagChanged ? 1 : 0);
-  QueueUiEvent(m_eventHandler, evt.Clone());
-}
-
 std::vector<ArduinoParseError> ArduinoCodeCompletion::GetErrorsFor(const std::string &filename) const {
   std::lock_guard<std::mutex> lock(m_ccMutex);
 
@@ -2402,16 +2368,16 @@ std::vector<ArduinoParseError> ArduinoCodeCompletion::GetErrorsFor(const std::st
   return CollectDiagnosticsLocked(it->second.tu);
 }
 
-void ArduinoCodeCompletion::RefreshDiagnosticsAsync(const std::string &filename,
-                                                    const std::string &code) {
-
+void ArduinoCodeCompletion::RefreshDiagnosticsAsync(const std::string &filename, const std::string &code, wxEvtHandler *handler) {
   if (!m_ready)
     return;
 
   std::vector<SketchFileBuffer> filesSnapshot;
   CollectSketchFiles(filesSnapshot);
 
-  std::thread([this, filename, code, filesSnapshot = std::move(filesSnapshot)]() {
+  wxWeakRef<wxEvtHandler> weak(handler);
+
+  std::thread([this, filename, code, filesSnapshot = std::move(filesSnapshot), weak]() {
     CcFilesSnapshotGuard guard(&filesSnapshot);
 
     std::lock_guard<std::mutex> lock(m_ccMutex);
@@ -2419,7 +2385,10 @@ void ArduinoCodeCompletion::RefreshDiagnosticsAsync(const std::string &filename,
     // ParseCode takes care of creating/updating the TU as well as calculating errors
     auto errors = ParseCode(filename, code);
 
-    NotifyDiagnosticsChangedLocked(errors);
+    wxThreadEvent evt(EVT_DIAGNOSTICS_UPDATED);
+    evt.SetInt(1);
+    evt.SetPayload(std::move(errors));
+    QueueUiEvent(weak, evt.Clone());
   }).detach();
 }
 
@@ -2732,9 +2701,10 @@ std::vector<std::string> ArduinoCodeCompletion::GetCompilerArgs(const std::vecto
 }
 
 void ArduinoCodeCompletion::ShowAutoCompletionAsync(wxStyledTextCtrl *editor, std::string filename, CompletionMetadata &metadata, wxEvtHandler *handler) {
-
   if (!m_ready)
     return;
+
+  wxWeakRef<wxEvtHandler> weak(handler);
 
   // --- GUI thread: read the editor state ---
   int currentPos = editor->GetCurrentPos();
@@ -2805,13 +2775,13 @@ void ArduinoCodeCompletion::ShowAutoCompletionAsync(wxStyledTextCtrl *editor, st
     evt.SetPayload(completions);
     evt.SetString(wxString::Format(wxT("%d"), lengthEntered));
 
-    QueueUiEvent(handler, evt.Clone());
+    QueueUiEvent(weak, evt.Clone());
     return;
   }
 
   // --- worker thread ---
   std::thread([this,
-               handler,
+               weak,
                seq,
                filename = std::move(filename),
                code = std::move(code),
@@ -2897,7 +2867,7 @@ void ArduinoCodeCompletion::ShowAutoCompletionAsync(wxStyledTextCtrl *editor, st
     evt.SetPayload(completions);                               // vector<CompletionItem>
     evt.SetString(wxString::Format(wxT("%d"), lengthEntered)); // entered prefix length
 
-    QueueUiEvent(handler, evt.Clone());
+    QueueUiEvent(weak, evt.Clone());
   }).detach();
 }
 
@@ -3911,11 +3881,13 @@ void ArduinoCodeCompletion::FindSymbolOccurrencesAsync(const std::string &filena
     return;
   }
 
+  wxWeakRef<wxEvtHandler> weak(handler);
+
   std::vector<SketchFileBuffer> filesSnapshot;
   CollectSketchFiles(filesSnapshot);
 
   std::thread([this,
-               handler,
+               weak,
                filename,
                code,
                line,
@@ -3937,7 +3909,7 @@ void ArduinoCodeCompletion::FindSymbolOccurrencesAsync(const std::string &filena
     evt.SetInt((int)requestId);
     evt.SetPayload(occurrences); // vector<JumpTarget>
 
-    QueueUiEvent(handler, evt.Clone());
+    QueueUiEvent(weak, evt.Clone());
   }).detach();
 }
 
@@ -4067,10 +4039,12 @@ void ArduinoCodeCompletion::FindSymbolOccurrencesProjectWideAsync(
     return;
   }
 
+  wxWeakRef<wxEvtHandler> weak(handler);
+
   auto filesCopy = files;
 
   std::thread([this,
-               handler,
+               weak,
                filesCopy = std::move(filesCopy),
                filename,
                code,
@@ -4099,7 +4073,7 @@ void ArduinoCodeCompletion::FindSymbolOccurrencesProjectWideAsync(
     evt.SetInt((int)requestId);
     evt.SetPayload(occurrences); // vector<JumpTarget>
 
-    QueueUiEvent(handler, evt.Clone());
+    QueueUiEvent(weak, evt.Clone());
   }).detach();
 }
 
@@ -4715,9 +4689,6 @@ void ArduinoCodeCompletion::InvalidateTranslationUnit() {
   m_completionSession.valid = false;
   m_completionSession.baseItems.clear();
 
-  m_lastDiagHash = 0;
-  m_lastProjectErrors.clear();
-
   m_resolvedIncludesCache.clear();
 }
 
@@ -4774,15 +4745,16 @@ std::string ArduinoCodeCompletion::GetKindSpelling(CXCursorKind kind) {
   return cxStringToStd(clang_getCursorKindSpelling(kind));
 }
 
-void ArduinoCodeCompletion::RefreshProjectDiagnosticsAsync(const std::vector<SketchFileBuffer> &files) {
-  if (!m_ready)
+void ArduinoCodeCompletion::RefreshProjectDiagnosticsAsync(const std::vector<SketchFileBuffer> &files, wxEvtHandler *handler) {
+  if (!m_ready || !handler)
     return;
 
   APP_DEBUG_LOG("RefreshProjectDiagnosticsAsync(%d files)", files.size());
 
   auto filesCopy = files;
+  wxWeakRef<wxEvtHandler> weak(handler);
 
-  std::thread([this, filesCopy = std::move(filesCopy)]() {
+  std::thread([this, filesCopy = std::move(filesCopy), weak]() {
     CcFilesSnapshotGuard guard(&filesCopy);
 
     std::lock_guard<std::mutex> lock(m_ccMutex);
@@ -4790,11 +4762,10 @@ void ArduinoCodeCompletion::RefreshProjectDiagnosticsAsync(const std::vector<Ske
     // calculate multi-TU errors
     auto errors = ComputeProjectDiagnosticsLocked(filesCopy);
 
-    // save to cache
-    m_lastProjectErrors = errors;
-
-    // we emit the event only when something has actually changed
-    NotifyProjectDiagnosticsChangedLocked(m_lastProjectErrors);
+    wxThreadEvent evt(EVT_DIAGNOSTICS_UPDATED);
+    evt.SetInt(1);
+    evt.SetPayload(std::move(errors));
+    QueueUiEvent(weak, evt.Clone());
   }).detach();
 }
 
@@ -5200,29 +5171,28 @@ std::vector<std::string> ArduinoCodeCompletion::ResolveLibrariesIncludes(const s
   }
 }
 
-std::vector<ArduinoParseError> ArduinoCodeCompletion::GetLastProjectErrors() const {
-  std::lock_guard<std::mutex> lock(m_ccMutex);
-  return m_lastProjectErrors;
-}
+void ArduinoCodeCompletion::QueueUiEvent(const wxWeakRef<wxEvtHandler> &weak, wxEvent *event) {
+  if (!event)
+    return;
 
-void ArduinoCodeCompletion::NotifyProjectDiagnosticsChangedLocked(const std::vector<ArduinoParseError> &errs) {
-  std::size_t newHash = ComputeDiagHash(errs);
-
-  bool diagChanged = (m_lastDiagHash == 0) || (newHash != m_lastDiagHash);
-
-  m_lastDiagHash = newHash;
-
-  wxThreadEvent evt(EVT_DIAGNOSTICS_UPDATED);
-  evt.SetInt(diagChanged ? 1 : 0);
-  QueueUiEvent(m_eventHandler, evt.Clone());
-}
-
-void ArduinoCodeCompletion::QueueUiEvent(wxEvtHandler *handler, wxEvent *event) {
   if (m_cancelAsync.load(std::memory_order_relaxed)) {
+    delete event;
     return;
   }
 
-  wxQueueEvent(handler, event);
+  if (!wxTheApp) {
+    delete event;
+    return;
+  }
+
+  wxTheApp->CallAfter([weak, event]() {
+    wxEvtHandler *h = weak.get();
+    if (!h) {
+      delete event;
+      return;
+    }
+    wxQueueEvent(h, event);
+  });
 }
 
 void ArduinoCodeCompletion::CancelAsyncOperations() {
@@ -5350,8 +5320,8 @@ void ArduinoCodeCompletion::ApplySettings(const ClangSettings &settings) {
   m_clangSettings = settings;
 }
 
-ArduinoCodeCompletion::ArduinoCodeCompletion(ArduinoCli *ardCli, const ClangSettings &clangSettings, CollectSketchFilesFn collectSketchFilesFn, wxEvtHandler *eventHandler)
-    : arduinoCli(ardCli), m_clangSettings(clangSettings), m_collectSketchFilesFn(std::move(collectSketchFilesFn)), m_eventHandler(eventHandler) {
+ArduinoCodeCompletion::ArduinoCodeCompletion(ArduinoCli *ardCli, const ClangSettings &clangSettings, CollectSketchFilesFn collectSketchFilesFn)
+    : arduinoCli(ardCli), m_clangSettings(clangSettings), m_collectSketchFilesFn(std::move(collectSketchFilesFn)) {
   index = clang_createIndex(0, 0);
 
   CXString v = clang_getClangVersion();

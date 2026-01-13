@@ -1,7 +1,7 @@
 #include "ard_valsview.hpp"
-#include "utils.hpp"
-#include "ard_setdlg.hpp"
 #include "ard_ap.hpp"
+#include "ard_setdlg.hpp"
+#include "utils.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -471,4 +471,3 @@ void ArduinoValuesView::OnSysColourChanged(wxSysColourChangedEvent &event) {
   Refresh();
   event.Skip();
 }
-

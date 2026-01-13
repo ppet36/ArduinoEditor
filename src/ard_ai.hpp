@@ -124,11 +124,13 @@ private:
     int iteration = 0;
     int maxIterations = 5;
     bool finished = false;
+    bool waitingForDiagnostics = false;
     // For OptimizeFunctionOrMethod
     int bodyFromLine = 0; // 1-based
     int bodyToLine = 0;   // 1-based
     AiSeenIntervals seen;
     std::vector<SketchFileBuffer> workingFiles;
+    wxString assistantPatchExplanation;
   };
 
   struct AiInfoRequest {
@@ -162,7 +164,7 @@ private:
   bool CheckNumberOfIterations();
 
   std::string GetCurrentCode();
-  SketchFileBuffer *FindBufferWithFile (const std::string &filename, bool allowCreate = false);
+  SketchFileBuffer *FindBufferWithFile(const std::string &filename, bool allowCreate = false);
 
   // Interactive chat machinery
   bool m_chatActive = false;

@@ -500,7 +500,7 @@ void ArduinoEditorFrame::OpenSketch(const std::string &skp) {
   arduinoCli->LoadCoresAsync(this);
 
   app.SetSplashMessage(_("Creating completion engine..."));
-  completion = new ArduinoCodeCompletion(arduinoCli, m_clangSettings, [this](std::vector<SketchFileBuffer> &out) { this->CollectEditorSources(out); }, /*eventHandler=*/this);
+  completion = new ArduinoCodeCompletion(arduinoCli, m_clangSettings, [this](std::vector<SketchFileBuffer> &out) { this->CollectEditorSources(out); });
 
   // ---------------------------------------------------------------------------
   // Create editor ONLY for the primary .ino file.
@@ -1790,10 +1790,13 @@ void ArduinoEditorFrame::OnDiagnosticsUpdated(wxThreadEvent &evt) {
     return;
   }
 
+  auto errors = evt.GetPayload<std::vector<ArduinoParseError>>();
+
   m_diagView->SetStale(false);
 
-  if (evt.GetInt() == 0) {
-    // diagnosis has not changed.
+  size_t newHash = ArduinoCodeCompletion::ComputeDiagHash(errors);
+  if ((m_lastDiagHash != 0) && (m_lastDiagHash == newHash)) {
+    // Diagnostic not changed
     return;
   }
 
@@ -1831,34 +1834,18 @@ void ArduinoEditorFrame::OnDiagnosticsUpdated(wxThreadEvent &evt) {
     return;
   }
 
-  std::vector<ArduinoParseError> errors;
-
-  switch (m_clangSettings.diagnosticMode) {
-    case translationUnit: {
-      if (!completion->IsTranslationUnitValid()) {
-        ShowSingleDiagMessage(_("Translation unit not prepared."));
-        return;
-      }
-      ArduinoEditor *ed = GetCurrentEditor();
-      if (ed) {
-        errors = completion->GetErrorsFor(ed->GetFilePath());
-      }
-
-      break;
-    }
-    case completeProject:
-      errors = completion->GetLastProjectErrors();
-      break;
-    default:
-      m_firstInitCompleted = true;
-      ShowSingleDiagMessage(_("Diagnostics turned off."));
-      return;
+  if (m_clangSettings.diagnosticMode == noDiagnostic) {
+    m_firstInitCompleted = true;
+    ShowSingleDiagMessage(_("Diagnostics turned off."));
+    return;
   }
 
   m_firstInitCompleted = true;
 
   errorCount = errors.size();
   APP_DEBUG_LOG("FRM: OnDiagnosticsUpdated: %d diagnostics", errorCount);
+
+  m_lastDiagHash = newHash;
 
   if (errors.empty()) {
     ShowSingleDiagMessage(_("No problems found."));
@@ -2032,7 +2019,7 @@ void ArduinoEditorFrame::RefreshDiagnostics() {
       StartProcess(_("Project diagnostics evaluation..."), ID_PROCESS_DIAG_EVAL, ArduinoActivityState::Background);
       std::vector<SketchFileBuffer> files;
       CollectEditorSources(files);
-      completion->RefreshProjectDiagnosticsAsync(files);
+      completion->RefreshProjectDiagnosticsAsync(files, this);
       break;
     }
     case translationUnit: {
@@ -2045,7 +2032,7 @@ void ArduinoEditorFrame::RefreshDiagnostics() {
       std::string code = ed->GetText();
 
       StartProcess(_("Diagnostic evaluation..."), ID_PROCESS_DIAG_EVAL, ArduinoActivityState::Background);
-      completion->RefreshDiagnosticsAsync(filename, code);
+      completion->RefreshDiagnosticsAsync(filename, code, this);
       break;
     }
     default:
@@ -3593,7 +3580,6 @@ void ArduinoEditorFrame::OnOpenSerialMonitor(wxCommandEvent &) {
 
   wxString portName = wxString::FromUTF8(arduinoCli->GetSerialPort());
 
-
   if (!m_serialMonitor) {
     if (CanPerformAction(openserialmon, true)) {
       wxFileConfig *sketchConfig = OpenWorkspaceConfig();
@@ -4512,36 +4498,9 @@ void ArduinoEditorFrame::RefactorRenameSymbol(ArduinoEditor *originEditor, int l
     return;
   }
 
-  // Check source code validity
-  std::vector<ArduinoParseError> errors;
-
-  switch (m_clangSettings.diagnosticMode) {
-    case translationUnit: {
-      if (!completion->IsTranslationUnitValid()) {
-        ModalMsgDialog(_("Translation unit is not valid."), _("Rename symbol"));
-        return;
-      }
-      ArduinoEditor *ed = GetCurrentEditor();
-      if (ed) {
-        errors = completion->GetErrorsFor(ed->GetFilePath());
-      }
-
-      break;
-    }
-    case completeProject:
-      errors = completion->GetLastProjectErrors();
-      break;
-    default: // noCompletion
-      return;
-  }
-
-  for (auto &e : errors) {
-    auto sev = static_cast<int>(e.severity);
-    if (sev == static_cast<int>(CXDiagnostic_Error) ||
-        sev == static_cast<int>(CXDiagnostic_Fatal)) {
-      ModalMsgDialog(_("Sources contains compilation errors."), _("Rename symbol"));
-      return;
-    }
+  if (!completion->IsTranslationUnitValid()) {
+    ModalMsgDialog(_("Sources contains compilation errors."), _("Rename symbol"));
+    return;
   }
 
   std::string filename = originEditor->GetFilePath();

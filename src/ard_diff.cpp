@@ -19,6 +19,7 @@
 #include "ard_diff.hpp"
 
 #include <algorithm>
+#include <set>
 #include <unordered_map>
 
 #include <wx/button.h>
@@ -30,8 +31,8 @@
 // -------------------- ctor --------------------
 
 ArduinoDiffDialog::ArduinoDiffDialog(wxWindow *parent,
-                                     const std::vector<AiPatchHunk> &hunks,
-                                     const std::vector<SketchFileBuffer> &buffers,
+                                     const std::vector<SketchFileBuffer> &buffersOld,
+                                     const std::vector<SketchFileBuffer> &buffersNew,
                                      ArduinoCli *cli,
                                      wxConfigBase *config,
                                      const wxString &aiComment)
@@ -51,18 +52,10 @@ ArduinoDiffDialog::ArduinoDiffDialog(wxWindow *parent,
     }
   }
 
-  BuildUi(hunks, buffers);
+  BuildUi(buffersOld, buffersNew);
 
   if (!LoadWindowSize(wxT("DiffDialog"), this, m_config)) {
     CentreOnParent();
-  }
-
-  for (auto &hunk : hunks) {
-    APP_TRACE_LOG("DIFF: received hunk for file=%s, fromLine=%d, toLine=%d\n%s", wxToStd(hunk.file).c_str(), hunk.fromLine, hunk.toLine, wxToStd(hunk.replacement).c_str());
-  }
-
-  for (auto &buffer : buffers) {
-    APP_TRACE_LOG("DIFF: buffer %s\n%s", buffer.filename.c_str(), buffer.code.c_str());
   }
 }
 
@@ -82,7 +75,8 @@ wxString ArduinoDiffDialog::GetAdditionalInfo() {
 
 // -------------------- UI build --------------------
 
-void ArduinoDiffDialog::BuildUi(const std::vector<AiPatchHunk> &hunks, const std::vector<SketchFileBuffer> &buffers) {
+void ArduinoDiffDialog::BuildUi(const std::vector<SketchFileBuffer> &buffersOld,
+                                const std::vector<SketchFileBuffer> &buffersNew) {
   auto *topSizer = new wxBoxSizer(wxVERTICAL);
 
   // AI comment, if any
@@ -129,55 +123,78 @@ void ArduinoDiffDialog::BuildUi(const std::vector<AiPatchHunk> &hunks, const std
 
   SetSizer(topSizer);
 
-  // Build a lookup for editor buffers by normalized filename.
-  std::unordered_map<std::wstring, wxString> mapKeyToOriginal;
-  mapKeyToOriginal.reserve(buffers.size() * 2);
+  // Build lookups for old/new buffers by normalized filename.
+  std::unordered_map<std::wstring, wxString> mapKeyToOld;
+  std::unordered_map<std::wstring, wxString> mapKeyToNew;
 
-  for (const auto &b : buffers) {
-    wxString fn = wxString::FromUTF8(b.filename.c_str());
-    wxString key = NormalizeKey(fn);
-    mapKeyToOriginal[key.ToStdWstring()] = wxString::FromUTF8(b.code.c_str());
+  mapKeyToOld.reserve(buffersOld.size() * 2);
+  mapKeyToNew.reserve(buffersNew.size() * 2);
+
+  for (const auto &b : buffersOld) {
+    const wxString fn = wxString::FromUTF8(b.filename.c_str());
+    const wxString key = NormalizeKey(fn);
+    mapKeyToOld[key.ToStdWstring()] = wxString::FromUTF8(b.code.c_str());
   }
 
-  // Group hunks by file (preserve first-seen order).
+  for (const auto &b : buffersNew) {
+    const wxString fn = wxString::FromUTF8(b.filename.c_str());
+    const wxString key = NormalizeKey(fn);
+    mapKeyToNew[key.ToStdWstring()] = wxString::FromUTF8(b.code.c_str());
+  }
+
+  // Determine tab order: prefer new buffers order, then any old-only (deleted) files.
   std::vector<wxString> fileOrder;
-  std::unordered_map<std::wstring, std::vector<AiPatchHunk>> byFile;
+  std::set<std::wstring> seen;
 
-  for (const auto &h : hunks) {
-    wxString fk = h.file;
-    wxString key = NormalizeKey(fk);
+  fileOrder.reserve(mapKeyToNew.size() + mapKeyToOld.size());
 
-    auto wk = key.ToStdWstring();
-    if (byFile.find(wk) == byFile.end()) {
-      fileOrder.push_back(fk);
+  for (const auto &b : buffersNew) {
+    const wxString fn = wxString::FromUTF8(b.filename.c_str());
+    const wxString key = NormalizeKey(fn);
+    const std::wstring wk = key.ToStdWstring();
+    if (seen.insert(wk).second) {
+      fileOrder.push_back(fn);
     }
-    byFile[wk].push_back(h);
+  }
+
+  for (const auto &b : buffersOld) {
+    const wxString fn = wxString::FromUTF8(b.filename.c_str());
+    const wxString key = NormalizeKey(fn);
+    const std::wstring wk = key.ToStdWstring();
+    if (seen.insert(wk).second) {
+      fileOrder.push_back(fn);
+    }
   }
 
   // Create tabs
   for (const auto &fileKey : fileOrder) {
+    const wxString normKey = NormalizeKey(fileKey);
+    const std::wstring wk = normKey.ToStdWstring();
+
+    auto itOld = mapKeyToOld.find(wk);
+    auto itNew = mapKeyToNew.find(wk);
+
+    if (itOld == mapKeyToOld.end() && itNew == mapKeyToNew.end()) {
+      continue;
+    }
+
     m_views.emplace_back();
     FileViewData &v = m_views.back();
 
     v.fileKey = fileKey;
-    v.resolvedKey = NormalizeKey(fileKey);
+    v.resolvedKey = normKey;
+    v.isNewFile = (itOld == mapKeyToOld.end() && itNew != mapKeyToNew.end());
+    v.isDeletedFile = (itOld != mapKeyToOld.end() && itNew == mapKeyToNew.end());
 
-    auto it = byFile.find(v.resolvedKey.ToStdWstring());
-    if (it == byFile.end()) {
-      m_views.pop_back();
-      continue;
-    }
-
-    const auto &fileHunks = it->second;
-
-    auto itBuf = mapKeyToOriginal.find(v.resolvedKey.ToStdWstring());
-    if (itBuf != mapKeyToOriginal.end()) {
-      v.isNewFile = false;
-      CreateExistingFileTab(m_notebook, v, itBuf->second, fileHunks);
-      BindScrollSync(v); // ← bezpečné
+    if (v.isNewFile) {
+      v.newText = itNew->second;
+      CreateNewFileTab(m_notebook, v, v.newText);
     } else {
-      v.isNewFile = true;
-      CreateNewFileTab(m_notebook, v, fileHunks);
+      v.oldText = (itOld != mapKeyToOld.end()) ? itOld->second : wxString();
+      v.newText = (itNew != mapKeyToNew.end()) ? itNew->second : wxString();
+
+      CreateExistingFileTab(m_notebook, v, v.oldText, v.newText);
+      BindScrollSync(v);
     }
   }
 
@@ -193,14 +210,19 @@ void ArduinoDiffDialog::BuildUi(const std::vector<AiPatchHunk> &hunks, const std
 
 wxPanel *ArduinoDiffDialog::CreateExistingFileTab(wxNotebook *nb,
                                                   FileViewData &v,
-                                                  const wxString &originalText,
-                                                  const std::vector<AiPatchHunk> &fileHunks) {
+                                                  const wxString &oldText,
+                                                  const wxString &newText) {
   auto *panel = new wxPanel(nb);
   auto *root = new wxBoxSizer(wxVERTICAL);
 
   // Optional title line
   {
-    wxString title = wxString::Format(_("Existing file: %s"), v.fileKey);
+    wxString title;
+    if (v.isDeletedFile) {
+      title = wxString::Format(_("Deleted file: %s"), v.fileKey);
+    } else {
+      title = wxString::Format(_("File: %s"), v.fileKey);
+    }
     root->Add(new wxStaticText(panel, wxID_ANY, title), 0, wxLEFT | wxRIGHT | wxTOP, 6);
   }
 
@@ -216,10 +238,10 @@ wxPanel *ArduinoDiffDialog::CreateExistingFileTab(wxNotebook *nb,
   auto *rightSizer = new wxBoxSizer(wxVERTICAL);
 
   leftSizer->Add(new wxStaticText(leftPanel, wxID_ANY, _("Original")), 0, wxALL, 4);
-  rightSizer->Add(new wxStaticText(rightPanel, wxID_ANY, _("Patched")), 0, wxALL, 4);
+  rightSizer->Add(new wxStaticText(rightPanel, wxID_ANY, v.isDeletedFile ? _("Deleted") : _("Modified")), 0, wxALL, 4);
 
-  v.originalText = originalText;
-  v.hunks = fileHunks;
+  v.oldText = oldText;
+  v.newText = newText;
 
   v.left = new wxStyledTextCtrl(leftPanel, wxID_ANY);
   v.right = new wxStyledTextCtrl(rightPanel, wxID_ANY);
@@ -278,14 +300,18 @@ wxPanel *ArduinoDiffDialog::CreateExistingFileTab(wxNotebook *nb,
 
   panel->SetSizer(root);
 
-  nb->AddPage(panel, v.fileKey, nb->GetPageCount() == 0);
+  std::string sketchPath = m_cli->GetSketchPath();
+
+  std::string pageTitle = StripFilename(sketchPath, wxToStd(v.fileKey));
+  
+  nb->AddPage(panel, wxString::FromUTF8(pageTitle), nb->GetPageCount() == 0);
 
   return panel;
 }
 
 wxPanel *ArduinoDiffDialog::CreateNewFileTab(wxNotebook *nb,
                                              FileViewData &v,
-                                             const std::vector<AiPatchHunk> &fileHunks) {
+                                             const wxString &newText) {
   auto *panel = new wxPanel(nb);
   auto *root = new wxBoxSizer(wxVERTICAL);
 
@@ -297,8 +323,7 @@ wxPanel *ArduinoDiffDialog::CreateNewFileTab(wxNotebook *nb,
   v.right = new wxStyledTextCtrl(panel, wxID_ANY);
   SetupStyledTextCtrl(v.right, m_config);
 
-  wxString content = BuildNewFileContent(fileHunks);
-  v.right->SetText(content);
+  v.right->SetText(newText);
   v.right->EmptyUndoBuffer();
 
   SetupReadOnlyDiffCtrl(v.right);
@@ -411,37 +436,15 @@ wxString ArduinoDiffDialog::JoinLines(const std::vector<wxString> &lines) {
   return out;
 }
 
-// -------------------- new file content --------------------
-
-wxString ArduinoDiffDialog::BuildNewFileContent(const std::vector<AiPatchHunk> &fileHunks) {
-  // For new files we expect the AI to provide a full file replacement.
-  // If multiple hunks exist, concatenate with a separator (rare but deterministic).
-  if (fileHunks.empty())
-    return wxEmptyString;
-
-  if (fileHunks.size() == 1) {
-    return fileHunks[0].replacement;
-  }
-
-  wxString out;
-  for (size_t i = 0; i < fileHunks.size(); ++i) {
-    if (i) {
-      out += _("\n\n/* --- next hunk --- */\n\n");
-    }
-    out += fileHunks[i].replacement;
-  }
-  return out;
-}
-
 // -------------------- existing file aligned view --------------------
 
 void ArduinoDiffDialog::UpdateExistingTabView(FileViewData &v) {
   wxString left, right;
 
   if (m_showFullFile) {
-    BuildAlignedExistingFileView(v.originalText, v.hunks, left, right);
+    BuildAlignedExistingFileView(v.oldText, v.newText, left, right);
   } else {
-    BuildContextAlignedExistingFileView(v.originalText, v.hunks, m_contextLines, left, right);
+    BuildContextAlignedExistingFileView(v.oldText, v.newText, m_contextLines, left, right);
   }
 
   const auto kinds = ComputeLineKindsFromAlignedText(left, right);
@@ -474,47 +477,56 @@ void ArduinoDiffDialog::UpdateExistingTabView(FileViewData &v) {
 }
 
 void ArduinoDiffDialog::BuildContextAlignedExistingFileView(
-    const wxString &originalText,
-    const std::vector<AiPatchHunk> &fileHunks,
+    const wxString &oldText,
+    const wxString &newText,
     int contextLines,
     wxString &outLeft,
     wxString &outRight) {
 
-  auto origLines = SplitLinesKeepLogical(originalText);
-  const int origCount = (int)origLines.size();
+  wxString fullLeft, fullRight;
+  BuildAlignedExistingFileView(oldText, newText, fullLeft, fullRight);
 
-  auto hunks = PrepareFileHunks(fileHunks, origCount);
-  if (hunks.empty()) {
-    outLeft = originalText;
-    outRight = originalText;
+  auto leftLines = SplitLinesKeepLogical(fullLeft);
+  auto rightLines = SplitLinesKeepLogical(fullRight);
+
+  const int n = std::min<int>((int)leftLines.size(), (int)rightLines.size());
+  if (n <= 0) {
+    outLeft = fullLeft;
+    outRight = fullRight;
+    return;
+  }
+
+  std::vector<int> changed;
+  changed.reserve(64);
+  for (int i = 0; i < n; ++i) {
+    if (leftLines[(size_t)i] != rightLines[(size_t)i]) {
+      changed.push_back(i);
+    }
+  }
+
+  if (changed.empty()) {
+    outLeft = fullLeft;
+    outRight = fullRight;
     return;
   }
 
   struct Block {
-    int start = 1;
-    int end = 1;
-    std::vector<AiPatchHunk> hunks;
+    int start = 0;
+    int end = 0;
   };
-
   std::vector<Block> blocks;
 
-  // build/merge blocks by context overlap
-  for (const auto &h : hunks) {
-    if (h.fromLine <= 0 || h.toLine <= 0)
-      continue;
-
-    int bs = std::max(1, h.fromLine - contextLines);
-    int be = std::min(origCount, h.toLine + contextLines);
+  for (int idx : changed) {
+    const int bs = std::max(0, idx - contextLines);
+    const int be = std::min(n - 1, idx + contextLines);
 
     if (!blocks.empty() && bs <= blocks.back().end + 1) {
       blocks.back().end = std::max(blocks.back().end, be);
-      blocks.back().hunks.push_back(h);
     } else {
       Block b;
       b.start = bs;
       b.end = be;
-      b.hunks.push_back(h);
-      blocks.push_back(std::move(b));
+      blocks.push_back(b);
     }
   }
 
@@ -524,55 +536,16 @@ void ArduinoDiffDialog::BuildContextAlignedExistingFileView(
   for (size_t bi = 0; bi < blocks.size(); ++bi) {
     const auto &b = blocks[bi];
 
-    // Header line
-    wxString hdr = wxString::Format(_("-------- hunk #%zu (lines %d-%d) --------"),
-                                    bi + 1, b.start, b.end);
+    wxString hdr = wxString::Format(_("-------- change block #%zu (aligned lines %d-%d) --------"),
+                                    bi + 1, b.start + 1, b.end + 1);
     leftOut.push_back(hdr);
     rightOut.push_back(hdr);
 
-    int cursor = b.start;
-
-    // apply hunks within block, like your full-file function but restricted to [start..end]
-    for (const auto &h : b.hunks) {
-      const int hf = std::max(h.fromLine, b.start);
-      const int ht = std::min(h.toLine, b.end);
-      if (hf > ht)
-        continue;
-
-      // unchanged before this hunk
-      while (cursor < hf && cursor <= b.end) {
-        leftOut.push_back(origLines[cursor - 1]);
-        rightOut.push_back(origLines[cursor - 1]);
-        ++cursor;
-      }
-
-      // original changed block
-      std::vector<wxString> origBlock;
-      for (int ln = hf; ln <= ht; ++ln)
-        origBlock.push_back(origLines[ln - 1]);
-
-      // replacement lines (as provided)
-      auto replBlock = SplitLinesKeepLogical(h.replacement);
-
-      // LCS align
-      auto aligned = m_lcsAligner.Align(origBlock, replBlock);
-
-      for (size_t i = 0; i < aligned.left.size(); ++i) {
-        leftOut.push_back(aligned.left[i]);
-        rightOut.push_back(aligned.right[i]);
-      }
-
-      cursor = ht + 1;
+    for (int ln = b.start; ln <= b.end; ++ln) {
+      leftOut.push_back(leftLines[(size_t)ln]);
+      rightOut.push_back(rightLines[(size_t)ln]);
     }
 
-    // tail of block
-    while (cursor <= b.end) {
-      leftOut.push_back(origLines[cursor - 1]);
-      rightOut.push_back(origLines[cursor - 1]);
-      ++cursor;
-    }
-
-    // spacing between blocks
     if (bi + 1 < blocks.size()) {
       leftOut.push_back(wxEmptyString);
       rightOut.push_back(wxEmptyString);
@@ -583,110 +556,17 @@ void ArduinoDiffDialog::BuildContextAlignedExistingFileView(
   outRight = JoinLines(rightOut);
 }
 
-std::vector<AiPatchHunk> ArduinoDiffDialog::PrepareFileHunks(
-    const std::vector<AiPatchHunk> &fileHunks,
-    int originalLineCount) {
-  std::vector<AiPatchHunk> hunks = fileHunks;
-
-  // Sort by fromLine then toLine.
-  std::sort(hunks.begin(), hunks.end(), [](const AiPatchHunk &a, const AiPatchHunk &b) {
-    if (a.fromLine != b.fromLine)
-      return a.fromLine < b.fromLine;
-    return a.toLine < b.toLine;
-  });
-
-  // Clip ranges to [1..originalLineCount] when possible.
-  for (auto &h : hunks) {
-    if (h.fromLine <= 0 && h.toLine <= 0) {
-      // treat as "replace whole file"
-      continue;
-    }
-
-    if (originalLineCount <= 0) {
-      h.fromLine = 1;
-      h.toLine = 1;
-      continue;
-    }
-
-    h.fromLine = std::max(1, h.fromLine);
-    h.toLine = std::max(h.fromLine, h.toLine);
-    h.fromLine = std::min(h.fromLine, originalLineCount);
-    h.toLine = std::min(h.toLine, originalLineCount);
-  }
-
-  // NOTE: We intentionally do not try to merge/validate overlap here; the caller can decide.
-  return hunks;
-}
-
 void ArduinoDiffDialog::BuildAlignedExistingFileView(
-    const wxString &originalText,
-    const std::vector<AiPatchHunk> &fileHunks,
-    wxString &outOriginalAligned,
-    wxString &outPatchedAligned) {
-  auto origLines = SplitLinesKeepLogical(originalText);
-  const int origCount = static_cast<int>(origLines.size());
+    const wxString &oldText,
+    const wxString &newText,
+    wxString &outOldAligned,
+    wxString &outNewAligned) {
+  auto oldLines = SplitLinesKeepLogical(oldText);
+  auto newLines = SplitLinesKeepLogical(newText);
 
-  auto hunks = PrepareFileHunks(fileHunks, origCount);
-
-  // Special case: replace whole file (fromLine/toLine are 0 or invalid).
-  if (hunks.size() == 1 && hunks[0].fromLine <= 0 && hunks[0].toLine <= 0) {
-    auto newLines = SplitLinesKeepLogical(hunks[0].replacement);
-
-    auto aligned = m_lcsAligner.Align(origLines, newLines);
-
-    outOriginalAligned = JoinLines(aligned.left);
-    outPatchedAligned = JoinLines(aligned.right);
-    return;
-  }
-
-  std::vector<wxString> leftOut;
-  std::vector<wxString> rightOut;
-  leftOut.reserve(origLines.size() + 64);
-  rightOut.reserve(origLines.size() + 64);
-
-  int cursor = 1; // 1-based line cursor in original
-
-  for (const auto &h : hunks) {
-    if (h.fromLine <= 0 || h.toLine <= 0) {
-      // ignore weird partial-hunk markers for existing files
-      continue;
-    }
-
-    // Copy unchanged lines before the hunk
-    while (cursor < h.fromLine && cursor <= origCount) {
-      leftOut.push_back(origLines[cursor - 1]);
-      rightOut.push_back(origLines[cursor - 1]);
-      ++cursor;
-    }
-
-    // Original block
-    std::vector<wxString> origBlock;
-    for (int ln = h.fromLine; ln <= h.toLine && ln <= origCount; ++ln) {
-      origBlock.push_back(origLines[ln - 1]);
-    }
-
-    // Replacement block
-    auto replBlock = SplitLinesKeepLogical(h.replacement);
-
-    // LCS align
-    auto aligned = m_lcsAligner.Align(origBlock, replBlock);
-    for (size_t i = 0; i < aligned.left.size(); ++i) {
-      leftOut.push_back(aligned.left[i]);
-      rightOut.push_back(aligned.right[i]);
-    }
-
-    cursor = h.toLine + 1;
-  }
-
-  // Copy remaining tail
-  while (cursor <= origCount) {
-    leftOut.push_back(origLines[cursor - 1]);
-    rightOut.push_back(origLines[cursor - 1]);
-    ++cursor;
-  }
-
-  outOriginalAligned = JoinLines(leftOut);
-  outPatchedAligned = JoinLines(rightOut);
+  auto aligned = m_lcsAligner.Align(oldLines, newLines);
+  outOldAligned = JoinLines(aligned.left);
+  outNewAligned = JoinLines(aligned.right);
 }
 
 // line highlight
@@ -755,7 +635,7 @@ void ArduinoDiffDialog::ApplyLineIndicators(wxStyledTextCtrl *stc, const std::ve
 }
 
 static bool IsHeaderLine(const wxString &s) {
-  return s.StartsWith(wxT("-------- hunk"));
+  return s.StartsWith(wxT("-------- "));
 }
 
 std::vector<DiffLineKind> ArduinoDiffDialog::ComputeLineKindsFromAlignedText(const wxString &leftAligned, const wxString &rightAligned) {

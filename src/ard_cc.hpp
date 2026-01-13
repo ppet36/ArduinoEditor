@@ -203,8 +203,6 @@ private:
   ClangSettings m_clangSettings;
 
   CompletionMetadata m_completionMetadata;
-  std::vector<ArduinoParseError> m_lastProjectErrors;
-  std::size_t m_lastDiagHash = 0;
   // Cache TU according to the "main" clang filename (.ino.cpp, .cpp, ...)
   std::unordered_map<std::string, CachedTranslationUnit> m_tuCache;
   // .. and for whole project
@@ -228,7 +226,6 @@ private:
 
   std::atomic<bool> m_cancelAsync{false};
   CollectSketchFilesFn m_collectSketchFilesFn;
-  wxEvtHandler *m_eventHandler = nullptr;
 
   bool IsIno(const std::string &filename) const;
   std::string AbsoluteFilename(const std::string &filename) const;
@@ -261,17 +258,13 @@ private:
 
   std::vector<CompletionItem> GetCompletions(const std::string &filename, const std::string &code, int line, int column);
 
-  std::size_t DiagHashLocked(const std::vector<ArduinoParseError> &errs, const std::string &sketchDir) const;
   std::vector<ArduinoParseError> CollectDiagnosticsLocked(CXTranslationUnit tu) const;
-  static std::size_t ComputeDiagHash(const std::vector<ArduinoParseError> &errs);
-  void NotifyDiagnosticsChangedLocked(const std::vector<ArduinoParseError> &errs);
 
   bool FindSiblingFunctionDefinition(CXCursor declCursor, JumpTarget &out);
 
   std::vector<ArduinoParseError> ComputeProjectDiagnosticsLocked(const std::vector<SketchFileBuffer> &files);
-  void NotifyProjectDiagnosticsChangedLocked(const std::vector<ArduinoParseError> &errs);
 
-  void QueueUiEvent(wxEvtHandler *handler, wxEvent *event);
+  void QueueUiEvent(const wxWeakRef<wxEvtHandler> &weak, wxEvent *event);
 
   void FilterAndSortCompletionsWithPrefix(const std::string &prefix, std::vector<CompletionItem> &inOutCompletions);
 
@@ -281,8 +274,10 @@ private:
   void AeGetBestDiagLocation(CXSourceLocation loc, CXFile *out_file, unsigned *out_line, unsigned *out_column, unsigned *out_offset) const;
 
 public:
-  ArduinoCodeCompletion(ArduinoCli *ardCli, const ClangSettings &clangSettings, CollectSketchFilesFn collectSketchFilesFn, wxEvtHandler *eventHandler);
+  ArduinoCodeCompletion(ArduinoCli *ardCli, const ClangSettings &clangSettings, CollectSketchFilesFn collectSketchFilesFn);
   ~ArduinoCodeCompletion();
+
+  static std::size_t ComputeDiagHash(const std::vector<ArduinoParseError> &errs);
 
   ArduinoCli *GetCli() { return arduinoCli; }
   void CollectSketchFiles(std::vector<SketchFileBuffer> &outFiles) const;
@@ -366,7 +361,7 @@ public:
                               int selEndLine, int selEndColumn,
                               ExtractFunctionAnalysis &out);
 
-  void RefreshDiagnosticsAsync(const std::string &filename, const std::string &code);
+  void RefreshDiagnosticsAsync(const std::string &filename, const std::string &code, wxEvtHandler *handler);
   std::vector<ArduinoParseError> GetErrorsFor(const std::string &filename) const;
 
   // From files extracts includes and via ArduinoCli::ResolveLibraries returns
@@ -376,8 +371,7 @@ public:
   // Asynchronously recalculates diagnoses for the *entire sketch* (more TU).
   // filename/code can still be used for "quick" diagnostics of the current editor,
   // this is a "deep scan".
-  void RefreshProjectDiagnosticsAsync(const std::vector<SketchFileBuffer> &files);
-  std::vector<ArduinoParseError> GetLastProjectErrors() const;
+  void RefreshProjectDiagnosticsAsync(const std::vector<SketchFileBuffer> &files, wxEvtHandler *handler);
 
   // Cancels the current translationUnit for hover and completing.
   void InvalidateTranslationUnit();

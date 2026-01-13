@@ -838,8 +838,6 @@ void ArduinoSerialMonitorFrame::CreateControls() {
                        wxEmptyString,
                        wxAEArt::Delete);
 
-
-
     menu.Enable(ID_OutputMenuCopy, hasSel);
     menu.Enable(ID_OutputMenuSaveSelection, hasSel);
 
@@ -893,8 +891,7 @@ void ArduinoSerialMonitorFrame::CreateControls() {
     // Handlers
     menu.Bind(wxEVT_MENU, [this](wxCommandEvent &) {
       if (m_outputCtrl)
-        m_outputCtrl->Copy();
-    }, ID_OutputMenuCopy);
+        m_outputCtrl->Copy(); }, ID_OutputMenuCopy);
 
     menu.Bind(wxEVT_MENU, [this, &saveText](wxCommandEvent &) {
       if (!m_outputCtrl)
@@ -910,7 +907,8 @@ void ArduinoSerialMonitorFrame::CreateControls() {
       wxCommandEvent dummy(wxEVT_BUTTON, ID_ClearButton);
       dummy.SetEventObject(this);
       OnClear(dummy); // same handler as the Clear button
-    }, ID_OutputMenuClear);
+    },
+              ID_OutputMenuClear);
 
     menu.Bind(wxEVT_MENU, [this](wxCommandEvent &evt) {
       m_displayValues = evt.IsChecked();
@@ -921,20 +919,16 @@ void ArduinoSerialMonitorFrame::CreateControls() {
         m_sketchConfig->Write(wxT("SerialDisplayValues"), m_displayValues);
         m_sketchConfig->Flush();
       }
-      Layout();
-    }, ID_OutputMenuDisplayValues);
+      Layout(); }, ID_OutputMenuDisplayValues);
 
-    menu.Bind(wxEVT_MENU, [this](wxCommandEvent &evt) {
-      m_autoScroll = evt.IsChecked();
-    }, ID_OutputMenuAutoScroll);
+    menu.Bind(wxEVT_MENU, [this](wxCommandEvent &evt) { m_autoScroll = evt.IsChecked(); }, ID_OutputMenuAutoScroll);
 
     menu.Bind(wxEVT_MENU, [this](wxCommandEvent &evt) {
       m_timestamps = evt.IsChecked();
       if (m_sketchConfig) {
         m_sketchConfig->Write(wxT("SerialShowTimestamps"), m_timestamps);
         m_sketchConfig->Flush();
-      }
-    }, ID_OutputMenuTimestamps);
+      } }, ID_OutputMenuTimestamps);
 
     wxPoint pt = e.GetPosition();
     if (pt == wxDefaultPosition) {

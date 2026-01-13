@@ -32,7 +32,6 @@
 
 #include <wx/stc/stc.h>
 
-#include "ard_ai.hpp" // AiPatchHunk
 #include "ard_cli.hpp"
 #include "ard_mdwidget.hpp" // ArduinoMarkdownPanel
 #include "lcs.hpp"          // ArduinoLcsDiffAligner
@@ -44,14 +43,14 @@ enum DiffLineKind { Same,
                     Modified,
                     Header };
 
-// A resizable dialog that previews AI patch hunks file-by-file.
-// For existing files it shows a 2-column aligned view (original vs patched).
-// For new files it shows a single read-only preview of the created file.
+// A resizable dialog that previews changes file-by-file.
+// It takes old/new in-memory buffers and shows a 2-column aligned view
+// for modified/deleted files and a single preview for new files.
 class ArduinoDiffDialog : public wxDialog {
 public:
   ArduinoDiffDialog(wxWindow *parent,
-                    const std::vector<AiPatchHunk> &hunks,
-                    const std::vector<SketchFileBuffer> &buffers,
+                    const std::vector<SketchFileBuffer> &buffersOld,
+                    const std::vector<SketchFileBuffer> &buffersNew,
                     ArduinoCli *cli,
                     wxConfigBase *config,
                     const wxString &aiComment);
@@ -61,34 +60,35 @@ public:
 
 private:
   struct FileViewData {
-    wxString fileKey;     // as provided by patch (tab title)
+    wxString fileKey;     // tab title
     wxString resolvedKey; // normalized key used for matching buffers
     bool isNewFile = false;
+    bool isDeletedFile = false;
 
     wxStyledTextCtrl *left = nullptr;  // original (existing files)
     wxStyledTextCtrl *right = nullptr; // patched (existing files) OR single (new file)
 
     bool syncing = false; // guard against recursion in scroll sync
 
-    wxString originalText;
-    std::vector<AiPatchHunk> hunks;
+    wxString oldText;
+    wxString newText;
     wxCheckBox *chkShowFull = nullptr;
   };
 
 private:
   ArduinoLcsDiffAligner m_lcsAligner;
 
-  void BuildUi(const std::vector<AiPatchHunk> &hunks,
-               const std::vector<SketchFileBuffer> &buffers);
+  void BuildUi(const std::vector<SketchFileBuffer> &buffersOld,
+               const std::vector<SketchFileBuffer> &buffersNew);
 
   wxPanel *CreateExistingFileTab(wxNotebook *nb,
                                  FileViewData &v,
-                                 const wxString &originalText,
-                                 const std::vector<AiPatchHunk> &fileHunks);
+                                 const wxString &oldText,
+                                 const wxString &newText);
 
   wxPanel *CreateNewFileTab(wxNotebook *nb,
                             FileViewData &v,
-                            const std::vector<AiPatchHunk> &fileHunks);
+                            const wxString &newText);
 
   void SetupReadOnlyDiffCtrl(wxStyledTextCtrl *stc);
 
@@ -100,27 +100,16 @@ private:
   std::vector<wxString> SplitLinesKeepLogical(const wxString &text);
   wxString JoinLines(const std::vector<wxString> &lines);
 
-  wxString BuildNewFileContent(const std::vector<AiPatchHunk> &fileHunks);
+  void BuildAlignedExistingFileView(const wxString &oldText,
+                                   const wxString &newText,
+                                   wxString &outOldAligned,
+                                   wxString &outNewAligned);
 
-  // Applies hunks to original, and also builds an aligned 2-column view
-  // (originalAligned, patchedAligned) by padding within changed blocks.
-  void BuildAlignedExistingFileView(
-      const wxString &originalText,
-      const std::vector<AiPatchHunk> &fileHunks,
-      wxString &outOriginalAligned,
-      wxString &outPatchedAligned);
-
-  void BuildContextAlignedExistingFileView(
-      const wxString &originalText,
-      const std::vector<AiPatchHunk> &fileHunks,
-      int contextLines,
-      wxString &outLeft,
-      wxString &outRight);
-
-  // Ensure hunks are sane and sorted for a file; clips ranges to original size.
-  std::vector<AiPatchHunk> PrepareFileHunks(
-      const std::vector<AiPatchHunk> &fileHunks,
-      int originalLineCount);
+  void BuildContextAlignedExistingFileView(const wxString &oldText,
+                                          const wxString &newText,
+                                          int contextLines,
+                                          wxString &outLeft,
+                                          wxString &outRight);
 
   void UpdateExistingTabView(FileViewData &v);
 

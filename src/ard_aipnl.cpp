@@ -139,7 +139,7 @@ void ArduinoAiChatPanel::InitUi() {
   EditorSettings settings;
   settings.Load(m_config);
 
-  wxFont inputFont(settings.GetFont().GetPointSize(), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, normalFace);
+  wxFont inputFont(settings.GetFont().GetPointSize() + 2, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, normalFace);
   m_inputCtrl->SetFont(inputFont);
 
   inputSizer->Add(m_inputCtrl, 1, wxEXPAND | wxALL, 5);

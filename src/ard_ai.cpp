@@ -26,10 +26,10 @@
 #include "ard_pop.hpp"
 #include "ard_ps.hpp"
 
+#include <algorithm>
 #include <nlohmann/json.hpp>
 #include <random>
 #include <thread>
-#include <algorithm>
 #include <wx/arrstr.h>
 #include <wx/datetime.h>
 #include <wx/dir.h>
@@ -339,6 +339,72 @@ static wxString GetNumberedContext(wxStyledTextCtrl *stc, int fromLine, int toLi
     *outRawNoNumbers = raw;
   }
   return out;
+}
+
+static wxString GetNumberedContext(const wxString &allText, int fromLine, int toLine, wxString *outRawNoNumbers = nullptr) {
+  wxString out;
+  wxString raw;
+
+  // Count lines similarly to wxStyledTextCtrl (newline-delimited; trailing '\n' => last empty line exists)
+  int lineCount = 1;
+  for (size_t i = 0; i < allText.length(); ++i) {
+    if (allText[i] == wxT('\n')) {
+      ++lineCount;
+    }
+  }
+
+  const int maxLine = lineCount - 1; // 0-based
+  const int fl = std::max(0, fromLine);
+  const int tl = std::min(maxLine, toLine);
+
+  if (fl > tl) {
+    if (outRawNoNumbers) {
+      outRawNoNumbers->clear();
+    }
+    return out;
+  }
+
+  int line = 0;
+  size_t start = 0;
+
+  // Iterate over lines by scanning '\n'
+  for (size_t i = 0; i <= allText.length(); ++i) {
+    const bool atEnd = (i == allText.length());
+    const bool isEol = (!atEnd && allText[i] == wxT('\n'));
+    if (!atEnd && !isEol) {
+      continue;
+    }
+
+    const size_t end = i; // excluding '\n'
+    if (line >= fl && line <= tl) {
+      wxString text = allText.Mid(start, end - start);
+
+      // match STC variant behavior: remove all '\r' and strip trailing '\n' (there is no '\n' here)
+      text.Replace(wxT("\r"), wxEmptyString);
+
+      // raw
+      raw << text << wxT("\n");
+
+      // numbered
+      out << wxString::Format(wxT("%d: %s\n"), line + 1, text);
+    }
+
+    if (line > tl) {
+      break;
+    }
+
+    ++line;
+    start = i + 1; // after '\n' (or length+1 at end, but loop ends anyway)
+  }
+
+  if (outRawNoNumbers) {
+    *outRawNoNumbers = raw;
+  }
+  return out;
+}
+
+static wxString GetNumberedContextAroundLine(const wxString &allText, int centerLine, int radius, wxString *outRawNoNumbers = nullptr) {
+  return GetNumberedContext(allText, centerLine - radius, centerLine + radius, outRawNoNumbers);
 }
 
 static wxString GetNumberedContextAroundLine(wxStyledTextCtrl *stc, int centerLine, int radius, wxString *outRawNoNumbers = nullptr) {
@@ -663,26 +729,18 @@ wxString AiChatUiItem::GetTokenInfo() const {
 
 // -------------------------------------------------------------------------------
 ArduinoAiActions::ArduinoAiActions(ArduinoEditor *editor)
-    : m_currentAction(Action::None), m_docCommentTargetLine(-1) {
+    : m_currentAction(Action::None), m_editor(editor), m_docCommentTargetLine(-1) {
 
   // events
   Bind(wxEVT_AI_SIMPLE_CHAT_SUCCESS, &ArduinoAiActions::OnAiSimpleChatSuccess, this);
   Bind(wxEVT_AI_SIMPLE_CHAT_ERROR, &ArduinoAiActions::OnAiSimpleChatError, this);
   Bind(wxEVT_AI_SUMMARIZATION_UPDATED, &ArduinoAiActions::OnAiSummarizationUpdated, this);
-  SetCurrentEditor(editor);
 }
 
 ArduinoAiActions::~ArduinoAiActions() {
   if (m_client) {
     delete m_client;
     m_client = nullptr;
-  }
-
-  if (m_editor) {
-    auto *frame = m_editor->GetOwnerFrame();
-    if (frame) {
-      frame->Unbind(EVT_DIAGNOSTICS_UPDATED, &ArduinoAiActions::OnDiagnosticsUpdated, this);
-    }
   }
 }
 
@@ -700,11 +758,6 @@ AiClient *ArduinoAiActions::GetClient() {
 
 void ArduinoAiActions::SetCurrentEditor(ArduinoEditor *editor) {
   m_editor = editor;
-
-  if (m_editor) {
-    auto *frame = m_editor->GetOwnerFrame();
-    frame->Bind(EVT_DIAGNOSTICS_UPDATED, &ArduinoAiActions::OnDiagnosticsUpdated, this);
-  }
 }
 
 AiSettings ArduinoAiActions::GetSettings() const {
@@ -1414,6 +1467,7 @@ void ArduinoAiActions::OptimizeFunctionOrMethod() {
   m_solveSession.iteration = 0;
   m_solveSession.maxIterations = m_editor->m_aiSettings.maxIterations;
   m_solveSession.finished = false;
+  m_solveSession.waitingForDiagnostics = false;
   m_solveSession.transcript = userPrompt;
   m_solveSession.bodyFromLine = info.bodyLineFrom;
   m_solveSession.bodyToLine = info.bodyLineTo;
@@ -1487,6 +1541,7 @@ void ArduinoAiActions::SolveProjectError(const ArduinoParseError &compilerError)
   m_solveSession.iteration = 0;
   m_solveSession.maxIterations = m_editor->m_aiSettings.maxIterations;
   m_solveSession.finished = false;
+  m_solveSession.waitingForDiagnostics = false;
   m_solveSession.transcript = userPrompt;
   m_editor->GetOwnerFrame()->CollectEditorSources(m_solveSession.workingFiles);
 
@@ -1752,6 +1807,7 @@ bool ArduinoAiActions::StartInteractiveChat(const wxString &userText, wxEvtHandl
   m_solveSession.iteration = 0;
   m_solveSession.maxIterations = m_editor->m_aiSettings.maxIterations;
   m_solveSession.finished = false;
+  m_solveSession.waitingForDiagnostics = false;
   if (!raw.IsEmpty()) {
     m_solveSession.seen.AddSeen(basename, seenIntervalFrom, seenIntervalTo, ChecksumText(wxToStd(stc->GetText())));
   }
@@ -2624,7 +2680,7 @@ bool ArduinoAiActions::ApplyAiPatchToFiles(const std::vector<AiPatchHunk> &patch
     if (h.file.IsEmpty()) {
       continue;
     }
-    std::string path = NormalizeFilename (sketchRoot, wxToStd(h.file));
+    std::string path = NormalizeFilename(sketchRoot, wxToStd(h.file));
     if (path.empty()) {
       continue;
     }
@@ -2675,8 +2731,8 @@ bool ArduinoAiActions::ApplyAiPatchToFiles(const std::vector<AiPatchHunk> &patch
         continue;
       }
 
-      APP_DEBUG_LOG ("AI: replace range %zu - %zu", startPos, endPos);
-      APP_TRACE_LOG ("AI: replacement text:\n%s", repl.c_str());
+      APP_DEBUG_LOG("AI: replace range %zu - %zu", startPos, endPos);
+      APP_TRACE_LOG("AI: replacement text:\n%s", repl.c_str());
 
       text.replace(startPos, endPos - startPos, repl);
       anyApplied = true;
@@ -2689,7 +2745,6 @@ bool ArduinoAiActions::ApplyAiPatchToFiles(const std::vector<AiPatchHunk> &patch
 
   return anyApplied;
 }
-
 
 static bool AiIsInfoMarker(const wxString &trimmedLine, const wxString &tokenA, const wxString &tokenB) {
   wxString t = trimmedLine;
@@ -3200,7 +3255,6 @@ void ArduinoAiActions::TrimTranscriptToLastPatchWindow(wxString &transcript) con
 
 // Returns true if no further action expected
 bool ArduinoAiActions::ApplyAiModelSolution(const wxString &reply) {
-  // XXX: rework
   if (reply.IsEmpty()) {
     return true;
   }
@@ -3219,13 +3273,13 @@ bool ArduinoAiActions::ApplyAiModelSolution(const wxString &reply) {
     AppendChatEvent("assistant_raw", reply, inTok, outTok, totTok);
   }
 
-  ArduinoEditorFrame *frame = m_editor->GetOwnerFrame();
-
   const std::string sketchPath = GetSketchRoot();
 
   wxString assistantText;
   std::vector<AiInfoRequest> infoRequests;
   std::vector<AiPatchHunk> patches;
+
+
 
   if (ParseAiPatch(reply, patches, &assistantText)) {
     assistantText.Trim(true).Trim(false);
@@ -3311,7 +3365,7 @@ bool ArduinoAiActions::ApplyAiModelSolution(const wxString &reply) {
       }
     }
 
-    const std::vector<SketchFileBuffer>& files = m_solveSession.workingFiles;
+    const std::vector<SketchFileBuffer> &files = m_solveSession.workingFiles;
 
     ArduinoPatchStraightener ps(sketchPath, patches, files);
 
@@ -3319,89 +3373,19 @@ bool ArduinoAiActions::ApplyAiModelSolution(const wxString &reply) {
 
     patches = ps.GetResult();
 
-    ArduinoDiffDialog dd(frame, patches, files, m_editor->arduinoCli, m_editor->m_config, assistantText);
-    int resl = dd.ShowModal();
-    if (resl != wxID_OK) {
-      m_interactiveChatPayload.Append(_("\n\n<patch rejected>"));
-      AppendChatEvent("assistant", wxT("<patch rejected>"));
-      AppendAssistantNote(AssistantNoteKind::PatchRejected, dd.GetAdditionalInfo());
-      return true; // not expecting next AI response
+    if (!ApplyAiPatchToFiles(patches)) {
+      m_editor->ModalMsgDialog(
+          _("AI patch does not apply to the current file."),
+          _("Arduino Editor AI"));
+      return true; // No further action expected
     }
 
-    // 2) apply patch
-    std::unordered_set<std::string> applied;
-    for (auto &patch : patches) {
-      std::string fileNameStd = wxToStd(patch.file);
+    m_solveSession.assistantPatchExplanation = assistantText;
 
-      if (!applied.insert(fileNameStd).second) {
-        continue;
-      }
+    Bind(EVT_DIAGNOSTICS_UPDATED, &ArduinoAiActions::OnDiagnosticsUpdated, this);
+    m_editor->completion->RefreshProjectDiagnosticsAsync(m_solveSession.workingFiles, this);
+    return false;
 
-      ArduinoEditor *pathEd = frame->FindEditorWithFile(fileNameStd, /*allowCreate=*/true);
-
-      if (!pathEd) {
-        // new file
-        std::string absFileName = NormalizeFilename(sketchPath, wxToStd(patch.file));
-
-        frame->CreateNewSketchFile(wxString::FromUTF8(absFileName));
-
-        pathEd = frame->GetCurrentEditor();
-
-        if (!pathEd || (pathEd->GetFilePath() != absFileName)) {
-          m_editor->ModalMsgDialog(_("New sketch file can not be created!"), _("Arduino Editor AI"));
-          continue;
-        }
-      }
-
-      JumpTarget patchTarget;
-      patchTarget.file = NormalizeFilename(sketchPath, wxToStd(patch.file));
-      patchTarget.line = patch.fromLine;
-      patchTarget.column = 1;
-      frame->HandleGoToLocation(patchTarget);
-
-      std::string bn = StripFilename(sketchPath, patchTarget.file);
-      wxString basename = wxString::FromUTF8(bn);
-
-      APP_TRACE_LOG("AI: applying patch %s:%d-%d <-\n%s",
-                    wxToStd(basename).c_str(),
-                    patch.fromLine,
-                    patch.toLine,
-                    wxToStd(patch.replacement).c_str());
-
-      if (!ApplyAiPatchToEditor(pathEd->m_editor, basename, patches)) {
-        m_editor->ModalMsgDialog(
-            _("AI patch does not apply to the current file."),
-            _("Arduino Editor AI"),
-            wxOK | wxICON_ERROR);
-        continue;
-      }
-
-      // 3) summary to chat
-      m_interactiveChatPayload.Append(
-          wxString::Format(_("\n\n<patch applied into file %s>\n"), basename));
-
-      pathEd->Save();
-    }
-
-    AppendAssistantNote(AssistantNoteKind::PatchApplied, wxEmptyString, &patches);
-
-    // persistent history
-    wxString msg = wxT("\n<patch applied>\n");
-    for (const auto &p : patches) {
-      msg << wxT("- ") << p.file << wxT(" ") << p.fromLine << wxT("-") << p.toLine << wxT("\n");
-    }
-    AppendChatEvent("assistant", msg);
-
-    // Floating window cleanup for interactive chat:
-    // after applying a patch we drop older history and keep only the
-    // last "USER_MESSAGE -> PATCH" window in m_chatTranscript.
-    if (m_solveSession.action == Action::InteractiveChat) {
-      TrimTranscriptToLastPatchWindow(m_chatTranscript);
-    }
-
-    frame->RebuildProject();
-
-    return true;
   } else {
     if (!ParseAiInfoRequests(reply, infoRequests, &assistantText)) {
       m_interactiveChatPayload.Append(reply);
@@ -3410,6 +3394,10 @@ bool ArduinoAiActions::ApplyAiModelSolution(const wxString &reply) {
       AppendAssistantPlaintextToTranscript(reply);
 
       return true;
+    }
+
+    if (!CheckNumberOfIterations()) {
+      return true; // not expecting further response
     }
 
     assistantText.Trim(true).Trim(false);
@@ -3421,10 +3409,6 @@ bool ArduinoAiActions::ApplyAiModelSolution(const wxString &reply) {
       AppendAssistantPlaintextToTranscript(assistantText);
     }
 
-    // check iterations
-    if (!CheckNumberOfIterations()) {
-      return true; // not expecting further response
-    }
 
     // UI summary: one line per request
     for (const auto &req : infoRequests) {
@@ -3571,12 +3555,13 @@ std::string ArduinoAiActions::GetCurrentCode() {
   }
 }
 
-SketchFileBuffer *ArduinoAiActions::FindBufferWithFile(const std::string& filename, bool allowCreate) {
+SketchFileBuffer *ArduinoAiActions::FindBufferWithFile(const std::string &filename, bool allowCreate) {
   std::string sketchRoot = GetSketchRoot();
   std::string normName = NormalizeFilename(sketchRoot, filename);
   for (auto &buff : m_solveSession.workingFiles) {
-    if (normName == NormalizeFilename(sketchRoot, wxToStd(m_solveSession.basename))) {
-      return (SketchFileBuffer *) &buff;
+    const std::string bufName = NormalizeFilename(sketchRoot, buff.filename);
+    if (normName == bufName) {
+      return (SketchFileBuffer *)&buff;
     }
   }
 
@@ -3584,7 +3569,7 @@ SketchFileBuffer *ArduinoAiActions::FindBufferWithFile(const std::string& filena
     SketchFileBuffer buff;
     buff.filename = normName;
     buff.code.clear();
-    m_solveSession.workingFiles.push_back(buff);
+    m_solveSession.workingFiles.push_back(std::move(buff));
     return &m_solveSession.workingFiles.back();
   } else {
     return nullptr;
@@ -3780,8 +3765,156 @@ void ArduinoAiActions::OnAiSimpleChatError(wxThreadEvent &event) {
 
 void ArduinoAiActions::OnDiagnosticsUpdated(wxThreadEvent &evt) {
   APP_DEBUG_LOG("AI: OnDiagnosticsUpdated()");
-  // TODO
-  evt.Skip();
+
+  Unbind(EVT_DIAGNOSTICS_UPDATED, &ArduinoAiActions::OnDiagnosticsUpdated, this);
+
+  if (!m_editor) {
+    return;
+  }
+
+  auto *frame = m_editor->GetOwnerFrame();
+  if (!frame) {
+    return;
+  }
+
+  std::string sketchRoot = GetSketchRoot();
+  auto errors = evt.GetPayload<std::vector<ArduinoParseError>>();
+
+  const ArduinoParseError *best = nullptr;
+  for (const auto &e : errors) {
+    if (e.severity < CXDiagnostic_Error) {
+      continue;
+    }
+
+    if (!best) {
+      best = &e;
+      continue;
+    }
+
+    if (e.line < best->line) {
+      best = &e;
+      continue;
+    }
+    if (e.line > best->line) {
+      continue;
+    }
+
+    if (e.column < best->column) {
+      best = &e;
+      continue;
+    }
+  }
+
+  SketchFileBuffer *buf = nullptr;
+  if (best) {
+    buf = FindBufferWithFile(best->file);
+  }
+
+  if (!best || !buf) {
+    APP_DEBUG_LOG("AI: no errors after AI patch...");
+
+    std::vector<SketchFileBuffer> oldFiles;
+    frame->CollectEditorSources(oldFiles);
+
+    ArduinoDiffDialog dd(frame, oldFiles, m_solveSession.workingFiles, m_editor->arduinoCli, m_editor->m_config, m_solveSession.assistantPatchExplanation);
+    int resl = dd.ShowModal();
+    if (resl != wxID_OK) {
+      m_interactiveChatPayload.Append(_("\n\n<patch rejected>"));
+      AppendChatEvent("assistant", wxT("<patch rejected>"));
+      AppendAssistantNote(AssistantNoteKind::PatchRejected, dd.GetAdditionalInfo());
+      StopCurrentAction();
+      return;
+    }
+
+    // Apply workingFiles to live files
+    for (const auto &newSfb : m_solveSession.workingFiles) {
+      std::string filename = NormalizeFilename(sketchRoot, newSfb.filename);
+      std::string basename = StripFilename(sketchRoot, filename);
+
+      ArduinoEditor *pathEd = frame->FindEditorWithFile(filename, /*allowCreate=*/true);
+
+      if (!pathEd) {
+        // new file
+        frame->CreateNewSketchFile(wxString::FromUTF8(filename));
+
+        pathEd = frame->GetCurrentEditor();
+
+        if (!pathEd || (pathEd->GetFilePath() != filename)) {
+          m_editor->ModalMsgDialog(_("New sketch file can not be created!"), _("Arduino Editor AI"));
+          continue;
+        }
+      }
+
+      pathEd->SetText (newSfb.code);
+
+      // 3) summary to chat
+      m_interactiveChatPayload.Append(
+          wxString::Format(_("\n\n<patch applied into file %s>\n"), wxString::FromUTF8(basename)));
+    }
+
+    AppendAssistantNote(AssistantNoteKind::PatchApplied, wxEmptyString);
+
+    // persistent history
+    wxString msg = wxT("\n<patch applied>\n");
+    AppendChatEvent("assistant", msg);
+
+    // Floating window cleanup for interactive chat:
+    // after applying a patch we drop older history and keep only the
+    // last "USER_MESSAGE -> PATCH" window in m_chatTranscript.
+    if (m_solveSession.action == Action::InteractiveChat) {
+      TrimTranscriptToLastPatchWindow(m_chatTranscript);
+    }
+
+    m_solveSession.finished = true;
+    StopCurrentAction();
+
+    frame->RebuildProject();
+
+    if (m_origin != nullptr) {
+      wxThreadEvent evt(wxEVT_AI_SIMPLE_CHAT_SUCCESS);
+      evt.SetString(m_interactiveChatPayload);
+      wxPostEvent(m_origin, evt);
+    }
+  } else {
+    if (!CheckNumberOfIterations()) {
+      StopCurrentAction();
+      return;
+    }
+
+    // Solve errors
+    std::string basename = StripFilename(sketchRoot, best->file);
+    wxString ctx = GetNumberedContextAroundLine(wxString::FromUTF8(buf->code), (int)best->line, 150);
+
+    m_solveSession.basename = wxString::FromUTF8(basename);
+
+    // Build a SolveProjectError-style prompt using the SAME system message.
+    wxString prompt;
+    prompt << wxT("Fix the following compiler error with minimal changes.\n\n");
+    prompt << wxT("CURRENT_BOARD_FQBN: ") << wxString::FromUTF8(m_editor->arduinoCli->GetFQBN()) << wxT("\n");
+    prompt << wxT("CURRENT_FILE: ") << m_solveSession.basename << wxT("\n");
+    prompt << wxT("COMPILER_ERROR:\n") << wxString::FromUTF8(best->ToString()) << wxT("\n");
+
+    if (!best->childs.empty()) {
+      prompt << wxT("\nNOTES:\n");
+      for (const auto &c : best->childs) {
+        prompt << wxString::FromUTF8(c.ToString()) << wxT("\n");
+      }
+    }
+
+    prompt << wxT("\nCODE_CONTEXT:\n") << ctx << wxT("\n");
+
+    auto *client = GetClient();
+    if (!client) {
+      StopCurrentAction();
+      return;
+    }
+
+    if (!client->SimpleChatAsync(solveErrorSystemPrompt, prompt, this)) {
+      StopCurrentAction();
+
+      m_editor->ModalMsgDialog(_("Failed to start AI request."), _("AI solve project errors"));
+    }
+  }
 }
 
 void ArduinoAiActions::AppendChatEvent(const char *type, const wxString &text, int inputTokens, int outputTokens, int totalTokens) {
@@ -3821,3 +3954,4 @@ void ArduinoAiActions::AppendChatEvent(const char *type, const wxString &text, i
     SaveIndexJsonAtomic(sketchRoot, idx);
   }
 }
+

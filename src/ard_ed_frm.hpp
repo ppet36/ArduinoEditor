@@ -100,6 +100,8 @@ private:
   int m_lastBottomNotebookSelectedPage = wxNOT_FOUND;
 
   ArduinoDiagnosticsView *m_diagView = nullptr;
+  size_t m_lastDiagHash = 0;
+
   wxTextCtrl *m_buildOutputCtrl = nullptr;
   wxBitmapButton *m_refreshPortsButton = nullptr;
   wxMenu *m_sketchesDirMenu = nullptr;
