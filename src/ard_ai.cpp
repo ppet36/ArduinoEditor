@@ -560,23 +560,61 @@ static wxString GetLineIndent(const wxString &line) {
   return indent;
 }
 
-// strips chat code fence  e.q.: ```cpp ... ```
+static bool LooksLikeCodeFence(const wxString &input) {
+  wxString t = input;
+  t.Trim(true).Trim(false);
+  return t.StartsWith(wxT("```")) || t.StartsWith(wxT("~~~"));
+}
+
+// wxString::Find() supports searching from the end only for single characters.
+// For substrings we implement a tiny rfind using wxString::find().
+static int RFindSubstr(const wxString &text, const wxString &sub) {
+  if (sub.IsEmpty())
+    return wxNOT_FOUND;
+
+  size_t last = wxString::npos;
+  size_t pos = text.find(sub);
+  while (pos != wxString::npos) {
+    last = pos;
+    pos = text.find(sub, pos + 1);
+  }
+
+  return (last == wxString::npos) ? wxNOT_FOUND : (int)last;
+}
+
+// strips chat code fence  e.q.: ```cpp ... ```  (also supports ~~~)
 static wxString StripCodeFence(const wxString &input) {
   wxString text = input;
   text.Trim(true).Trim(false);
 
-  if (!text.StartsWith(wxT("```"))) {
+  wxString fence;
+  if (text.StartsWith(wxT("```"))) {
+    fence = wxT("```");
+  } else if (text.StartsWith(wxT("~~~"))) {
+    fence = wxT("~~~");
+  } else {
     return text;
   }
 
+  // drop the opening fence line (```cpp, ~~~cpp, etc.)
   int firstNewline = text.Find(wxT("\n"));
   if (firstNewline != wxNOT_FOUND) {
     text = text.Mid(firstNewline + 1);
+  } else {
+    // fence only, no content
+    return wxString();
   }
 
-  int lastFence = text.find(wxT("```"), true);
-  if (lastFence != wxNOT_FOUND) {
-    text = text.Left(lastFence);
+  // Prefer a fence that starts on a new line, from the end.
+  int lastFenceNl = RFindSubstr(text, wxT("\n") + fence);
+  if (lastFenceNl != wxNOT_FOUND) {
+    text = text.Left(lastFenceNl);
+  } else {
+    // fallback: last occurrence of fence anywhere
+    int lastFence = RFindSubstr(text, fence);
+    if (lastFence != wxNOT_FOUND) {
+      text = text.Left(lastFence);
+    }
   }
 
   text.Trim(true).Trim(false);
@@ -2424,6 +2462,11 @@ bool ArduinoAiActions::ParseAiPatch(const wxString &rawPatch, std::vector<AiPatc
   bool inReplace = false;
 
   auto flushCurrent = [&]() {
+    // If the model wrapped the replacement in a Markdown code fence, strip it here
+    // to avoid compiler-error ping-pong iterations.
+    if (!current.replacement.IsEmpty() && LooksLikeCodeFence(current.replacement)) {
+      current.replacement = StripCodeFence(current.replacement);
+    }
     // we accept any non-negative range, we solve the logic only when applying
     bool hasRange =
         (current.fromLine >= 0) &&
@@ -2505,6 +2548,10 @@ bool ArduinoAiActions::ParseAiPatch(const wxString &rawPatch, std::vector<AiPatc
     }
 
     if (trimmed.StartsWith(wxT("ENDREPLACE"))) {
+      // Strip possible fenced block immediately when REPLACE ends.
+      if (!current.replacement.IsEmpty() && LooksLikeCodeFence(current.replacement)) {
+        current.replacement = StripCodeFence(current.replacement);
+      }
       inReplace = false;
       continue;
     }
@@ -3313,6 +3360,9 @@ bool ArduinoAiActions::ApplyAiModelSolution(const wxString &reply) {
       return true; // No further action expected
     }
 
+    const wxString evidence = BuildAppliedPatchEvidence(patches);
+    AppendAssistantPlaintextToTranscript(evidence);
+
     m_solveSession.assistantPatchExplanation = assistantText;
 
     Bind(EVT_DIAGNOSTICS_UPDATED, &ArduinoAiActions::OnDiagnosticsUpdated, this);
@@ -3942,3 +3992,49 @@ wxString ArduinoAiActions::BuildPromptForModel(const wxString &baseTranscript,
 
   return p;
 }
+
+wxString ArduinoAiActions::BuildAppliedPatchEvidence(const std::vector<AiPatchHunk> &patches, int extraContextLines, int maxTotalLines) {
+  wxString out;
+  out << wxT("\n*** BEGIN APPLIED_PATCH_EVIDENCE\n");
+  out << wxT("NOTE: This is the post-apply state of touched ranges (with 1-based line numbers).\n");
+
+  int emittedLines = 0;
+
+  for (const auto &p : patches) {
+    if (p.file.IsEmpty() || p.fromLine <= 0 || p.toLine <= 0) {
+      continue;
+    }
+
+    const SketchFileBuffer *wf = FindBufferWithFile(wxToStd(p.file));
+    if (!wf) {
+      continue;
+    }
+
+    const wxString allText = wxString::FromUTF8(wf->code);
+
+    const int from0 = std::max(0, (int)p.fromLine - 1 - extraContextLines);
+    const int to0   = std::max(0, (int)p.toLine   - 1 + extraContextLines);
+
+    wxString snippet = GetNumberedContext(allText, from0, to0);
+
+    // crude global cap (line counting by '\n')
+    int linesHere = 0;
+    for (wxUniChar c : snippet) if (c == '\n') ++linesHere;
+    if (emittedLines + linesHere > maxTotalLines) {
+      out << wxString::Format(wxT("\nFILE: %s RANGE: %d-%d\n<evidence truncated due to size>\n"),
+                              p.file, p.fromLine, p.toLine);
+      break;
+    }
+
+    out << wxString::Format(wxT("\nFILE: %s RANGE: %d-%d\n```cpp\n"),
+                            p.file, p.fromLine, p.toLine);
+    out << snippet;
+    out << wxT("```\n");
+
+    emittedLines += linesHere;
+  }
+
+  out << wxT("*** END APPLIED_PATCH_EVIDENCE\n");
+  return out;
+}
+
