@@ -1,3 +1,4 @@
+// ard_diff.hpp
 /*
  * Arduino Editor
  * Copyright (c) 2025 Pavel Petržela
@@ -58,6 +59,10 @@ public:
 
   wxString GetAdditionalInfo();
 
+  // Returns only those NEW buffers that differ from the OLD ones (includes new/modified files,
+  // excludes unchanged files; deleted files are not included because they have no new buffer).
+  const std::vector<SketchFileBuffer> &GetChangedBuffersNew() const { return m_changedBuffersNew; }
+
 private:
   struct FileViewData {
     wxString fileKey;     // tab title
@@ -97,6 +102,8 @@ private:
   // ---- Core formatting helpers (line aligned view) ----
   wxString NormalizeKey(const wxString &path);
 
+  static wxString CanonicalizeEol(wxString s);
+
   std::vector<wxString> SplitLinesKeepLogical(const wxString &text);
   wxString JoinLines(const std::vector<wxString> &lines);
 
@@ -130,6 +137,8 @@ private:
   int m_diffDivPos = -1; // last splitter sash position (px), -1 = default
 
   wxString m_aiComment;
+
+  std::vector<SketchFileBuffer> m_changedBuffersNew;
 
   bool m_showFullFile = false;
   int m_contextLines = 10;

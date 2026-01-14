@@ -1,3 +1,4 @@
+// ard_diff.cpp
 /*
  * Arduino Editor
  * Copyright (c) 2025 Pavel Petržela
@@ -123,30 +124,38 @@ void ArduinoDiffDialog::BuildUi(const std::vector<SketchFileBuffer> &buffersOld,
 
   SetSizer(topSizer);
 
-  // Build lookups for old/new buffers by normalized filename.
-  std::unordered_map<std::wstring, wxString> mapKeyToOld;
-  std::unordered_map<std::wstring, wxString> mapKeyToNew;
+  m_views.clear();
+  m_changedBuffersNew.clear();
 
-  mapKeyToOld.reserve(buffersOld.size() * 2);
-  mapKeyToNew.reserve(buffersNew.size() * 2);
+  // Build lookups for old/new buffers by normalized filename.
+  std::unordered_map<std::wstring, wxString> mapKeyToOldText;
+  std::unordered_map<std::wstring, wxString> mapKeyToNewText;
+  std::unordered_map<std::wstring, size_t> mapKeyToNewIndex;
+
+  mapKeyToOldText.reserve(buffersOld.size() * 2);
+  mapKeyToNewText.reserve(buffersNew.size() * 2);
+  mapKeyToNewIndex.reserve(buffersNew.size() * 2);
 
   for (const auto &b : buffersOld) {
     const wxString fn = wxString::FromUTF8(b.filename.c_str());
     const wxString key = NormalizeKey(fn);
-    mapKeyToOld[key.ToStdWstring()] = wxString::FromUTF8(b.code.c_str());
+    mapKeyToOldText[key.ToStdWstring()] = wxString::FromUTF8(b.code.c_str());
   }
 
-  for (const auto &b : buffersNew) {
+  for (size_t i = 0; i < buffersNew.size(); ++i) {
+    const auto &b = buffersNew[i];
     const wxString fn = wxString::FromUTF8(b.filename.c_str());
     const wxString key = NormalizeKey(fn);
-    mapKeyToNew[key.ToStdWstring()] = wxString::FromUTF8(b.code.c_str());
+    const std::wstring wk = key.ToStdWstring();
+    mapKeyToNewText[wk] = wxString::FromUTF8(b.code.c_str());
+    mapKeyToNewIndex[wk] = i;
   }
 
   // Determine tab order: prefer new buffers order, then any old-only (deleted) files.
   std::vector<wxString> fileOrder;
   std::set<std::wstring> seen;
 
-  fileOrder.reserve(mapKeyToNew.size() + mapKeyToOld.size());
+  fileOrder.reserve(mapKeyToNewText.size() + mapKeyToOldText.size());
 
   for (const auto &b : buffersNew) {
     const wxString fn = wxString::FromUTF8(b.filename.c_str());
@@ -171,10 +180,10 @@ void ArduinoDiffDialog::BuildUi(const std::vector<SketchFileBuffer> &buffersOld,
     const wxString normKey = NormalizeKey(fileKey);
     const std::wstring wk = normKey.ToStdWstring();
 
-    auto itOld = mapKeyToOld.find(wk);
-    auto itNew = mapKeyToNew.find(wk);
+    auto itOld = mapKeyToOldText.find(wk);
+    auto itNew = mapKeyToNewText.find(wk);
 
-    if (itOld == mapKeyToOld.end() && itNew == mapKeyToNew.end()) {
+    if (itOld == mapKeyToOldText.end() && itNew == mapKeyToNewText.end()) {
       continue;
     }
 
@@ -183,18 +192,42 @@ void ArduinoDiffDialog::BuildUi(const std::vector<SketchFileBuffer> &buffersOld,
 
     v.fileKey = fileKey;
     v.resolvedKey = normKey;
-    v.isNewFile = (itOld == mapKeyToOld.end() && itNew != mapKeyToNew.end());
-    v.isDeletedFile = (itOld != mapKeyToOld.end() && itNew == mapKeyToNew.end());
+    v.isNewFile = (itOld == mapKeyToOldText.end() && itNew != mapKeyToNewText.end());
+    v.isDeletedFile = (itOld != mapKeyToOldText.end() && itNew == mapKeyToNewText.end());
+
+    // Skip unchanged existing files (no changes in content).
+    if (!v.isNewFile && !v.isDeletedFile) {
+      const wxString oldTxt = (itOld != mapKeyToOldText.end()) ? itOld->second : wxString();
+      const wxString newTxt = (itNew != mapKeyToNewText.end()) ? itNew->second : wxString();
+      if (CanonicalizeEol(oldTxt) == CanonicalizeEol(newTxt)) {
+        m_views.pop_back();
+        continue;
+      }
+    }
 
     if (v.isNewFile) {
       v.newText = itNew->second;
       CreateNewFileTab(m_notebook, v, v.newText);
+
+      // New file => changed
+      auto itIdx = mapKeyToNewIndex.find(wk);
+      if (itIdx != mapKeyToNewIndex.end()) {
+        m_changedBuffersNew.push_back(buffersNew[itIdx->second]);
+      }
     } else {
-      v.oldText = (itOld != mapKeyToOld.end()) ? itOld->second : wxString();
-      v.newText = (itNew != mapKeyToNew.end()) ? itNew->second : wxString();
+      v.oldText = (itOld != mapKeyToOldText.end()) ? itOld->second : wxString();
+      v.newText = (itNew != mapKeyToNewText.end()) ? itNew->second : wxString();
 
       CreateExistingFileTab(m_notebook, v, v.oldText, v.newText);
       BindScrollSync(v);
+
+      // Modified file => changed (deleted files have no new buffer)
+      if (!v.isDeletedFile) {
+        auto itIdx = mapKeyToNewIndex.find(wk);
+        if (itIdx != mapKeyToNewIndex.end()) {
+          m_changedBuffersNew.push_back(buffersNew[itIdx->second]);
+        }
+      }
     }
   }
 
@@ -332,7 +365,12 @@ wxPanel *ArduinoDiffDialog::CreateNewFileTab(wxNotebook *nb,
 
   panel->SetSizer(root);
 
-  nb->AddPage(panel, v.fileKey, nb->GetPageCount() == 0);
+  std::string sketchPath = m_cli->GetSketchPath();
+
+  std::string pageTitle = StripFilename(sketchPath, wxToStd(v.fileKey));
+
+  nb->AddPage(panel, wxString::FromUTF8(pageTitle), nb->GetPageCount() == 0);
+
   return panel;
 }
 
@@ -362,8 +400,8 @@ void ArduinoDiffDialog::BindScrollSync(FileViewData &v) {
 
     pv->syncing = true;
 
-    int first = from->GetFirstVisibleLine();
-    int xOff = from->GetXOffset();
+    const int first = from->GetFirstVisibleLine();
+    const int xOff = from->GetXOffset();
 
     to->SetFirstVisibleLine(first);
     to->SetXOffset(xOff);
@@ -371,26 +409,44 @@ void ArduinoDiffDialog::BindScrollSync(FileViewData &v) {
     pv->syncing = false;
   };
 
+  auto scheduleSync = [syncFromTo](wxStyledTextCtrl *from, wxStyledTextCtrl *to) {
+    if (!from || !to)
+      return;
+    from->CallAfter([syncFromTo, from, to]() { syncFromTo(from, to); });
+  };
+
   left->Bind(wxEVT_STC_UPDATEUI,
-             [syncFromTo, left, right](wxStyledTextEvent &) {
+             [syncFromTo, left, right](wxEvent &) {
                syncFromTo(left, right);
              });
 
   right->Bind(wxEVT_STC_UPDATEUI,
-              [syncFromTo, left, right](wxStyledTextEvent &) {
+              [syncFromTo, left, right](wxEvent &) {
                 syncFromTo(right, left);
               });
 
-  left->Bind(wxEVT_MOUSEWHEEL,
-             [syncFromTo, left, right](wxMouseEvent &e) {
+  left->Bind(wxEVT_SCROLLBAR,
+             [scheduleSync, left, right](wxEvent &e) {
                e.Skip();
-               syncFromTo(left, right);
+               scheduleSync(left, right);
+             });
+
+  right->Bind(wxEVT_SCROLLBAR,
+              [scheduleSync, left, right](wxEvent &e) {
+                e.Skip();
+                scheduleSync(right, left);
+              });
+
+  left->Bind(wxEVT_MOUSEWHEEL,
+             [scheduleSync, left, right](wxEvent &e) {
+               e.Skip();
+               scheduleSync(left, right);
              });
 
   right->Bind(wxEVT_MOUSEWHEEL,
-              [syncFromTo, left, right](wxMouseEvent &e) {
+              [scheduleSync, left, right](wxEvent &e) {
                 e.Skip();
-                syncFromTo(right, left);
+                scheduleSync(right, left);
               });
 }
 
@@ -398,6 +454,12 @@ void ArduinoDiffDialog::BindScrollSync(FileViewData &v) {
 
 wxString ArduinoDiffDialog::NormalizeKey(const wxString &path) {
   return wxString::FromUTF8(NormalizeFilename(m_cli->GetSketchPath(), wxToStd(path)));
+}
+
+wxString ArduinoDiffDialog::CanonicalizeEol(wxString s) {
+  s.Replace(wxT("\r\n"), wxT("\n"));
+  s.Replace(wxT("\r"), wxT("\n"));
+  return s;
 }
 
 // -------------------- helpers: lines --------------------

@@ -1352,6 +1352,7 @@ void ArduinoEditorFrame::CleanProject() {
   }
 
   m_lastSuccessfulCompileCodeSum = 0;
+  m_lastDiagHash = 0;
 
   ShowSingleDiagMessage(_("Rebuilding project..."));
 
@@ -2492,7 +2493,11 @@ void ArduinoEditorFrame::RefreshSerialPorts() {
 
   wxString port = wxString::FromUTF8(arduinoCli->GetSerialPort());
 
-  m_portChoice->SetStringSelection(port);
+  if (port.IsEmpty()) {
+    m_portChoice->SetSelection(wxNOT_FOUND);
+  } else {
+    m_portChoice->SetStringSelection(port);
+  }
 
   // according to the current selection (or its absence) enable/disable the serial monitor
   UpdateSerialMonitorAvailability();

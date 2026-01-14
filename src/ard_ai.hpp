@@ -63,6 +63,31 @@ struct AiChatUiItem {
   wxString GetTokenInfo() const;
 };
 
+struct AiTokenTotals {
+  long long input = 0;
+  long long output = 0;
+  long long total = 0;
+  int calls = 0;
+
+  void Reset() {
+    input = 0;
+    output = 0;
+    total = 0;
+    calls = 0;
+  }
+
+  void Add(int inTok, int outTok, int totTok) {
+    if (inTok < 0 || outTok < 0 || totTok < 0)
+      return;
+    input += (long long)inTok;
+    output += (long long)outTok;
+    total += (long long)totTok;
+    calls++;
+  }
+
+  bool HasAny() const { return calls > 0; }
+};
+
 class ArduinoAiActions : public wxEvtHandler {
 public:
   enum class Action {
@@ -124,11 +149,11 @@ private:
     int iteration = 0;
     int maxIterations = 5;
     bool finished = false;
-    bool waitingForDiagnostics = false;
     // For OptimizeFunctionOrMethod
     int bodyFromLine = 0; // 1-based
     int bodyToLine = 0;   // 1-based
     AiSeenIntervals seen;
+    AiTokenTotals tokenTotals;
     std::vector<SketchFileBuffer> workingFiles;
     wxString assistantPatchExplanation;
   };
@@ -162,6 +187,8 @@ private:
   wxStyledTextCtrl *GetStc();
   std::string GetSketchRoot() const;
   bool CheckNumberOfIterations();
+
+  void SendDoneEventToOrigin();
 
   std::string GetCurrentCode();
   SketchFileBuffer *FindBufferWithFile(const std::string &filename, bool allowCreate = false);
@@ -211,7 +238,6 @@ private:
 
   bool ParseAiInfoRequests(const wxString &raw, std::vector<AiInfoRequest> &out, wxString *payload = nullptr);
   bool ParseAiPatch(const wxString &rawPatch, std::vector<AiPatchHunk> &out, wxString *payload = nullptr);
-  bool ApplyAiPatchToEditor(wxStyledTextCtrl *stc, const wxString &currentFileBasename, const std::vector<AiPatchHunk> &patches);
   bool ApplyAiPatchToFiles(const std::vector<AiPatchHunk> &patches);
 
   wxString FormatSymbolInfoForAi(const SymbolInfo &s);
@@ -227,4 +253,11 @@ private:
 
   wxString GenerateSessionTitleIfRequested(const wxString &userText);
   void OnAiSummarizationUpdated(wxThreadEvent &event);
+
+  // Prompt building (centralized)
+  wxString GetPromptCurrentFile() const;
+  wxString BuildStablePromptHeader() const;
+  wxString BuildPromptForModel(const wxString &baseTranscript,
+                               const wxString &extraEphemeral,
+                               const wxString &outOfBandBlocks) const;
 };

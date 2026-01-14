@@ -262,9 +262,7 @@ static void SaveIndexJsonAtomic(const std::string &sketchRoot, const json &j) {
   wxRenameFile(tmp.GetFullPath(), p.GetFullPath(), true);
 }
 
-static void UpdateSessionTitleInIndex(const std::string &sketchRoot,
-                                      const std::string &sessionId,
-                                      const std::string &title) {
+static void UpdateSessionTitleInIndex(const std::string &sketchRoot, const std::string &sessionId, const std::string &title) {
   if (sessionId.empty())
     return;
 
@@ -313,6 +311,7 @@ wxString GetContextAroundLine(wxStyledTextCtrl *stc, int centerLine, int radius)
   return stc->GetTextRange(startPos, endPos);
 }
 
+// ---
 static wxString GetNumberedContext(wxStyledTextCtrl *stc, int fromLine, int toLine, wxString *outRawNoNumbers = nullptr) {
   wxString out;
   wxString raw;
@@ -341,6 +340,11 @@ static wxString GetNumberedContext(wxStyledTextCtrl *stc, int fromLine, int toLi
   return out;
 }
 
+static wxString GetNumberedContextAroundLine(wxStyledTextCtrl *stc, int centerLine, int radius, wxString *outRawNoNumbers = nullptr) {
+  return GetNumberedContext(stc, centerLine - radius, centerLine + radius, outRawNoNumbers);
+}
+
+// ---
 static wxString GetNumberedContext(const wxString &allText, int fromLine, int toLine, wxString *outRawNoNumbers = nullptr) {
   wxString out;
   wxString raw;
@@ -405,10 +409,6 @@ static wxString GetNumberedContext(const wxString &allText, int fromLine, int to
 
 static wxString GetNumberedContextAroundLine(const wxString &allText, int centerLine, int radius, wxString *outRawNoNumbers = nullptr) {
   return GetNumberedContext(allText, centerLine - radius, centerLine + radius, outRawNoNumbers);
-}
-
-static wxString GetNumberedContextAroundLine(wxStyledTextCtrl *stc, int centerLine, int radius, wxString *outRawNoNumbers = nullptr) {
-  return GetNumberedContext(stc, centerLine - radius, centerLine + radius, outRawNoNumbers);
 }
 
 wxString GetMethodImplementationWithPadding(wxStyledTextCtrl *stc, const SymbolInfo &info, int paddingLines) {
@@ -1467,7 +1467,6 @@ void ArduinoAiActions::OptimizeFunctionOrMethod() {
   m_solveSession.iteration = 0;
   m_solveSession.maxIterations = m_editor->m_aiSettings.maxIterations;
   m_solveSession.finished = false;
-  m_solveSession.waitingForDiagnostics = false;
   m_solveSession.transcript = userPrompt;
   m_solveSession.bodyFromLine = info.bodyLineFrom;
   m_solveSession.bodyToLine = info.bodyLineTo;
@@ -1541,7 +1540,6 @@ void ArduinoAiActions::SolveProjectError(const ArduinoParseError &compilerError)
   m_solveSession.iteration = 0;
   m_solveSession.maxIterations = m_editor->m_aiSettings.maxIterations;
   m_solveSession.finished = false;
-  m_solveSession.waitingForDiagnostics = false;
   m_solveSession.transcript = userPrompt;
   m_editor->GetOwnerFrame()->CollectEditorSources(m_solveSession.workingFiles);
 
@@ -1791,8 +1789,6 @@ bool ArduinoAiActions::StartInteractiveChat(const wxString &userText, wxEvtHandl
 
   wxString ephemeralPrompt;
 
-  ephemeralPrompt << wxT("CURRENT_FILE: ") << basename << wxT("\n"); // always track current file
-  ephemeralPrompt << wxT("CURRENT_BOARD_FQBN: ") << wxString::FromUTF8(m_editor->arduinoCli->GetFQBN()) << wxT("\n");
   ephemeralPrompt << wxString::Format(wxT("CURSOR_LINE: %d\nCURSOR_COLUMN: %d\n\n"), line, column);
 
   if (!fileContext.IsEmpty()) {
@@ -1807,7 +1803,6 @@ bool ArduinoAiActions::StartInteractiveChat(const wxString &userText, wxEvtHandl
   m_solveSession.iteration = 0;
   m_solveSession.maxIterations = m_editor->m_aiSettings.maxIterations;
   m_solveSession.finished = false;
-  m_solveSession.waitingForDiagnostics = false;
   if (!raw.IsEmpty()) {
     m_solveSession.seen.AddSeen(basename, seenIntervalFrom, seenIntervalTo, ChecksumText(wxToStd(stc->GetText())));
   }
@@ -1836,8 +1831,7 @@ bool ArduinoAiActions::StartInteractiveChat(const wxString &userText, wxEvtHandl
 
   AppendChatEvent("user", userText);
 
-  wxString promptForModel;
-  promptForModel << m_chatTranscript << wxT("\n\n") << ephemeralPrompt;
+  wxString promptForModel = BuildPromptForModel(m_chatTranscript, ephemeralPrompt, wxEmptyString);
 
   if (!client->SimpleChatAsync(interactiveChatSystemPrompt, promptForModel, this)) {
     StopCurrentAction();
@@ -2534,82 +2528,6 @@ bool ArduinoAiActions::ParseAiPatch(const wxString &rawPatch, std::vector<AiPatc
   return !out.empty();
 }
 
-bool ArduinoAiActions::ApplyAiPatchToEditor(wxStyledTextCtrl *stc,
-                                            const wxString &currentFileBasename,
-                                            const std::vector<AiPatchHunk> &patches) {
-  if (!stc) {
-    return false;
-  }
-
-  // select only hunks for this file
-  std::vector<AiPatchHunk> local;
-  for (const auto &h : patches) {
-    if (h.file == currentFileBasename) {
-      local.push_back(h);
-    }
-  }
-
-  if (local.empty()) {
-    return false;
-  }
-
-  // to avoid shifting positions, we apply from the end
-  std::sort(local.begin(), local.end(),
-            [](const AiPatchHunk &a, const AiPatchHunk &b) {
-              return a.fromLine > b.fromLine;
-            });
-
-  stc->BeginUndoAction();
-
-  for (const auto &h : local) {
-    int lineCount = stc->GetLineCount();
-
-    bool emptyRange = (h.toLine == 0);
-
-    // if it is not an "empty" (0-0) range, we insist on fromLine >= 1
-    if (!emptyRange && h.fromLine < 1) {
-      continue;
-    }
-
-    if (!emptyRange) {
-      // if the start of the range is after the end of the file, there is no point in applying the patch
-      if (h.fromLine > lineCount) {
-        continue;
-      }
-      if (h.toLine < h.fromLine) {
-        continue;
-      }
-    }
-
-    int startPos = 0;
-    int endPos = 0;
-
-    if (emptyRange) {
-      // pure insertion without scope (for a new file = insert the entire content)
-      startPos = 0;
-      endPos = 0;
-    } else {
-      startPos = stc->PositionFromLine(h.fromLine - 1);
-
-      if (h.toLine < lineCount) {
-        endPos = stc->PositionFromLine(h.toLine);
-      } else {
-        // if the range is larger than the current number of lines,
-        // we take it as the end of the entire text
-        endPos = stc->GetTextLength();
-      }
-    }
-
-    stc->SetTargetStart(startPos);
-    stc->SetTargetEnd(endPos);
-    stc->ReplaceTarget(h.replacement);
-  }
-
-  stc->EndUndoAction();
-
-  return true;
-}
-
 // Applies a multi-file AI patch into in-memory buffers (UTF-8).
 // Returns true if at least one hunk was applied.
 bool ArduinoAiActions::ApplyAiPatchToFiles(const std::vector<AiPatchHunk> &patches) {
@@ -3035,8 +2953,8 @@ bool ArduinoAiActions::CheckModelQueriedFile(const std::vector<AiPatchHunk> &pat
       AppendAssistantNote(AssistantNoteKind::PatchRejected, wxT("Missing required file_range for modified file."));
       AppendAssistantNote(AssistantNoteKind::RetryRequested, wxT("Please reapply the patch using the provided INFO_RESPONSE blocks."));
 
-      wxString retryPrompt = m_chatTranscript;
-      retryPrompt << wxT("\n\n") << forced;
+      wxString retryPrompt = BuildPromptForModel(m_chatTranscript, wxEmptyString, forced);
+      client->SimpleChatAsync(interactiveChatSystemPrompt, retryPrompt, this);
 
       // Count an iteration (one more model roundtrip).
       m_solveSession.iteration++;
@@ -3051,8 +2969,8 @@ bool ArduinoAiActions::CheckModelQueriedFile(const std::vector<AiPatchHunk> &pat
       AppendAssistantNote(AssistantNoteKind::RetryRequested,
                           wxT("Please reapply the patch using the provided INFO_RESPONSE blocks."));
 
-      wxString retryPrompt = m_solveSession.transcript;
-      retryPrompt << wxT("\n\n") << forced;
+      wxString retryPrompt = BuildPromptForModel(m_solveSession.transcript, wxEmptyString, forced);
+      client->SimpleChatAsync(solveErrorSystemPrompt, retryPrompt, this);
 
       // Count an iteration (one more model roundtrip).
       m_solveSession.iteration++;
@@ -3067,8 +2985,8 @@ bool ArduinoAiActions::CheckModelQueriedFile(const std::vector<AiPatchHunk> &pat
       AppendAssistantNote(AssistantNoteKind::RetryRequested,
                           wxT("Please reapply the patch using the provided INFO_RESPONSE blocks."));
 
-      wxString retryPrompt = m_solveSession.transcript;
-      retryPrompt << wxT("\n\n") << forced;
+      wxString retryPrompt = BuildPromptForModel(m_solveSession.transcript, wxEmptyString, forced);
+      client->SimpleChatAsync(solveErrorSystemPrompt, retryPrompt, this);
 
       // Count an iteration (one more model roundtrip).
       m_solveSession.iteration++;
@@ -3095,10 +3013,22 @@ bool ArduinoAiActions::CheckNumberOfIterations() {
         _("AI requested more information too many times."),
         _("Arduino Editor AI"),
         wxOK | wxICON_WARNING);
+
     m_solveSession.finished = true;
+    StopCurrentAction();
+    SendDoneEventToOrigin();
     return false;
   }
   return true;
+}
+
+void ArduinoAiActions::SendDoneEventToOrigin() {
+  if (m_origin != nullptr) {
+    wxThreadEvent evt(wxEVT_AI_SIMPLE_CHAT_SUCCESS);
+    evt.SetString(m_interactiveChatPayload);
+    evt.SetPayload(m_solveSession.tokenTotals);
+    wxPostEvent(m_origin, evt);
+  }
 }
 
 void ArduinoAiActions::AppendAssistantNote(AssistantNoteKind kind,
@@ -3267,6 +3197,11 @@ bool ArduinoAiActions::ApplyAiModelSolution(const wxString &reply) {
     totTok = client->GetLastTotalTokens();
   } else {
     return true;
+  }
+
+  // Sum token usage across the whole iterative solve session.
+  if (m_solveSession.action != Action::None) {
+    m_solveSession.tokenTotals.Add(inTok, outTok, totTok);
   }
 
   if (m_solveSession.action == Action::InteractiveChat) {
@@ -3458,18 +3393,13 @@ bool ArduinoAiActions::ApplyAiModelSolution(const wxString &reply) {
       }
     };
 
-    auto buildPromptWithEphemeralResponses = [&](const wxString &baseTranscript) -> wxString {
-      wxString prompt = baseTranscript;
-
-      if (!m_fullInfoRequest) {
-        prompt << wxT("\n\n*** BEGIN INFO_RESPONSES\n");
-        prompt << allResponses;
-        prompt << wxT("\n*** END INFO_RESPONSES\n");
-        prompt << wxT("INSTRUCTION: Use line numbers from INFO_RESPONSE CONTENT for RANGE.\n");
-      }
-
-      return prompt;
-    };
+    wxString outOfBand;
+    if (!m_fullInfoRequest) {
+      outOfBand << wxT("\n*** BEGIN INFO_RESPONSES\n");
+      outOfBand << allResponses;
+      outOfBand << wxT("\n*** END INFO_RESPONSES\n");
+      outOfBand << wxT("INSTRUCTION: Use line numbers from INFO_RESPONSE CONTENT for RANGE.\n");
+    }
 
     if (m_solveSession.action == Action::SolveProjectError) {
       wxString newTranscript;
@@ -3487,8 +3417,7 @@ bool ArduinoAiActions::ApplyAiModelSolution(const wxString &reply) {
 
       AppendAssistantNote(AssistantNoteKind::InfoResponsesProvided, wxEmptyString, nullptr, &infoRequests);
 
-      wxString promptForModel = buildPromptWithEphemeralResponses(m_solveSession.transcript);
-
+      wxString promptForModel = BuildPromptForModel(m_solveSession.transcript, wxEmptyString, outOfBand);
       client->SimpleChatAsync(solveErrorSystemPrompt, promptForModel, this);
 
     } else if (m_solveSession.action == Action::InteractiveChat) {
@@ -3500,8 +3429,8 @@ bool ArduinoAiActions::ApplyAiModelSolution(const wxString &reply) {
 
         AppendChatEvent("info_response", allResponses);
       }
-      wxString promptForModel = buildPromptWithEphemeralResponses(m_chatTranscript);
 
+      wxString promptForModel = BuildPromptForModel(m_chatTranscript, wxEmptyString, outOfBand);
       client->SimpleChatAsync(interactiveChatSystemPrompt, promptForModel, this);
 
     } else if (m_solveSession.action == Action::OptimizeFunctionOrMethod) {
@@ -3517,8 +3446,7 @@ bool ArduinoAiActions::ApplyAiModelSolution(const wxString &reply) {
         AppendChatEvent("info_response", allResponses);
       }
 
-      wxString promptForModel = buildPromptWithEphemeralResponses(m_solveSession.transcript);
-
+      wxString promptForModel = BuildPromptForModel(m_solveSession.transcript, wxEmptyString, outOfBand);
       client->SimpleChatAsync(optimizeFunctionSystemPrompt, promptForModel, this);
     }
 
@@ -3625,11 +3553,7 @@ void ArduinoAiActions::OnAiSimpleChatSuccess(wxThreadEvent &event) {
         return;
       }
 
-      if (m_origin != nullptr) {
-        wxThreadEvent evt(wxEVT_AI_SIMPLE_CHAT_SUCCESS);
-        evt.SetString(m_interactiveChatPayload);
-        wxPostEvent(m_origin, evt);
-      }
+      SendDoneEventToOrigin();
 
       m_solveSession.finished = true;
       StopCurrentAction();
@@ -3819,6 +3743,9 @@ void ArduinoAiActions::OnDiagnosticsUpdated(wxThreadEvent &evt) {
       m_interactiveChatPayload.Append(_("\n\n<patch rejected>"));
       AppendChatEvent("assistant", wxT("<patch rejected>"));
       AppendAssistantNote(AssistantNoteKind::PatchRejected, dd.GetAdditionalInfo());
+
+      m_solveSession.finished = true;
+      SendDoneEventToOrigin();
       StopCurrentAction();
       return;
     }
@@ -3863,42 +3790,15 @@ void ArduinoAiActions::OnDiagnosticsUpdated(wxThreadEvent &evt) {
     }
 
     m_solveSession.finished = true;
+    SendDoneEventToOrigin();
     StopCurrentAction();
 
     frame->RebuildProject();
-
-    if (m_origin != nullptr) {
-      wxThreadEvent evt(wxEVT_AI_SIMPLE_CHAT_SUCCESS);
-      evt.SetString(m_interactiveChatPayload);
-      wxPostEvent(m_origin, evt);
-    }
   } else {
     if (!CheckNumberOfIterations()) {
       StopCurrentAction();
       return;
     }
-
-    // Solve errors
-    std::string basename = StripFilename(sketchRoot, best->file);
-    wxString ctx = GetNumberedContextAroundLine(wxString::FromUTF8(buf->code), (int)best->line, 150);
-
-    m_solveSession.basename = wxString::FromUTF8(basename);
-
-    // Build a SolveProjectError-style prompt using the SAME system message.
-    wxString prompt;
-    prompt << wxT("Fix the following compiler error with minimal changes.\n\n");
-    prompt << wxT("CURRENT_BOARD_FQBN: ") << wxString::FromUTF8(m_editor->arduinoCli->GetFQBN()) << wxT("\n");
-    prompt << wxT("CURRENT_FILE: ") << m_solveSession.basename << wxT("\n");
-    prompt << wxT("COMPILER_ERROR:\n") << wxString::FromUTF8(best->ToString()) << wxT("\n");
-
-    if (!best->childs.empty()) {
-      prompt << wxT("\nNOTES:\n");
-      for (const auto &c : best->childs) {
-        prompt << wxString::FromUTF8(c.ToString()) << wxT("\n");
-      }
-    }
-
-    prompt << wxT("\nCODE_CONTEXT:\n") << ctx << wxT("\n");
 
     auto *client = GetClient();
     if (!client) {
@@ -3906,10 +3806,48 @@ void ArduinoAiActions::OnDiagnosticsUpdated(wxThreadEvent &evt) {
       return;
     }
 
-    if (!client->SimpleChatAsync(solveErrorSystemPrompt, prompt, this)) {
-      StopCurrentAction();
+    // Solve errors
+    std::string basename = StripFilename(sketchRoot, best->file);
+    wxString ctx = GetNumberedContextAroundLine(wxString::FromUTF8(buf->code), (int)best->line - 1, 150);
 
-      m_editor->ModalMsgDialog(_("Failed to start AI request."), _("AI solve project errors"));
+    m_solveSession.basename = wxString::FromUTF8(basename);
+
+    wxString diagMsg;
+    diagMsg << wxT("The IDE reports compiler errors after applying the previous patch.\n");
+    diagMsg << wxT("COMPILER_ERROR:\n") << wxString::FromUTF8(best->ToString()) << wxT("\n");
+
+    diagMsg << wxT("\nCODE_CONTEXT (with 1-based line numbers):\n```cpp\n");
+    diagMsg << ctx;
+    diagMsg << wxT("```\n");
+
+    // Persist into transcript so INFO_REQUEST rounds don't lose the error.
+    if (m_solveSession.action == Action::InteractiveChat) {
+      if (!m_chatTranscript.IsEmpty()) {
+        m_chatTranscript << wxT("\n\n");
+      }
+      m_chatTranscript << wxT("USER_MESSAGE:\n") << diagMsg;
+      AppendChatEvent("user", diagMsg);
+
+      wxString promptForModel = BuildPromptForModel(m_chatTranscript, wxEmptyString, wxEmptyString);
+      if (!client->SimpleChatAsync(solveErrorSystemPrompt, promptForModel, this)) {
+        StopCurrentAction();
+
+        m_editor->ModalMsgDialog(_("Failed to start AI request."), _("AI solve project errors"));
+      }
+
+    } else {
+      if (!m_solveSession.transcript.IsEmpty()) {
+        m_solveSession.transcript << wxT("\n\n");
+      }
+      m_solveSession.transcript << wxT("USER_MESSAGE:\n") << diagMsg;
+
+      wxString promptForModel = BuildPromptForModel(m_solveSession.transcript, wxEmptyString, wxEmptyString);
+
+      if (!client->SimpleChatAsync(solveErrorSystemPrompt, promptForModel, this)) {
+        StopCurrentAction();
+
+        m_editor->ModalMsgDialog(_("Failed to start AI request."), _("AI solve project errors"));
+      }
     }
   }
 }
@@ -3938,7 +3876,7 @@ void ArduinoAiActions::AppendChatEvent(const char *type, const wxString &text, i
 
   AppendJsonlLine(sessionPath, ev);
 
-  // bump messageCount in index only for user/assistant (ne meta/info)
+  // bump messageCount in index only for user/assistant (no meta/info)
   if (strcmp(type, "user") == 0 || strcmp(type, "assistant") == 0) {
     json idx = LoadIndexJson(sketchRoot);
     for (auto &s : idx["sessions"]) {
@@ -3950,4 +3888,57 @@ void ArduinoAiActions::AppendChatEvent(const char *type, const wxString &text, i
     }
     SaveIndexJsonAtomic(sketchRoot, idx);
   }
+}
+
+wxString ArduinoAiActions::GetPromptCurrentFile() const {
+  // Prefer session basename if set (SolveProjectError / Optimize... typically set it).
+  if (!m_solveSession.basename.IsEmpty()) {
+    return m_solveSession.basename;
+  }
+
+  if (m_editor) {
+    // Editor stores relative filename (sketch-relative) in GetFileName()
+    return wxString::FromUTF8(m_editor->GetFileName());
+  }
+
+  return wxEmptyString;
+}
+
+wxString ArduinoAiActions::BuildStablePromptHeader() const {
+  wxString h;
+
+  const wxString curFile = GetPromptCurrentFile();
+  if (!curFile.IsEmpty()) {
+    h << wxT("CURRENT_FILE: ") << curFile << wxT("\n");
+  }
+
+  if (m_editor) {
+    h << wxT("CURRENT_BOARD_FQBN: ")
+      << wxString::FromUTF8(m_editor->arduinoCli->GetFQBN())
+      << wxT("\n");
+  }
+
+  return h;
+}
+
+wxString ArduinoAiActions::BuildPromptForModel(const wxString &baseTranscript,
+                                               const wxString &extraEphemeral,
+                                               const wxString &outOfBandBlocks) const {
+  wxString p = baseTranscript;
+
+  // Always keep stable header present in every roundtrip.
+  wxString stable = BuildStablePromptHeader();
+  if (!stable.IsEmpty()) {
+    p << wxT("\n\n") << stable;
+  }
+
+  if (!extraEphemeral.IsEmpty()) {
+    p << wxT("\n") << extraEphemeral;
+  }
+
+  if (!outOfBandBlocks.IsEmpty()) {
+    p << wxT("\n") << outOfBandBlocks;
+  }
+
+  return p;
 }

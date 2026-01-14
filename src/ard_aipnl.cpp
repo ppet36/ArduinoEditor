@@ -529,16 +529,35 @@ void ArduinoAiChatPanel::OnChatSuccess(wxThreadEvent &event) {
 
   if (m_historyPanel && !answer.IsEmpty()) {
     wxString info;
+    wxString model = m_actions->GetSettings().model;
+    AiTokenTotals totals = event.GetPayload<AiTokenTotals>();
 
-    auto *cl = m_actions->GetClient();
-    if (cl) {
-      int inTok = cl->GetLastInputTokens();
-      int outTok = cl->GetLastOutputTokens();
-      int totTok = cl->GetLastTotalTokens();
-      wxString model = m_actions->GetSettings().model;
-
-      if ((inTok > -1) && (outTok > -1) && (totTok > -1)) {
-        info = wxString::Format(_("%s (in: %d, out: %d, tot: %d) tokens"), model, inTok, outTok, totTok);
+    if (totals.HasAny()) {
+      if (totals.calls <= 1) {
+        info = wxString::Format(_("%s (in: %lld, out: %lld, tot: %lld) tokens"),
+                                model,
+                                totals.input,
+                                totals.output,
+                                totals.total);
+      } else {
+        info = wxString::Format(_("%s (in: %lld, out: %lld, tot: %lld) tokens, %d calls"),
+                                model,
+                                totals.input,
+                                totals.output,
+                                totals.total,
+                                totals.calls);
+      }
+    } else {
+      // Fallback (should be rare): use the last call's token info directly from the client.
+      auto *cl = m_actions->GetClient();
+      if (cl) {
+        int inTok = cl->GetLastInputTokens();
+        int outTok = cl->GetLastOutputTokens();
+        int totTok = cl->GetLastTotalTokens();
+        if ((inTok > -1) && (outTok > -1) && (totTok > -1)) {
+          info = wxString::Format(_("%s (in: %d, out: %d, tot: %d) tokens"),
+                                  model, inTok, outTok, totTok);
+        }
       }
     }
 
