@@ -69,22 +69,6 @@ enum {
 
 #define FLASH_TIME 500
 
-#ifdef __APPLE__
-// Returns true if it is an emoji (most are outside the BMP, i.e. > U+FFFF)
-static inline bool IsDangerousEmoji(wxUniChar ch) {
-  // Emojis are for the most part outside the basic multilingual plane.
-  if (ch > 0xFFFF)
-    return true;
-
-  // Some emojis are directly in the BMP (typically U+2600..U+27FF),
-  // so we add a simple range filter:
-  if ((ch >= 0x2600 && ch <= 0x27BF)) // Misc symbols + Dingbats
-    return true;
-
-  return false;
-}
-#endif
-
 namespace {
 
 // Map libclang cursor kind to our image IDs registered in InitCodeCompletionIcons().

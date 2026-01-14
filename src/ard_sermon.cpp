@@ -52,6 +52,7 @@ enum {
   ID_SendButton,
   ID_InputCtrl,
   ID_LineEndingCombo,
+  ID_OutputFormatChoice,
   ID_PauseButton,
   ID_ClearButton,
   ID_ResetButton,
@@ -70,6 +71,22 @@ constexpr int kMaxOutputLines = 20000;              // safe number of rows
 constexpr int kMaxOutputChars = 4 * 1024 * 1024;    // cca 4 MB inner stc buffer in bytes
 constexpr size_t kMaxPausedTextChars = 1024 * 1024; // 1 MB paused text buffer (in "wxChar" length)
 constexpr size_t kMaxPausedPlotLines = 50000;       // paused plot buffer limie
+
+static inline bool IsLatin1Printable(unsigned char b) {
+  // 0x20..0x7E = ASCII printable
+  // 0xA0..0xFF = printable-ish in Latin-1 (0x80..0x9F are control codes)
+  return (b >= 0x20 && b <= 0x7E) || (b >= 0xA0);
+}
+
+static inline wxString BytesToLatin1(const std::string &s) {
+  wxString out;
+  out.reserve(s.size());
+  for (unsigned char b : s) {
+    out += wxUniChar((wchar_t)b); // maps 0..255 to U+0000..U+00FF
+  }
+  return out;
+}
+
 } // namespace
 
 // --- Telemetry sinks (Plot parser -> UI consumers) ---
@@ -532,13 +549,13 @@ wxThread::ExitCode SerialMonitorWorker::Entry() {
 
     ssize_t n = ::read(fd, buf, BUF_SIZE);
     if (n > 0) {
-      wxString chunk(buf, wxConvUTF8, (int)n);
       auto *evt = new wxThreadEvent(wxEVT_SERIAL_MONITOR_DATA);
-      evt->SetString(chunk);
 
-      time_t nowSec = wxDateTime::Now().GetTicks();
-      evt->SetPayload<time_t>(nowSec);
+      SerialChunkPayload p;
+      p.sec = wxDateTime::Now().GetTicks();
+      p.bytes.assign(buf, buf + n);
 
+      evt->SetPayload<SerialChunkPayload>(p);
       wxQueueEvent(m_handler, evt);
     } else if (n == 0) {
       auto *evt = new wxThreadEvent(wxEVT_SERIAL_MONITOR_ERROR);
@@ -580,13 +597,13 @@ wxThread::ExitCode SerialMonitorWorker::Entry() {
     DWORD bytesRead = 0;
     BOOL ok = ReadFile(h, buf, BUF_SIZE, &bytesRead, nullptr);
     if (ok && bytesRead > 0) {
-      wxString chunk(buf, wxConvUTF8, (int)bytesRead);
       auto *evt = new wxThreadEvent(wxEVT_SERIAL_MONITOR_DATA);
-      evt->SetString(chunk);
 
-      time_t nowSec = wxDateTime::Now().GetTicks();
-      evt->SetPayload<time_t>(nowSec);
+      SerialChunkPayload p;
+      p.sec = wxDateTime::Now().GetTicks();
+      p.bytes.assign(buf, buf + bytesRead);
 
+      evt->SetPayload<SerialChunkPayload>(p);
       wxQueueEvent(m_handler, evt);
     } else if (!ok) {
       DWORD err = GetLastError();
@@ -698,6 +715,12 @@ void ArduinoSerialMonitorFrame::CreateControls() {
       }
     }
 
+    long savedFmt = 0;
+    if (m_sketchConfig->Read(wxT("SerialOutputFormat"), &savedFmt, 0)) {
+      savedFmt = wxClip(savedFmt, 0L, 2L);
+    }
+    m_outputFormat = (SerialOutputFormat)savedFmt;
+
     m_sketchConfig->Read(wxT("SerialShowTimestamps"), &m_timestamps, false);
     m_sketchConfig->Read(wxT("SerialDisplayValues"), &m_displayValues, false);
   }
@@ -766,6 +789,28 @@ void ArduinoSerialMonitorFrame::CreateControls() {
   headerSizer->Add(new wxStaticText(this, wxID_ANY, _("Line ending:")), 0,
                    wxALIGN_CENTER_VERTICAL | wxRIGHT, 4);
   headerSizer->Add(m_lineEndCombo, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 12);
+
+  // ---- output format choice ----
+  wxArrayString fmtChoices;
+  fmtChoices.Add(_("Text"));
+  fmtChoices.Add(_("Hex"));
+  fmtChoices.Add(_("Hex + ASCII"));
+
+  m_outputFormatChoice = new wxChoice(this,
+                                      ID_OutputFormatChoice,
+                                      wxDefaultPosition,
+                                      wxDefaultSize,
+                                      fmtChoices);
+
+  if (m_outputFormatChoice) {
+    m_outputFormatChoice->SetSelection((int)m_outputFormat);
+  }
+
+  headerSizer->Add(new wxStaticText(this, wxID_ANY, _("Output:")), 0,
+                   wxALIGN_CENTER_VERTICAL | wxRIGHT, 4);
+  headerSizer->Add(m_outputFormatChoice, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 12);
+
+  m_outputFormatChoice->Bind(wxEVT_CHOICE, &ArduinoSerialMonitorFrame::OnOutputFormatChanged, this);
 
   headerSizer->AddStretchSpacer(1);
 
@@ -1323,6 +1368,28 @@ void ArduinoSerialMonitorFrame::OnBaudChanged(wxCommandEvent &WXUNUSED(event)) {
   StartWorker();
 }
 
+void ArduinoSerialMonitorFrame::OnOutputFormatChanged(wxCommandEvent &) {
+  if (!m_outputFormatChoice)
+    return;
+
+  int sel = m_outputFormatChoice->GetSelection();
+  if (sel < 0)
+    sel = 0;
+  if (sel > 2)
+    sel = 2;
+
+  m_outputFormat = (SerialOutputFormat)sel;
+
+  // reset hex "column"
+  m_hexCol = 0;
+  m_hexAsciiBuf.clear();
+
+  if (m_sketchConfig) {
+    m_sketchConfig->Write(wxT("SerialOutputFormat"), (long)sel);
+    m_sketchConfig->Flush();
+  }
+}
+
 void ArduinoSerialMonitorFrame::OnNotebookPageChanged(wxBookCtrlEvent &event) {
   if (m_notebook && m_plotPage) {
     int sel = event.GetSelection();
@@ -1720,64 +1787,177 @@ void ArduinoSerialMonitorFrame::ScrollOutputToEnd() {
 }
 
 void ArduinoSerialMonitorFrame::OnData(wxThreadEvent &event) {
-  wxString chunk = event.GetString();
-  time_t chunkTime = event.GetPayload<time_t>();
+  const SerialChunkPayload p = event.GetPayload<SerialChunkPayload>();
 
-  // --- Correct normalization of line endings ---
-  NormalizeLineEndings(chunk);
+  m_hexWrapBytes = 16;
 
-  // This is the raw chunk that goes into the plotter (NO timestamps).
-  const std::string plotChunkUtf8 = wxToStd(chunk);
-
-  // Decide if we need a timestamp for this second (but don't print it mid-line)
-  if (m_timestamps) {
-    if (m_tsLastPrintedSec != chunkTime) {
-      m_tsPending = true;
-      m_tsPendingSec = chunkTime;
-    }
-  } else {
-    // timestamps disabled => don't keep a pending one around
-    m_tsPending = false;
+  // 0=Text, 1=Hex, 2=Hex+text
+  int fmt = 0;
+  if (m_outputFormatChoice) {
+    fmt = m_outputFormatChoice->GetSelection();
+    if (fmt < 0)
+      fmt = 0;
+    if (fmt > 2)
+      fmt = 2;
   }
 
   wxString textToAppend;
 
-  auto flushTimestampIfNeeded = [&]() {
-    if (!m_timestamps)
-      return;
-    if (!m_tsPending)
-      return;
-    if (!m_tsAtLineStart)
-      return;
-
-    wxDateTime t((time_t)m_tsPendingSec);
-    textToAppend += t.Format(wxT("[%H:%M:%S]"));
-    textToAppend += wxT("\n");
-
-    m_tsLastPrintedSec = m_tsPendingSec;
-    m_tsPending = false;
-    m_tsAtLineStart = true;
-  };
-
-  // If we're already at line start, we may print the timestamp immediately
-  flushTimestampIfNeeded();
-
-  // Append the chunk, but only allow timestamp insertion AFTER a newline
-  for (size_t i = 0; i < chunk.length(); ++i) {
-    wxUniChar c = chunk[i];
-    textToAppend += c;
-
-    if (c == '\n') {
-      m_tsAtLineStart = true;
-      flushTimestampIfNeeded(); // safe point: end of line reached
-    } else {
-      m_tsAtLineStart = false;
+  // ---------- TEXT MODE ----------
+  if (fmt == 0) {
+    // Decode UTF-8 "best effort". If it collapses, fallback to Latin-1 so nothing disappears.
+    wxString chunk(p.bytes.data(), wxConvUTF8, (int)p.bytes.size());
+    if (chunk.empty() && !p.bytes.empty()) {
+      chunk = BytesToLatin1(p.bytes);
     }
+
+    NormalizeLineEndings(chunk);
+
+    // plot chunks only make sense in text mode
+    const std::string plotChunkUtf8 = wxToStd(chunk);
+
+    // timestamps: same behavior as before (only at line start)
+    if (m_timestamps) {
+      if (m_tsLastPrintedSec != p.sec) {
+        m_tsPending = true;
+        m_tsPendingSec = p.sec;
+      }
+    } else {
+      m_tsPending = false;
+    }
+
+    auto flushTimestampIfNeeded = [&]() {
+      if (!m_timestamps)
+        return;
+      if (!m_tsPending)
+        return;
+      if (!m_tsAtLineStart)
+        return;
+
+      wxDateTime t((time_t)m_tsPendingSec);
+      textToAppend += t.Format(wxT("[%H:%M:%S]"));
+      textToAppend += wxT("\n");
+
+      m_tsLastPrintedSec = m_tsPendingSec;
+      m_tsPending = false;
+      m_tsAtLineStart = true;
+    };
+
+    flushTimestampIfNeeded();
+
+    for (size_t i = 0; i < chunk.length(); ++i) {
+      wxUniChar c = chunk[i];
+      textToAppend += c;
+
+      if (c == '\n') {
+        m_tsAtLineStart = true;
+        flushTimestampIfNeeded();
+      } else {
+        m_tsAtLineStart = false;
+      }
+    }
+
+    // paused buffering / output / plot (text mode)
+    if (m_paused) {
+      if (textToAppend.length() > kMaxPausedTextChars) {
+        textToAppend = textToAppend.Right(kMaxPausedTextChars);
+      }
+
+      const size_t add = (size_t)textToAppend.length();
+      if (m_pausedTextChars + add > kMaxPausedTextChars) {
+        const size_t need = (m_pausedTextChars + add) - kMaxPausedTextChars;
+
+        size_t freed = 0;
+        size_t count = 0;
+        while (count < m_pausedBuffer.size() && freed < need) {
+          freed += (size_t)m_pausedBuffer[count].length();
+          ++count;
+        }
+        if (count > 0) {
+          m_pausedBuffer.erase(m_pausedBuffer.begin(),
+                               m_pausedBuffer.begin() + (ptrdiff_t)count);
+          m_pausedTextChars -= freed;
+        }
+      }
+
+      m_pausedBuffer.push_back(textToAppend);
+      m_pausedTextChars += add;
+
+      if (m_plotParser) {
+        const double t_ms = (double)m_telemetryWatch.Time();
+        BufferPlotChunkUtf8(plotChunkUtf8, t_ms);
+      }
+      return;
+    }
+
+    if (m_outputCtrl) {
+      QueueTextAppend(textToAppend);
+    }
+
+    if (m_plotParser) {
+      const double t_ms = (double)m_telemetryWatch.Time();
+      FeedPlotChunkUtf8(plotChunkUtf8, t_ms);
+    }
+    return;
   }
 
-  // If paused, buffer output (and plot, if already started) and do not update controls.
+  // ---------- HEX / HEX+LATIN1 MODE ----------
+  int wrap = (m_hexWrapBytes > 0) ? m_hexWrapBytes : 16;
+  if (wrap < 4)
+    wrap = 16; // bezpečnostní pás
+  if (wrap > 256)
+    wrap = 256;
+
+  // Timestamp v hex režimech: jen když jsme na začátku řádku a změnila se sekunda
+  // (tzn. nebude ti to skákat doprostřed řádku)
+  if (m_timestamps && m_hexCol == 0 && m_tsLastPrintedSec != p.sec) {
+    wxDateTime t((time_t)p.sec);
+    textToAppend += t.Format(wxT("[%H:%M:%S]"));
+    textToAppend += wxT("\n");
+    m_tsLastPrintedSec = p.sec;
+  }
+  m_tsPending = false;
+  m_tsAtLineStart = true;
+
+  auto flushHexLine = [&]() {
+    if (m_hexCol == 0)
+      return;
+
+    if (fmt == 2) {
+      // dorovnat hex část, aby ASCII sloupec seděl
+      const int missing = wrap - m_hexCol;
+      if (missing > 0) {
+        textToAppend += wxString(' ', missing * 3);
+      }
+      textToAppend += wxT(" |");
+      textToAppend += m_hexAsciiBuf;
+      textToAppend += wxT("|");
+      m_hexAsciiBuf.clear();
+    }
+
+    textToAppend += wxT("\n");
+    m_hexCol = 0;
+  };
+
+  for (unsigned char b : p.bytes) {
+    // zalomení po wrap bajtech
+    if (m_hexCol == wrap) {
+      flushHexLine();
+    }
+
+    textToAppend += wxString::Format(wxT("%02X "), (unsigned)b);
+
+    if (fmt == 2) {
+      // Latin-1 znak do pravého sloupce: ASCII + 0xA0..0xFF, jinak '.'
+      wxChar ch = (IsLatin1Printable(b) ? (wxChar)b : (wxChar)'.');
+      m_hexAsciiBuf += ch;
+    }
+
+    m_hexCol++;
+  }
+
+  // paused buffering / output (no plot in hex modes)
   if (m_paused) {
-    // --- Cap paused text buffer ---
     if (textToAppend.length() > kMaxPausedTextChars) {
       textToAppend = textToAppend.Right(kMaxPausedTextChars);
     }
@@ -1793,29 +1973,19 @@ void ArduinoSerialMonitorFrame::OnData(wxThreadEvent &event) {
         ++count;
       }
       if (count > 0) {
-        m_pausedBuffer.erase(m_pausedBuffer.begin(), m_pausedBuffer.begin() + (ptrdiff_t)count);
+        m_pausedBuffer.erase(m_pausedBuffer.begin(),
+                             m_pausedBuffer.begin() + (ptrdiff_t)count);
         m_pausedTextChars -= freed;
       }
     }
 
     m_pausedBuffer.push_back(textToAppend);
     m_pausedTextChars += add;
-
-    if (m_plotParser) {
-      const double t_ms = (double)m_telemetryWatch.Time();
-      BufferPlotChunkUtf8(plotChunkUtf8, t_ms);
-    }
     return;
   }
 
   if (m_outputCtrl) {
     QueueTextAppend(textToAppend);
-  }
-
-  // Feed telemetry parser (always-on). Plot and values sinks receive samples if attached.
-  if (m_plotParser) {
-    const double t_ms = (double)m_telemetryWatch.Time();
-    FeedPlotChunkUtf8(plotChunkUtf8, t_ms);
   }
 }
 

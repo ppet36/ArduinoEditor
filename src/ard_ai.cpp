@@ -3367,7 +3367,7 @@ bool ArduinoAiActions::ApplyAiModelSolution(const wxString &reply) {
       return true; // No further action expected
     }
 
-    const wxString evidence = BuildAppliedPatchEvidence(patches);
+    const wxString evidence = BuildAppliedPatchEvidence(patches, /*extraContextLines=*/5, /*maxTotalLines=*/150);
     AppendAssistantPlaintextToTranscript(evidence);
 
     m_solveSession.assistantPatchExplanation = assistantText;
@@ -3384,10 +3384,6 @@ bool ArduinoAiActions::ApplyAiModelSolution(const wxString &reply) {
       AppendAssistantPlaintextToTranscript(reply);
 
       return true;
-    }
-
-    if (!CheckNumberOfIterations()) {
-      return true; // not expecting further response
     }
 
     assistantText.Trim(true).Trim(false);
@@ -3869,6 +3865,7 @@ void ArduinoAiActions::OnDiagnosticsUpdated(wxThreadEvent &evt) {
 
     frame->RebuildProject();
   } else {
+
     m_solveSession.iteration++;
 
     if (!CheckNumberOfIterations()) {
@@ -3883,6 +3880,8 @@ void ArduinoAiActions::OnDiagnosticsUpdated(wxThreadEvent &evt) {
     }
 
     // Solve errors
+    TrimTranscriptToLastPatchWindow(m_chatTranscript);
+
     std::string basename = StripFilename(sketchRoot, best->file);
     wxString ctx = GetNumberedContextAroundLine(wxString::FromUTF8(buf->code), (int)best->line - 1, 150);
 
@@ -3902,7 +3901,12 @@ void ArduinoAiActions::OnDiagnosticsUpdated(wxThreadEvent &evt) {
         m_chatTranscript << wxT("\n\n");
       }
       m_chatTranscript << wxT("USER_MESSAGE:\n") << diagMsg;
-      AppendChatEvent("user", diagMsg);
+
+      wxString chatMsg = _("<IDE forced error solving>");
+      AppendChatEvent("user", chatMsg);
+
+      m_interactiveChatPayload.Append(wxT("\n"));
+      m_interactiveChatPayload.Append(chatMsg);
 
       wxString promptForModel = BuildPromptForModel(m_chatTranscript, wxEmptyString, wxEmptyString);
       if (!client->SimpleChatAsync(solveErrorSystemPrompt, promptForModel, this)) {

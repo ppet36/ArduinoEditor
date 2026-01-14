@@ -2302,3 +2302,22 @@ std::vector<wxString> SplitWxString(const wxString &s, wxChar sep, bool trim, bo
 
   return out;
 }
+
+// Returns true if it is an emoji (most are outside the BMP, i.e. > U+FFFF)
+// Only for Apple
+bool IsDangerousEmoji(wxUniChar ch) {
+#ifdef __APPLE__
+  // Emojis are for the most part outside the basic multilingual plane.
+  if (ch > 0xFFFF)
+    return true;
+
+  // Some emojis are directly in the BMP (typically U+2600..U+27FF),
+  // so we add a simple range filter:
+  if ((ch >= 0x2600 && ch <= 0x27BF)) // Misc symbols + Dingbats
+    return true;
+
+  return false;
+#else
+  return false;
+#endif
+}

@@ -228,6 +228,17 @@ wxString ArduinoMarkdownPanel::BuildFullHtmlFromMessages() const {
   wxString body;
   for (const auto &m : m_msgs) {
     wxString frag = ArduinoMarkdown_MarkdownToHtmlFragment(m.markdown);
+
+#ifdef __APPLE__
+    // On Apple, widgets cannot display pictorial emojis and it crashes with SigBus somewhere
+    // in CopyImage. Therefore, it is specially filtered here and replaced with ' '.
+    for (size_t i = 0; i < frag.length(); ++i) {
+      if (IsDangerousEmoji(frag[i])) {
+        frag[i] = ' ';
+      }
+    }
+#endif
+
     body << WrapMessage(frag, m.role, m.info, m.time) << wxT("\n");
   }
 

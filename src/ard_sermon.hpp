@@ -37,6 +37,17 @@ class ArduinoPlotParser;
 struct BufferedPlotLine;
 struct EditorSettings;
 
+enum class SerialOutputFormat {
+  Text = 0,
+  Hex = 1,
+  HexAscii = 2,
+};
+
+struct SerialChunkPayload {
+  time_t sec = 0;
+  std::string bytes;
+};
+
 class SerialMonitorWorker : public wxThread {
 public:
   SerialMonitorWorker(wxEvtHandler *handler,
@@ -140,6 +151,7 @@ private:
   wxTextCtrl *m_inputCtrl = nullptr;
   wxComboBox *m_baudCombo = nullptr;
   wxComboBox *m_lineEndCombo = nullptr;
+  wxChoice *m_outputFormatChoice = nullptr;
   wxBitmapButton *m_sendButton = nullptr;
   wxButton *m_pauseButton = nullptr;
   wxButton *m_resetButton = nullptr;
@@ -192,4 +204,13 @@ private:
   bool m_tsPending = false;
   time_t m_tsLastPrintedSec = (time_t)-1;
   time_t m_tsPendingSec = (time_t)-1;
+
+  // --- output mode ---
+  void OnOutputFormatChanged(wxCommandEvent &);
+  SerialOutputFormat m_outputFormat = SerialOutputFormat::Text;
+
+  // hex layout
+  int m_hexWrapBytes = 16;
+  wxString m_hexAsciiBuf;
+  int m_hexCol = 0;
 };

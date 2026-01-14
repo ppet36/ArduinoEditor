@@ -23,6 +23,7 @@
 #include "ard_ev.hpp"
 #include "ard_mdwidget.hpp"
 #include "ard_setdlg.hpp"
+#include "utils.hpp"
 #include <wx/button.h>
 #include <wx/choice.h>
 

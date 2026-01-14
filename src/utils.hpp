@@ -225,3 +225,5 @@ wxFileConfig *OpenWorkspaceConfig(const std::string &sketchPath);
 
 std::vector<wxString> SplitWxString(const wxString &s, wxChar sep, bool trim = true, bool skipEmpty = true);
 wxString JoinWxStrings(const std::vector<wxString> &items, wxChar sep);
+
+bool IsDangerousEmoji(wxUniChar ch);
