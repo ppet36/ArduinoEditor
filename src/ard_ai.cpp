@@ -3055,18 +3055,28 @@ bool ArduinoAiActions::CheckModelQueriedFile(const std::vector<AiPatchHunk> &pat
 
 bool ArduinoAiActions::CheckNumberOfIterations() {
   // check iterations (per roundtrip, not per block)
-  if (m_solveSession.iteration >= m_solveSession.maxIterations) {
-    m_editor->ModalMsgDialog(
-        _("AI requested more information too many times."),
-        _("Arduino Editor AI"),
-        wxOK | wxICON_WARNING);
+  if (m_solveSession.iteration < m_solveSession.maxIterations)
+    return true;
 
-    m_solveSession.finished = true;
-    StopCurrentAction();
-    SendDoneEventToOrigin();
-    return false;
+  wxMessageDialog dlg(
+      m_editor,
+      _("AI reached the maximum number of iterations.\n\t\n"
+        "Do you want to continue?"),
+      _("Arduino Editor AI"),
+      wxYES_NO | wxICON_WARNING | wxNO_DEFAULT);
+
+  dlg.SetYesNoLabels(_("Continue"), _("Stop"));
+
+  if (dlg.ShowModal() == wxID_YES) {
+    // Allow more iterations for this run.
+    m_solveSession.iteration = 0;
+    return true;
   }
-  return true;
+
+  m_solveSession.finished = true;
+  StopCurrentAction();
+  SendDoneEventToOrigin();
+  return false;
 }
 
 void ArduinoAiActions::SendDoneEventToOrigin() {
@@ -4013,13 +4023,15 @@ wxString ArduinoAiActions::BuildAppliedPatchEvidence(const std::vector<AiPatchHu
     const wxString allText = wxString::FromUTF8(wf->code);
 
     const int from0 = std::max(0, (int)p.fromLine - 1 - extraContextLines);
-    const int to0   = std::max(0, (int)p.toLine   - 1 + extraContextLines);
+    const int to0 = std::max(0, (int)p.toLine - 1 + extraContextLines);
 
     wxString snippet = GetNumberedContext(allText, from0, to0);
 
     // crude global cap (line counting by '\n')
     int linesHere = 0;
-    for (wxUniChar c : snippet) if (c == '\n') ++linesHere;
+    for (wxUniChar c : snippet)
+      if (c == '\n')
+        ++linesHere;
     if (emittedLines + linesHere > maxTotalLines) {
       out << wxString::Format(wxT("\nFILE: %s RANGE: %d-%d\n<evidence truncated due to size>\n"),
                               p.file, p.fromLine, p.toLine);
@@ -4037,4 +4049,3 @@ wxString ArduinoAiActions::BuildAppliedPatchEvidence(const std::vector<AiPatchHu
   out << wxT("*** END APPLIED_PATCH_EVIDENCE\n");
   return out;
 }
-

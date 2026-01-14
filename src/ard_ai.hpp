@@ -260,5 +260,5 @@ private:
   wxString BuildPromptForModel(const wxString &baseTranscript,
                                const wxString &extraEphemeral,
                                const wxString &outOfBandBlocks) const;
-  wxString BuildAppliedPatchEvidence (const std::vector<AiPatchHunk> &patches, int extraContextLines = 8, int maxTotalLines = 240);
+  wxString BuildAppliedPatchEvidence(const std::vector<AiPatchHunk> &patches, int extraContextLines = 8, int maxTotalLines = 240);
 };
