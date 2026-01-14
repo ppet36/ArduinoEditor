@@ -3001,7 +3001,6 @@ bool ArduinoAiActions::CheckModelQueriedFile(const std::vector<AiPatchHunk> &pat
       AppendAssistantNote(AssistantNoteKind::RetryRequested, wxT("Please reapply the patch using the provided INFO_RESPONSE blocks."));
 
       wxString retryPrompt = BuildPromptForModel(m_chatTranscript, wxEmptyString, forced);
-      client->SimpleChatAsync(interactiveChatSystemPrompt, retryPrompt, this);
 
       // Count an iteration (one more model roundtrip).
       m_solveSession.iteration++;
@@ -3017,7 +3016,6 @@ bool ArduinoAiActions::CheckModelQueriedFile(const std::vector<AiPatchHunk> &pat
                           wxT("Please reapply the patch using the provided INFO_RESPONSE blocks."));
 
       wxString retryPrompt = BuildPromptForModel(m_solveSession.transcript, wxEmptyString, forced);
-      client->SimpleChatAsync(solveErrorSystemPrompt, retryPrompt, this);
 
       // Count an iteration (one more model roundtrip).
       m_solveSession.iteration++;
@@ -3033,7 +3031,6 @@ bool ArduinoAiActions::CheckModelQueriedFile(const std::vector<AiPatchHunk> &pat
                           wxT("Please reapply the patch using the provided INFO_RESPONSE blocks."));
 
       wxString retryPrompt = BuildPromptForModel(m_solveSession.transcript, wxEmptyString, forced);
-      client->SimpleChatAsync(solveErrorSystemPrompt, retryPrompt, this);
 
       // Count an iteration (one more model roundtrip).
       m_solveSession.iteration++;
@@ -3478,7 +3475,13 @@ bool ArduinoAiActions::ApplyAiModelSolution(const wxString &reply) {
       AppendAssistantNote(AssistantNoteKind::InfoResponsesProvided, wxEmptyString, nullptr, &infoRequests);
 
       wxString promptForModel = BuildPromptForModel(m_solveSession.transcript, wxEmptyString, outOfBand);
-      client->SimpleChatAsync(solveErrorSystemPrompt, promptForModel, this);
+
+      m_solveSession.iteration++;
+      if (CheckNumberOfIterations()) {
+        client->SimpleChatAsync(solveErrorSystemPrompt, promptForModel, this);
+      } else {
+        return true;
+      }
 
     } else if (m_solveSession.action == Action::InteractiveChat) {
       appendInfoRequestMarker(m_chatTranscript, infoRequests);
@@ -3491,7 +3494,13 @@ bool ArduinoAiActions::ApplyAiModelSolution(const wxString &reply) {
       }
 
       wxString promptForModel = BuildPromptForModel(m_chatTranscript, wxEmptyString, outOfBand);
-      client->SimpleChatAsync(interactiveChatSystemPrompt, promptForModel, this);
+
+      m_solveSession.iteration++;
+      if (CheckNumberOfIterations()) {
+        client->SimpleChatAsync(interactiveChatSystemPrompt, promptForModel, this);
+      } else {
+        return true;
+      }
 
     } else if (m_solveSession.action == Action::OptimizeFunctionOrMethod) {
       wxString newTranscript;
@@ -3507,10 +3516,15 @@ bool ArduinoAiActions::ApplyAiModelSolution(const wxString &reply) {
       }
 
       wxString promptForModel = BuildPromptForModel(m_solveSession.transcript, wxEmptyString, outOfBand);
-      client->SimpleChatAsync(optimizeFunctionSystemPrompt, promptForModel, this);
+
+      m_solveSession.iteration++;
+      if (CheckNumberOfIterations()) {
+        client->SimpleChatAsync(optimizeFunctionSystemPrompt, promptForModel, this);
+      } else {
+        return true;
+      }
     }
 
-    m_solveSession.iteration++;
     return false; // expecting next AI response
   }
 }
@@ -3855,6 +3869,8 @@ void ArduinoAiActions::OnDiagnosticsUpdated(wxThreadEvent &evt) {
 
     frame->RebuildProject();
   } else {
+    m_solveSession.iteration++;
+
     if (!CheckNumberOfIterations()) {
       StopCurrentAction();
       return;
