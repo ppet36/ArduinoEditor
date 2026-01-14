@@ -3,11 +3,11 @@
 #import <dispatch/dispatch.h>
 
 static void DisableServicesMenuImpl(void) {
-    // 1) nastav prázdné services menu (ne nil)
+    // 1) setting empty services menu (not nil)
     NSMenu* empty = [[NSMenu alloc] initWithTitle:@""];
     [NSApp setServicesMenu:empty];
 
-    // 2) najdi a schovej menu item, který ukazuje na services submenu
+    // 2) find and hide the menu item that points to the services submenu
     NSMenu* main = [NSApp mainMenu];
     if (!main) return;
 
@@ -21,7 +21,7 @@ static void DisableServicesMenuImpl(void) {
         for (NSMenuItem* it in [sub itemArray]) {
             if ([it submenu] == svc) {
                 [it setEnabled:NO];
-                [it setHidden:YES];   // zmizí "Služby/Services" položka
+                [it setHidden:YES];   // "Services" item disappears
                 [it setSubmenu:[[NSMenu alloc] initWithTitle:@""]];
                 return;
             }
@@ -32,7 +32,7 @@ static void DisableServicesMenuImpl(void) {
 extern "C" void OSXDisableServicesMenu(void) {
     dispatch_async(dispatch_get_main_queue(), ^{
         DisableServicesMenuImpl();
-        // pro jistotu ještě jednou o tick později (wx/AppKit někdy přepíše menu po startu)
+        // to be sure, one more tick later (wx/AppKit sometimes overwrites the menu after startup)
         dispatch_async(dispatch_get_main_queue(), ^{
             DisableServicesMenuImpl();
         });

@@ -23,6 +23,7 @@
 #include <wx/bmpbuttn.h>
 #include <wx/config.h>
 #include <wx/splitter.h>
+#include <wx/stc/stc.h>
 #include <wx/wx.h>
 
 class ArduinoAiActions;
@@ -42,7 +43,7 @@ public:
 private:
   wxConfigBase *m_config;
   ArduinoMarkdownPanel *m_historyPanel;
-  wxTextCtrl *m_inputCtrl;
+  wxStyledTextCtrl *m_inputCtrl;
   wxSplitterWindow *m_splitter = nullptr;
   wxPanel *m_inputPanel = nullptr;
   wxBitmapButton *m_switchModelBtn = nullptr;

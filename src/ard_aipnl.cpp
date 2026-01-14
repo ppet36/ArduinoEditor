@@ -117,13 +117,38 @@ void ArduinoAiChatPanel::InitUi() {
   m_inputPanel = new wxPanel(m_splitter, wxID_ANY);
   auto *inputSizer = new wxBoxSizer(wxVERTICAL);
 
-  m_inputCtrl = new wxTextCtrl(
-      m_inputPanel,
-      wxID_ANY,
-      wxEmptyString,
-      wxDefaultPosition,
-      wxDefaultSize,
-      wxTE_MULTILINE | wxTE_PROCESS_ENTER);
+  // Chat-like input: wxStyledTextCtrl allows adding extra spacing between lines.
+  // wxTextCtrl is native and doesn't reliably support line spacing across platforms.
+  m_inputCtrl = new wxStyledTextCtrl(m_inputPanel, wxID_ANY);
+
+  // Wrapping + no horizontal scroll gives a "chat composer" feel.
+  m_inputCtrl->SetWrapMode(wxSTC_WRAP_WORD);
+  m_inputCtrl->SetUseHorizontalScrollBar(false);
+
+  // Visual padding inside the control.
+  m_inputCtrl->SetMarginWidth(0, 0);
+  m_inputCtrl->SetMarginLeft(10);
+  m_inputCtrl->SetMarginRight(10);
+
+  for (int i = 0; i < 5; ++i) {
+    m_inputCtrl->SetMarginWidth(i, 0);
+  }
+
+  m_inputCtrl->SetMarginType(0, wxSTC_MARGIN_SYMBOL);
+  m_inputCtrl->SetMarginMask(0, 0);
+  m_inputCtrl->SetMarginSensitive(0, false);
+
+  m_inputCtrl->SetProperty(wxT("fold"), wxT("0"));
+  m_inputCtrl->SetMarginWidth(2, 0);
+
+  // Extra space above/below each line => better readability for longer inputs.
+  m_inputCtrl->SetExtraAscent(2);
+  m_inputCtrl->SetExtraDescent(2);
+
+  // Keep it simple (no editor chrome).
+  m_inputCtrl->SetIndentationGuides(wxSTC_IV_NONE);
+  m_inputCtrl->SetEdgeMode(wxSTC_EDGE_NONE);
+  m_inputCtrl->SetViewWhiteSpace(wxSTC_WS_INVISIBLE);
 
   m_inputCtrl->SetMinSize(wxSize(-1, 60));
 
@@ -139,8 +164,32 @@ void ArduinoAiChatPanel::InitUi() {
   EditorSettings settings;
   settings.Load(m_config);
 
-  wxFont inputFont(settings.GetFont().GetPointSize() + 2, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, normalFace);
-  m_inputCtrl->SetFont(inputFont);
+  wxFont inputFont(settings.GetFont().GetPointSize() + 2,
+                   wxFONTFAMILY_DEFAULT,
+                   wxFONTSTYLE_NORMAL,
+                   wxFONTWEIGHT_NORMAL,
+                   false,
+                   normalFace);
+
+  // Apply font to STC.
+  // NOTE: For wxStyledTextCtrl, the displayed text uses Scintilla "styles".
+  // StyleClearAll() propagates wxSTC_STYLE_DEFAULT to other styles, so we must
+  // set the default style *before* calling it, otherwise the control will keep
+  // the built-in (usually smaller) default font.
+  m_inputCtrl->SetFont(inputFont); // helps with sizing metrics on some platforms
+  m_inputCtrl->SetLexer(wxSTC_LEX_NULL);
+  m_inputCtrl->StyleSetFont(wxSTC_STYLE_DEFAULT, inputFont);
+  m_inputCtrl->StyleSetSize(wxSTC_STYLE_DEFAULT, inputFont.GetPointSize());
+  m_inputCtrl->StyleClearAll();
+  // Be explicit: style 0 is what plain text typically uses.
+  m_inputCtrl->StyleSetFont(0, inputFont);
+  m_inputCtrl->StyleSetSize(0, inputFont.GetPointSize());
+
+  m_inputCtrl->StyleSetFont(wxSTC_STYLE_LINENUMBER, inputFont);
+  m_inputCtrl->StyleSetSize(wxSTC_STYLE_LINENUMBER, inputFont.GetPointSize());
+  m_inputCtrl->SetCaretLineVisible(false);
+  m_inputCtrl->SetTabWidth(2);
+  m_inputCtrl->SetUseTabs(false);
 
   inputSizer->Add(m_inputCtrl, 1, wxEXPAND | wxALL, 5);
   m_inputPanel->SetSizer(inputSizer);
@@ -427,13 +476,26 @@ void ArduinoAiChatPanel::Clear() {
   }
 
   if (m_inputCtrl) {
-    m_inputCtrl->Clear();
+    m_inputCtrl->SetText(wxEmptyString);
     m_inputCtrl->SetFocus();
   }
 }
 
 void ArduinoAiChatPanel::OnSysColourChanged(wxSysColourChangedEvent &event) {
   m_historyPanel->Render(/*scrollToEnd=*/false);
+
+  EditorSettings settings;
+  settings.Load(m_config);
+
+  EditorColorScheme c = settings.GetColors();
+
+  m_inputCtrl->StyleSetForeground(wxSTC_STYLE_DEFAULT, c.text);
+  m_inputCtrl->StyleSetBackground(wxSTC_STYLE_DEFAULT, c.background);
+
+  m_inputCtrl->StyleClearAll();
+
+  m_inputCtrl->SetBackgroundColour(c.background);
+  m_inputCtrl->SetCaretForeground(c.text);
 
   if (m_switchModelBtn) {
     m_switchModelBtn->SetBitmap(AEGetArtBundle(wxAEArt::SwitchModel));
@@ -474,7 +536,8 @@ void ArduinoAiChatPanel::SendCurrentInput() {
   if (!m_inputCtrl || m_isBusy)
     return;
 
-  wxString trimmed = TrimCopy(m_inputCtrl->GetValue());
+  // wxStyledTextCtrl doesn't implement wxTextEntry; use GetText().
+  wxString trimmed = TrimCopy(m_inputCtrl->GetText());
 
   if (trimmed.IsEmpty()) {
     return;
@@ -492,7 +555,7 @@ void ArduinoAiChatPanel::SendCurrentInput() {
   }
 
   // Clean input
-  m_inputCtrl->Clear();
+  m_inputCtrl->SetText(wxEmptyString);
 
   if (!m_actions) {
     if (m_historyPanel) {
