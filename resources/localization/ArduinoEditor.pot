@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-15 12:04+0100\n"
+"POT-Creation-Date: 2026-01-15 21:09+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,8 +19,8 @@ msgstr ""
 
 #: ../src/ai_client.cpp:74
 msgid ""
-"Extra JSON request parameters must be a JSON object (e.g. {\"temperature"
-"\":0.2})."
+"Extra JSON request parameters must be a JSON object (e.g. "
+"{\"temperature\":0.2})."
 msgstr ""
 
 #: ../src/ai_client.cpp:82
@@ -121,8 +121,9 @@ msgid ""
 "   <hr>\n"
 "\n"
 "   <p>\n"
-"     <b>Project homepage and source code:&nbsp;</b><a href=\"https://github."
-"com/ppet36/ArduinoEditor\">https://github.com/ppet36/ArduinoEditor</a>\n"
+"     <b>Project homepage and source code:&nbsp;</b><a href=\"https://"
+"github.com/ppet36/ArduinoEditor\">https://github.com/ppet36/ArduinoEditor</"
+"a>\n"
 "   </p>\n"
 "\n"
 "   <hr>\n"
@@ -188,8 +189,8 @@ msgid ""
 "   <a name=\"project\"></a>\n"
 "   <h3>Project-wide Multi-file Support</h3>\n"
 "   <p>\n"
-"     Full support for structured sketches and multiple files (.ino/.cpp/."
-"hpp), including\n"
+"     Full support for structured sketches and multiple files "
+"(.ino/.cpp/.hpp), including\n"
 "     project-wide indexing, navigation and explicit support for structured "
 "Arduino projects.\n"
 "   </p>\n"
@@ -370,8 +371,8 @@ msgid ""
 "  </p>\n"
 "  <p>\n"
 "    For the full license text see:<br>\n"
-"    <a href=\"https://github.com/arduino/arduino-cli/blob/master/LICENSE.txt"
-"\">\n"
+"    <a href=\"https://github.com/arduino/arduino-cli/blob/master/"
+"LICENSE.txt\">\n"
 "      https://github.com/arduino/arduino-cli/blob/master/LICENSE.txt\n"
 "    </a>\n"
 "  </p>\n"
@@ -412,65 +413,65 @@ msgstr ""
 msgid "Licenses"
 msgstr ""
 
-#: ../src/ard_ai.cpp:763 ../src/ard_aipnl.cpp:697
+#: ../src/ard_ai.cpp:794 ../src/ard_aipnl.cpp:785
 #, c-format
 msgid "%s (in: %d, out: %d, tot: %d) tokens"
 msgstr ""
 
-#: ../src/ard_ai.cpp:817
+#: ../src/ard_ai.cpp:848
 msgid "Another AI action is running."
 msgstr ""
 
-#: ../src/ard_ai.cpp:818 ../src/ard_ai.cpp:825 ../src/ard_ai.cpp:3062
-#: ../src/ard_ai.cpp:3366 ../src/ard_ai.cpp:3682 ../src/ard_ai.cpp:3751
-#: ../src/ard_ai.cpp:3837
+#: ../src/ard_ai.cpp:849 ../src/ard_ai.cpp:856 ../src/ard_ai.cpp:3136
+#: ../src/ard_ai.cpp:3442 ../src/ard_ai.cpp:3760 ../src/ard_ai.cpp:3829
+#: ../src/ard_ai.cpp:3915 ../src/ard_ai.cpp:4198
 msgid "Arduino Editor AI"
 msgstr ""
 
-#: ../src/ard_ai.cpp:824
+#: ../src/ard_ai.cpp:855
 msgid "AI is disabled. Enable it in Settings -> AI."
 msgstr ""
 
-#: ../src/ard_ai.cpp:859
+#: ../src/ard_ai.cpp:890
 msgid "Please select some code you want to explain."
 msgstr ""
 
-#: ../src/ard_ai.cpp:860 ../src/ard_ai.cpp:872 ../src/ard_ai.cpp:894
-#: ../src/ard_ai.cpp:3706
+#: ../src/ard_ai.cpp:891 ../src/ard_ai.cpp:903 ../src/ard_ai.cpp:925
+#: ../src/ard_ai.cpp:3784
 msgid "AI explain selection"
 msgstr ""
 
-#: ../src/ard_ai.cpp:871
+#: ../src/ard_ai.cpp:902
 msgid "The selected text is empty or whitespace only."
 msgstr ""
 
-#: ../src/ard_ai.cpp:879
+#: ../src/ard_ai.cpp:910
 msgid ""
 "You are an expert Arduino/C++ assistant integrated into an IDE. Explain the "
 "selected code snippet in a clear and concise way. Focus on what it does, "
 "important details, side-effects and possible pitfalls. Answer in English."
 msgstr ""
 
-#: ../src/ard_ai.cpp:885
+#: ../src/ard_ai.cpp:916
 msgid ""
 "Please explain the following C++/Arduino code snippet:\n"
 "\n"
 "```cpp\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:887 ../src/ard_ai.cpp:961
+#: ../src/ard_ai.cpp:918 ../src/ard_ai.cpp:992
 msgid ""
 "\n"
 "```"
 msgstr ""
 
-#: ../src/ard_ai.cpp:893 ../src/ard_ai.cpp:1282 ../src/ard_ai.cpp:1395
-#: ../src/ard_ai.cpp:1517 ../src/ard_ai.cpp:1592 ../src/ard_ai.cpp:1877
-#: ../src/ard_ai.cpp:3915 ../src/ard_ai.cpp:3929
+#: ../src/ard_ai.cpp:924 ../src/ard_ai.cpp:1313 ../src/ard_ai.cpp:1426
+#: ../src/ard_ai.cpp:1548 ../src/ard_ai.cpp:1623 ../src/ard_ai.cpp:1908
+#: ../src/ard_ai.cpp:3996 ../src/ard_ai.cpp:4010
 msgid "Failed to start AI request."
 msgstr ""
 
-#: ../src/ard_ai.cpp:944
+#: ../src/ard_ai.cpp:975
 msgid ""
 "You are an expert C++/Arduino assistant integrated into an IDE.\n"
 "You will receive:\n"
@@ -487,7 +488,7 @@ msgid ""
 "- Do not add any text outside the comment block."
 msgstr ""
 
-#: ../src/ard_ai.cpp:958
+#: ../src/ard_ai.cpp:989
 #, c-format
 msgid ""
 "Generate a documentation comment for the symbol %s in the following C++/"
@@ -496,98 +497,98 @@ msgid ""
 "```cpp\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:992
+#: ../src/ard_ai.cpp:1023
 msgid "This symbol is already documented."
 msgstr ""
 
-#: ../src/ard_ai.cpp:992 ../src/ard_ai.cpp:1001 ../src/ard_ai.cpp:1011
-#: ../src/ard_ai.cpp:1073 ../src/ard_ai.cpp:1155 ../src/ard_ai.cpp:1211
-#: ../src/ard_ai.cpp:1272 ../src/ard_ai.cpp:1283 ../src/ard_ai.cpp:1311
-#: ../src/ard_ai.cpp:1322 ../src/ard_ai.cpp:1331 ../src/ard_ai.cpp:1386
-#: ../src/ard_ai.cpp:1396 ../src/ard_ai.cpp:3651 ../src/ard_ai.cpp:3712
-#: ../src/ard_ai.cpp:3738
+#: ../src/ard_ai.cpp:1023 ../src/ard_ai.cpp:1032 ../src/ard_ai.cpp:1042
+#: ../src/ard_ai.cpp:1104 ../src/ard_ai.cpp:1186 ../src/ard_ai.cpp:1242
+#: ../src/ard_ai.cpp:1303 ../src/ard_ai.cpp:1314 ../src/ard_ai.cpp:1342
+#: ../src/ard_ai.cpp:1353 ../src/ard_ai.cpp:1362 ../src/ard_ai.cpp:1417
+#: ../src/ard_ai.cpp:1427 ../src/ard_ai.cpp:3729 ../src/ard_ai.cpp:3790
+#: ../src/ard_ai.cpp:3816
 msgid "AI generate documentation"
 msgstr ""
 
-#: ../src/ard_ai.cpp:1000 ../src/ard_ai.cpp:1310 ../src/ard_ai.cpp:1435
+#: ../src/ard_ai.cpp:1031 ../src/ard_ai.cpp:1341 ../src/ard_ai.cpp:1466
 #: ../src/ard_refactor.cpp:656 ../src/ard_refactor.cpp:915
 #: ../src/ard_refactor.cpp:1127
 msgid "No symbol under the cursor."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1010
+#: ../src/ard_ai.cpp:1041
 msgid "No suitable type or context for documentation at the cursor."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1072
+#: ../src/ard_ai.cpp:1103
 msgid "No documentation comments to insert."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1151
+#: ../src/ard_ai.cpp:1182
 #, c-format
 msgid ""
 "Documentation was generated, but no suitable insertion points were found "
 "(%zu symbol(s))."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1208
+#: ../src/ard_ai.cpp:1239
 #, c-format
 msgid "Documentation generated for %zu symbol(s)."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1271
+#: ../src/ard_ai.cpp:1302
 msgid "No functions or methods found that need documentation."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1321
+#: ../src/ard_ai.cpp:1352
 msgid "Cursor is not on a class or struct declaration."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1330
+#: ../src/ard_ai.cpp:1361
 msgid "Class body range is not available."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1385
+#: ../src/ard_ai.cpp:1416
 msgid "No methods found in the current class that need documentation."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1436 ../src/ard_ai.cpp:1452 ../src/ard_ai.cpp:1461
-#: ../src/ard_ai.cpp:1518 ../src/ard_ai.cpp:3744
+#: ../src/ard_ai.cpp:1467 ../src/ard_ai.cpp:1483 ../src/ard_ai.cpp:1492
+#: ../src/ard_ai.cpp:1549 ../src/ard_ai.cpp:3822
 msgid "AI optimize function or method"
 msgstr ""
 
-#: ../src/ard_ai.cpp:1451
+#: ../src/ard_ai.cpp:1482
 msgid "Cursor is not on a function or method declaration."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1460
+#: ../src/ard_ai.cpp:1491
 msgid "Function or method body range is not available."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1593 ../src/ard_ai.cpp:3718 ../src/ard_ai.cpp:3915
-#: ../src/ard_ai.cpp:3929
+#: ../src/ard_ai.cpp:1624 ../src/ard_ai.cpp:3796 ../src/ard_ai.cpp:3996
+#: ../src/ard_ai.cpp:4010
 msgid "AI solve project errors"
 msgstr ""
 
-#: ../src/ard_ai.cpp:1656
+#: ../src/ard_ai.cpp:1687
 msgid "please "
 msgstr ""
 
-#: ../src/ard_ai.cpp:1658
+#: ../src/ard_ai.cpp:1689
 msgid "pls "
 msgstr ""
 
-#: ../src/ard_ai.cpp:1878 ../src/ard_ai.cpp:3730
+#: ../src/ard_ai.cpp:1909 ../src/ard_ai.cpp:3808
 msgid "AI interactive chat"
 msgstr ""
 
-#: ../src/ard_ai.cpp:2021
+#: ../src/ard_ai.cpp:2052
 msgid ""
 "(Loaded previous session context.)\n"
 "\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:2128
+#: ../src/ard_ai.cpp:2200
 #, c-format
 msgid ""
 "\n"
@@ -595,7 +596,7 @@ msgid ""
 "<patch into file %s (%d-%d)>\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:2135
+#: ../src/ard_ai.cpp:2207
 #, c-format
 msgid ""
 "\n"
@@ -603,63 +604,71 @@ msgid ""
 "<info with type %s requested>\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:3045
+#: ../src/ard_ai.cpp:3118
 msgid ""
 "\n"
 "\n"
 "<patch rejected: file_range required>\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:3060
+#: ../src/ard_ai.cpp:3134
 msgid ""
 "AI reached the maximum number of iterations.\n"
 "\t\n"
 "Do you want to continue?"
 msgstr ""
 
-#: ../src/ard_ai.cpp:3065
+#: ../src/ard_ai.cpp:3139
 msgid "Continue"
 msgstr ""
 
-#: ../src/ard_ai.cpp:3065
+#: ../src/ard_ai.cpp:3139
 msgid "Stop"
 msgstr ""
 
-#: ../src/ard_ai.cpp:3365
+#: ../src/ard_ai.cpp:3147
+msgid "AI reached the maximum number of iterations."
+msgstr ""
+
+#: ../src/ard_ai.cpp:3441
 msgid "AI patch does not apply to the current file."
 msgstr ""
 
-#: ../src/ard_ai.cpp:3401
+#: ../src/ard_ai.cpp:3477
 #, c-format
 msgid "<info with type %s requested>\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:3650
+#: ../src/ard_ai.cpp:3702
+msgid "AI finished without a clean patch."
+msgstr ""
+
+#: ../src/ard_ai.cpp:3728
 msgid "Failed to start AI request for next symbol."
 msgstr ""
 
-#: ../src/ard_ai.cpp:3696
+#: ../src/ard_ai.cpp:3774
 msgid "Unknown AI error."
 msgstr ""
 
-#: ../src/ard_ai.cpp:3705 ../src/ard_ai.cpp:3711 ../src/ard_ai.cpp:3717
-#: ../src/ard_ai.cpp:3729 ../src/ard_ai.cpp:3737 ../src/ard_ai.cpp:3743
-#: ../src/ard_ai.cpp:3750
+#: ../src/ard_ai.cpp:3783 ../src/ard_ai.cpp:3789 ../src/ard_ai.cpp:3795
+#: ../src/ard_ai.cpp:3807 ../src/ard_ai.cpp:3815 ../src/ard_ai.cpp:3821
+#: ../src/ard_ai.cpp:3828
 msgid "AI request failed:\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:3813
+#: ../src/ard_ai.cpp:3891
 msgid ""
 "\n"
 "\n"
 "<patch rejected>"
 msgstr ""
 
-#: ../src/ard_ai.cpp:3837
+#: ../src/ard_ai.cpp:3915
 msgid "New sketch file can not be created!"
 msgstr ""
 
-#: ../src/ard_ai.cpp:3846
+#: ../src/ard_ai.cpp:3924
 #, c-format
 msgid ""
 "\n"
@@ -667,8 +676,22 @@ msgid ""
 "<patch applied into file %s>\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:3905
+#: ../src/ard_ai.cpp:3985
 msgid "<IDE forced error solving>"
+msgstr ""
+
+#: ../src/ard_ai.cpp:4179
+#, c-format
+msgid ""
+"\n"
+"\n"
+"**AI changes are available, but diagnostics still report errors.**\n"
+"\n"
+"[Review & apply AI changes...](ai://review_patch/%s)\n"
+msgstr ""
+
+#: ../src/ard_ai.cpp:4198
+msgid "Patch is no longer available."
 msgstr ""
 
 #: ../src/ard_aimdldlg.cpp:57
@@ -828,7 +851,7 @@ msgstr ""
 msgid "Failed to save AI API key to the system secret store."
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:110
+#: ../src/ard_aipnl.cpp:126
 msgid ""
 "AI chat ready.\n"
 "You can ask coding questions or request refactoring.\n"
@@ -841,41 +864,45 @@ msgid ""
 "(Shift+Enter inserts a new line.)"
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:170
+#: ../src/ard_aipnl.cpp:187
 msgid "Switch AI model"
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:349
+#: ../src/ard_aipnl.cpp:368
 msgid "(no saved sessions)"
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:509
+#: ../src/ard_aipnl.cpp:554
 msgid "[AI] Failed to load saved session."
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:639
+#: ../src/ard_aipnl.cpp:613
+msgid "AI model thinking..."
+msgstr ""
+
+#: ../src/ard_aipnl.cpp:729
 msgid "[AI] Interactive actions are not available."
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:655
+#: ../src/ard_aipnl.cpp:744
 msgid "[AI] Failed to start interactive chat request."
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:676
+#: ../src/ard_aipnl.cpp:764
 #, c-format
 msgid "%s (in: %lld, out: %lld, tot: %lld) tokens"
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:682
+#: ../src/ard_aipnl.cpp:770
 #, c-format
 msgid "%s (in: %lld, out: %lld, tot: %lld) tokens, %d calls"
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:727
+#: ../src/ard_aipnl.cpp:812
 msgid "[AI ERROR] Unknown error"
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:729
+#: ../src/ard_aipnl.cpp:814
 #, c-format
 msgid "[AI ERROR] %s"
 msgstr ""
@@ -1784,8 +1811,8 @@ msgid ""
 "In this mode, libraries are detected from the last project build, so newly "
 "added #include directives won't be picked up until you rebuild.\n"
 "\n"
-"Rebuild will regenerate the build configuration (including compile_commands."
-"json) and attach libraries to this sketch.\n"
+"Rebuild will regenerate the build configuration (including "
+"compile_commands.json) and attach libraries to this sketch.\n"
 "\n"
 "Rebuild now?"
 msgstr ""
@@ -2851,8 +2878,8 @@ msgstr ""
 
 #: ../src/ard_libman.cpp:758
 msgid ""
-"Enter Git repository URL (e.g. https://github.com/arduino-libraries/WiFi101."
-"git or with #version):"
+"Enter Git repository URL (e.g. https://github.com/arduino-libraries/"
+"WiFi101.git or with #version):"
 msgstr ""
 
 #: ../src/ard_libman.cpp:759
@@ -3042,8 +3069,8 @@ msgstr ""
 
 #: ../src/ard_plotview.cpp:552
 msgid ""
-"PNG image (*.png)|*.png|JPEG image (*.jpg;*.jpeg)|*.jpg;*.jpeg|BMP image (*."
-"bmp)|*.bmp"
+"PNG image (*.png)|*.png|JPEG image (*.jpg;*.jpeg)|*.jpg;*.jpeg|BMP image "
+"(*.bmp)|*.bmp"
 msgstr ""
 
 #: ../src/ard_plotview.cpp:592
@@ -3557,8 +3584,8 @@ msgstr ""
 
 #: ../src/ard_setdlg.cpp:1026
 msgid ""
-"arduino-cli.exe|arduino-cli.exe|Executable files (*.exe)|*.exe|All files (*."
-"*)|*.*"
+"arduino-cli.exe|arduino-cli.exe|Executable files (*.exe)|*.exe|All files "
+"(*.*)|*.*"
 msgstr ""
 
 #: ../src/ard_setdlg.cpp:1028

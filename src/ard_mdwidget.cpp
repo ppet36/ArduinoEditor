@@ -294,8 +294,15 @@ void ArduinoMarkdownPanel::OnHtmlLinkClicked(wxHtmlLinkEvent &event) {
   wxString href = event.GetLinkInfo().GetHref();
   href.Trim(true).Trim(false);
 
-  // Basic safety: only allow common external schemes
+  APP_DEBUG_LOG("MDW: OnHtmlLinkClicked (href=%s)", wxToStd(href).c_str());
+
   wxString lower = href.Lower();
+  if (lower.StartsWith(wxT("ai://"))) {
+    event.Skip();
+    return;
+  }
+
+  // Basic safety: only allow common external schemes
   if (lower.StartsWith(wxT("http://")) || lower.StartsWith(wxT("https://")) || lower.StartsWith(wxT("mailto:"))) {
     wxLaunchDefaultBrowser(href);
     return;

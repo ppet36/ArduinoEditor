@@ -22,6 +22,7 @@
 #include <wx/artprov.h>
 #include <wx/bmpbuttn.h>
 #include <wx/config.h>
+#include <wx/html/htmlwin.h>
 #include <wx/splitter.h>
 #include <wx/stc/stc.h>
 #include <wx/wx.h>
@@ -69,6 +70,10 @@ private:
   void OnRefreshSessions(wxCommandEvent &);
   void OnRefreshTimer(wxTimerEvent &);
   void OnSwitchModelClicked(wxCommandEvent &);
+  void OnHtmlLinkClicked(wxHtmlLinkEvent &event);
+
+  void SetBusyUi(bool busy);
+  void ApplyInputColors();
 
   void OnSysColourChanged(wxSysColourChangedEvent &event);
 

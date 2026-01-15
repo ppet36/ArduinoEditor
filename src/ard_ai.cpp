@@ -736,6 +736,37 @@ static wxString UtcToLocal(const std::string &createdUtc) {
   return local.FormatDate() + wxT(" ") + local.FormatTime();
 }
 
+static std::string KeyRel(const std::string &sketchRoot, const std::string &filename) {
+  std::string norm = NormalizeFilename(sketchRoot, filename);
+  return StripFilename(sketchRoot, norm);
+}
+
+static bool FilesDifferent(const std::string &sketchRoot,
+                           const std::vector<SketchFileBuffer> &a,
+                           const std::vector<SketchFileBuffer> &b) {
+  std::unordered_map<std::string, std::string> ma, mb;
+  ma.reserve(a.size());
+  mb.reserve(b.size());
+
+  for (const auto &x : a)
+    ma[KeyRel(sketchRoot, x.filename)] = x.code;
+  for (const auto &x : b)
+    mb[KeyRel(sketchRoot, x.filename)] = x.code;
+
+  if (ma.size() != mb.size())
+    return true;
+  for (const auto &[k, va] : ma) {
+    auto it = mb.find(k);
+    if (it == mb.end())
+      return true;
+    if (it->second != va)
+      return true;
+  }
+  return false;
+}
+
+// -------------------------------------------------------------------------------
+
 wxString AiChatSessionInfo::GetCreatedDateByLocale() const {
   return UtcToLocal(createdUtc);
 }
@@ -2079,6 +2110,45 @@ bool ArduinoAiActions::LoadChatSessionUi(const std::string &sessionId, std::vect
 
   bool haveAny = false;
 
+  auto mergeOrPush = [&](AiChatUiItem &&it) {
+    if (!outItems.empty() && outItems.back().role == it.role) {
+      AiChatUiItem &prev = outItems.back();
+
+      if (!prev.text.IsEmpty() && !it.text.IsEmpty())
+        prev.text.Append(wxT("\n\n"));
+      prev.text.Append(it.text);
+
+      // Timestamp bubble reprezentuje "poslední" zprávu v tom slepeném bloku
+      if (!it.tsUtc.empty())
+        prev.tsUtc = it.tsUtc;
+
+      // Model: ponech první, případně připoj další (pokud se liší)
+      if (!it.model.empty()) {
+        if (prev.model.empty()) {
+          prev.model = it.model;
+        } else if (prev.model != it.model) {
+          if (prev.model.find(it.model) == std::string::npos)
+            prev.model += "," + it.model;
+        }
+      }
+
+      auto addTok = [&](int &dst, int src) {
+        if (src < 0)
+          return;
+        if (dst < 0)
+          dst = 0;
+        dst += src;
+      };
+      addTok(prev.inputTokens, it.inputTokens);
+      addTok(prev.outputTokens, it.outputTokens);
+      addTok(prev.totalTokens, it.totalTokens);
+
+      return;
+    }
+
+    outItems.push_back(std::move(it));
+  };
+
   for (auto &line : lines) {
     wxString t = line;
     t.Trim(true).Trim(false);
@@ -2109,8 +2179,10 @@ bool ArduinoAiActions::LoadChatSessionUi(const std::string &sessionId, std::vect
       it.inputTokens = inTok;
       it.outputTokens = outTok;
       it.totalTokens = totTok;
-      outItems.push_back(std::move(it));
+
+      mergeOrPush(std::move(it));
       haveAny = true;
+
     } else if (typ == "assistant_raw") {
       const std::string sketchPath = GetSketchRoot();
 
@@ -2147,7 +2219,8 @@ bool ArduinoAiActions::LoadChatSessionUi(const std::string &sessionId, std::vect
       it.inputTokens = inTok;
       it.outputTokens = outTok;
       it.totalTokens = totTok;
-      outItems.push_back(std::move(it));
+
+      mergeOrPush(std::move(it));
       haveAny = true;
     }
 
@@ -3052,8 +3125,9 @@ bool ArduinoAiActions::CheckModelQueriedFile(const std::vector<AiPatchHunk> &pat
 
 bool ArduinoAiActions::CheckNumberOfIterations() {
   // check iterations (per roundtrip, not per block)
-  if (m_solveSession.iteration < m_solveSession.maxIterations)
+  if (m_solveSession.iteration < m_solveSession.maxIterations) {
     return true;
+  }
 
   wxMessageDialog dlg(
       m_editor,
@@ -3069,6 +3143,8 @@ bool ArduinoAiActions::CheckNumberOfIterations() {
     m_solveSession.iteration = 0;
     return true;
   }
+
+  MaybeStashFailedWorkingFiles(_("AI reached the maximum number of iterations."));
 
   m_solveSession.finished = true;
   StopCurrentAction();
@@ -3623,6 +3699,8 @@ void ArduinoAiActions::OnAiSimpleChatSuccess(wxThreadEvent &event) {
         return;
       }
 
+      MaybeStashFailedWorkingFiles(_("AI finished without a clean patch."));
+
       SendDoneEventToOrigin();
 
       m_solveSession.finished = true;
@@ -3821,7 +3899,7 @@ void ArduinoAiActions::OnDiagnosticsUpdated(wxThreadEvent &evt) {
     }
 
     // Apply workingFiles to live files
-    for (const auto &newSfb : m_solveSession.workingFiles) {
+    for (const auto &newSfb : dd.GetChangedBuffersNew()) {
       std::string filename = NormalizeFilename(sketchRoot, newSfb.filename);
       std::string basename = StripFilename(sketchRoot, filename);
 
@@ -3902,7 +3980,10 @@ void ArduinoAiActions::OnDiagnosticsUpdated(wxThreadEvent &evt) {
       }
       m_chatTranscript << wxT("USER_MESSAGE:\n") << diagMsg;
 
-      wxString chatMsg = _("<IDE forced error solving>");
+      wxString chatMsg;
+      chatMsg << wxT("\n");
+      chatMsg << _("<IDE forced error solving>");
+      chatMsg << wxT("\n");
       AppendChatEvent("user", chatMsg);
 
       m_interactiveChatPayload.Append(wxT("\n"));
@@ -4068,4 +4149,81 @@ wxString ArduinoAiActions::BuildAppliedPatchEvidence(const std::vector<AiPatchHu
 
   out << wxT("*** END APPLIED_PATCH_EVIDENCE\n");
   return out;
+}
+
+bool ArduinoAiActions::MaybeStashFailedWorkingFiles(const wxString &reason) {
+  if (!m_editor) {
+    return false;
+  }
+
+  auto *frame = m_editor->GetOwnerFrame();
+  if (!frame) {
+    return false;
+  }
+
+  const std::string sketchRoot = GetSketchRoot();
+
+  std::vector<SketchFileBuffer> oldFiles;
+  frame->CollectEditorSources(oldFiles);
+
+  if (!FilesDifferent(sketchRoot, oldFiles, m_solveSession.workingFiles)) {
+    return false;
+  }
+
+  PendingPatchReview pr;
+  pr.id = MakeSessionId();
+  pr.reason = reason;
+  pr.workingFiles = m_solveSession.workingFiles;
+
+  wxString link = wxString::Format(
+      _("\n\n**AI changes are available, but diagnostics still report errors.**\n\n"
+        "[Review & apply AI changes...](ai://review_patch/%s)\n"),
+      wxString::FromUTF8(pr.id));
+
+  APP_DEBUG_LOG("Generated review link: %s", wxToStd(link).c_str());
+
+  m_pendingReviews[pr.id] = std::move(pr);
+
+  m_interactiveChatPayload.Append(link);
+  AppendChatEvent("assistant", link);
+  return true;
+}
+
+void ArduinoAiActions::OpenPendingPatchReview(const std::string &id) {
+  if (!m_editor) {
+    return;
+  }
+
+  auto it = m_pendingReviews.find(id);
+  if (it == m_pendingReviews.end()) {
+    m_editor->ModalMsgDialog(_("Patch is no longer available."), _("Arduino Editor AI"), wxOK | wxICON_INFORMATION);
+    return;
+  }
+
+  auto *frame = m_editor->GetOwnerFrame();
+  auto &pr = it->second;
+
+  std::vector<SketchFileBuffer> oldFiles;
+  frame->CollectEditorSources(oldFiles);
+
+  ArduinoDiffDialog dd(frame, oldFiles, pr.workingFiles,
+                       m_editor->arduinoCli, m_editor->m_config, wxEmptyString);
+
+  if (dd.ShowModal() != wxID_OK) {
+    return;
+  }
+
+  const std::string sketchRoot = GetSketchRoot();
+  for (const auto &newSfb : dd.GetChangedBuffersNew()) {
+    std::string filename = NormalizeFilename(sketchRoot, newSfb.filename);
+    ArduinoEditor *ed = frame->FindEditorWithFile(filename, /*allowCreate=*/true);
+    if (!ed) {
+      frame->CreateNewSketchFile(wxString::FromUTF8(filename));
+      ed = frame->GetCurrentEditor();
+      if (!ed || (ed->GetFilePath() != filename)) {
+        continue;
+      }
+    }
+    ed->SetText(newSfb.code);
+  }
 }

@@ -27,6 +27,10 @@
 #include <wx/button.h>
 #include <wx/choice.h>
 
+namespace {
+const int kStylePlaceholder = 1;
+}
+
 static void FreeChoiceClientData(wxChoice *c) {
   if (!c)
     return;
@@ -43,13 +47,23 @@ static wxString NormalizeNewlines(wxString s) {
   return s;
 }
 
-static void AppendEscapedHtmlChar(wxString& out, wxChar ch) {
+static void AppendEscapedHtmlChar(wxString &out, wxChar ch) {
   switch (ch) {
-    case '&': out += wxT("&amp;");  break;
-    case '<': out += wxT("&lt;");   break;
-    case '>': out += wxT("&gt;");   break;
-    case '"': out += wxT("&quot;"); break;
-    default:  out += ch;            break;
+    case '&':
+      out += wxT("&amp;");
+      break;
+    case '<':
+      out += wxT("&lt;");
+      break;
+    case '>':
+      out += wxT("&gt;");
+      break;
+    case '"':
+      out += wxT("&quot;");
+      break;
+    default:
+      out += ch;
+      break;
   }
 }
 
@@ -58,7 +72,7 @@ static void AppendEscapedHtmlChar(wxString& out, wxChar ch) {
 // - zachová indentaci a vícenásobné mezery pomocí &nbsp;
 // - tab => 4× &nbsp;
 // - escapuje <>&"
-static wxString UiUserTextToHtmlNbspBr(const wxString& raw) {
+static wxString UiUserTextToHtmlNbspBr(const wxString &raw) {
   wxString s = NormalizeNewlines(raw);
 
   wxString out;
@@ -89,8 +103,10 @@ static wxString UiUserTextToHtmlNbspBr(const wxString& raw) {
 
     if (ch == ' ') {
       // Na začátku řádku nebo při více mezerách za sebou použij &nbsp;
-      if (atLineStart || prevWasSpace) out += wxT("&nbsp;");
-      else out += wxT(" ");
+      if (atLineStart || prevWasSpace)
+        out += wxT("&nbsp;");
+      else
+        out += wxT(" ");
       atLineStart = false;
       prevWasSpace = true;
       continue;
@@ -131,6 +147,7 @@ ArduinoAiChatPanel::ArduinoAiChatPanel(wxWindow *parent, ArduinoAiActions *actio
   Bind(wxEVT_SYS_COLOUR_CHANGED, &ArduinoAiChatPanel::OnSysColourChanged, this);
 
   m_switchModelBtn->Bind(wxEVT_BUTTON, &ArduinoAiChatPanel::OnSwitchModelClicked, this);
+  m_historyPanel->Bind(wxEVT_HTML_LINK_CLICKED, &ArduinoAiChatPanel::OnHtmlLinkClicked, this);
 
   std::vector<AiModelSettings> models;
   ArduinoEditorSettingsDialog::LoadAiModels(m_config, models);
@@ -221,6 +238,8 @@ void ArduinoAiChatPanel::InitUi() {
   m_inputCtrl->SetViewWhiteSpace(wxSTC_WS_INVISIBLE);
 
   m_inputCtrl->SetMinSize(wxSize(-1, 60));
+
+  ApplyInputColors();
 
   wxString normalFace;
 #ifdef __WXMAC__
@@ -458,6 +477,32 @@ void ArduinoAiChatPanel::OnSwitchModelClicked(wxCommandEvent &) {
   PopupMenu(&menu, pos);
 }
 
+void ArduinoAiChatPanel::OnHtmlLinkClicked(wxHtmlLinkEvent &event) {
+  wxString href = event.GetLinkInfo().GetHref();
+  href.Trim(true).Trim(false);
+
+  APP_DEBUG_LOG("AIPNL: OnHtmlLinkClicked (href=%s)", wxToStd(href).c_str());
+
+  wxString lower = href.Lower();
+
+  // Internal scheme
+  if (lower.StartsWith(wxT("ai://"))) {
+    // Expected: ai://review_patch/<id>[?anything]
+    static const wxString kPrefix = wxT("ai://review_patch/");
+    if (lower.StartsWith(kPrefix)) {
+      wxString id = href.Mid(kPrefix.length());
+      id.Trim(true).Trim(false);
+
+      if (!id.empty() && m_actions) {
+        m_actions->OpenPendingPatchReview(wxToStd(id));
+      }
+    }
+    return;
+  }
+
+  event.Skip(true);
+}
+
 void ArduinoAiChatPanel::OnRefreshSessions(wxCommandEvent &) {
   RefreshSessionList();
 }
@@ -556,9 +601,40 @@ void ArduinoAiChatPanel::Clear() {
   }
 }
 
-void ArduinoAiChatPanel::OnSysColourChanged(wxSysColourChangedEvent &event) {
-  m_historyPanel->Render(/*scrollToEnd=*/false);
+void ArduinoAiChatPanel::SetBusyUi(bool busy) {
+  if (!m_inputCtrl)
+    return;
 
+  if (busy) {
+    m_isBusy = true;
+
+    m_inputCtrl->SetCaretWidth(0);
+
+    const wxString msg = wxT("  ") + _("AI model thinking...") + wxT("  ");
+
+    m_inputCtrl->SetText(msg);
+    m_inputCtrl->SetReadOnly(true);
+
+    m_inputCtrl->StartStyling(0);
+    m_inputCtrl->SetStyling((int)msg.length(), kStylePlaceholder);
+
+    m_inputCtrl->GotoPos(0);
+    return;
+  }
+
+  m_isBusy = false;
+
+  m_inputCtrl->SetCaretWidth(1);
+  m_inputCtrl->SetReadOnly(false);
+
+  m_inputCtrl->SetText(wxEmptyString);
+
+  ApplyInputColors();
+
+  m_inputCtrl->SetFocus();
+}
+
+void ArduinoAiChatPanel::ApplyInputColors() {
   EditorSettings settings;
   settings.Load(m_config);
 
@@ -567,10 +643,23 @@ void ArduinoAiChatPanel::OnSysColourChanged(wxSysColourChangedEvent &event) {
   m_inputCtrl->StyleSetForeground(wxSTC_STYLE_DEFAULT, c.text);
   m_inputCtrl->StyleSetBackground(wxSTC_STYLE_DEFAULT, c.background);
 
-  m_inputCtrl->StyleClearAll();
-
   m_inputCtrl->SetBackgroundColour(c.background);
   m_inputCtrl->SetCaretForeground(c.text);
+
+  m_inputCtrl->StyleClearAll();
+
+  m_inputCtrl->StyleSetForeground(0, c.text);
+  m_inputCtrl->StyleSetBackground(0, c.background);
+
+  m_inputCtrl->StyleSetForeground(kStylePlaceholder, c.text);
+  m_inputCtrl->StyleSetBackground(kStylePlaceholder, c.aiSystemBg);
+  m_inputCtrl->StyleSetItalic(kStylePlaceholder, true);
+}
+
+void ArduinoAiChatPanel::OnSysColourChanged(wxSysColourChangedEvent &event) {
+  m_historyPanel->Render(/*scrollToEnd=*/false);
+
+  ApplyInputColors();
 
   if (m_switchModelBtn) {
     m_switchModelBtn->SetBitmap(AEGetArtBundle(wxAEArt::SwitchModel));
@@ -642,14 +731,13 @@ void ArduinoAiChatPanel::SendCurrentInput() {
     return;
   }
 
-  m_isBusy = true;
-  m_inputCtrl->Enable(false);
+  SetBusyUi(true);
 
   // Run async request
   if (!m_actions->StartInteractiveChat(trimmed, this)) {
     // Error.
-    m_inputCtrl->Enable(true);
-    m_isBusy = false;
+    SetBusyUi(false);
+
     if (m_historyPanel) {
       m_historyPanel->AppendMarkdown(
           _("[AI] Failed to start interactive chat request."),
@@ -662,8 +750,7 @@ void ArduinoAiChatPanel::OnChatSuccess(wxThreadEvent &event) {
   const wxString answer = event.GetString();
 
   if (m_inputCtrl) {
-    m_inputCtrl->Enable(true);
-    m_inputCtrl->SetFocus();
+    SetBusyUi(false);
   }
 
   if (m_historyPanel && !answer.IsEmpty()) {
@@ -710,16 +797,13 @@ void ArduinoAiChatPanel::OnChatSuccess(wxThreadEvent &event) {
   }
 
   RefreshSessionList();
-
-  m_isBusy = false;
 }
 
 void ArduinoAiChatPanel::OnChatError(wxThreadEvent &event) {
   const wxString err = event.GetString();
 
   if (m_inputCtrl) {
-    m_inputCtrl->Enable(true);
-    m_inputCtrl->SetFocus();
+    SetBusyUi(false);
   }
 
   wxString msg;
@@ -735,8 +819,6 @@ void ArduinoAiChatPanel::OnChatError(wxThreadEvent &event) {
 
   // Keep the choice labels (message counts) in sync even on errors.
   RefreshSessionList();
-
-  m_isBusy = false;
 }
 
 void ArduinoAiChatPanel::OnSessionTitleUpdated(wxThreadEvent &event) {

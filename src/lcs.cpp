@@ -156,15 +156,66 @@ ArduinoLcsDiffAligner::BuildAlignedFromMatches(
   int bi = 0;
 
   auto emitUnmatched = [&](int aFrom, int aTo, int bFrom, int bTo) {
-    // deletions
-    for (int i = aFrom; i < aTo; ++i) {
-      r.left.push_back(a[i]);
+    // LCS ignores "weak" lines (empty / braces), so they may appear as delete+add
+    // even if they are identical. Here we pair them locally at the start/end of spans,
+    // without them acting as global anchors.
+
+    auto trimKey = [](wxString s) -> wxString {
+      s.Trim(true).Trim(false);
+      s.Replace(wxT("\r"), wxEmptyString);
+      return s;
+    };
+
+    int i = aFrom;
+    int j = bFrom;
+
+    // 1) Pair identical weak lines from the beginning of the span
+    while (i < aTo && j < bTo) {
+      const wxString ka = trimKey(a[i]);
+      const wxString kb = trimKey(b[j]);
+      if (IsWeakLine(ka) && IsWeakLine(kb) && ka == kb) {
+        r.left.push_back(a[i]);
+        r.right.push_back(b[j]);
+        ++i;
+        ++j;
+      } else {
+        break;
+      }
+    }
+
+    // 2) Pair identical weak lines from the end of the span
+    int ii = aTo - 1;
+    int jj = bTo - 1;
+    std::vector<std::pair<wxString, wxString>> tail;
+
+    while (ii >= i && jj >= j) {
+      const wxString ka = trimKey(a[ii]);
+      const wxString kb = trimKey(b[jj]);
+      if (IsWeakLine(ka) && IsWeakLine(kb) && ka == kb) {
+        tail.emplace_back(a[ii], b[jj]);
+        --ii;
+        --jj;
+      } else {
+        break;
+      }
+    }
+
+    // 3) The rest: deletions
+    for (int x = i; x <= ii; ++x) {
+      r.left.push_back(a[x]);
       r.right.push_back(wxEmptyString);
     }
-    // insertions
-    for (int j = bFrom; j < bTo; ++j) {
+
+    // 4) The rest: insertions
+    for (int y = j; y <= jj; ++y) {
       r.left.push_back(wxEmptyString);
-      r.right.push_back(b[j]);
+      r.right.push_back(b[y]);
+    }
+
+    // 5) And finally, the paired tail (reverse the order, we collected from the back)
+    for (auto it = tail.rbegin(); it != tail.rend(); ++it) {
+      r.left.push_back(it->first);
+      r.right.push_back(it->second);
     }
   };
 

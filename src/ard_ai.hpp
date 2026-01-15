@@ -113,6 +113,7 @@ public:
   // interactive chat
   bool StartInteractiveChat(const wxString &userText, wxEvtHandler *origin);
   void ResetInteractiveChat();
+  void OpenPendingPatchReview(const std::string &id);
   std::vector<AiChatSessionInfo> ListStoredChatSessions() const;
   bool LoadChatSessionUi(const std::string &sessionId, std::vector<AiChatUiItem> &outItems);
   bool LoadChatSession(const std::string &sessionId, wxString &outTranscript) const;
@@ -156,6 +157,12 @@ private:
     AiTokenTotals tokenTotals;
     std::vector<SketchFileBuffer> workingFiles;
     wxString assistantPatchExplanation;
+  };
+
+  struct PendingPatchReview {
+    std::string id;
+    wxString reason;                            // "max iterations reached", "AI error", ...
+    std::vector<SketchFileBuffer> workingFiles; // snapshot AI workingFiles
   };
 
   struct AiInfoRequest {
@@ -228,6 +235,10 @@ private:
   ArduinoEditor *m_editor;
   wxEvtHandler *m_origin;
   wxString m_interactiveChatPayload;
+
+  // stash failed working files
+  std::unordered_map<std::string, PendingPatchReview> m_pendingReviews;
+  bool MaybeStashFailedWorkingFiles(const wxString &reason);
 
   void OnAiSimpleChatSuccess(wxThreadEvent &event);
   void OnAiSimpleChatError(wxThreadEvent &event);
