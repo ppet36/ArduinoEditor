@@ -1115,7 +1115,7 @@ std::string ArduinoParseError::ToString() const {
       oss << std::string((size_t)indent, ' ');
     }
 
-    const char *lbl = SeverityString();
+    const char *lbl = e.SeverityString();
     if (lbl && *lbl) {
       oss << lbl << ": ";
     }
