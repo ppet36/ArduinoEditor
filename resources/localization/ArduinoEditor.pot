@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-14 21:49+0100\n"
+"POT-Creation-Date: 2026-01-15 12:04+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,8 +19,8 @@ msgstr ""
 
 #: ../src/ai_client.cpp:74
 msgid ""
-"Extra JSON request parameters must be a JSON object (e.g. "
-"{\"temperature\":0.2})."
+"Extra JSON request parameters must be a JSON object (e.g. {\"temperature"
+"\":0.2})."
 msgstr ""
 
 #: ../src/ai_client.cpp:82
@@ -121,9 +121,8 @@ msgid ""
 "   <hr>\n"
 "\n"
 "   <p>\n"
-"     <b>Project homepage and source code:&nbsp;</b><a href=\"https://"
-"github.com/ppet36/ArduinoEditor\">https://github.com/ppet36/ArduinoEditor</"
-"a>\n"
+"     <b>Project homepage and source code:&nbsp;</b><a href=\"https://github."
+"com/ppet36/ArduinoEditor\">https://github.com/ppet36/ArduinoEditor</a>\n"
 "   </p>\n"
 "\n"
 "   <hr>\n"
@@ -189,8 +188,8 @@ msgid ""
 "   <a name=\"project\"></a>\n"
 "   <h3>Project-wide Multi-file Support</h3>\n"
 "   <p>\n"
-"     Full support for structured sketches and multiple files "
-"(.ino/.cpp/.hpp), including\n"
+"     Full support for structured sketches and multiple files (.ino/.cpp/."
+"hpp), including\n"
 "     project-wide indexing, navigation and explicit support for structured "
 "Arduino projects.\n"
 "   </p>\n"
@@ -371,8 +370,8 @@ msgid ""
 "  </p>\n"
 "  <p>\n"
 "    For the full license text see:<br>\n"
-"    <a href=\"https://github.com/arduino/arduino-cli/blob/master/"
-"LICENSE.txt\">\n"
+"    <a href=\"https://github.com/arduino/arduino-cli/blob/master/LICENSE.txt"
+"\">\n"
 "      https://github.com/arduino/arduino-cli/blob/master/LICENSE.txt\n"
 "    </a>\n"
 "  </p>\n"
@@ -413,7 +412,7 @@ msgstr ""
 msgid "Licenses"
 msgstr ""
 
-#: ../src/ard_ai.cpp:763 ../src/ard_aipnl.cpp:622
+#: ../src/ard_ai.cpp:763 ../src/ard_aipnl.cpp:697
 #, c-format
 msgid "%s (in: %d, out: %d, tot: %d) tokens"
 msgstr ""
@@ -829,7 +828,7 @@ msgstr ""
 msgid "Failed to save AI API key to the system secret store."
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:41
+#: ../src/ard_aipnl.cpp:110
 msgid ""
 "AI chat ready.\n"
 "You can ask coding questions or request refactoring.\n"
@@ -842,41 +841,41 @@ msgid ""
 "(Shift+Enter inserts a new line.)"
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:101
+#: ../src/ard_aipnl.cpp:170
 msgid "Switch AI model"
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:280
+#: ../src/ard_aipnl.cpp:349
 msgid "(no saved sessions)"
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:440
+#: ../src/ard_aipnl.cpp:509
 msgid "[AI] Failed to load saved session."
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:564
+#: ../src/ard_aipnl.cpp:639
 msgid "[AI] Interactive actions are not available."
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:580
+#: ../src/ard_aipnl.cpp:655
 msgid "[AI] Failed to start interactive chat request."
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:601
+#: ../src/ard_aipnl.cpp:676
 #, c-format
 msgid "%s (in: %lld, out: %lld, tot: %lld) tokens"
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:607
+#: ../src/ard_aipnl.cpp:682
 #, c-format
 msgid "%s (in: %lld, out: %lld, tot: %lld) tokens, %d calls"
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:652
+#: ../src/ard_aipnl.cpp:727
 msgid "[AI ERROR] Unknown error"
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:654
+#: ../src/ard_aipnl.cpp:729
 #, c-format
 msgid "[AI ERROR] %s"
 msgstr ""
@@ -1785,8 +1784,8 @@ msgid ""
 "In this mode, libraries are detected from the last project build, so newly "
 "added #include directives won't be picked up until you rebuild.\n"
 "\n"
-"Rebuild will regenerate the build configuration (including "
-"compile_commands.json) and attach libraries to this sketch.\n"
+"Rebuild will regenerate the build configuration (including compile_commands."
+"json) and attach libraries to this sketch.\n"
 "\n"
 "Rebuild now?"
 msgstr ""
@@ -2309,136 +2308,136 @@ msgstr ""
 msgid "Board updates..."
 msgstr ""
 
-#: ../src/ard_edit.cpp:342
+#: ../src/ard_edit.cpp:341
 #, c-format
 msgid "Unable to load file %s."
 msgstr ""
 
-#: ../src/ard_edit.cpp:444
+#: ../src/ard_edit.cpp:443
 msgid "Find and Replace"
 msgstr ""
 
-#: ../src/ard_edit.cpp:444
+#: ../src/ard_edit.cpp:443
 msgid "Find"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1070
+#: ../src/ard_edit.cpp:1069
 msgid "Line number:"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1071
+#: ../src/ard_edit.cpp:1070
 msgid "Line:"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1072
+#: ../src/ard_edit.cpp:1071
 msgid "Go to line"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1240
+#: ../src/ard_edit.cpp:1239
 msgid "&Undo\tCtrl+Z"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1241
+#: ../src/ard_edit.cpp:1240
 msgid "&Redo\tCtrl+Y"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1244
+#: ../src/ard_edit.cpp:1243
 msgid "Cu&t\tCtrl+X"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1245
+#: ../src/ard_edit.cpp:1244
 msgid "&Copy\tCtrl+C"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1246
+#: ../src/ard_edit.cpp:1245
 msgid "&Paste\tCtrl+V"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1247
+#: ../src/ard_edit.cpp:1246
 msgid "&Delete\tDel"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1250
+#: ../src/ard_edit.cpp:1249
 msgid "Select &All\tCtrl+A"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1255
+#: ../src/ard_edit.cpp:1254
 msgid "&Find...\tCtrl+F"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1256
+#: ../src/ard_edit.cpp:1255
 msgid "R&eplace...\tCtrl+Alt+F"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1266
+#: ../src/ard_edit.cpp:1265
 msgid "Go to definition (Ctrl+Click)"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1268
+#: ../src/ard_edit.cpp:1267
 msgid "Go to definition\tCtrl+Click"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1270
+#: ../src/ard_edit.cpp:1269
 msgid "Jump to the definition of the symbol under the cursor."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1276
+#: ../src/ard_edit.cpp:1275
 msgid "Go to line\tCtrl+L"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1278
+#: ../src/ard_edit.cpp:1277
 msgid "Go to line\tCtrl+G"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1280
+#: ../src/ard_edit.cpp:1279
 msgid "Jump to specific line in the current file."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1287
+#: ../src/ard_edit.cpp:1286
 msgid "Previous symbol occurrence\tCtrl+Up"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1288
+#: ../src/ard_edit.cpp:1287
 msgid "Jump to the previous symbol occurrence in the current file."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1293
+#: ../src/ard_edit.cpp:1292
 msgid "Next symbol occurrence\tCtrl+Down"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1294
+#: ../src/ard_edit.cpp:1293
 msgid "Jump to the next symbol occurrence in the current file."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1301
+#: ../src/ard_edit.cpp:1300
 msgid "Show symbol occurrences\tShift+F12"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1302
+#: ../src/ard_edit.cpp:1301
 msgid "Shows list of all project-wide symbol occurrences."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1305
+#: ../src/ard_edit.cpp:1304
 msgid "Navigate"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1311
+#: ../src/ard_edit.cpp:1310
 msgid "Rename symbol..."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1312
+#: ../src/ard_edit.cpp:1311
 msgid "Rename the selected symbol across the project."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1317
+#: ../src/ard_edit.cpp:1316
 msgid "Introduce variable..."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1318
+#: ../src/ard_edit.cpp:1317
 msgid "Extract the selected expression into a new local variable."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1323 ../src/ard_refactor.cpp:640
+#: ../src/ard_edit.cpp:1322 ../src/ard_refactor.cpp:640
 #: ../src/ard_refactor.cpp:657 ../src/ard_refactor.cpp:665
 #: ../src/ard_refactor.cpp:672 ../src/ard_refactor.cpp:683
 #: ../src/ard_refactor.cpp:690 ../src/ard_refactor.cpp:701
@@ -2448,117 +2447,117 @@ msgstr ""
 msgid "Inline variable"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1324
+#: ../src/ard_edit.cpp:1323
 msgid "Replace all usages of the variable with its initializer."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1329
+#: ../src/ard_edit.cpp:1328
 msgid "Generate function implementation..."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1330
+#: ../src/ard_edit.cpp:1329
 msgid "Insert an implementation stub for the selected function."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1335
+#: ../src/ard_edit.cpp:1334
 msgid "Create declaration in header..."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1336
+#: ../src/ard_edit.cpp:1335
 msgid "Add a missing function declaration to the appropriate header file."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1341
+#: ../src/ard_edit.cpp:1340
 msgid "Organize includes..."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1342
+#: ../src/ard_edit.cpp:1341
 msgid "Detect and clean up unused or duplicate #include directives."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1347
+#: ../src/ard_edit.cpp:1346
 msgid "Extract function..."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1348
+#: ../src/ard_edit.cpp:1347
 msgid "Create a new function from the selected block of code."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1355
+#: ../src/ard_edit.cpp:1354
 msgid "Format Selection"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1356
+#: ../src/ard_edit.cpp:1355
 msgid "Format the selected text using clang-format."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1361
+#: ../src/ard_edit.cpp:1360
 msgid "Format File"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1362
+#: ../src/ard_edit.cpp:1361
 msgid "Format the current file using clang-format."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1365 ../src/ard_refactor.cpp:1643
+#: ../src/ard_edit.cpp:1364 ../src/ard_refactor.cpp:1643
 msgid "Refactor"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1374
+#: ../src/ard_edit.cpp:1373
 msgid "Explain selection"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1375
+#: ../src/ard_edit.cpp:1374
 msgid "AI explains the meaning and behavior of the selected code."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1380
+#: ../src/ard_edit.cpp:1379
 msgid "Generate documentation for Symbol"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1381
+#: ../src/ard_edit.cpp:1380
 msgid "AI generates a documentation comment for the symbol under the cursor."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1386
+#: ../src/ard_edit.cpp:1385
 msgid "Auto-Document All Functions in File"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1387
+#: ../src/ard_edit.cpp:1386
 msgid "AI generates documentation comments for all functions in this file."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1392
+#: ../src/ard_edit.cpp:1391
 msgid "Document All Methods in Class"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1393
+#: ../src/ard_edit.cpp:1392
 msgid "AI generates documentation for all methods of the selected class."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1398
+#: ../src/ard_edit.cpp:1397
 msgid "Optimize function or method"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1399
+#: ../src/ard_edit.cpp:1398
 msgid "AI optimizes function or method."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1402 ../src/ard_setdlg.cpp:1979
+#: ../src/ard_edit.cpp:1401 ../src/ard_setdlg.cpp:1979
 msgid "AI"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1741
+#: ../src/ard_edit.cpp:1740
 msgid ""
 "File is opened as read-only. Enable editing first if you want to save "
 "changes."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1742
+#: ../src/ard_edit.cpp:1741
 msgid "Read-only file"
 msgstr ""
 
-#: ../src/ard_edit.cpp:1748
+#: ../src/ard_edit.cpp:1747
 #, c-format
 msgid "Unable to save file %s."
 msgstr ""
@@ -2852,8 +2851,8 @@ msgstr ""
 
 #: ../src/ard_libman.cpp:758
 msgid ""
-"Enter Git repository URL (e.g. https://github.com/arduino-libraries/"
-"WiFi101.git or with #version):"
+"Enter Git repository URL (e.g. https://github.com/arduino-libraries/WiFi101."
+"git or with #version):"
 msgstr ""
 
 #: ../src/ard_libman.cpp:759
@@ -3019,8 +3018,8 @@ msgstr ""
 msgid "Save plot as image..."
 msgstr ""
 
-#: ../src/ard_plotview.cpp:463 ../src/ard_sermon.cpp:827
-#: ../src/ard_sermon.cpp:884
+#: ../src/ard_plotview.cpp:463 ../src/ard_sermon.cpp:828
+#: ../src/ard_sermon.cpp:893
 msgid "Clear"
 msgstr ""
 
@@ -3043,8 +3042,8 @@ msgstr ""
 
 #: ../src/ard_plotview.cpp:552
 msgid ""
-"PNG image (*.png)|*.png|JPEG image (*.jpg;*.jpeg)|*.jpg;*.jpeg|BMP image "
-"(*.bmp)|*.bmp"
+"PNG image (*.png)|*.png|JPEG image (*.jpg;*.jpeg)|*.jpg;*.jpeg|BMP image (*."
+"bmp)|*.bmp"
 msgstr ""
 
 #: ../src/ard_plotview.cpp:592
@@ -3281,175 +3280,191 @@ msgstr ""
 msgid "Preview"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:475
+#: ../src/ard_sermon.cpp:477
 msgid "Failed to open serial port"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:507 ../src/ard_sermon.cpp:592
+#: ../src/ard_sermon.cpp:509 ../src/ard_sermon.cpp:594
 msgid "Serial port handle invalid"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:541
+#: ../src/ard_sermon.cpp:543
 #, c-format
 msgid "Serial select error: %d"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:562
+#: ../src/ard_sermon.cpp:564
 msgid "Serial port closed"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:584
+#: ../src/ard_sermon.cpp:586
 #, c-format
 msgid "Serial read error: %d"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:615
+#: ../src/ard_sermon.cpp:617
 #, c-format
 msgid "Serial read error (Win): %lu"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:638
+#: ../src/ard_sermon.cpp:640
 #, c-format
 msgid "Serial Monitor [%s]"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:733
+#: ../src/ard_sermon.cpp:736
 #, c-format
 msgid "Port: %s"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:771
+#: ../src/ard_sermon.cpp:774
 msgid "Baud:"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:777 ../src/ard_sermon.cpp:1228
+#: ../src/ard_sermon.cpp:780 ../src/ard_sermon.cpp:1256
 msgid "None"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:778 ../src/ard_sermon.cpp:784
-#: ../src/ard_sermon.cpp:1230
+#: ../src/ard_sermon.cpp:781 ../src/ard_sermon.cpp:787
+#: ../src/ard_sermon.cpp:1258
 msgid "<LF>"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:779 ../src/ard_sermon.cpp:1232
+#: ../src/ard_sermon.cpp:782 ../src/ard_sermon.cpp:1260
 msgid "<CR>"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:780 ../src/ard_sermon.cpp:1234
+#: ../src/ard_sermon.cpp:783 ../src/ard_sermon.cpp:1262
 msgid "<CR><LF>"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:789
+#: ../src/ard_sermon.cpp:792
 msgid "Line ending:"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:795
+#: ../src/ard_sermon.cpp:798
 msgid "Text"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:796
+#: ../src/ard_sermon.cpp:799
 msgid "Hex"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:797
+#: ../src/ard_sermon.cpp:800
 msgid "Hex + ASCII"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:810
+#: ../src/ard_sermon.cpp:812
 msgid "Output:"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:820 ../src/ard_sermon.cpp:1255
-#: ../src/ard_sermon.cpp:2002
+#: ../src/ard_sermon.cpp:821 ../src/ard_sermon.cpp:1283
+#: ../src/ard_sermon.cpp:2036
 msgid "Pause"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:823
+#: ../src/ard_sermon.cpp:824
 msgid "Reset (DTR/RTS)"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:824
+#: ../src/ard_sermon.cpp:825
 msgid ""
 "Resets the connected device (DTR/RTS pulse). Same behavior as opening the "
 "serial port."
 msgstr ""
 
-#: ../src/ard_sermon.cpp:858
+#: ../src/ard_sermon.cpp:859
 msgid "Copy\tCtrl+C"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:863
+#: ../src/ard_sermon.cpp:864
 msgid "Display values"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:865
+#: ../src/ard_sermon.cpp:866
 msgid "Autoscroll"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:867
+#: ../src/ard_sermon.cpp:868
 msgid "Show timestamps"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:873 ../src/ard_sermon.cpp:916
+#: ../src/ard_sermon.cpp:874
+msgid "Wrap width..."
+msgstr ""
+
+#: ../src/ard_sermon.cpp:882 ../src/ard_sermon.cpp:925
 msgid "Save selection..."
 msgstr ""
 
-#: ../src/ard_sermon.cpp:878 ../src/ard_sermon.cpp:916
+#: ../src/ard_sermon.cpp:887 ../src/ard_sermon.cpp:925
 msgid "Save all..."
 msgstr ""
 
-#: ../src/ard_sermon.cpp:919
+#: ../src/ard_sermon.cpp:928
 msgid "Text files (*.txt)|*.txt|Log files (*.log)|*.log|All files (*.*)|*.*"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:927
+#: ../src/ard_sermon.cpp:936
 #, c-format
 msgid "Failed to save file: %s"
 msgstr ""
 
+#: ../src/ard_sermon.cpp:992
+msgid "Set how many bytes are shown per line in the hex view."
+msgstr ""
+
+#: ../src/ard_sermon.cpp:993
+msgid "Bytes per line:"
+msgstr ""
+
 #: ../src/ard_sermon.cpp:994
+msgid "Hex output wrap width"
+msgstr ""
+
+#: ../src/ard_sermon.cpp:1022
 msgid "Log"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:1001
+#: ../src/ard_sermon.cpp:1029
 msgid "Open this tab to start plotting serial values."
 msgstr ""
 
-#: ../src/ard_sermon.cpp:1005
+#: ../src/ard_sermon.cpp:1033
 msgid "Plot"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:1053
+#: ../src/ard_sermon.cpp:1081
 msgid "Failed to start serial monitor thread"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:1219
+#: ../src/ard_sermon.cpp:1247
 msgid "Failed to write to serial port"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:1246
+#: ../src/ard_sermon.cpp:1274
 msgid "Resume"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:1987
+#: ../src/ard_sermon.cpp:2021
 #, c-format
 msgid "Serial monitor error: %s"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:1988
+#: ../src/ard_sermon.cpp:2022
 #, c-format
 msgid ""
 "\n"
 "[ERROR] %s\n"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:2021
+#: ../src/ard_sermon.cpp:2055
 msgid ""
 "\n"
 "[INFO] Serial monitor blocked - port released.\n"
 msgstr ""
 
-#: ../src/ard_sermon.cpp:2049
+#: ../src/ard_sermon.cpp:2083
 msgid ""
 "\n"
 "[INFO] Serial monitor unblocked - port re-opened.\n"
@@ -3542,8 +3557,8 @@ msgstr ""
 
 #: ../src/ard_setdlg.cpp:1026
 msgid ""
-"arduino-cli.exe|arduino-cli.exe|Executable files (*.exe)|*.exe|All files "
-"(*.*)|*.*"
+"arduino-cli.exe|arduino-cli.exe|Executable files (*.exe)|*.exe|All files (*."
+"*)|*.*"
 msgstr ""
 
 #: ../src/ard_setdlg.cpp:1028

@@ -267,6 +267,11 @@ wxBitmapBundle ArduinoArtProvider::CreateBitmapBundle(const wxArtID &id, const w
     x20 = dark ? mdi_swap_horiz_dark_20 : mdi_swap_horiz_light_20;
     x24 = dark ? mdi_swap_horiz_dark_24 : mdi_swap_horiz_light_24;
     x32 = dark ? mdi_swap_horiz_dark_32 : mdi_swap_horiz_light_32;
+  } else if (id == wxAEArt::WrapText) {
+    x16 = dark ? mdi_wrap_text_dark_16 : mdi_wrap_text_light_16;
+    x20 = dark ? mdi_wrap_text_dark_20 : mdi_wrap_text_light_20;
+    x24 = dark ? mdi_wrap_text_dark_24 : mdi_wrap_text_light_24;
+    x32 = dark ? mdi_wrap_text_dark_32 : mdi_wrap_text_light_32;
   }
 
   if (!x16 || !x32 || !x24 || !x20)

@@ -37,6 +37,75 @@ static void FreeChoiceClientData(wxChoice *c) {
   }
 }
 
+static wxString NormalizeNewlines(wxString s) {
+  s.Replace(wxT("\r\n"), wxT("\n"));
+  s.Replace(wxT("\r"), wxT("\n"));
+  return s;
+}
+
+static void AppendEscapedHtmlChar(wxString& out, wxChar ch) {
+  switch (ch) {
+    case '&': out += wxT("&amp;");  break;
+    case '<': out += wxT("&lt;");   break;
+    case '>': out += wxT("&gt;");   break;
+    case '"': out += wxT("&quot;"); break;
+    default:  out += ch;            break;
+  }
+}
+
+// Převod user textu do HTML pro wxHtmlWindow:
+// - \n => <br>
+// - zachová indentaci a vícenásobné mezery pomocí &nbsp;
+// - tab => 4× &nbsp;
+// - escapuje <>&"
+static wxString UiUserTextToHtmlNbspBr(const wxString& raw) {
+  wxString s = NormalizeNewlines(raw);
+
+  wxString out;
+  out.reserve(s.length() * 2);
+
+  bool atLineStart = true;
+  bool prevWasSpace = false;
+
+  // Volitelně můžeš obalit do <tt> nebo <code>, wxHtmlWindow to typicky umí.
+  out += wxT("<p>");
+
+  for (size_t i = 0; i < s.length(); ++i) {
+    const wxChar ch = s[i];
+
+    if (ch == '\n') {
+      out += wxT("<br>\n");
+      atLineStart = true;
+      prevWasSpace = false;
+      continue;
+    }
+
+    if (ch == '\t') {
+      out += wxT("&nbsp;&nbsp;&nbsp;&nbsp;");
+      atLineStart = false;
+      prevWasSpace = true; // po tabu se chovej jako po “space run”
+      continue;
+    }
+
+    if (ch == ' ') {
+      // Na začátku řádku nebo při více mezerách za sebou použij &nbsp;
+      if (atLineStart || prevWasSpace) out += wxT("&nbsp;");
+      else out += wxT(" ");
+      atLineStart = false;
+      prevWasSpace = true;
+      continue;
+    }
+
+    // normální znak
+    AppendEscapedHtmlChar(out, ch);
+    atLineStart = false;
+    prevWasSpace = false;
+  }
+
+  out += wxT("</p>");
+  return out;
+}
+
 static wxString GetIntro() {
   return _("AI chat ready.\n"
            "You can ask coding questions or request refactoring.\n"
@@ -460,7 +529,12 @@ void ArduinoAiChatPanel::LoadSelectedSession() {
           role = AiMarkdownRole::Error;
         }
 
-        m_historyPanel->AppendMarkdown(it.text, role, it.GetTokenInfo(), it.GetCreatedDateByLocale());
+        wxString text = it.text;
+        if (role == AiMarkdownRole::User) {
+          text = UiUserTextToHtmlNbspBr(text);
+        }
+
+        m_historyPanel->AppendMarkdown(text, role, it.GetTokenInfo(), it.GetCreatedDateByLocale());
       }
     }
   }
@@ -552,7 +626,8 @@ void ArduinoAiChatPanel::SendCurrentInput() {
         wxT("%x %X"), // locale-dependent date + time
         wxDateTime::Local);
 
-    m_historyPanel->AppendMarkdown(trimmed, AiMarkdownRole::User, wxEmptyString, time);
+    wxString uiText = UiUserTextToHtmlNbspBr(trimmed);
+    m_historyPanel->AppendMarkdown(uiText, AiMarkdownRole::User, wxEmptyString, time);
   }
 
   // Clean input

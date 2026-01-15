@@ -32,6 +32,7 @@
 #include <wx/file.h>
 #include <wx/filedlg.h>
 #include <wx/notebook.h>
+#include <wx/numdlg.h>
 #include <wx/stc/stc.h>
 #include <wx/wupdlock.h>
 
@@ -62,7 +63,8 @@ enum {
   ID_OutputMenuDisplayValues,
   ID_OutputMenuAutoScroll,
   ID_OutputMenuTimestamps,
-  ID_OutputMenuClear
+  ID_OutputMenuClear,
+  ID_OutputMenuWrapBytes
 };
 
 // Limits to prevent uncontrollable growth.
@@ -723,6 +725,7 @@ void ArduinoSerialMonitorFrame::CreateControls() {
 
     m_sketchConfig->Read(wxT("SerialShowTimestamps"), &m_timestamps, false);
     m_sketchConfig->Read(wxT("SerialDisplayValues"), &m_displayValues, false);
+    m_sketchConfig->Read(wxT("SerialHexWrapBytes"), &m_hexWrapBytes, 16);
   }
 
   auto *topSizer = new wxBoxSizer(wxVERTICAL);
@@ -865,6 +868,14 @@ void ArduinoSerialMonitorFrame::CreateControls() {
     menu.AppendCheckItem(ID_OutputMenuTimestamps, _("Show timestamps"));
     menu.Check(ID_OutputMenuTimestamps, m_timestamps);
 
+    if (m_outputFormatChoice && (m_outputFormatChoice->GetSelection() != 0)) {
+      AddMenuItemWithArt(&menu,
+                         ID_OutputMenuWrapBytes,
+                         _("Wrap width..."),
+                         wxEmptyString,
+                         wxAEArt::WrapText);
+    }
+
     menu.AppendSeparator();
     AddMenuItemWithArt(&menu,
                        ID_OutputMenuSaveSelection,
@@ -974,6 +985,25 @@ void ArduinoSerialMonitorFrame::CreateControls() {
         m_sketchConfig->Write(wxT("SerialShowTimestamps"), m_timestamps);
         m_sketchConfig->Flush();
       } }, ID_OutputMenuTimestamps);
+
+    menu.Bind(wxEVT_MENU, [this](wxCommandEvent &) {
+      wxNumberEntryDialog dlg(
+        this,
+        _("Set how many bytes are shown per line in the hex view."),
+        _("Bytes per line:"),
+        _("Hex output wrap width"),
+        m_hexWrapBytes,
+        2,
+        255
+      );
+
+      if (dlg.ShowModal() == wxID_OK) {
+        m_hexWrapBytes = dlg.GetValue();
+        m_hexCol = 0;
+        m_hexAsciiBuf.clear();
+        m_sketchConfig->Write(wxT("SerialHexWrapBytes"), m_hexWrapBytes);
+        m_sketchConfig->Flush();
+      } }, ID_OutputMenuWrapBytes);
 
     wxPoint pt = e.GetPosition();
     if (pt == wxDefaultPosition) {
@@ -1789,8 +1819,6 @@ void ArduinoSerialMonitorFrame::ScrollOutputToEnd() {
 void ArduinoSerialMonitorFrame::OnData(wxThreadEvent &event) {
   const SerialChunkPayload p = event.GetPayload<SerialChunkPayload>();
 
-  m_hexWrapBytes = 16;
-
   // 0=Text, 1=Hex, 2=Hex+text
   int fmt = 0;
   if (m_outputFormatChoice) {
@@ -1903,13 +1931,13 @@ void ArduinoSerialMonitorFrame::OnData(wxThreadEvent &event) {
 
   // ---------- HEX / HEX+LATIN1 MODE ----------
   int wrap = (m_hexWrapBytes > 0) ? m_hexWrapBytes : 16;
-  if (wrap < 4)
-    wrap = 16; // bezpečnostní pás
+  if (wrap < 2)
+    wrap = 2;
   if (wrap > 256)
     wrap = 256;
 
-  // Timestamp v hex režimech: jen když jsme na začátku řádku a změnila se sekunda
-  // (tzn. nebude ti to skákat doprostřed řádku)
+  // Timestamp in hex modes: only when we are at the beginning of the line and the second has changed
+  // (i.e. it won't jump to the middle of the line)
   if (m_timestamps && m_hexCol == 0 && m_tsLastPrintedSec != p.sec) {
     wxDateTime t((time_t)p.sec);
     textToAppend += t.Format(wxT("[%H:%M:%S]"));
@@ -1924,7 +1952,7 @@ void ArduinoSerialMonitorFrame::OnData(wxThreadEvent &event) {
       return;
 
     if (fmt == 2) {
-      // dorovnat hex část, aby ASCII sloupec seděl
+      // align the hex part so that the ASCII column fits
       const int missing = wrap - m_hexCol;
       if (missing > 0) {
         textToAppend += wxString(' ', missing * 3);
@@ -1940,7 +1968,6 @@ void ArduinoSerialMonitorFrame::OnData(wxThreadEvent &event) {
   };
 
   for (unsigned char b : p.bytes) {
-    // zalomení po wrap bajtech
     if (m_hexCol == wrap) {
       flushHexLine();
     }
@@ -1948,7 +1975,7 @@ void ArduinoSerialMonitorFrame::OnData(wxThreadEvent &event) {
     textToAppend += wxString::Format(wxT("%02X "), (unsigned)b);
 
     if (fmt == 2) {
-      // Latin-1 znak do pravého sloupce: ASCII + 0xA0..0xFF, jinak '.'
+      // Latin-1 character to the right column: ASCII + 0xA0..0xFF, otherwise '.'
       wxChar ch = (IsLatin1Printable(b) ? (wxChar)b : (wxChar)'.');
       m_hexAsciiBuf += ch;
     }

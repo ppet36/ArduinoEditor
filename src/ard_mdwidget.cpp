@@ -227,7 +227,12 @@ wxString ArduinoMarkdownPanel::BuildFullHtmlFromMessages() const {
 
   wxString body;
   for (const auto &m : m_msgs) {
-    wxString frag = ArduinoMarkdown_MarkdownToHtmlFragment(m.markdown);
+    wxString frag;
+    if (m.role == AiMarkdownRole::User) {
+      frag = m.markdown;
+    } else {
+      frag = ArduinoMarkdown_MarkdownToHtmlFragment(m.markdown);
+    }
 
 #ifdef __APPLE__
     // On Apple, widgets cannot display pictorial emojis and it crashes with SigBus somewhere

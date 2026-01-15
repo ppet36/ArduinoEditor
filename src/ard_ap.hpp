@@ -74,6 +74,8 @@ inline const wxArtID CheckForUpdates = wxASCII_STR("wxAE_CHECK_FOR_UPDATES");
 inline const wxArtID Close = wxASCII_STR("wxAE_ART_CLOSE");
 inline const wxArtID GotoLine = wxASCII_STR("wxAE_ART_GOTO_LINE");
 inline const wxArtID SwitchModel = wxASCII_STR("wxAE_ART_SWITCH_MODEL");
+inline const wxArtID WrapText = wxASCII_STR("wxAE_ART_WRAP_TEXT");
+
 } // namespace wxAEArt
 
 inline bool IsDarkMode() {

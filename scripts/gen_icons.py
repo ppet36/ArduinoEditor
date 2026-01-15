@@ -55,6 +55,7 @@ VARIANTS = {
 }
 
 ICONS_DEFAULT = [
+    "wrap_text",
     "swap_horiz",
     "123",
     "close",
