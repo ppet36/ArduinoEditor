@@ -211,6 +211,26 @@ static bool ParseLibrary(const json &jl, ArduinoLibraryInfo &out) {
     ParseLibraryRelease(jl["latest"], "", out.latest);
   }
 
+// Single-release variant (arduino-cli outdated --format json).
+// Some arduino-cli versions return only the latest release under key "release"
+// instead of the full "releases" map.
+if (jl.contains("release") && jl["release"].is_object()) {
+  ArduinoLibraryRelease rel;
+  ParseLibraryRelease(jl["release"], /*versionKey=*/"", rel);
+
+  if (out.latest.version.empty()) {
+    out.latest = rel;
+  }
+
+  if (out.availableVersions.empty() && !rel.version.empty()) {
+    out.availableVersions.push_back(rel.version);
+  }
+
+  if (out.releases.empty()) {
+    out.releases.push_back(std::move(rel));
+  }
+}
+
   // releases { "1.0.0": {...}, "1.1.0": {...} }
   if (jl.contains("releases") && jl["releases"].is_object()) {
     const auto &releasesJson = jl["releases"];
@@ -221,6 +241,48 @@ static bool ParseLibrary(const json &jl, ArduinoLibraryInfo &out) {
       ArduinoLibraryRelease rel;
       ParseLibraryRelease(it.value(), it.key(), rel);
       out.releases.push_back(std::move(rel));
+    }
+  }
+
+  return true;
+}
+
+// arduino-cli outdated --format json (libraries):
+// - either each item looks like ArduinoLibraryInfo with a single "release" object
+// - or it is wrapped as { "library": { installed }, "release": { latest } }
+static bool ParseOutdatedLibraryItem(const json &item, ArduinoLibraryInfo &out) {
+  if (!item.is_object()) {
+    return false;
+  }
+
+  const json *base = &item;
+  if (item.contains("library") && item["library"].is_object()) {
+    base = &item["library"];
+  }
+
+  if (!ParseLibrary(*base, out)) {
+    return false;
+  }
+
+  // Prefer the top-level "release" (wrapper format), fallback to base["release"].
+  const json *jr = nullptr;
+  if (item.contains("release") && item["release"].is_object()) {
+    jr = &item["release"];
+  } else if (base->contains("release") && (*base)["release"].is_object()) {
+    jr = &(*base)["release"];
+  }
+
+  if (jr) {
+    ArduinoLibraryRelease rel;
+    ParseLibraryRelease(*jr, /*versionKey=*/"", rel);
+
+    // For "outdated" we want payload = the available/latest release.
+    out.latest = rel;
+    out.releases.clear();
+    out.releases.push_back(rel);
+
+    if (out.availableVersions.empty() && !rel.version.empty()) {
+      out.availableVersions.push_back(rel.version);
     }
   }
 
@@ -1698,6 +1760,164 @@ bool ArduinoCli::LoadLibraries() {
 
   APP_DEBUG_LOG("CLI: LoadLibraries() -> %zu libraries found...", libraries.size());
   return true;
+}
+
+// --- arduino-cli outdated ----------------------------------------------------
+
+bool ArduinoCli::LoadOutdated() {
+  ScopeTimer t("CLI: LoadOutdated()");
+  APP_DEBUG_LOG("CLI: LoadOutdated()");
+
+  // arduino-cli outdated --format json
+  std::string cmd = GetCliBaseCommand() + " outdated --format json";
+  std::string output;
+  int rc = ExecuteCommand(cmd, output);
+
+  if (rc != 0 || output.empty()) {
+    wxLogWarning(wxT("arduino-cli outdated failed (rc=%d)."), rc);
+    outdatedItems.clear();
+    return false;
+  }
+
+  json j;
+  try {
+    j = json::parse(output);
+  } catch (const std::exception &e) {
+    wxLogWarning(wxT("Failed to parse arduino-cli outdated JSON: %s"), wxString::FromUTF8(e.what()));
+    outdatedItems.clear();
+    return false;
+  }
+
+  if (!j.is_object()) {
+    wxLogWarning(wxT("arduino-cli outdated JSON is not an object."));
+    outdatedItems.clear();
+    return false;
+  }
+
+  std::vector<ArduinoCoreInfo> coresTmp;
+  std::vector<ArduinoLibraryInfo> libsTmp;
+
+  // --- platforms ---
+  if (j.contains("platforms") && j["platforms"].is_array()) {
+    const auto &platformsJson = j["platforms"];
+    coresTmp.reserve(platformsJson.size());
+
+    for (const auto &jp : platformsJson) {
+      if (!jp.is_object()) {
+        continue;
+      }
+
+      ArduinoCoreInfo info;
+      info.id = jp.value("id", "");
+      info.maintainer = jp.value("maintainer", "");
+      info.website = jp.value("website", "");
+      info.email = jp.value("email", "");
+      info.indexed = jp.value("indexed", false);
+
+      info.installedVersion = jp.value("installed_version", "");
+      info.latestVersion = jp.value("latest_version", "");
+
+      if (info.id.empty()) {
+        continue;
+      }
+
+      if (jp.contains("releases") && jp["releases"].is_object()) {
+        const auto &relsJson = jp["releases"];
+
+        info.availableVersions.reserve(relsJson.size());
+        info.releases.reserve(relsJson.size());
+
+        for (auto it = relsJson.begin(); it != relsJson.end(); ++it) {
+          if (!it.value().is_object()) {
+            continue;
+          }
+
+          std::string ver = it.key();
+          info.availableVersions.push_back(ver);
+
+          ArduinoCoreRelease rel;
+          ParseCoreRelease(it.value(), ver, rel);
+          info.releases.push_back(std::move(rel));
+        }
+      }
+
+      // Keep only truly outdated platforms (defensive; CLI should already do it).
+      if (!info.installedVersion.empty() && !info.latestVersion.empty() &&
+          CompareVersions(info.installedVersion, info.latestVersion) < 0) {
+        coresTmp.push_back(std::move(info));
+      }
+    }
+
+    std::sort(coresTmp.begin(), coresTmp.end(),
+              [](const ArduinoCoreInfo &a, const ArduinoCoreInfo &b) {
+                return a.id < b.id;
+              });
+  }
+
+  // --- libraries ---
+  if (j.contains("libraries") && j["libraries"].is_array()) {
+    const auto &libsJson = j["libraries"];
+    libsTmp.reserve(libsJson.size());
+
+    for (const auto &item : libsJson) {
+      if (!item.is_object()) {
+        continue;
+      }
+
+      ArduinoLibraryInfo info;
+      if (!ParseOutdatedLibraryItem(item, info)) {
+        continue;
+      }
+
+      // Defensive: ignore broken entries without version.
+      if (info.name.empty() || info.latest.version.empty()) {
+        continue;
+      }
+
+      libsTmp.push_back(std::move(info));
+    }
+
+    std::sort(libsTmp.begin(), libsTmp.end(),
+              [](const ArduinoLibraryInfo &a, const ArduinoLibraryInfo &b) {
+                return a.name < b.name;
+              });
+  }
+
+  std::vector<ArduinoOutdatedItem> tmp;
+  tmp.reserve(coresTmp.size() + libsTmp.size());
+
+  for (auto &c : coresTmp) {
+    tmp.emplace_back(std::move(c));
+  }
+  for (auto &l : libsTmp) {
+    tmp.emplace_back(std::move(l));
+  }
+
+  outdatedItems.swap(tmp);
+  return true;
+}
+
+void ArduinoCli::LoadOutdatedAsync(wxEvtHandler *handler) {
+  if (!handler) {
+    return;
+  }
+
+  wxWeakRef<wxEvtHandler> weak(handler);
+
+  std::thread([this, weak]() {
+    ThreadNice();
+
+    bool ok = this->LoadOutdated();
+
+    wxThreadEvent evt(EVT_OUTDATED_UPDATED);
+    evt.SetInt(ok ? 1 : 0);
+    evt.SetPayload(this->GetOutdatedItems());
+    QueueUiEvent(weak, evt.Clone());
+  }).detach();
+}
+
+const std::vector<ArduinoOutdatedItem> &ArduinoCli::GetOutdatedItems() const {
+  return outdatedItems;
 }
 
 bool ArduinoCli::SearchLibraryProvidingHeader(const std::string &header,
@@ -3326,6 +3546,25 @@ void ArduinoCli::UpdateCoreIndexAsync(wxEvtHandler *handler) {
   }).detach();
 }
 
+void ArduinoCli::UpdateCoreIndexBackgroundAsync(wxEvtHandler *handler) {
+  if (!handler) {
+    return;
+  }
+
+  wxWeakRef<wxEvtHandler> weak(handler);
+
+  std::thread([this, weak]() {
+    std::string cmd = GetCliBaseCommand() + " --no-color core update-index";
+    std::string output;
+    int rc = ExecuteCommand(cmd, output);
+
+    wxThreadEvent evt(EVT_CORE_INDEX_UPDATED);
+    evt.SetInt(rc == 0 ? 1 : 0);
+    evt.SetString(wxString::FromUTF8(output));
+    QueueUiEvent(weak, evt.Clone());
+  }).detach();
+}
+
 void ArduinoCli::SetFQBN(const std::string &newFqbn) {
   if (fqbn == newFqbn)
     return;
@@ -3679,318 +3918,30 @@ void ArduinoCli::UpdateLibraryIndexAsync(wxEvtHandler *handler) {
 
   wxWeakRef<wxEvtHandler> weak(handler);
 
-  std::string args = " -v --no-color lib update-index";
+  std::string args = " --no-color lib update-index";
 
   std::thread([this, weak, args]() {
     this->RunCliStreaming(args, weak, "lib update-index");
   }).detach();
 }
 
-void ArduinoCli::CheckForLibrariesUpdateAsync(wxEvtHandler *handler) {
+void ArduinoCli::UpdateLibraryIndexBackgroundAsync(wxEvtHandler *handler) {
   if (!handler) {
     return;
   }
 
-  wxWeakRef<wxEvtHandler> outWeak(handler);
+  wxWeakRef<wxEvtHandler> weak(handler);
 
-  // Small self-contained state machine handler.
-  // It consumes intermediate events (cli output + load events) and emits only EVT_LIBS_UPDATES_AVAILABLE.
-  class LibUpdateCheckHandler final : public wxEvtHandler {
-  public:
-    LibUpdateCheckHandler(ArduinoCli *cli,
-                          const wxWeakRef<wxEvtHandler> &outWeak,
-                          std::function<void(wxEvent *)> postOut)
-        : m_cli(cli), m_outWeak(outWeak), m_postOut(std::move(postOut)) {
+  std::thread([this, weak]() {
+    std::string cmd = GetCliBaseCommand() + " --no-color lib update-index";
+    std::string output;
+    int rc = ExecuteCommand(cmd, output);
 
-      Bind(EVT_COMMANDLINE_OUTPUT_MSG, &LibUpdateCheckHandler::OnCliOutput, this);
-      Bind(EVT_LIBRARIES_UPDATED, &LibUpdateCheckHandler::OnLibrariesLoaded, this);
-      Bind(EVT_INSTALLED_LIBRARIES_UPDATED, &LibUpdateCheckHandler::OnInstalledLibrariesLoaded, this);
-    }
-
-    void Start() {
-      if (!m_cli) {
-        Finish(false);
-        return;
-      }
-      m_phase = Phase::UpdatingIndex;
-      m_cli->UpdateLibraryIndexAsync(this);
-    }
-
-  private:
-    enum class Phase {
-      UpdatingIndex,
-      LoadingAvailable,
-      LoadingInstalled,
-      Done
-    };
-
-    ArduinoCli *m_cli = nullptr;
-    wxWeakRef<wxEvtHandler> m_outWeak;
-    std::function<void(wxEvent *)> m_postOut;
-
-    Phase m_phase = Phase::UpdatingIndex;
-
-    bool m_okAvailable = false;
-    bool m_okInstalled = false;
-
-    void OnCliOutput(wxCommandEvent &e) {
-      if (m_phase != Phase::UpdatingIndex) {
-        return;
-      }
-
-      // RunCliStreaming uses EVT_COMMANDLINE_OUTPUT_MSG for both lines and "finished" summary.
-      const wxString s = e.GetString();
-      if (!s.StartsWith(wxT("[arduino-cli "))) {
-        return; // normal output line -> ignore
-      }
-      if (s.Find(wxT("lib update-index finished")) == wxNOT_FOUND) {
-        return; // some other command -> ignore
-      }
-
-      const int rc = e.GetInt();
-      if (rc != 0) {
-        Finish(false);
-        return;
-      }
-
-      m_phase = Phase::LoadingAvailable;
-      m_cli->LoadLibrariesAsync(this);
-    }
-
-    void OnLibrariesLoaded(wxThreadEvent &e) {
-      if (m_phase != Phase::LoadingAvailable) {
-        return;
-      }
-
-      m_okAvailable = (e.GetInt() != 0);
-
-      // Continue even if not ok; we'll report ok=false.
-      m_phase = Phase::LoadingInstalled;
-      m_cli->LoadInstalledLibrariesAsync(this);
-    }
-
-    void OnInstalledLibrariesLoaded(wxThreadEvent &e) {
-      if (m_phase != Phase::LoadingInstalled) {
-        return;
-      }
-
-      m_okInstalled = (e.GetInt() != 0);
-
-      const bool ok = (m_okAvailable && m_okInstalled);
-      if (!ok) {
-        Finish(false);
-        return;
-      }
-
-      // Compare available(latest) vs installed(version) by name.
-      // NOTE: Installed version is stored in installedLibraries[i].latest.version (see LoadInstalledLibraries()).
-      const auto &available = m_cli->GetLibraries();
-      const auto &installed = m_cli->GetInstalledLibraries();
-
-      std::unordered_map<std::string, std::string> instVer;
-      instVer.reserve(installed.size());
-      for (const auto &li : installed) {
-        if (!li.name.empty()) {
-          instVer[li.name] = li.latest.version;
-        }
-      }
-
-      std::vector<ArduinoLibraryInfo> updates;
-      updates.reserve(64);
-
-      for (const auto &av : available) {
-        auto it = instVer.find(av.name);
-        if (it == instVer.end()) {
-          continue;
-        }
-
-        const std::string &have = it->second;
-        const std::string &want = av.latest.version;
-
-        if (have.empty() || want.empty()) {
-          continue;
-        }
-
-        if (CompareVersions(have, want) < 0) {
-          updates.push_back(av); // payload = "available" record; installed version can be resolved via GetInstalledLibraries()
-        }
-      }
-
-      std::sort(updates.begin(), updates.end(),
-                [](const ArduinoLibraryInfo &a, const ArduinoLibraryInfo &b) {
-                  return a.name < b.name;
-                });
-
-      Finish(true, std::move(updates));
-    }
-
-    void Finish(bool ok, std::vector<ArduinoLibraryInfo> updates = {}) {
-      if (m_phase == Phase::Done) {
-        return;
-      }
-      m_phase = Phase::Done;
-
-      wxThreadEvent evt(EVT_LIBS_UPDATES_AVAILABLE);
-      evt.SetInt(ok ? 1 : 0);
-      evt.SetPayload(std::move(updates));
-
-      if (m_postOut) {
-        m_postOut(evt.Clone());
-      } else {
-        delete evt.Clone();
-      }
-
-      // Safety: drop any pending events for this handler before deletion.
-      DeletePendingEvents();
-
-      if (wxTheApp) {
-        wxTheApp->CallAfter([this]() { delete this; });
-      } else {
-        delete this;
-      }
-    }
-  };
-
-  // We keep "posting to UI" consistent with the rest of ArduinoCli (weak handler + CallAfter).
-  auto postOut = [this, outWeak](wxEvent *ev) {
-    this->QueueUiEvent(outWeak, ev);
-  };
-
-  auto *h = new LibUpdateCheckHandler(this, outWeak, postOut);
-  h->Start();
-}
-
-void ArduinoCli::CheckForCoresUpdateAsync(wxEvtHandler *handler) {
-  if (!handler) {
-    return;
-  }
-
-  wxWeakRef<wxEvtHandler> outWeak(handler);
-
-  class CoreUpdateCheckHandler final : public wxEvtHandler {
-  public:
-    CoreUpdateCheckHandler(ArduinoCli *cli,
-                           const wxWeakRef<wxEvtHandler> &outWeak,
-                           std::function<void(wxEvent *)> postOut)
-        : m_cli(cli), m_outWeak(outWeak), m_postOut(std::move(postOut)) {
-
-      Bind(EVT_COMMANDLINE_OUTPUT_MSG, &CoreUpdateCheckHandler::OnCliOutput, this);
-      Bind(EVT_CORES_LOADED, &CoreUpdateCheckHandler::OnCoresLoaded, this);
-    }
-
-    void Start() {
-      if (!m_cli) {
-        Finish(false);
-        return;
-      }
-      m_phase = Phase::UpdatingIndex;
-      m_cli->UpdateCoreIndexAsync(this);
-    }
-
-  private:
-    enum class Phase {
-      UpdatingIndex,
-      LoadingCores,
-      Done
-    };
-
-    ArduinoCli *m_cli = nullptr;
-    wxWeakRef<wxEvtHandler> m_outWeak;
-    std::function<void(wxEvent *)> m_postOut;
-
-    Phase m_phase = Phase::UpdatingIndex;
-
-    void OnCliOutput(wxCommandEvent &e) {
-      if (m_phase != Phase::UpdatingIndex) {
-        return;
-      }
-
-      const wxString s = e.GetString();
-      if (!s.StartsWith(wxT("[arduino-cli "))) {
-        return;
-      }
-      if (s.Find(wxT("core update-index finished")) == wxNOT_FOUND) {
-        return;
-      }
-
-      const int rc = e.GetInt();
-      if (rc != 0) {
-        Finish(false);
-        return;
-      }
-
-      m_phase = Phase::LoadingCores;
-      m_cli->LoadCoresAsync(this);
-    }
-
-    void OnCoresLoaded(wxThreadEvent &e) {
-      if (m_phase != Phase::LoadingCores) {
-        return;
-      }
-
-      const bool ok = (e.GetInt() != 0);
-      if (!ok) {
-        Finish(false);
-        return;
-      }
-
-      const auto &cores = m_cli->GetCores();
-
-      std::vector<ArduinoCoreInfo> updates;
-      updates.reserve(32);
-
-      for (const auto &c : cores) {
-        if (c.installedVersion.empty()) {
-          continue; // not installed
-        }
-        if (c.latestVersion.empty()) {
-          continue;
-        }
-        if (CompareVersions(c.installedVersion, c.latestVersion) < 0) {
-          updates.push_back(c);
-        }
-      }
-
-      std::sort(updates.begin(), updates.end(),
-                [](const ArduinoCoreInfo &a, const ArduinoCoreInfo &b) {
-                  return a.id < b.id;
-                });
-
-      Finish(true, std::move(updates));
-    }
-
-    void Finish(bool ok, std::vector<ArduinoCoreInfo> updates = {}) {
-      if (m_phase == Phase::Done) {
-        return;
-      }
-      m_phase = Phase::Done;
-
-      wxThreadEvent evt(EVT_CORES_UPDATES_AVAILABLE);
-      evt.SetInt(ok ? 1 : 0);
-      evt.SetPayload(std::move(updates));
-
-      if (m_postOut) {
-        m_postOut(evt.Clone());
-      } else {
-        delete evt.Clone();
-      }
-
-      DeletePendingEvents();
-
-      if (wxTheApp) {
-        wxTheApp->CallAfter([this]() { delete this; });
-      } else {
-        delete this;
-      }
-    }
-  };
-
-  auto postOut = [this, outWeak](wxEvent *ev) {
-    this->QueueUiEvent(outWeak, ev);
-  };
-
-  auto *h = new CoreUpdateCheckHandler(this, outWeak, postOut);
-  h->Start();
+    wxThreadEvent evt(EVT_LIBRARY_INDEX_UPDATED);
+    evt.SetInt(rc == 0 ? 1 : 0);
+    evt.SetString(wxString::FromUTF8(output));
+    QueueUiEvent(weak, evt.Clone());
+  }).detach();
 }
 
 const std::vector<ArduinoLibraryInfo> &ArduinoCli::GetLibraries() const {

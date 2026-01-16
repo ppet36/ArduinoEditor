@@ -30,6 +30,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <variant>
 #include <wx/weakref.h>
 #include <wx/wx.h>
 
@@ -172,6 +173,8 @@ struct MemUsage {
   bool HasRam() const { return (ramUsed >= 0 && ramMax >= 0) || ramFree >= 0; }
 };
 
+using ArduinoOutdatedItem = std::variant<ArduinoCoreInfo, ArduinoLibraryInfo>;
+
 class ArduinoCli {
 private:
   struct ResolveLibInfo {
@@ -212,6 +215,7 @@ private:
   std::string m_corePlatformPath;
   std::vector<ArduinoLibraryInfo> libraries;
   std::vector<ArduinoLibraryInfo> installedLibraries;
+  std::vector<ArduinoOutdatedItem> outdatedItems;
   std::vector<ArduinoCoreInfo> cores;
   std::vector<std::string> m_compileCommandsResolvedLibraries;
 
@@ -345,14 +349,17 @@ public:
   void InstallCoresAsync(const std::vector<std::string> &coreIds, wxEvtHandler *handler);
   void UninstallCoresAsync(const std::vector<std::string> &coreIds, wxEvtHandler *handler);
   void UpdateCoreIndexAsync(wxEvtHandler *handler);
+  void UpdateCoreIndexBackgroundAsync(wxEvtHandler *handler);
 
   void UpdateLibraryIndexAsync(wxEvtHandler *handler);
+  void UpdateLibraryIndexBackgroundAsync(wxEvtHandler *handler);
   const std::vector<ArduinoLibraryInfo> &GetLibraries() const;
   const std::vector<ArduinoLibraryInfo> &GetInstalledLibraries() const;
   bool IsArduinoLibraryInstalled(const ArduinoLibraryInfo &info);
 
-  void CheckForLibrariesUpdateAsync(wxEvtHandler *handler);
-  void CheckForCoresUpdateAsync(wxEvtHandler *handler);
+  bool LoadOutdated();
+  void LoadOutdatedAsync(wxEvtHandler *handler);
+  const std::vector<ArduinoOutdatedItem> &GetOutdatedItems() const;
 
   std::vector<SerialPortInfo> GetSerialPorts();
   void SetSerialPort(const std::string &port);

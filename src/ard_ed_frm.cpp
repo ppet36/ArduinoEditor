@@ -84,7 +84,7 @@ enum {
   ID_MENU_CORE_MANAGER_UPDATES,
   ID_TIMER_DIAGNOSTIC,
   ID_TIMER_BOTTOM_PAGE_RETURN,
-  ID_TIMER_UPDATES_AVAILABLE,
+  ID_TIMER_CHECK_FOR_UPDATES,
   ID_TABMENU_CLOSE,
   ID_TABMENU_CLOSE_OTHERS,
   ID_TABMENU_CLOSE_ALL,
@@ -2701,9 +2701,10 @@ void ArduinoEditorFrame::BindEvents() {
   Bind(wxEVT_MENU, &ArduinoEditorFrame::OnTabMenuCloseAll, this, ID_TABMENU_CLOSE_ALL);
   Bind(EVT_ARD_SYMBOL_ACTIVATED, &ArduinoEditorFrame::OnSymbolActivated, this);
 
-  Bind(wxEVT_TIMER, &ArduinoEditorFrame::OnUpdatesLibsCoresAvailable, this, m_updatesTimer.GetId());
-  Bind(EVT_LIBS_UPDATES_AVAILABLE, &ArduinoEditorFrame::OnLibrariesUpdatesAvailable, this);
-  Bind(EVT_CORES_UPDATES_AVAILABLE, &ArduinoEditorFrame::OnCoresUpdatesAvailable, this);
+  Bind(wxEVT_TIMER, &ArduinoEditorFrame::OnCheckForUpdatesTimer, this, m_checkUpdatesTimer.GetId());
+  Bind(EVT_OUTDATED_UPDATED, &ArduinoEditorFrame::OnOutdatedUpdated, this);
+  Bind(EVT_LIBRARY_INDEX_UPDATED, &ArduinoEditorFrame::OnLibraryIndexUpdated, this);
+  Bind(EVT_CORE_INDEX_UPDATED, &ArduinoEditorFrame::OnCoreIndexUpdated, this);
 }
 
 void ArduinoEditorFrame::LoadConfig() {
@@ -3473,7 +3474,8 @@ void ArduinoEditorFrame::OnToggleOutput(wxCommandEvent &event) {
   ShowOutputPane(event.IsChecked());
 }
 
-ArduinoEditorFrame::ArduinoEditorFrame(wxConfigBase *cfg) : wxFrame(nullptr, wxID_ANY, _("Arduino Editor"), wxDefaultPosition, wxSize(1024, 768)), m_auiManager(this), m_diagTimer(this, ID_TIMER_DIAGNOSTIC), m_returnBottomPageTimer(this, ID_TIMER_BOTTOM_PAGE_RETURN), m_updatesTimer(this, ID_TIMER_UPDATES_AVAILABLE) {
+ArduinoEditorFrame::ArduinoEditorFrame(wxConfigBase *cfg) : wxFrame(nullptr, wxID_ANY, _("Arduino Editor"), wxDefaultPosition, wxSize(1024, 768)), m_auiManager(this), m_diagTimer(this, ID_TIMER_DIAGNOSTIC), m_returnBottomPageTimer(this, ID_TIMER_BOTTOM_PAGE_RETURN),
+ m_checkUpdatesTimer(this, ID_TIMER_CHECK_FOR_UPDATES) {
   config = cfg;
 
 #ifdef __WXMSW__
@@ -4626,59 +4628,79 @@ void ArduinoEditorFrame::CheckForUpdatesIfNeeded() {
 
   ArdUpdateScheduler scheduler(config);
 
+  bool any = false;
+
   if (scheduler.IsDueLibraries()) {
-    arduinoCli->CheckForLibrariesUpdateAsync(this);
+    any = true;
+    arduinoCli->UpdateLibraryIndexBackgroundAsync(this);
   }
 
   if (scheduler.IsDueBoards()) {
-    arduinoCli->CheckForCoresUpdateAsync(this);
+    any = true;
+    arduinoCli->UpdateCoreIndexBackgroundAsync(this);
+  }
+
+  if (!any) {
+    ScheduleCheckForUpdatesTimer();
   }
 }
 
-void ArduinoEditorFrame::OnLibrariesUpdatesAvailable(wxThreadEvent &event) {
-  if (event.GetInt() == 0) {
-    APP_DEBUG_LOG("FRM: Library update check failed!");
+void ArduinoEditorFrame::ScheduleCheckForUpdatesTimer() {
+  if (m_checkUpdatesTimer.IsRunning()) {
+    m_checkUpdatesTimer.Stop();
+  }
+
+  APP_DEBUG_LOG("FRM: ScheduleCheckForUpdatesTimer()");
+  m_checkUpdatesTimer.Start(10000, wxTIMER_ONE_SHOT);
+}
+
+void ArduinoEditorFrame::OnLibraryIndexUpdated(wxThreadEvent &evt) {
+  if (evt.GetInt() == 1) {
+    ArdUpdateScheduler scheduler(config);
+    scheduler.MarkCheckedNow(ArdUpdateScheduler::Kind::Libraries);
+
+    arduinoCli->LoadOutdatedAsync(this);
+  }
+}
+
+void ArduinoEditorFrame::OnCoreIndexUpdated(wxThreadEvent &evt) {
+  if (evt.GetInt() == 1) {
+    ArdUpdateScheduler scheduler(config);
+    scheduler.MarkCheckedNow(ArdUpdateScheduler::Kind::Boards);
+    
+    arduinoCli->LoadOutdatedAsync(this);
+  }
+}
+
+void ArduinoEditorFrame::OnOutdatedUpdated(wxThreadEvent &evt) {
+  if (evt.GetInt() != 1) {
     return;
   }
 
-  ArdUpdateScheduler scheduler(config);
-  scheduler.MarkCheckedNow(ArdUpdateScheduler::Kind::Libraries);
+  const auto &items = evt.GetPayload<std::vector<ArduinoOutdatedItem>>();
 
-  auto libs = event.GetPayload<std::vector<ArduinoLibraryInfo>>();
+  m_librariesForUpdate.clear();
+  m_coresForUpdate.clear();
 
-  m_librariesForUpdate = std::move(libs);
+  m_librariesForUpdate.reserve(items.size());
+  m_coresForUpdate.reserve(items.size());
 
-  ScheduleLibsCoresUpdateInfo();
-}
-
-void ArduinoEditorFrame::OnCoresUpdatesAvailable(wxThreadEvent &event) {
-  if (event.GetInt() == 0) {
-    m_coresForUpdate.clear();
-    APP_DEBUG_LOG("FRM: Core update check failed!");
-    return;
+  for (const auto &it : items) {
+    if (const auto *lib = std::get_if<ArduinoLibraryInfo>(&it)) {
+      m_librariesForUpdate.push_back(*lib);
+      continue;
+    }
+    if (const auto *core = std::get_if<ArduinoCoreInfo>(&it)) {
+      m_coresForUpdate.push_back(*core);
+      continue;
+    }
   }
 
-  ArdUpdateScheduler scheduler(config);
-  scheduler.MarkCheckedNow(ArdUpdateScheduler::Kind::Boards);
-
-  auto cores = event.GetPayload<std::vector<ArduinoCoreInfo>>();
-
-  m_coresForUpdate = std::move(cores);
-
-  ScheduleLibsCoresUpdateInfo();
-}
-
-void ArduinoEditorFrame::ScheduleLibsCoresUpdateInfo() {
-  if (m_updatesTimer.IsRunning()) {
-    m_updatesTimer.Stop();
-  }
-
-  APP_DEBUG_LOG("FRM: ScheduleLibsCoresUpdateInfo()");
-  m_updatesTimer.Start(1000, wxTIMER_ONE_SHOT);
-}
-
-void ArduinoEditorFrame::OnUpdatesLibsCoresAvailable(wxTimerEvent &) {
   UpdateStatusBarUpdates();
+}
+
+void ArduinoEditorFrame::OnCheckForUpdatesTimer(wxTimerEvent &) {
+  arduinoCli->LoadOutdatedAsync(this);
 }
 
 void ArduinoEditorFrame::UpdateStatusBarUpdates() {

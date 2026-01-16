@@ -328,16 +328,19 @@ private:
 
   std::vector<ArduinoLibraryInfo> m_librariesForUpdate;
   std::vector<ArduinoCoreInfo> m_coresForUpdate;
-  wxTimer m_updatesTimer;
+  bool m_cliUpdatesChecked = false;
+  wxTimer m_checkUpdatesTimer;
 
 public:
   void CheckForUpdatesIfNeeded();
 
 private:
-  void OnLibrariesUpdatesAvailable(wxThreadEvent &event);
-  void OnCoresUpdatesAvailable(wxThreadEvent &event);
   void ScheduleLibsCoresUpdateInfo();
-  void OnUpdatesLibsCoresAvailable(wxTimerEvent &);
+  void ScheduleCheckForUpdatesTimer();
+  void OnLibraryIndexUpdated(wxThreadEvent &evt);
+  void OnCoreIndexUpdated(wxThreadEvent &evt);
+  void OnOutdatedUpdated(wxThreadEvent &evt);
+  void OnCheckForUpdatesTimer(wxTimerEvent &);
   void OnLibraryUpdatesFromStatusBar(wxCommandEvent &);
   void OnCoreUpdatesFromStatusBar(wxCommandEvent &);
   void UpdateStatusBarUpdates();
