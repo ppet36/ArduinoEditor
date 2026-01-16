@@ -29,8 +29,8 @@
 #include <nlohmann/json.hpp>
 #include <sstream>
 #include <string>
-#include <vector>
 #include <variant>
+#include <vector>
 #include <wx/weakref.h>
 #include <wx/wx.h>
 

@@ -3475,7 +3475,7 @@ void ArduinoEditorFrame::OnToggleOutput(wxCommandEvent &event) {
 }
 
 ArduinoEditorFrame::ArduinoEditorFrame(wxConfigBase *cfg) : wxFrame(nullptr, wxID_ANY, _("Arduino Editor"), wxDefaultPosition, wxSize(1024, 768)), m_auiManager(this), m_diagTimer(this, ID_TIMER_DIAGNOSTIC), m_returnBottomPageTimer(this, ID_TIMER_BOTTOM_PAGE_RETURN),
- m_checkUpdatesTimer(this, ID_TIMER_CHECK_FOR_UPDATES) {
+                                                            m_checkUpdatesTimer(this, ID_TIMER_CHECK_FOR_UPDATES) {
   config = cfg;
 
 #ifdef __WXMSW__
@@ -4659,7 +4659,7 @@ void ArduinoEditorFrame::OnLibraryIndexUpdated(wxThreadEvent &evt) {
     ArdUpdateScheduler scheduler(config);
     scheduler.MarkCheckedNow(ArdUpdateScheduler::Kind::Libraries);
 
-    arduinoCli->LoadOutdatedAsync(this);
+    ScheduleCheckForUpdatesTimer();
   }
 }
 
@@ -4667,8 +4667,8 @@ void ArduinoEditorFrame::OnCoreIndexUpdated(wxThreadEvent &evt) {
   if (evt.GetInt() == 1) {
     ArdUpdateScheduler scheduler(config);
     scheduler.MarkCheckedNow(ArdUpdateScheduler::Kind::Boards);
-    
-    arduinoCli->LoadOutdatedAsync(this);
+
+    ScheduleCheckForUpdatesTimer();
   }
 }
 

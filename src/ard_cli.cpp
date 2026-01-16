@@ -211,25 +211,25 @@ static bool ParseLibrary(const json &jl, ArduinoLibraryInfo &out) {
     ParseLibraryRelease(jl["latest"], "", out.latest);
   }
 
-// Single-release variant (arduino-cli outdated --format json).
-// Some arduino-cli versions return only the latest release under key "release"
-// instead of the full "releases" map.
-if (jl.contains("release") && jl["release"].is_object()) {
-  ArduinoLibraryRelease rel;
-  ParseLibraryRelease(jl["release"], /*versionKey=*/"", rel);
+  // Single-release variant (arduino-cli outdated --format json).
+  // Some arduino-cli versions return only the latest release under key "release"
+  // instead of the full "releases" map.
+  if (jl.contains("release") && jl["release"].is_object()) {
+    ArduinoLibraryRelease rel;
+    ParseLibraryRelease(jl["release"], /*versionKey=*/"", rel);
 
-  if (out.latest.version.empty()) {
-    out.latest = rel;
-  }
+    if (out.latest.version.empty()) {
+      out.latest = rel;
+    }
 
-  if (out.availableVersions.empty() && !rel.version.empty()) {
-    out.availableVersions.push_back(rel.version);
-  }
+    if (out.availableVersions.empty() && !rel.version.empty()) {
+      out.availableVersions.push_back(rel.version);
+    }
 
-  if (out.releases.empty()) {
-    out.releases.push_back(std::move(rel));
+    if (out.releases.empty()) {
+      out.releases.push_back(std::move(rel));
+    }
   }
-}
 
   // releases { "1.0.0": {...}, "1.1.0": {...} }
   if (jl.contains("releases") && jl["releases"].is_object()) {
