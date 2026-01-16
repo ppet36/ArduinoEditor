@@ -67,9 +67,7 @@ static void AppendEscapedHtmlChar(wxString &out, wxChar ch) {
   }
 }
 
-// Převod user textu do HTML pro wxHtmlWindow:
 // - \n => <br>
-// - zachová indentaci a vícenásobné mezery pomocí &nbsp;
 // - tab => 4× &nbsp;
 // - escapuje <>&"
 static wxString UiUserTextToHtmlNbspBr(const wxString &raw) {
@@ -81,7 +79,6 @@ static wxString UiUserTextToHtmlNbspBr(const wxString &raw) {
   bool atLineStart = true;
   bool prevWasSpace = false;
 
-  // Volitelně můžeš obalit do <tt> nebo <code>, wxHtmlWindow to typicky umí.
   out += wxT("<p>");
 
   for (size_t i = 0; i < s.length(); ++i) {
@@ -97,12 +94,11 @@ static wxString UiUserTextToHtmlNbspBr(const wxString &raw) {
     if (ch == '\t') {
       out += wxT("&nbsp;&nbsp;&nbsp;&nbsp;");
       atLineStart = false;
-      prevWasSpace = true; // po tabu se chovej jako po “space run”
+      prevWasSpace = true;
       continue;
     }
 
     if (ch == ' ') {
-      // Na začátku řádku nebo při více mezerách za sebou použij &nbsp;
       if (atLineStart || prevWasSpace)
         out += wxT("&nbsp;");
       else
@@ -112,7 +108,6 @@ static wxString UiUserTextToHtmlNbspBr(const wxString &raw) {
       continue;
     }
 
-    // normální znak
     AppendEscapedHtmlChar(out, ch);
     atLineStart = false;
     prevWasSpace = false;
@@ -239,7 +234,6 @@ void ArduinoAiChatPanel::InitUi() {
 
   m_inputCtrl->SetMinSize(wxSize(-1, 60));
 
-  ApplyInputColors();
 
   wxString normalFace;
 #ifdef __WXMAC__
@@ -269,7 +263,6 @@ void ArduinoAiChatPanel::InitUi() {
   m_inputCtrl->SetLexer(wxSTC_LEX_NULL);
   m_inputCtrl->StyleSetFont(wxSTC_STYLE_DEFAULT, inputFont);
   m_inputCtrl->StyleSetSize(wxSTC_STYLE_DEFAULT, inputFont.GetPointSize());
-  m_inputCtrl->StyleClearAll();
   // Be explicit: style 0 is what plain text typically uses.
   m_inputCtrl->StyleSetFont(0, inputFont);
   m_inputCtrl->StyleSetSize(0, inputFont.GetPointSize());
@@ -301,6 +294,8 @@ void ArduinoAiChatPanel::InitUi() {
   LoadUiState();
 
   RefreshSessionList();
+
+  ApplyInputColors();
 
   m_refreshTimer.StartOnce(3000);
 
@@ -487,7 +482,7 @@ void ArduinoAiChatPanel::OnHtmlLinkClicked(wxHtmlLinkEvent &event) {
 
   // Internal scheme
   if (lower.StartsWith(wxT("ai://"))) {
-    // Expected: ai://review_patch/<id>[?anything]
+    // Expected: ai://review_patch/<id>
     static const wxString kPrefix = wxT("ai://review_patch/");
     if (lower.StartsWith(kPrefix)) {
       wxString id = href.Mid(kPrefix.length());
@@ -616,7 +611,7 @@ void ArduinoAiChatPanel::SetBusyUi(bool busy) {
     m_inputCtrl->SetReadOnly(true);
 
     m_inputCtrl->StartStyling(0);
-    m_inputCtrl->SetStyling((int)msg.length(), kStylePlaceholder);
+    m_inputCtrl->SetStyling((int)msg.length() * 2, kStylePlaceholder);
 
     m_inputCtrl->GotoPos(0);
     return;
@@ -651,8 +646,8 @@ void ArduinoAiChatPanel::ApplyInputColors() {
   m_inputCtrl->StyleSetForeground(0, c.text);
   m_inputCtrl->StyleSetBackground(0, c.background);
 
-  m_inputCtrl->StyleSetForeground(kStylePlaceholder, c.text);
-  m_inputCtrl->StyleSetBackground(kStylePlaceholder, c.aiSystemBg);
+  m_inputCtrl->StyleSetForeground(kStylePlaceholder, c.note);
+  m_inputCtrl->StyleSetBackground(kStylePlaceholder, c.background);
   m_inputCtrl->StyleSetItalic(kStylePlaceholder, true);
 }
 
