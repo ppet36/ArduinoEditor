@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-15 21:09+0100\n"
+"POT-Creation-Date: 2026-01-16 19:30+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,8 +19,8 @@ msgstr ""
 
 #: ../src/ai_client.cpp:74
 msgid ""
-"Extra JSON request parameters must be a JSON object (e.g. "
-"{\"temperature\":0.2})."
+"Extra JSON request parameters must be a JSON object (e.g. {\"temperature"
+"\":0.2})."
 msgstr ""
 
 #: ../src/ai_client.cpp:82
@@ -121,9 +121,8 @@ msgid ""
 "   <hr>\n"
 "\n"
 "   <p>\n"
-"     <b>Project homepage and source code:&nbsp;</b><a href=\"https://"
-"github.com/ppet36/ArduinoEditor\">https://github.com/ppet36/ArduinoEditor</"
-"a>\n"
+"     <b>Project homepage and source code:&nbsp;</b><a href=\"https://github."
+"com/ppet36/ArduinoEditor\">https://github.com/ppet36/ArduinoEditor</a>\n"
 "   </p>\n"
 "\n"
 "   <hr>\n"
@@ -189,8 +188,8 @@ msgid ""
 "   <a name=\"project\"></a>\n"
 "   <h3>Project-wide Multi-file Support</h3>\n"
 "   <p>\n"
-"     Full support for structured sketches and multiple files "
-"(.ino/.cpp/.hpp), including\n"
+"     Full support for structured sketches and multiple files (.ino/.cpp/."
+"hpp), including\n"
 "     project-wide indexing, navigation and explicit support for structured "
 "Arduino projects.\n"
 "   </p>\n"
@@ -371,8 +370,8 @@ msgid ""
 "  </p>\n"
 "  <p>\n"
 "    For the full license text see:<br>\n"
-"    <a href=\"https://github.com/arduino/arduino-cli/blob/master/"
-"LICENSE.txt\">\n"
+"    <a href=\"https://github.com/arduino/arduino-cli/blob/master/LICENSE.txt"
+"\">\n"
 "      https://github.com/arduino/arduino-cli/blob/master/LICENSE.txt\n"
 "    </a>\n"
 "  </p>\n"
@@ -413,7 +412,7 @@ msgstr ""
 msgid "Licenses"
 msgstr ""
 
-#: ../src/ard_ai.cpp:794 ../src/ard_aipnl.cpp:785
+#: ../src/ard_ai.cpp:794 ../src/ard_aipnl.cpp:779
 #, c-format
 msgid "%s (in: %d, out: %d, tot: %d) tokens"
 msgstr ""
@@ -424,7 +423,7 @@ msgstr ""
 
 #: ../src/ard_ai.cpp:849 ../src/ard_ai.cpp:856 ../src/ard_ai.cpp:3136
 #: ../src/ard_ai.cpp:3442 ../src/ard_ai.cpp:3760 ../src/ard_ai.cpp:3829
-#: ../src/ard_ai.cpp:3915 ../src/ard_ai.cpp:4198
+#: ../src/ard_ai.cpp:3915 ../src/ard_ai.cpp:4199
 msgid "Arduino Editor AI"
 msgstr ""
 
@@ -690,7 +689,7 @@ msgid ""
 "[Review & apply AI changes...](ai://review_patch/%s)\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:4198
+#: ../src/ard_ai.cpp:4199
 msgid "Patch is no longer available."
 msgstr ""
 
@@ -767,13 +766,13 @@ msgid "Test"
 msgstr ""
 
 #: ../src/ard_aimdldlg.cpp:183 ../src/ard_boptdlg.cpp:76
-#: ../src/ard_fmtdlg.cpp:187 ../src/utils.cpp:1015
+#: ../src/ard_fmtdlg.cpp:187 ../src/utils.cpp:1017
 msgid "OK"
 msgstr ""
 
 #: ../src/ard_aimdldlg.cpp:184 ../src/ard_boptdlg.cpp:77
 #: ../src/ard_diff.cpp:121 ../src/ard_ed_frm.cpp:2557 ../src/ard_fmtdlg.cpp:188
-#: ../src/utils.cpp:1016
+#: ../src/utils.cpp:1018
 msgid "Cancel"
 msgstr ""
 
@@ -851,7 +850,7 @@ msgstr ""
 msgid "Failed to save AI API key to the system secret store."
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:126
+#: ../src/ard_aipnl.cpp:121
 msgid ""
 "AI chat ready.\n"
 "You can ask coding questions or request refactoring.\n"
@@ -864,45 +863,45 @@ msgid ""
 "(Shift+Enter inserts a new line.)"
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:187
+#: ../src/ard_aipnl.cpp:182
 msgid "Switch AI model"
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:368
+#: ../src/ard_aipnl.cpp:363
 msgid "(no saved sessions)"
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:554
+#: ../src/ard_aipnl.cpp:549
 msgid "[AI] Failed to load saved session."
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:613
+#: ../src/ard_aipnl.cpp:608
 msgid "AI model thinking..."
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:729
+#: ../src/ard_aipnl.cpp:723
 msgid "[AI] Interactive actions are not available."
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:744
+#: ../src/ard_aipnl.cpp:738
 msgid "[AI] Failed to start interactive chat request."
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:764
+#: ../src/ard_aipnl.cpp:758
 #, c-format
 msgid "%s (in: %lld, out: %lld, tot: %lld) tokens"
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:770
+#: ../src/ard_aipnl.cpp:764
 #, c-format
 msgid "%s (in: %lld, out: %lld, tot: %lld) tokens, %d calls"
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:812
+#: ../src/ard_aipnl.cpp:806
 msgid "[AI ERROR] Unknown error"
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:814
+#: ../src/ard_aipnl.cpp:808
 #, c-format
 msgid "[AI ERROR] %s"
 msgstr ""
@@ -952,8 +951,10 @@ msgstr ""
 msgid "<default>"
 msgstr ""
 
-#: ../src/ard_cc.cpp:3055
-msgid "Declaration:"
+#: ../src/ard_cc.cpp:3060
+msgid ""
+"\n"
+"Declaration:"
 msgstr ""
 
 #: ../src/ard_cli.cpp:2156
@@ -1811,8 +1812,8 @@ msgid ""
 "In this mode, libraries are detected from the last project build, so newly "
 "added #include directives won't be picked up until you rebuild.\n"
 "\n"
-"Rebuild will regenerate the build configuration (including "
-"compile_commands.json) and attach libraries to this sketch.\n"
+"Rebuild will regenerate the build configuration (including compile_commands."
+"json) and attach libraries to this sketch.\n"
 "\n"
 "Rebuild now?"
 msgstr ""
@@ -2421,7 +2422,7 @@ msgid "Jump to specific line in the current file."
 msgstr ""
 
 #: ../src/ard_edit.cpp:1286
-msgid "Previous symbol occurrence\tCtrl+Up"
+msgid "Previous symbol occurrence\tAlt+Up"
 msgstr ""
 
 #: ../src/ard_edit.cpp:1287
@@ -2429,7 +2430,7 @@ msgid "Jump to the previous symbol occurrence in the current file."
 msgstr ""
 
 #: ../src/ard_edit.cpp:1292
-msgid "Next symbol occurrence\tCtrl+Down"
+msgid "Next symbol occurrence\tAlt+Down"
 msgstr ""
 
 #: ../src/ard_edit.cpp:1293
@@ -2878,8 +2879,8 @@ msgstr ""
 
 #: ../src/ard_libman.cpp:758
 msgid ""
-"Enter Git repository URL (e.g. https://github.com/arduino-libraries/"
-"WiFi101.git or with #version):"
+"Enter Git repository URL (e.g. https://github.com/arduino-libraries/WiFi101."
+"git or with #version):"
 msgstr ""
 
 #: ../src/ard_libman.cpp:759
@@ -3069,8 +3070,8 @@ msgstr ""
 
 #: ../src/ard_plotview.cpp:552
 msgid ""
-"PNG image (*.png)|*.png|JPEG image (*.jpg;*.jpeg)|*.jpg;*.jpeg|BMP image "
-"(*.bmp)|*.bmp"
+"PNG image (*.png)|*.png|JPEG image (*.jpg;*.jpeg)|*.jpg;*.jpeg|BMP image (*."
+"bmp)|*.bmp"
 msgstr ""
 
 #: ../src/ard_plotview.cpp:592
@@ -3584,8 +3585,8 @@ msgstr ""
 
 #: ../src/ard_setdlg.cpp:1026
 msgid ""
-"arduino-cli.exe|arduino-cli.exe|Executable files (*.exe)|*.exe|All files "
-"(*.*)|*.*"
+"arduino-cli.exe|arduino-cli.exe|Executable files (*.exe)|*.exe|All files (*."
+"*)|*.*"
 msgstr ""
 
 #: ../src/ard_setdlg.cpp:1028

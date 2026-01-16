@@ -2881,6 +2881,9 @@ bool ArduinoCodeCompletion::GetHoverInfo(const std::string &filename, const std:
 bool ArduinoCodeCompletion::GetHoverInfo(const std::string &filename, const std::string &code, int line, int column, const std::vector<SketchFileBuffer> files, HoverInfo &outInfo) {
   std::lock_guard<std::mutex> lock(m_ccMutex);
 
+  APP_DEBUG_LOG("CC: GetHoverInfo(file=%s, line=%d, column=%d)", filename.c_str(), line, column);
+  ScopeTimer t("CC: GetHoverInfo()");
+
   if (!m_ready)
     return false;
 
@@ -2925,6 +2928,8 @@ bool ArduinoCodeCompletion::GetHoverInfo(const std::string &filename, const std:
   }
 
   outInfo.usr = GetCursorUsr(cursor);
+
+  APP_DEBUG_LOG("CC: GetHoverInfo: cursorUsr='%s'", outInfo.usr.c_str());
 
   // Filling HoverInfo
   outInfo.name = cxStringToStd(clang_getCursorSpelling(cursor));
@@ -3052,7 +3057,7 @@ bool ArduinoCodeCompletion::GetHoverInfo(const std::string &filename, const std:
       }
 
       if (!codeBlock.empty()) {
-        outInfo.fullComment = wxToStd(_("Declaration:")) + "\n" + NormalizeIndent(codeBlock, 2);
+        outInfo.fullComment += wxToStd(_("\nDeclaration:")) + "\n" + NormalizeIndent(codeBlock, 2);
         outInfo.briefComment.clear();
       }
     }
@@ -3238,6 +3243,8 @@ bool ArduinoCodeCompletion::GetSymbolInfo(const std::string &filename,
  *  Expects a cursor that lives in a header file.
  */
 bool ArduinoCodeCompletion::FindSiblingFunctionDefinition(CXCursor declCursor, JumpTarget &out) {
+  ScopeTimer t("CC: FindSiblingFunctionDefinition()");
+
   CXCursorKind kind = clang_getCursorKind(declCursor);
   if (kind != CXCursor_FunctionDecl &&
       kind != CXCursor_CXXMethod &&
@@ -3256,6 +3263,9 @@ bool ArduinoCodeCompletion::FindSiblingFunctionDefinition(CXCursor declCursor, J
     return false;
 
   std::string headerPath = cxStringToStd(clang_getFileName(file));
+
+  APP_DEBUG_LOG("CC: FindSiblingFunctionDefinition (file=%s, line=%d, column=%d)", headerPath.c_str(), line, col);
+
   fs::path hp(headerPath);
 
   std::string ext = hp.extension().string();
@@ -3284,49 +3294,54 @@ bool ArduinoCodeCompletion::FindSiblingFunctionDefinition(CXCursor declCursor, J
 
   for (const char *sext : exts) {
     fs::path cppPath = hp.parent_path() / (stem + sext);
-    if (!fs::exists(cppPath))
+    if (!fs::exists(cppPath)) {
       continue;
-
-    const auto &clangArgs = GetCompilerArgs();
-
-    std::vector<const char *> args;
-    args.reserve(clangArgs.size() + 2);
-    for (const auto &a : clangArgs) {
-      args.push_back(a.c_str());
     }
 
-    args.push_back("-x");
-    args.push_back("c++-header");
-
     CXTranslationUnit tu = nullptr;
-    CXErrorCode err = clang_parseTranslationUnit2(
-        index,
-        cppPath.string().c_str(),
-        args.data(),
-        (int)args.size(),
-        nullptr,
-        0,
-        CXTranslationUnit_KeepGoing |
-            CXTranslationUnit_IncludeBriefCommentsInCodeCompletion,
-        &tu);
 
-    if (err != CXError_Success || !tu)
-      continue;
+    auto it = m_siblingTuCache.find(cppPath);
+    if (it == m_siblingTuCache.end() || !it->second) {
+
+      const auto &clangArgs = GetCompilerArgs();
+
+      std::vector<const char *> args;
+      args.reserve(clangArgs.size() + 2);
+      for (const auto &a : clangArgs) {
+        args.push_back(a.c_str());
+      }
+
+      CXErrorCode err = clang_parseTranslationUnit2(
+          index,
+          cppPath.string().c_str(),
+          args.data(),
+          (int)args.size(),
+          nullptr,
+          0,
+          CXTranslationUnit_KeepGoing | CXTranslationUnit_IncludeBriefCommentsInCodeCompletion,
+          &tu);
+
+      if (err != CXError_Success || !tu) {
+        continue;
+      }
+
+      m_siblingTuCache[cppPath] = tu;
+    } else {
+      tu = it->second;
+    }
 
     FunctionKey key;
     key.name = funcName;
     key.numArgs = wantedArgs;
     key.isVariadic = wantedVariadic;
-    // containerName nechme przdn -> stejn chovn jako dv
 
     bool found = FindFunctionInTU(tu, cppPath.string(), key,
                                   /*requireDefinition=*/true,
                                   out);
 
-    clang_disposeTranslationUnit(tu);
-
-    if (found)
+    if (found) {
       return true;
+    }
   }
 
   return false;
@@ -4682,6 +4697,13 @@ void ArduinoCodeCompletion::InvalidateTranslationUnit() {
   }
   m_projectTuCache.clear();
 
+  for (auto &kv : m_siblingTuCache) {
+    if (kv.second) {
+      clang_disposeTranslationUnit(kv.second);
+    }
+  }
+  m_siblingTuCache.clear();
+
   m_symbolCache.clear();
   m_inoHeaderCache.clear();
   m_inoInsertCache.clear();
@@ -5347,6 +5369,13 @@ ArduinoCodeCompletion::~ArduinoCodeCompletion() {
     }
   }
   m_projectTuCache.clear();
+
+  for (auto &kv : m_siblingTuCache) {
+    if (kv.second) {
+      clang_disposeTranslationUnit(kv.second);
+    }
+  }
+  m_siblingTuCache.clear();
 
   clang_disposeIndex(index);
 }

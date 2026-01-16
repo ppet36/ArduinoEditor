@@ -404,6 +404,8 @@ wxMenuItem *AddMenuItemWithArt(wxMenu *menu, int id, const wxString &text, const
 }
 
 bool LoadFileToString(const std::string &pathUtf8, std::string &out) {
+  ScopeTimer t("UTIL: LoadFileToString()");
+
   out.clear();
 
 #ifdef _WIN32

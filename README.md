@@ -16,14 +16,19 @@
   <img alt="Arduino Editor – main window" src="doc/main-light.png">
 </picture>
 
-Arduino Editor is a modern development environment for Arduino projects built
-on the Clang toolchain. It provides fast and precise code completion, smart
-navigation tools, real-time error highlighting, and full support for
-multi-file Arduino sketches.
+Arduino Editor doesn’t replace the Arduino way — it improves it.
 
-The goal of the project is to offer a stable, powerful, and professional IDE
-as a drop-in alternative to the official Arduino IDE, without sacrificing
-control, transparency, or performance.
+Same ecosystem, same workflow (sketches, libraries, boards, arduino-cli) —
+just a faster and smarter IDE for people who’ve outgrown the official Arduino
+IDE but don’t want to migrate to a completely different stack (like VS Code + PlatformIO).
+
+Arduino Editor is a modern development environment for Arduino projects built on the
+Clang toolchain. It provides fast and precise code completion, smart navigation tools,
+real-time error highlighting, and full support for multi-file Arduino sketches.
+
+The goal of the project is to offer a stable, powerful, and professional IDE that feels
+like a natural upgrade from the official Arduino IDE, without sacrificing control,
+transparency, or performance.
 
 ## Key features
 

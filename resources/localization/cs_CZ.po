@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ArduinoEditor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-15 21:05+0100\n"
+"POT-Creation-Date: 2026-01-16 18:53+0100\n"
 "PO-Revision-Date: 2025-12-09 22:52:00+0100\n"
 "Last-Translator: Pavel Petržela <r17c@seznam.cz>\n"
 "Language-Team: -\n"
@@ -19,8 +19,8 @@ msgstr ""
 
 #: ../src/ai_client.cpp:74
 msgid ""
-"Extra JSON request parameters must be a JSON object (e.g. "
-"{\"temperature\":0.2})."
+"Extra JSON request parameters must be a JSON object (e.g. {\"temperature"
+"\":0.2})."
 msgstr ""
 "Dodatečné JSON parametry požadavku musí být validní JSON objekt (např. "
 "{\"temperature\":0.2})."
@@ -129,9 +129,8 @@ msgid ""
 "   <hr>\n"
 "\n"
 "   <p>\n"
-"     <b>Project homepage and source code:&nbsp;</b><a href=\"https://"
-"github.com/ppet36/ArduinoEditor\">https://github.com/ppet36/ArduinoEditor</"
-"a>\n"
+"     <b>Project homepage and source code:&nbsp;</b><a href=\"https://github."
+"com/ppet36/ArduinoEditor\">https://github.com/ppet36/ArduinoEditor</a>\n"
 "   </p>\n"
 "\n"
 "   <hr>\n"
@@ -197,8 +196,8 @@ msgid ""
 "   <a name=\"project\"></a>\n"
 "   <h3>Project-wide Multi-file Support</h3>\n"
 "   <p>\n"
-"     Full support for structured sketches and multiple files "
-"(.ino/.cpp/.hpp), including\n"
+"     Full support for structured sketches and multiple files (.ino/.cpp/."
+"hpp), including\n"
 "     project-wide indexing, navigation and explicit support for structured "
 "Arduino projects.\n"
 "   </p>\n"
@@ -307,8 +306,8 @@ msgstr ""
 "   <hr>\n"
 "\n"
 "   <p>\n"
-"     <b>Domovská stránka projektu a zdrojové kódy:&nbsp;</b><a "
-"href=\"https://github.com/ppet36/ArduinoEditor\">https://github.com/ppet36/"
+"     <b>Domovská stránka projektu a zdrojové kódy:&nbsp;</b><a href="
+"\"https://github.com/ppet36/ArduinoEditor\">https://github.com/ppet36/"
 "ArduinoEditor</a>\n"
 "   </p>\n"
 "\n"
@@ -627,8 +626,8 @@ msgid ""
 "  </p>\n"
 "  <p>\n"
 "    For the full license text see:<br>\n"
-"    <a href=\"https://github.com/arduino/arduino-cli/blob/master/"
-"LICENSE.txt\">\n"
+"    <a href=\"https://github.com/arduino/arduino-cli/blob/master/LICENSE.txt"
+"\">\n"
 "      https://github.com/arduino/arduino-cli/blob/master/LICENSE.txt\n"
 "    </a>\n"
 "  </p>\n"
@@ -643,8 +642,8 @@ msgstr ""
 "  </p>\n"
 "  <p>\n"
 "    Úplné znění licence najdete zde:<br>\n"
-"    <a href=\"https://github.com/arduino/arduino-cli/blob/master/"
-"LICENSE.txt\">\n"
+"    <a href=\"https://github.com/arduino/arduino-cli/blob/master/LICENSE.txt"
+"\">\n"
 "      https://github.com/arduino/arduino-cli/blob/master/LICENSE.txt\n"
 "    </a>\n"
 "  </p>\n"
@@ -703,7 +702,7 @@ msgstr "O aplikaci"
 msgid "Licenses"
 msgstr "Licence"
 
-#: ../src/ard_ai.cpp:794 ../src/ard_aipnl.cpp:785
+#: ../src/ard_ai.cpp:794 ../src/ard_aipnl.cpp:779
 #, c-format
 msgid "%s (in: %d, out: %d, tot: %d) tokens"
 msgstr "%s (dovnitř: %d, ven: %d, celkem: %d) tokenů"
@@ -714,7 +713,7 @@ msgstr "Jiná AI akce běží."
 
 #: ../src/ard_ai.cpp:849 ../src/ard_ai.cpp:856 ../src/ard_ai.cpp:3136
 #: ../src/ard_ai.cpp:3442 ../src/ard_ai.cpp:3760 ../src/ard_ai.cpp:3829
-#: ../src/ard_ai.cpp:3915 ../src/ard_ai.cpp:4198
+#: ../src/ard_ai.cpp:3915 ../src/ard_ai.cpp:4199
 msgid "Arduino Editor AI"
 msgstr "Arduino Editor AI"
 
@@ -1033,7 +1032,7 @@ msgstr ""
 "\n"
 "[Zkontrolovat a použít změny od AI...](ai://review_patch/%s)\n"
 
-#: ../src/ard_ai.cpp:4198
+#: ../src/ard_ai.cpp:4199
 msgid "Patch is no longer available."
 msgstr "Záplata není dostupná."
 
@@ -1112,13 +1111,13 @@ msgid "Test"
 msgstr "Test"
 
 #: ../src/ard_aimdldlg.cpp:183 ../src/ard_boptdlg.cpp:76
-#: ../src/ard_fmtdlg.cpp:187 ../src/utils.cpp:1015
+#: ../src/ard_fmtdlg.cpp:187 ../src/utils.cpp:1017
 msgid "OK"
 msgstr "OK"
 
 #: ../src/ard_aimdldlg.cpp:184 ../src/ard_boptdlg.cpp:77
 #: ../src/ard_diff.cpp:121 ../src/ard_ed_frm.cpp:2557 ../src/ard_fmtdlg.cpp:188
-#: ../src/utils.cpp:1016
+#: ../src/utils.cpp:1018
 msgid "Cancel"
 msgstr "Storno"
 
@@ -1203,7 +1202,7 @@ msgstr "API klíč není uložen"
 msgid "Failed to save AI API key to the system secret store."
 msgstr "Chyba při ukládání API klíče do systémového zabezpečeného úložiště."
 
-#: ../src/ard_aipnl.cpp:126
+#: ../src/ard_aipnl.cpp:121
 msgid ""
 "AI chat ready.\n"
 "You can ask coding questions or request refactoring.\n"
@@ -1225,45 +1224,45 @@ msgstr ""
 "Zadejte zprávu a stiskněte Enter.\n"
 "(Shift+Enter vloží nový řádek.)"
 
-#: ../src/ard_aipnl.cpp:187
+#: ../src/ard_aipnl.cpp:182
 msgid "Switch AI model"
 msgstr "Přepnout AI model"
 
-#: ../src/ard_aipnl.cpp:368
+#: ../src/ard_aipnl.cpp:363
 msgid "(no saved sessions)"
 msgstr "(žádná uložená sezení)"
 
-#: ../src/ard_aipnl.cpp:554
+#: ../src/ard_aipnl.cpp:549
 msgid "[AI] Failed to load saved session."
 msgstr "[AI] Nepodařilo se načíst uložené sezení."
 
-#: ../src/ard_aipnl.cpp:613
+#: ../src/ard_aipnl.cpp:608
 msgid "AI model thinking..."
 msgstr "AI model přemýšlí..."
 
-#: ../src/ard_aipnl.cpp:729
+#: ../src/ard_aipnl.cpp:723
 msgid "[AI] Interactive actions are not available."
 msgstr "[AI] Interaktivní akce nejsou dostupné."
 
-#: ../src/ard_aipnl.cpp:744
+#: ../src/ard_aipnl.cpp:738
 msgid "[AI] Failed to start interactive chat request."
 msgstr "[AI] Nepodařilo se spustit interaktivní požadavek."
 
-#: ../src/ard_aipnl.cpp:764
+#: ../src/ard_aipnl.cpp:758
 #, c-format
 msgid "%s (in: %lld, out: %lld, tot: %lld) tokens"
 msgstr "%s (dovnitř: %lld, ven: %lld, celkem: %lld) tokenů"
 
-#: ../src/ard_aipnl.cpp:770
+#: ../src/ard_aipnl.cpp:764
 #, c-format
 msgid "%s (in: %lld, out: %lld, tot: %lld) tokens, %d calls"
 msgstr "%s (dovnitř: %lld, ven: %lld, celkem: %lld) tokenů, %d volání"
 
-#: ../src/ard_aipnl.cpp:812
+#: ../src/ard_aipnl.cpp:806
 msgid "[AI ERROR] Unknown error"
 msgstr "[AI CHYBA] Neznámá chyba"
 
-#: ../src/ard_aipnl.cpp:814
+#: ../src/ard_aipnl.cpp:808
 #, c-format
 msgid "[AI ERROR] %s"
 msgstr "[AI CHYBA] %s"
@@ -1313,9 +1312,13 @@ msgstr "<nahrávají se programátory...>"
 msgid "<default>"
 msgstr "<výchozí>"
 
-#: ../src/ard_cc.cpp:3055
-msgid "Declaration:"
-msgstr "Deklarace:"
+#: ../src/ard_cc.cpp:3060
+msgid ""
+"\n"
+"Declaration:"
+msgstr ""
+"\n"
+"Deklarace:"
 
 #: ../src/ard_cli.cpp:2156
 #, c-format
@@ -2245,8 +2248,8 @@ msgid ""
 "In this mode, libraries are detected from the last project build, so newly "
 "added #include directives won't be picked up until you rebuild.\n"
 "\n"
-"Rebuild will regenerate the build configuration (including "
-"compile_commands.json) and attach libraries to this sketch.\n"
+"Rebuild will regenerate the build configuration (including compile_commands."
+"json) and attach libraries to this sketch.\n"
 "\n"
 "Rebuild now?"
 msgstr ""
@@ -2256,8 +2259,8 @@ msgstr ""
 "V tomto režimu se knihovny zjišťují až při sestavení projektu, takže nově "
 "přidané #include se projeví až po dalším buildu.\n"
 "\n"
-"Znovusestavení přegeneruje konfiguraci sestavení (včetně "
-"compile_commands.json) a znovu napojí knihovny ke sketchi.\n"
+"Znovusestavení přegeneruje konfiguraci sestavení (včetně compile_commands."
+"json) a znovu napojí knihovny ke sketchi.\n"
 "\n"
 "Chcete projekt nyní znovu sestavit?"
 
@@ -2876,16 +2879,16 @@ msgid "Jump to specific line in the current file."
 msgstr "Přejít na konkrétní řádek v aktuálním souboru."
 
 #: ../src/ard_edit.cpp:1286
-msgid "Previous symbol occurrence\tCtrl+Up"
-msgstr "Předchozí výskyt symbolu\tCtrl+Up"
+msgid "Previous symbol occurrence\tAlt+Up"
+msgstr "Předchozí výskyt symbolu\tAlt+Up"
 
 #: ../src/ard_edit.cpp:1287
 msgid "Jump to the previous symbol occurrence in the current file."
 msgstr "Přejít na předchozí výskyt symbolu v aktuálním souboru."
 
 #: ../src/ard_edit.cpp:1292
-msgid "Next symbol occurrence\tCtrl+Down"
-msgstr "Následující výskyt sumbolu\tCtrl+Down"
+msgid "Next symbol occurrence\tAlt+Down"
+msgstr "Následující výskyt sumbolu\tAlt+Down"
 
 #: ../src/ard_edit.cpp:1293
 msgid "Jump to the next symbol occurrence in the current file."
@@ -3353,8 +3356,8 @@ msgstr "Zip soubor..."
 
 #: ../src/ard_libman.cpp:758
 msgid ""
-"Enter Git repository URL (e.g. https://github.com/arduino-libraries/"
-"WiFi101.git or with #version):"
+"Enter Git repository URL (e.g. https://github.com/arduino-libraries/WiFi101."
+"git or with #version):"
 msgstr ""
 "Zadejte URL Git repozitáře (např. https://github.com/arduino-libraries/"
 "WiFi101.git nebo s #version):"
@@ -3564,8 +3567,8 @@ msgstr "Uložit graf průběhů jako obrázek"
 
 #: ../src/ard_plotview.cpp:552
 msgid ""
-"PNG image (*.png)|*.png|JPEG image (*.jpg;*.jpeg)|*.jpg;*.jpeg|BMP image "
-"(*.bmp)|*.bmp"
+"PNG image (*.png)|*.png|JPEG image (*.jpg;*.jpeg)|*.jpg;*.jpeg|BMP image (*."
+"bmp)|*.bmp"
 msgstr ""
 "PNG obrázek (*.png)|*.png|JPEG obrázek (*.jpg;*.jpeg)|*.jpg;*.jpeg|BMP "
 "obrázek (*.bmp)|*.bmp"
@@ -3722,8 +3725,8 @@ msgstr "Vytvořit deklaraci v hlavičce"
 msgid ""
 "This refactoring can only be used in a C/C++ source file (.cpp, .c, ...)."
 msgstr ""
-"Tento refaktoring může být použit pouze v C/C++ zdrojovém souboru "
-"(.cpp, .c, ...)."
+"Tento refaktoring může být použit pouze v C/C++ zdrojovém souboru (.cpp, ."
+"c, ...)."
 
 #: ../src/ard_refactor.cpp:1110
 msgid "Unable to locate or create a header file for this source file."
@@ -3950,8 +3953,8 @@ msgstr "Uložit vše..."
 #: ../src/ard_sermon.cpp:928
 msgid "Text files (*.txt)|*.txt|Log files (*.log)|*.log|All files (*.*)|*.*"
 msgstr ""
-"Textové soubory (*.txt)|*.txt|Soubory logů (*.log)|*.log|Všechny soubory "
-"(*.*)|*.*"
+"Textové soubory (*.txt)|*.txt|Soubory logů (*.log)|*.log|Všechny soubory (*."
+"*)|*.*"
 
 #: ../src/ard_sermon.cpp:936
 #, c-format
@@ -4117,8 +4120,8 @@ msgstr "Spustitelný soubor arduino-cli:"
 
 #: ../src/ard_setdlg.cpp:1026
 msgid ""
-"arduino-cli.exe|arduino-cli.exe|Executable files (*.exe)|*.exe|All files "
-"(*.*)|*.*"
+"arduino-cli.exe|arduino-cli.exe|Executable files (*.exe)|*.exe|All files (*."
+"*)|*.*"
 msgstr ""
 "arduino-cli.exe|arduino-cli.exe|Spustitelné soubory (*.exe)|*.exe|Všechny "
 "soubory (*.*)|*.*"

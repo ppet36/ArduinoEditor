@@ -207,6 +207,8 @@ private:
   std::unordered_map<std::string, CachedTranslationUnit> m_tuCache;
   // .. and for whole project
   std::unordered_map<std::string, ProjectTuEntry> m_projectTuCache;
+  // cache for sibling definitions
+  std::unordered_map<std::string, CXTranslationUnit> m_siblingTuCache;
 
   std::unordered_map<std::string, SymbolCacheEntry> m_symbolCache;
   std::unordered_map<uint64_t, InoHeaderCacheEntry> m_inoHeaderCache;

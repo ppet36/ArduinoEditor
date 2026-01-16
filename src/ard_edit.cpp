@@ -1283,13 +1283,13 @@ void ArduinoEditor::OnContextMenu(wxContextMenuEvent &event) {
 
   AddMenuItemWithArt(navMenu,
                      ID_MENU_NAV_PREV_OCCURRENCE,
-                     _("Previous symbol occurrence\tCtrl+Up"),
+                     _("Previous symbol occurrence\tAlt+Up"),
                      _("Jump to the previous symbol occurrence in the current file."),
                      wxAEArt::GoUp);
 
   AddMenuItemWithArt(navMenu,
                      ID_MENU_NAV_NEXT_OCCURRENCE,
-                     _("Next symbol occurrence\tCtrl+Down"),
+                     _("Next symbol occurrence\tAlt+Down"),
                      _("Jump to the next symbol occurrence in the current file."),
                      wxAEArt::GoDown);
 

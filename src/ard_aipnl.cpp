@@ -234,7 +234,6 @@ void ArduinoAiChatPanel::InitUi() {
 
   m_inputCtrl->SetMinSize(wxSize(-1, 60));
 
-
   wxString normalFace;
 #ifdef __WXMAC__
   normalFace = wxT("Helvetica Neue");
