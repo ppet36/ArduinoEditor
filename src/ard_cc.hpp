@@ -28,6 +28,7 @@
 #include <mutex>
 #include <string>
 #include <vector>
+#include <optional>
 #include <wx/rawbmp.h>
 #include <wx/stc/stc.h>
 #include <wx/wx.h>

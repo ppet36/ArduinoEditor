@@ -3298,9 +3298,11 @@ bool ArduinoCodeCompletion::FindSiblingFunctionDefinition(CXCursor declCursor, J
       continue;
     }
 
+    std::string cacheKey = cppPath.u8string();
+
     CXTranslationUnit tu = nullptr;
 
-    auto it = m_siblingTuCache.find(cppPath);
+    auto it = m_siblingTuCache.find(cacheKey);
     if (it == m_siblingTuCache.end() || !it->second) {
 
       const auto &clangArgs = GetCompilerArgs();
@@ -3325,7 +3327,7 @@ bool ArduinoCodeCompletion::FindSiblingFunctionDefinition(CXCursor declCursor, J
         continue;
       }
 
-      m_siblingTuCache[cppPath] = tu;
+      m_siblingTuCache[cacheKey] = tu;
     } else {
       tu = it->second;
     }
