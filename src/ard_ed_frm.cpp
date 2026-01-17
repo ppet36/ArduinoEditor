@@ -3474,7 +3474,7 @@ void ArduinoEditorFrame::OnToggleOutput(wxCommandEvent &event) {
   ShowOutputPane(event.IsChecked());
 }
 
-ArduinoEditorFrame::ArduinoEditorFrame(wxConfigBase *cfg) : wxFrame(nullptr, wxID_ANY, _("Arduino Editor"), wxDefaultPosition, wxSize(1024, 768)), m_auiManager(this), m_diagTimer(this, ID_TIMER_DIAGNOSTIC), m_returnBottomPageTimer(this, ID_TIMER_BOTTOM_PAGE_RETURN),
+ArduinoEditorFrame::ArduinoEditorFrame(wxConfigBase *cfg) : wxFrame(nullptr, wxID_ANY, _("Arduino Editor"), wxDefaultPosition, wxSize(1024, 768)), m_auiManager(this), m_diagTimer(this, ID_TIMER_DIAGNOSTIC), m_returnBottomPageTimer(this, ID_TIMER_BOTTOM_PAGE_RETURN), m_cliUpdatesChecked(false),
                                                             m_checkUpdatesTimer(this, ID_TIMER_CHECK_FOR_UPDATES) {
   config = cfg;
 
@@ -4640,7 +4640,8 @@ void ArduinoEditorFrame::CheckForUpdatesIfNeeded() {
     arduinoCli->UpdateCoreIndexBackgroundAsync(this);
   }
 
-  if (!any) {
+  if (!any && !m_cliUpdatesChecked) {
+    m_cliUpdatesChecked = true;
     ScheduleCheckForUpdatesTimer();
   }
 }

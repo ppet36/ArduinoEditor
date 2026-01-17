@@ -542,6 +542,7 @@ void ArduinoEditApp::OnUpdateIdleTimer(wxTimerEvent &) {
     return;
 
   if (m_splash) {
+    APP_DEBUG_LOG("MAIN: Arming idle timer...");
     ArmUpdateIdleTimer();
     return;
   }

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-16 23:40+0100\n"
+"POT-Creation-Date: 2026-01-17 13:55+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1332,7 +1332,7 @@ msgstr ""
 #: ../src/ard_coreman.cpp:110 ../src/ard_coreman.cpp:193
 #: ../src/ard_coreman.cpp:351 ../src/ard_coreman.cpp:454
 #: ../src/ard_ed_frm.cpp:1767 ../src/ard_ed_frm.cpp:2327
-#: ../src/ard_ed_frm.cpp:2416 ../src/ard_ed_frm.cpp:4771
+#: ../src/ard_ed_frm.cpp:2416 ../src/ard_ed_frm.cpp:4772
 #: ../src/ard_libman.cpp:145 ../src/ard_libman.cpp:262
 #: ../src/ard_libman.cpp:433 ../src/ard_libman.cpp:598
 msgid "All"
@@ -2303,36 +2303,36 @@ msgstr ""
 msgid "Renamed %d occurrences."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4712
+#: ../src/ard_ed_frm.cpp:4713
 #, c-format
 msgid "Updates: %zu libs and %zu boards"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4714
+#: ../src/ard_ed_frm.cpp:4715
 #, c-format
 msgid "Updates: %zu libraries"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4716
+#: ../src/ard_ed_frm.cpp:4717
 #, c-format
 msgid "Updates: %zu boards"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4739
+#: ../src/ard_ed_frm.cpp:4740
 #, c-format
 msgid "Library updates (%zu)..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4741
+#: ../src/ard_ed_frm.cpp:4742
 msgid "Library updates..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4746
+#: ../src/ard_ed_frm.cpp:4747
 #, c-format
 msgid "Board updates (%zu)..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4748
+#: ../src/ard_ed_frm.cpp:4749
 msgid "Board updates..."
 msgstr ""
 

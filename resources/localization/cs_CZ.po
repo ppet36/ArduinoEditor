@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ArduinoEditor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-16 23:37+0100\n"
+"POT-Creation-Date: 2026-01-17 13:55+0100\n"
 "PO-Revision-Date: 2025-12-09 22:52:00+0100\n"
 "Last-Translator: Pavel Petržela <r17c@seznam.cz>\n"
 "Language-Team: -\n"
@@ -1761,7 +1761,7 @@ msgstr "Typ:"
 #: ../src/ard_coreman.cpp:110 ../src/ard_coreman.cpp:193
 #: ../src/ard_coreman.cpp:351 ../src/ard_coreman.cpp:454
 #: ../src/ard_ed_frm.cpp:1767 ../src/ard_ed_frm.cpp:2327
-#: ../src/ard_ed_frm.cpp:2416 ../src/ard_ed_frm.cpp:4771
+#: ../src/ard_ed_frm.cpp:2416 ../src/ard_ed_frm.cpp:4772
 #: ../src/ard_libman.cpp:145 ../src/ard_libman.cpp:262
 #: ../src/ard_libman.cpp:433 ../src/ard_libman.cpp:598
 msgid "All"
@@ -2760,36 +2760,36 @@ msgstr "Žádné odpovídající výskyty pro přejmenování nebyly nalezeny."
 msgid "Renamed %d occurrences."
 msgstr "Přejmenováno %d výskytů."
 
-#: ../src/ard_ed_frm.cpp:4712
+#: ../src/ard_ed_frm.cpp:4713
 #, c-format
 msgid "Updates: %zu libs and %zu boards"
 msgstr "Aktualizace: %zu knihoven a %zu desek"
 
-#: ../src/ard_ed_frm.cpp:4714
+#: ../src/ard_ed_frm.cpp:4715
 #, c-format
 msgid "Updates: %zu libraries"
 msgstr "Aktualizace: %zu knihoven"
 
-#: ../src/ard_ed_frm.cpp:4716
+#: ../src/ard_ed_frm.cpp:4717
 #, c-format
 msgid "Updates: %zu boards"
 msgstr "Aktualizace: %zu desek"
 
-#: ../src/ard_ed_frm.cpp:4739
+#: ../src/ard_ed_frm.cpp:4740
 #, c-format
 msgid "Library updates (%zu)..."
 msgstr "Aktualizace knihoven (%zu)..."
 
-#: ../src/ard_ed_frm.cpp:4741
+#: ../src/ard_ed_frm.cpp:4742
 msgid "Library updates..."
 msgstr "Aktualizace knihoven..."
 
-#: ../src/ard_ed_frm.cpp:4746
+#: ../src/ard_ed_frm.cpp:4747
 #, c-format
 msgid "Board updates (%zu)..."
 msgstr "Aktualizace desek (%zu)..."
 
-#: ../src/ard_ed_frm.cpp:4748
+#: ../src/ard_ed_frm.cpp:4749
 msgid "Board updates..."
 msgstr "Aktualizace desek..."
 
