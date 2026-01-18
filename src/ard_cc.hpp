@@ -26,9 +26,9 @@
 #include <chrono>
 #include <clang-c/Index.h>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
 #include <wx/rawbmp.h>
 #include <wx/stc/stc.h>
 #include <wx/wx.h>
@@ -235,7 +235,7 @@ private:
   std::string GetClangFilename(const std::string &filename) const;
   std::string GetClangCode(const std::string &filename, const std::string &code, int *addedLines) const;
   std::string GenerateInoHpp(const std::string &inoFilename, const std::string &code) const;
-  ClangUnsavedFiles CreateClangUnsavedFiles(const std::string &filename, const std::string &code);
+  void CreateClangUnsavedFiles(const std::string &filename, const std::string &code, ClangUnsavedFiles& out);
 
   // FNV-1a hash of text (fast "CRC")
   static std::size_t HashCode(const std::string &code);

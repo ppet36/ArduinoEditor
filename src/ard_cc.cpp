@@ -1730,10 +1730,7 @@ std::string ArduinoCodeCompletion::GenerateInoHpp(const std::string &inoFilename
   return hpp;
 }
 
-ClangUnsavedFiles ArduinoCodeCompletion::CreateClangUnsavedFiles(const std::string &filename,
-                                                                 const std::string &code) {
-  ClangUnsavedFiles uf;
-
+void ArduinoCodeCompletion::CreateClangUnsavedFiles(const std::string &filename, const std::string &code, ClangUnsavedFiles &uf) {
   uf.mainFilename = GetClangFilename(filename);
   uf.mainCode = GetClangCode(filename, code, &uf.hppAddedLines);
 
@@ -1778,8 +1775,6 @@ ClangUnsavedFiles ArduinoCodeCompletion::CreateClangUnsavedFiles(const std::stri
       APP_DEBUG_LOG("CC: InoHpp is empty for %s - skipping", absIno.c_str());
     }
   }
-
-  return uf;
 }
 
 // They will try to get a translation unit at all costs.
@@ -1808,7 +1803,8 @@ CXTranslationUnit ArduinoCodeCompletion::GetTranslationUnit(const std::string &f
   auto it = m_tuCache.find(key);
   if (it == m_tuCache.end()) {
     // ---------- DOES NOT EXIST HERE -> we will create ----------
-    ClangUnsavedFiles uf = CreateClangUnsavedFiles(key, code);
+    ClangUnsavedFiles uf;
+    CreateClangUnsavedFiles(key, code, uf);
 
     const auto &clangArgs = GetCompilerArgs();
     std::vector<const char *> args;
@@ -1965,7 +1961,8 @@ CXTranslationUnit ArduinoCodeCompletion::GetTranslationUnit(const std::string &f
 
     if (entry.codeHash != codeHash) {
       // Code has changed -> we need to create unsaved files and reparse
-      ClangUnsavedFiles uf = CreateClangUnsavedFiles(key, code);
+      ClangUnsavedFiles uf;
+      CreateClangUnsavedFiles(key, code, uf);
 
       entry.codeHash = codeHash;
       entry.mainFilename = uf.mainFilename;
@@ -2409,7 +2406,8 @@ std::vector<CompletionItem> ArduinoCodeCompletion::GetCompletions(const std::str
   }
 
   // 2) For completion, we need the current unsaved files
-  ClangUnsavedFiles uf = CreateClangUnsavedFiles(filename, code);
+  ClangUnsavedFiles uf;
+  CreateClangUnsavedFiles(filename, code, uf);
   int addedLines = uf.hppAddedLines;
 
   unsigned options = clang_defaultCodeCompleteOptions();
@@ -4980,7 +4978,8 @@ std::vector<ArduinoParseError> ArduinoCodeCompletion::ComputeProjectDiagnosticsL
          (entry.headersSigHash != headersSigHash));
 
     if (needRecreate) {
-      ClangUnsavedFiles uf = CreateClangUnsavedFiles(f.filename, f.code);
+      ClangUnsavedFiles uf;
+      CreateClangUnsavedFiles(f.filename, f.code, uf);
 
       if (entry.tu) {
         clang_disposeTranslationUnit(entry.tu);
@@ -5053,7 +5052,8 @@ std::vector<ArduinoParseError> ArduinoCodeCompletion::ComputeProjectDiagnosticsL
       // refresh cached diagnostics
       entry.cachedErrors = CollectDiagnosticsLocked(entry.tu);
     } else if (needReparse) {
-      ClangUnsavedFiles uf = CreateClangUnsavedFiles(f.filename, f.code);
+      ClangUnsavedFiles uf;
+      CreateClangUnsavedFiles(f.filename, f.code, uf);
 
       // unsaved = main file (+ .ino.hpp) + all open headers
       std::vector<CXUnsavedFile> unsaved;
