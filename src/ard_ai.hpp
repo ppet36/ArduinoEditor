@@ -177,6 +177,12 @@ private:
     wxString rawBlock;
   };
 
+  struct AiRouterDecision {
+    int level = 1; // 0=NONE, 1=LIGHT, 2=FULL
+    int mode = 1;  // 0=DISCUSS, 1=INVESTIGATE, 2=EDIT
+    std::vector<AiInfoRequest> prefetch;
+  };
+
   struct PendingDocComment {
     SymbolInfo symbol; // old symbol from GetAllSymbols / GetSymbolInfo
     wxString reply;    // plain AI response
@@ -234,7 +240,20 @@ private:
 
   ArduinoEditor *m_editor;
   wxEvtHandler *m_origin;
+
   wxString m_interactiveChatPayload;
+  uint64_t m_routerSeq = 0;
+  uint64_t m_routerActiveSeq = 0;
+
+  // 0=NONE, 1=LIGHT, 2=FULL
+  int m_chatCtxLevel = 1;
+
+  // appended into stable header only for interactive chat
+  wxString m_chatStableHeaderExtra;
+
+  wxString GetInteractiveChatSystemPrompt() const;
+  wxString BuildProjectFilesIndexForAi(size_t maxFiles) const;
+  AiRouterDecision ParseRouterDecisionLoose(const wxString &reply);
 
   // stash failed working files
   std::unordered_map<std::string, PendingPatchReview> m_pendingReviews;
@@ -267,7 +286,7 @@ private:
 
   // Prompt building (centralized)
   wxString GetPromptCurrentFile() const;
-  wxString BuildStablePromptHeader() const;
+  wxString BuildStablePromptHeader(bool withProjectFiles) const;
   wxString BuildPromptForModel(const wxString &baseTranscript,
                                const wxString &extraEphemeral,
                                const wxString &outOfBandBlocks) const;

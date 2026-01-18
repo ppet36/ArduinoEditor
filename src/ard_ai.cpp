@@ -68,7 +68,7 @@ static wxString solveErrorSystemPrompt = wxT(
     "*** END INFO_REQUEST\n"
     "\n"
     "For TYPE=file_range you MUST provide:\n"
-    "  FILE: <file name as previously provided>\n"
+    "  FILE: <file name as previously provided, or CURRENT_FILE>\n"
     "  FROM_LINE: <1-based line number>\n"
     "  TO_LINE: <1-based line number, >= FROM_LINE>\n"
     "\n"
@@ -77,49 +77,6 @@ static wxString solveErrorSystemPrompt = wxT(
     "Never output any commentary, explanation, or Markdown.\n"
     "If you already received one or more INFO_RESPONSE blocks with the information you asked for,"
     "you MUST now produce a PATCH and not ask for the same info again.\n");
-
-static wxString interactiveChatSystemPrompt = wxT(
-    "You are an expert Arduino/C++ assistant integrated into an IDE.\n"
-    "\n"
-    "You are talking to the user in a chat panel inside the Arduino Editor.\n"
-    "You can do two categories of things:\n"
-    "(A) When the user asks you to EXPLAIN something (e.g. 'explain'),\n"
-    "    answer in natural language (Markdown is allowed) and DO NOT emit a PATCH.\n"
-    "(B) When the user asks you to IMPLEMENT, GENERATE, CREATE, MODIFY, REFACTOR code or a sketch\n"
-    "    (for example in Czech: 'implementuj', 'vytvoř', 'vygeneruj', 'přepiš', 'uprav'),\n"
-    "    you MUST respond with a PATCH in the format below. Outside the PATCH block maybe explanation.\n"
-    "(C) If you are unsure whether you have enough context, choose INFO_REQUEST.\n"
-    "\n"
-    "PATCH format (for editing code):\n"
-    "*** BEGIN PATCH\n"
-    "FILE: <sketch-relative path>\n"
-    "RANGE: <from>-<to> (1-based line numbers)\n"
-    "REPLACE:\n"
-    "<new code>\n"
-    "ENDREPLACE\n"
-    "*** END PATCH\n"
-    "\n"
-    "INFO_REQUEST format (for asking the IDE for context):\n"
-    "*** BEGIN INFO_REQUEST\n"
-    "ID: <numeric id>\n"
-    "TYPE: <file_range | includes | symbol_declaration | search>\n"
-    "[additional fields depending on TYPE]\n"
-    "*** END INFO_REQUEST\n"
-    "\n"
-    "For TYPE=file_range you MUST provide:\n"
-    "  FILE: <file name as previously provided>\n"
-    "  FROM_LINE: <1-based line number>\n"
-    "  TO_LINE: <1-based line number, >= FROM_LINE>\n"
-    "\n"
-    "Rules:\n"
-    "- Output MUST be either a PATCH or an INFO_REQUEST, never both.\n"
-    "- If the user asks to create/modify/refactor code, you MUST respond with a PATCH, unless you first need more context.\n"
-    "- If you need more context to produce a correct PATCH, you MUST respond with INFO_REQUEST (TYPE=file_range) and nothing else.\n"
-    "- Do NOT ask the user to paste files or code. If you need code, use INFO_REQUEST (TYPE=file_range).\n"
-    "- Before producing a PATCH for any file (including CURRENT_FILE), you MUST have received numbered INFO_RESPONSE content (TYPE=file_range) covering the lines you will edit.\n"
-    "- When you decide you need file_range, request ALL required files/ranges in the SAME response (batch your INFO_REQUEST blocks).\n"
-    "- After you receive INFO_RESPONSE blocks, you MUST use them to produce a PATCH in your next response (do not request the same file_range again unless you believe the file changed).\n"
-    "- When the user asks only for explanation, answer in Markdown and do NOT emit a PATCH.\n");
 
 static wxString optimizeFunctionSystemPrompt = wxT(
     "You are an expert C++/Arduino performance and code-quality engineer integrated into an IDE.\n"
@@ -165,7 +122,7 @@ static wxString optimizeFunctionSystemPrompt = wxT(
     "*** END INFO_REQUEST\n"
     "\n"
     "For TYPE=file_range you MUST provide:\n"
-    "  FILE: <file name as previously provided>\n"
+    "  FILE: <file name as previously provided, or CURRENT_FILE>\n"
     "  FROM_LINE: <1-based line number>\n"
     "  TO_LINE: <1-based line number, >= FROM_LINE>\n"
     "\n"
@@ -174,6 +131,151 @@ static wxString optimizeFunctionSystemPrompt = wxT(
     "- Never output any commentary, explanation, or Markdown outside of PATCH/INFO_REQUEST blocks.\n"
     "- If you already received one or more INFO_RESPONSE blocks with the information you asked for,\n"
     "  you MUST now produce a PATCH and not ask for the same info again.\n");
+
+// ---------------- Router + chat levels (NONE/LIGHT/FULL) -----------------
+
+static wxString interactiveChatSystemPromptNone = wxT(
+    "You are an expert Arduino/C++ assistant integrated into an IDE.\n"
+    "\n"
+    "MODE: DISCUSS (NONE)\n"
+    "Primary goal: answer the user in natural language (Markdown allowed).\n"
+    "You MAY use INFO_REQUEST only if the user explicitly asks about a concrete symbol / code location\n"
+    "or if your answer would otherwise be guesswork.\n"
+    "\n"
+    "Important:\n"
+    "- Do NOT ask the user to paste code. If you need code, use INFO_REQUEST (TYPE=file_range).\n"
+    "- Never claim you \"cannot see\" code without first using INFO_REQUEST when appropriate.\n"
+    "\n"
+    "When the user asks to implement/modify/refactor code, you MUST either:\n"
+    "(1) request required context via INFO_REQUEST, or\n"
+    "(2) produce a PATCH.\n"
+    "\n"
+    "PATCH format:\n"
+    "*** BEGIN PATCH\n"
+    "FILE: <sketch-relative path>\n"
+    "RANGE: <from>-<to> (1-based line numbers)\n"
+    "REPLACE:\n"
+    "<new code>\n"
+    "ENDREPLACE\n"
+    "*** END PATCH\n"
+    "\n"
+    "INFO_REQUEST format:\n"
+    "*** BEGIN INFO_REQUEST\n"
+    "ID: <numeric id>\n"
+    "TYPE: <file_range | includes | symbol_declaration | search>\n"
+    "[additional fields depending on TYPE]\n"
+    "*** END INFO_REQUEST\n"
+    "\n"
+    "For TYPE=file_range you MUST provide:\n"
+    "  FILE: <file name as previously provided, or CURRENT_FILE>\n"
+    "  FROM_LINE: <1-based line number>\n"
+    "  TO_LINE: <1-based line number, >= FROM_LINE>\n"
+    "\n"
+    "Rules:\n"
+    "- Output can be normal Markdown text OR one PATCH/INFO_REQUEST block.\n"
+    "- Never output both PATCH and INFO_REQUEST in one response.\n");
+
+static wxString interactiveChatSystemPromptLight = wxT(
+    "You are an expert Arduino/C++ assistant integrated into an IDE.\n"
+    "\n"
+    "MODE: INVESTIGATE (LIGHT)\n"
+    "You have LIMITED project context. Prefer working with CURRENT_FILE.\n"
+    "If you need definitions, includes, or code outside the visible CODE_CONTEXT, you MUST request it via INFO_REQUEST.\n"
+    "Do NOT answer with \"I can't see it\". Use INFO_REQUEST instead.\n"
+    "\n"
+    "PATCH format:\n"
+    "*** BEGIN PATCH\n"
+    "FILE: <sketch-relative path>\n"
+    "RANGE: <from>-<to> (1-based line numbers)\n"
+    "REPLACE:\n"
+    "<new code>\n"
+    "ENDREPLACE\n"
+    "*** END PATCH\n"
+    "\n"
+    "INFO_REQUEST format:\n"
+    "*** BEGIN INFO_REQUEST\n"
+    "ID: <numeric id>\n"
+    "TYPE: <file_range | includes | symbol_declaration | search>\n"
+    "[additional fields depending on TYPE]\n"
+    "*** END INFO_REQUEST\n"
+    "\n"
+    "For TYPE=file_range you MUST provide:\n"
+    "  FILE: <file name as previously provided, or CURRENT_FILE>\n"
+    "  FROM_LINE: <1-based line number>\n"
+    "  TO_LINE: <1-based line number, >= FROM_LINE>\n"
+    "\n"
+    "Rules:\n"
+    "- Output MUST be either a PATCH or INFO_REQUEST, OR (only for pure explanation) Markdown text.\n"
+    "- If user asks to implement/modify/refactor, produce PATCH unless you first need context (then INFO_REQUEST).\n"
+    "- Do NOT ask user to paste code.\n"
+    "- Before producing a PATCH for any file, you MUST have received file_range INFO_RESPONSE for the edited lines.\n"
+    "- Batch all required file_range requests into a single response when possible.\n");
+
+static wxString interactiveChatSystemPromptFull = wxT(
+    "You are an expert Arduino/C++ assistant integrated into an IDE.\n"
+    "\n"
+    "MODE: PROJECT (FULL)\n"
+    "You have broad project context and can request additional info with tools.\n"
+    "If you need code that is not already present, use INFO_REQUEST.\n"
+    "Do NOT answer with \"I can't see it\". Use INFO_REQUEST instead.\n"
+    "\n"
+    "PATCH format:\n"
+    "*** BEGIN PATCH\n"
+    "FILE: <sketch-relative path>\n"
+    "RANGE: <from>-<to> (1-based line numbers)\n"
+    "REPLACE:\n"
+    "<new code>\n"
+    "ENDREPLACE\n"
+    "*** END PATCH\n"
+    "\n"
+    "INFO_REQUEST format:\n"
+    "*** BEGIN INFO_REQUEST\n"
+    "ID: <numeric id>\n"
+    "TYPE: <file_range | includes | symbol_declaration | search>\n"
+    "[additional fields depending on TYPE]\n"
+    "*** END INFO_REQUEST\n"
+    "\n"
+    "For TYPE=file_range you MUST provide:\n"
+    "  FILE: <file name as previously provided, or CURRENT_FILE>\n"
+    "  FROM_LINE: <1-based line number>\n"
+    "  TO_LINE: <1-based line number, >= FROM_LINE>\n"
+    "\n"
+    "Rules:\n"
+    "- Output MUST be either a PATCH or INFO_REQUEST, OR (only for pure explanation) Markdown text.\n"
+    "- For edits/refactors, prefer small safe steps; request more context when needed.\n"
+    "- Do NOT ask user to paste code.\n"
+    "- Before producing a PATCH for any file, you MUST have received file_range INFO_RESPONSE for the edited lines.\n"
+    "- Batch all required file_range requests into a single response when possible.\n");
+
+static wxString interactiveChatRouterSystemPrompt = wxT(
+    "You are a routing classifier for an IDE chat.\n"
+    "Return ONLY a single JSON object and nothing else.\n"
+    "\n"
+    "Decide the minimal context level required to avoid guessing:\n"
+    "- NONE: pure discussion, general advice, no concrete code identifiers needed.\n"
+    "- LIGHT: likely needs inspecting CURRENT_FILE or a concrete symbol/definition; single-file investigation.\n"
+    "- FULL: refactor/implement/change code across files, project-wide search, or complex changes.\n"
+    "\n"
+    "Also choose mode:\n"
+    "- DISCUSS: explanation only.\n"
+    "- INVESTIGATE: needs looking up code/definitions before answering.\n"
+    "- EDIT: user asks to implement/modify/refactor/generate code.\n"
+    "\n"
+    "If user mentions a specific identifier/symbol/class/struct/function OR says something is \"not visible\"/\"where is declared\"\n"
+    "then prefer LIGHT (at least).\n"
+    "If user asks to change code, prefer EDIT + FULL (or EDIT + LIGHT if obviously only CURRENT_FILE).\n"
+    "\n"
+    "JSON schema:\n"
+    "{\n"
+    "  \"level\": \"NONE\"|\"LIGHT\"|\"FULL\",\n"
+    "  \"mode\": \"DISCUSS\"|\"INVESTIGATE\"|\"EDIT\",\n"
+    "  \"prefetch\": [\n"
+    "    {\"type\":\"file_range\",\"file\":\"CURRENT_FILE\"|\"<path>\",\"from_line\":1,\"to_line\":160}\n"
+    "  ]\n"
+    "}\n"
+    "\n"
+    "prefetch is optional; include it only if it is very likely needed immediately.\n"
+    "Keep prefetch short (0-2 items).\n");
 
 // --------- AI persistence helpers ------------
 
@@ -762,6 +864,69 @@ static bool FilesDifferent(const std::string &sketchRoot,
     if (it->second != va)
       return true;
   }
+  return false;
+}
+
+// ---------------- Router helpers -----------------
+
+static int AiChatLevelFromString(const std::string &s) {
+  if (s == "NONE")
+    return 0;
+  if (s == "FULL")
+    return 2;
+  return 1; // LIGHT default
+}
+
+static int AiChatModeFromString(const std::string &s) {
+  if (s == "DISCUSS")
+    return 0;
+  if (s == "EDIT")
+    return 2;
+  return 1; // INVESTIGATE default
+}
+
+// Extract first {...} JSON object (robust against extra text/codefences)
+static bool ExtractFirstJsonObjectUtf8(const wxString &text, std::string &outJson) {
+  std::string s = wxToStd(text);
+
+  // find first '{'
+  size_t i = s.find('{');
+  if (i == std::string::npos)
+    return false;
+
+  bool inStr = false;
+  bool esc = false;
+  int depth = 0;
+
+  for (size_t p = i; p < s.size(); ++p) {
+    char c = s[p];
+
+    if (inStr) {
+      if (esc) {
+        esc = false;
+      } else if (c == '\\') {
+        esc = true;
+      } else if (c == '"') {
+        inStr = false;
+      }
+      continue;
+    } else {
+      if (c == '"') {
+        inStr = true;
+        continue;
+      }
+      if (c == '{') {
+        depth++;
+      } else if (c == '}') {
+        depth--;
+        if (depth == 0) {
+          outJson = s.substr(i, (p - i) + 1);
+          return true;
+        }
+      }
+    }
+  }
+
   return false;
 }
 
@@ -1847,7 +2012,7 @@ bool ArduinoAiActions::StartInteractiveChat(const wxString &userText, wxEvtHandl
     // otherwise context around cursor is used
     if (line > 0) {
       int cursor0 = (line > 0) ? (line - 1) : 0;
-      int numLines = 200;
+      int numLines = 20;
       fileContext = GetNumberedContextAroundLine(stc, cursor0, numLines, &raw);
       seenIntervalFrom = std::max(1, line - numLines);
       seenIntervalTo = std::min(stc->GetLineCount(), line + numLines);
@@ -1900,16 +2065,130 @@ bool ArduinoAiActions::StartInteractiveChat(const wxString &userText, wxEvtHandl
 
   AppendChatEvent("user", userText);
 
-  wxString promptForModel = BuildPromptForModel(m_chatTranscript, ephemeralPrompt, wxEmptyString);
+  // ---------------- Router phase (async) ----------------
+  // bump router sequence to ignore stale router results
+  const uint64_t seq = ++m_routerSeq;
+  m_routerActiveSeq = seq;
 
-  if (!client->SimpleChatAsync(interactiveChatSystemPrompt, promptForModel, this)) {
-    StopCurrentAction();
-    m_editor->ModalMsgDialog(
-        _("Failed to start AI request."),
-        _("AI interactive chat"),
-        wxOK | wxICON_ERROR);
-    return false;
-  }
+  // Default until router completes
+  m_chatCtxLevel = 1; // LIGHT
+  m_chatStableHeaderExtra.Clear();
+  m_fullInfoRequest = false;
+
+  // Build router input (cheap; do NOT include full project files)
+  wxString routerInput;
+  routerInput << BuildStablePromptHeader(false); // CURRENT_FILE + FQBN (+ maybe extra, but we cleared it above)
+  routerInput << wxT("\nUSER_MESSAGE:\n") << userText << wxT("\n\n");
+  routerInput << wxString::Format(wxT("CURSOR_LINE: %d\nCURSOR_COLUMN: %d\n\n"), line, column);
+  routerInput << wxT("CODE_CONTEXT (excerpt):\n```cpp\n");
+  routerInput << fileContext;
+  routerInput << wxT("```\n");
+
+  // Copy settings for thread lifetime
+  const AiSettings st = m_editor->m_aiSettings;
+
+  std::thread([this, st, routerInput, ephemeralPrompt, seq]() mutable {
+    AiRouterDecision dec; // defaults LIGHT/INVESTIGATE
+    try {
+      AiClient rc(st);
+      wxString resp, err;
+      if (rc.SimpleChat(interactiveChatRouterSystemPrompt, routerInput, resp, &err)) {
+        m_solveSession.tokenTotals.Add(rc.GetLastInputTokens(), rc.GetLastOutputTokens(), rc.GetLastTotalTokens());
+
+        dec = ParseRouterDecisionLoose(resp);
+
+        wxString pf;
+        for (const auto &r : dec.prefetch) {
+          if (!pf.IsEmpty()) {
+            pf << wxT(", ");
+          }
+          pf << r.type << wxT(":") << r.file << wxT(":") << r.fromLine << wxT("-") << r.toLine;
+        }
+        APP_DEBUG_LOG("AI: ROUTER: level=%d mode=%d prefetch=[%ls]", dec.level, dec.mode, wxToStd(pf).c_str());
+
+      } else {
+        // keep default
+      }
+    } catch (...) {
+      // keep default
+    }
+
+    CallAfter([this, dec, ephemeralPrompt, seq]() {
+      // Ignore if action changed / cancelled / another router started
+      if (!m_editor)
+        return;
+      if (m_currentAction != Action::InteractiveChat)
+        return;
+      if (m_routerActiveSeq != seq)
+        return;
+
+      // Apply decision
+      m_chatCtxLevel = dec.level; // 0 NONE, 1 LIGHT, 2 FULL
+
+      // FULL => store info responses in transcript (your existing behavior toggle)
+      m_fullInfoRequest = (m_chatCtxLevel >= 2);
+
+      // If router expects EDIT or FULL, load full project sources now (expensive, but only then)
+      const bool needProject = (dec.mode == 2) || (m_chatCtxLevel >= 2);
+
+      if (needProject) {
+        auto *frame = m_editor->GetOwnerFrame();
+        if (frame) {
+          m_solveSession.workingFiles.clear();
+          frame->CollectEditorSources(m_solveSession.workingFiles);
+        }
+      }
+
+      // If FULL, attach PROJECT_FILES index into stable header extra (persist across iterations)
+      if (m_chatCtxLevel >= 2) {
+        wxString extra;
+        extra << BuildProjectFilesIndexForAi(/*maxFiles=*/160);
+        m_chatStableHeaderExtra = extra;
+      } else {
+        m_chatStableHeaderExtra.Clear();
+      }
+
+      // Prefetch (optional): provide as out-of-band INFO_RESPONSES for the first main call
+      wxString prefetchOutOfBand;
+      if (!dec.prefetch.empty()) {
+        // Ensure we at least can serve CURRENT_FILE for file_range
+        // (If not loaded yet, SeedWorkingFilesWithCurrentEditor already did it)
+        wxString all;
+        for (const auto &r : dec.prefetch) {
+          wxString one = HandleInfoRequest(r);
+          if (!one.IsEmpty()) {
+            all << one << wxT("\n");
+          }
+        }
+
+        if (!all.IsEmpty()) {
+          prefetchOutOfBand << wxT("\n*** BEGIN INFO_RESPONSES\n");
+          prefetchOutOfBand << all;
+          prefetchOutOfBand << wxT("*** END INFO_RESPONSES\n");
+          prefetchOutOfBand << wxT("INSTRUCTION: Use line numbers from INFO_RESPONSE CONTENT for RANGE.\n");
+        }
+      }
+
+      // Main call
+      auto *client = GetClient();
+      if (!client) {
+        StopCurrentAction();
+        return;
+      }
+
+      wxString promptForModel = BuildPromptForModel(m_chatTranscript, ephemeralPrompt, prefetchOutOfBand);
+
+      if (!client->SimpleChatAsync(GetInteractiveChatSystemPrompt(), promptForModel, this)) {
+        StopCurrentAction();
+        m_editor->ModalMsgDialog(
+            _("Failed to start AI request."),
+            _("AI interactive chat"),
+            wxOK | wxICON_ERROR);
+        return;
+      }
+    });
+  }).detach();
+
   return true;
 }
 
@@ -1966,6 +2245,9 @@ void ArduinoAiActions::ResetInteractiveChat() {
   m_chatTranscript.Clear();
   m_solveSession.seen.Reset();
   m_chatActive = false;
+  m_chatCtxLevel = 1; // LIGHT default
+  m_chatStableHeaderExtra.Clear();
+  m_routerActiveSeq = 0;
 
   // also reset persistence session state
   m_chatSessionId.clear();
@@ -2446,14 +2728,21 @@ wxString ArduinoAiActions::HandleInfoRequest(const AiInfoRequest &req) {
       return wxString();
     }
 
-    const SketchFileBuffer *buf = FindBufferWithFile(wxToStd(req.file));
+    wxString f = TrimCopy(req.file);
+
+    wxString fl = f.Lower();
+    if (fl == wxT("current_file") || fl == wxT("currentfile")) {
+      f = GetPromptCurrentFile();
+    }
+
+    const SketchFileBuffer *buf = FindBufferWithFile(wxToStd(f));
 
     if (!buf) {
       wxString resp;
       resp << wxT("*** BEGIN INFO_RESPONSE\n");
       resp << wxT("ID: ") << req.id << wxT("\n");
       resp << wxT("TYPE: file_range\n");
-      resp << wxT("FILE: ") << req.file << wxT("\n");
+      resp << wxT("FILE: ") << f << wxT("\n");
       resp << wxT("FROM_LINE: 0\n");
       resp << wxT("TO_LINE: 0\n");
       resp << wxT("CONTENT:\n");
@@ -2499,7 +2788,7 @@ wxString ArduinoAiActions::HandleInfoRequest(const AiInfoRequest &req) {
       content << wxString::Format(wxT("%d: %s\n"), l, lineText);
     }
 
-    std::string basename = StripFilename(GetSketchRoot(), wxToStd(req.file));
+    std::string basename = StripFilename(GetSketchRoot(), wxToStd(f));
 
     m_solveSession.seen.AddSeen(wxString::FromUTF8(basename), fromLine, toLine, ChecksumText(text));
 
@@ -2507,7 +2796,7 @@ wxString ArduinoAiActions::HandleInfoRequest(const AiInfoRequest &req) {
     resp << wxT("*** BEGIN INFO_RESPONSE\n");
     resp << wxT("ID: ") << req.id << wxT("\n");
     resp << wxT("TYPE: file_range\n");
-    resp << wxT("FILE: ") << req.file << wxT("\n");
+    resp << wxT("FILE: ") << f << wxT("\n");
     resp << wxT("FROM_LINE: ") << fromLine << wxT("\n");
     resp << wxT("TO_LINE: ") << toLine << wxT("\n");
     resp << wxT("CONTENT:\n");
@@ -2878,8 +3167,22 @@ bool ArduinoAiActions::ParseAiInfoRequests(const wxString &raw,
       continue;
     }
 
-    if (trimmed.StartsWith(wxT("QUERY:")) || trimmed.StartsWith(wxT("TERM:")) || trimmed.StartsWith(wxT("PATTERN:"))) {
+    if (trimmed.StartsWith(wxT("QUERY:"))) {
       wxString val = trimmed.Mid(6);
+      val.Trim(true).Trim(false);
+      cur.query = val;
+      continue;
+    }
+
+    if (trimmed.StartsWith(wxT("TERM:"))) {
+      wxString val = trimmed.Mid(5);
+      val.Trim(true).Trim(false);
+      cur.query = val;
+      continue;
+    }
+
+    if (trimmed.StartsWith(wxT("PATTERN:"))) {
+      wxString val = trimmed.Mid(8);
       val.Trim(true).Trim(false);
       cur.query = val;
       continue;
@@ -2914,6 +3217,36 @@ bool ArduinoAiActions::ParseAiInfoRequests(const wxString &raw,
   // If the model forgot the END marker, still flush if we have something.
   if (inReq) {
     flushCur();
+  }
+
+  // Normalize requests (ergonomics):
+  // - Allow FILE: CURRENT_FILE (or empty FILE) to mean current editor file.
+  // - Provide safe defaults for file_range if model omits/garbles line numbers.
+  const wxString curFile = GetPromptCurrentFile(); // sketch-relative
+
+  for (auto &r : out) {
+    r.type.Trim(true).Trim(false);
+    r.file.Trim(true).Trim(false);
+
+    if (!curFile.IsEmpty()) {
+      wxString f = r.file;
+      wxString fl = f.Lower();
+      if (f.IsEmpty() || fl == wxT("current_file") || fl == wxT("currentfile")) {
+        r.file = curFile;
+      }
+    }
+
+    if (r.type.CmpNoCase(wxT("file_range")) == 0) {
+      if (r.fromLine <= 0)
+        r.fromLine = 1;
+      if (r.toLine <= 0)
+        r.toLine = r.fromLine + 160;
+      if (r.toLine < r.fromLine) {
+        int tmp = r.toLine;
+        r.toLine = r.fromLine;
+        r.fromLine = tmp;
+      }
+    }
   }
 
   return !out.empty();
@@ -3078,7 +3411,7 @@ bool ArduinoAiActions::CheckModelQueriedFile(const std::vector<AiPatchHunk> &pat
       // Count an iteration (one more model roundtrip).
       m_solveSession.iteration++;
       if (CheckNumberOfIterations()) {
-        client->SimpleChatAsync(interactiveChatSystemPrompt, retryPrompt, this);
+        client->SimpleChatAsync(GetInteractiveChatSystemPrompt(), retryPrompt, this);
       } else {
         return true;
       }
@@ -3569,7 +3902,7 @@ bool ArduinoAiActions::ApplyAiModelSolution(const wxString &reply) {
 
       m_solveSession.iteration++;
       if (CheckNumberOfIterations()) {
-        client->SimpleChatAsync(interactiveChatSystemPrompt, promptForModel, this);
+        client->SimpleChatAsync(GetInteractiveChatSystemPrompt(), promptForModel, this);
       } else {
         return true;
       }
@@ -4065,7 +4398,7 @@ wxString ArduinoAiActions::GetPromptCurrentFile() const {
   return wxEmptyString;
 }
 
-wxString ArduinoAiActions::BuildStablePromptHeader() const {
+wxString ArduinoAiActions::BuildStablePromptHeader(bool withProjectFiles) const {
   wxString h;
 
   const wxString curFile = GetPromptCurrentFile();
@@ -4079,7 +4412,141 @@ wxString ArduinoAiActions::BuildStablePromptHeader() const {
       << wxT("\n");
   }
 
+  if (withProjectFiles) {
+    // Give the model a project index – makes search/symbol_declaration much more likely.
+    h << wxT("\n") << BuildProjectFilesIndexForAi(/*maxFiles=*/30) << wxT("\n\n");
+  }
+
+  // Optional extra header for interactive chat (router-selected)
+  if (m_currentAction == Action::InteractiveChat && !m_chatStableHeaderExtra.IsEmpty()) {
+    if (!h.IsEmpty() && !h.EndsWith(wxT("\n")))
+      h << wxT("\n");
+    h << m_chatStableHeaderExtra;
+    if (!h.EndsWith(wxT("\n")))
+      h << wxT("\n");
+  }
+
   return h;
+}
+
+wxString ArduinoAiActions::BuildProjectFilesIndexForAi(size_t maxFiles) const {
+  wxString h;
+  if (!m_solveSession.workingFiles.empty()) {
+    const std::string sketchRoot = GetSketchRoot();
+
+    const size_t total = m_solveSession.workingFiles.size();
+
+    h << wxT("PROJECT_FILES (") << (int)total << wxT("):\n");
+
+    size_t shown = 0;
+    for (const auto &b : m_solveSession.workingFiles) {
+      if (b.filename.empty())
+        continue;
+
+      wxString rel = wxString::FromUTF8(StripFilename(sketchRoot, b.filename));
+      if (rel.IsEmpty()) {
+        rel = wxString::FromUTF8(b.filename);
+      }
+
+      // optional: quick line count (helps the model estimate ranges)
+      int lines = 0;
+      for (char c : b.code) {
+        if (c == '\n')
+          ++lines;
+      }
+      if (!b.code.empty())
+        ++lines;
+
+      if (lines > 0) {
+        h << wxT("- ") << rel << wxString::Format(wxT(" (lines: %d)"), lines) << wxT("\n");
+      } else {
+        h << wxT("- ") << rel << wxT("\n");
+      }
+
+      if (++shown >= maxFiles)
+        break;
+    }
+
+    if (shown < total) {
+      h << wxString::Format(wxT("- ... (%d more)\n"), (int)(total - shown));
+    }
+  }
+  return h;
+}
+
+wxString ArduinoAiActions::GetInteractiveChatSystemPrompt() const {
+  // m_chatCtxLevel: 0=NONE,1=LIGHT,2=FULL
+  if (m_chatCtxLevel <= 0)
+    return interactiveChatSystemPromptNone;
+  if (m_chatCtxLevel >= 2)
+    return interactiveChatSystemPromptFull;
+  return interactiveChatSystemPromptLight;
+}
+
+ArduinoAiActions::AiRouterDecision ArduinoAiActions::ParseRouterDecisionLoose(const wxString &reply) {
+  ArduinoAiActions::AiRouterDecision d; // defaults to LIGHT/INVESTIGATE, empty prefetch
+
+  std::string jsonText;
+  if (!ExtractFirstJsonObjectUtf8(reply, jsonText)) {
+    return d;
+  }
+
+  try {
+    json j = json::parse(jsonText);
+
+    std::string lvl = j.value("level", "LIGHT");
+    std::string mode = j.value("mode", "INVESTIGATE");
+
+    // normalize to uppercase-ish
+    for (auto &ch : lvl)
+      ch = (char)toupper((unsigned char)ch);
+    for (auto &ch : mode)
+      ch = (char)toupper((unsigned char)ch);
+
+    d.level = AiChatLevelFromString(lvl);
+    d.mode = AiChatModeFromString(mode);
+
+    if (j.contains("prefetch") && j["prefetch"].is_array()) {
+      int nextId = 8000; // stable IDs for prefetch
+      for (const auto &it : j["prefetch"]) {
+        if (!it.is_object())
+          continue;
+        std::string type = it.value("type", "");
+        for (auto &ch : type)
+          ch = (char)tolower((unsigned char)ch);
+
+        if (type == "file_range") {
+          std::string file = it.value("file", "CURRENT_FILE");
+          int fromL = it.value("from_line", 1);
+          int toL = it.value("to_line", 160);
+
+          AiInfoRequest r;
+          r.id = nextId++;
+          r.type = wxT("file_range");
+          r.file = wxString::FromUTF8(file);
+          r.fromLine = fromL;
+          r.toLine = toL;
+
+          // minimal sanity
+          if (r.fromLine <= 0)
+            r.fromLine = 1;
+          if (r.toLine < r.fromLine)
+            r.toLine = r.fromLine;
+
+          d.prefetch.push_back(std::move(r));
+        }
+      }
+
+      // clamp to 2 prefetch items
+      if (d.prefetch.size() > 2) {
+        d.prefetch.resize(2);
+      }
+    }
+  } catch (...) {
+    // ignore, keep defaults
+  }
+
+  return d;
 }
 
 wxString ArduinoAiActions::BuildPromptForModel(const wxString &baseTranscript,
@@ -4088,7 +4555,7 @@ wxString ArduinoAiActions::BuildPromptForModel(const wxString &baseTranscript,
   wxString p = baseTranscript;
 
   // Always keep stable header present in every roundtrip.
-  wxString stable = BuildStablePromptHeader();
+  wxString stable = BuildStablePromptHeader(m_chatCtxLevel == 2);
   if (!stable.IsEmpty()) {
     p << wxT("\n\n") << stable;
   }
@@ -4130,9 +4597,11 @@ wxString ArduinoAiActions::BuildAppliedPatchEvidence(const std::vector<AiPatchHu
 
     // crude global cap (line counting by '\n')
     int linesHere = 0;
-    for (wxUniChar c : snippet)
-      if (c == '\n')
+    for (wxUniChar c : snippet) {
+      if (c == '\n') {
         ++linesHere;
+      }
+    }
     if (emittedLines + linesHere > maxTotalLines) {
       out << wxString::Format(wxT("\nFILE: %s RANGE: %d-%d\n<evidence truncated due to size>\n"),
                               p.file, p.fromLine, p.toLine);

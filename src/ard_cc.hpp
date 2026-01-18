@@ -235,7 +235,7 @@ private:
   std::string GetClangFilename(const std::string &filename) const;
   std::string GetClangCode(const std::string &filename, const std::string &code, int *addedLines) const;
   std::string GenerateInoHpp(const std::string &inoFilename, const std::string &code) const;
-  void CreateClangUnsavedFiles(const std::string &filename, const std::string &code, ClangUnsavedFiles& out);
+  void CreateClangUnsavedFiles(const std::string &filename, const std::string &code, ClangUnsavedFiles &out);
 
   // FNV-1a hash of text (fast "CRC")
   static std::size_t HashCode(const std::string &code);
