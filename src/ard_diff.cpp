@@ -1,4 +1,3 @@
-// ard_diff.cpp
 /*
  * Arduino Editor
  * Copyright (c) 2025 Pavel Petržela
