@@ -308,6 +308,7 @@ public:
   void ClearLastCompileUsage();
 
   void UploadAsync(wxEvtHandler *handler);
+  void UploadHexFileAsync(const std::string &hexFilePath, wxEvtHandler *handler);
   void BurnBootloaderAsync(wxEvtHandler *handler);
 
   std::string BuildFqbnFromOptions(const std::vector<ArduinoBoardOption> &options);

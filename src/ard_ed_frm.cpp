@@ -45,6 +45,7 @@
 #include <wx/dir.h>
 #include <wx/dirdlg.h>
 #include <wx/ffile.h>
+#include <wx/filedlg.h>
 #include <wx/filename.h>
 #include <wx/html/htmlwin.h>
 #include <wx/richmsgdlg.h>
@@ -71,6 +72,7 @@ enum {
   ID_MENU_PROJECT_CLEAN,
   ID_MENU_PROJECT_BUILD,
   ID_MENU_PROJECT_UPLOAD,
+  ID_MENU_TOOLS_UPLOAD_HEX,
   ID_MENU_VIEW_OUTPUT,
   ID_MENU_VIEW_SKETCHES,
   ID_MENU_VIEW_SYMBOLS,
@@ -522,11 +524,12 @@ void ArduinoEditorFrame::OpenSketch(const std::string &skp) {
 
   wxString lastPort = wxString::FromUTF8(arduinoCli->GetSerialPort());
   if (!lastPort.empty()) {
-    int idx = m_portChoice->FindString(lastPort);
-    if (idx != wxNOT_FOUND) {
-      m_portChoice->SetSelection(idx);
-      std::string lp = wxToStd(lastPort);
-      arduinoCli->SetSerialPort(lp);
+    for (size_t i = 0; i < m_serialPorts.size(); ++i) {
+      if (wxString::FromUTF8(m_serialPorts[i].address) == lastPort) {
+        m_portChoice->SetSelection(static_cast<int>(i));
+        arduinoCli->SetSerialPort(m_serialPorts[i].address);
+        break;
+      }
     }
   }
 
@@ -1283,10 +1286,15 @@ void ArduinoEditorFrame::OnSerialPortChanged(wxCommandEvent &WXUNUSED(event)) {
   if (sel == wxNOT_FOUND)
     return;
 
-  wxString value = m_portChoice->GetString(sel);
+  if (sel < 0 || sel >= static_cast<int>(m_serialPorts.size())) {
+    return;
+  }
+
+  const auto &portInfo = m_serialPorts[sel];
+  wxString value = wxString::FromUTF8(portInfo.label);
 
   if (arduinoCli) {
-    arduinoCli->SetSerialPort(wxToStd(value));
+    arduinoCli->SetSerialPort(portInfo.address);
   }
 
   UpdateStatus(_("Serial port changed to ") + value);
@@ -1399,6 +1407,9 @@ wxString ArduinoEditorFrame::GetCurrentActionName() const {
       break;
     case upload:
       text = _("Upload");
+      break;
+    case uploadhex:
+      text = _("HEX upload");
       break;
     case libinstall:
       text = _("Library installation");
@@ -1535,6 +1546,7 @@ void ArduinoEditorFrame::FinalizeCurrentAction(bool successful) {
       m_runUploadAfterCompile = false;
       break;
     case upload:
+    case uploadhex:
       if (m_serialMonitor) {
         m_serialMonitor->Unblock();
       }
@@ -1574,6 +1586,7 @@ void ArduinoEditorFrame::EnableUIActions(bool enable) {
   m_uploadButton->Enable(enable);
   m_menuBar->Enable(ID_MENU_PROJECT_BUILD, enable);
   m_menuBar->Enable(ID_MENU_PROJECT_UPLOAD, enable);
+  m_menuBar->Enable(ID_MENU_TOOLS_UPLOAD_HEX, enable);
   m_menuBar->Enable(ID_MENU_PROJECT_CLEAN, enable);
 }
 
@@ -1633,6 +1646,43 @@ bool ArduinoEditorFrame::UploadProject() {
       }
     }
   }
+  return false;
+}
+
+void ArduinoEditorFrame::OnToolsUploadHex(wxCommandEvent &WXUNUSED(event)) {
+  wxFileDialog dlg(this,
+                   _("Select HEX file"),
+                   wxEmptyString,
+                   wxEmptyString,
+                   _("HEX files (*.hex)|*.hex"),
+                   wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+  if (dlg.ShowModal() != wxID_OK) {
+    return;
+  }
+
+  UploadHexFile(dlg.GetPath());
+}
+
+bool ArduinoEditorFrame::UploadHexFile(const wxString &hexPath) {
+  if (!arduinoCli || hexPath.IsEmpty()) {
+    return false;
+  }
+
+  if (CanPerformAction(uploadhex)) {
+    if (m_buildOutputCtrl) {
+      m_buildOutputCtrl->Clear();
+    }
+
+    SetCurrentAction(uploadhex);
+    if (m_serialMonitor) {
+      m_serialMonitor->Block();
+    }
+
+    StartProcess(_("Uploading HEX file..."), ID_PROCESS_CLI, ArduinoActivityState::Background, /*canBeTerminated=*/true);
+    arduinoCli->UploadHexFileAsync(wxToStd(hexPath), this);
+    return true;
+  }
+
   return false;
 }
 
@@ -2496,7 +2546,14 @@ void ArduinoEditorFrame::RefreshSerialPorts() {
   if (port.IsEmpty()) {
     m_portChoice->SetSelection(wxNOT_FOUND);
   } else {
-    m_portChoice->SetStringSelection(port);
+    int selectedIndex = wxNOT_FOUND;
+    for (size_t i = 0; i < m_serialPorts.size(); ++i) {
+      if (wxString::FromUTF8(m_serialPorts[i].address) == port) {
+        selectedIndex = static_cast<int>(i);
+        break;
+      }
+    }
+    m_portChoice->SetSelection(selectedIndex);
   }
 
   // according to the current selection (or its absence) enable/disable the serial monitor
@@ -2821,6 +2878,14 @@ wxMenuBar *ArduinoEditorFrame::CreateMenuBar() {
                      wxAEArt::DevBoard);
 
   navMenu->AppendSeparator();
+
+  AddMenuItemWithArt(navMenu,
+                     ID_MENU_TOOLS_UPLOAD_HEX,
+                     _("Upload HEX file..."),
+                     _("Upload HEX file to the connected board using arduino-cli"),
+                     wxAEArt::Play);
+
+  navMenu->AppendSeparator();
   AddMenuItemWithArt(navMenu,
                      ID_MENU_SERIAL_MONITOR,
                      _("Serial monitor"),
@@ -2939,6 +3004,7 @@ wxMenuBar *ArduinoEditorFrame::CreateMenuBar() {
   Bind(wxEVT_MENU, &ArduinoEditorFrame::OnFindSymbol, this, ID_MENU_NAV_FIND_SYMBOL);
   Bind(wxEVT_MENU, &ArduinoEditorFrame::OnShowLibraryManager, this, ID_MENU_LIBRARY_MANAGER);
   Bind(wxEVT_MENU, &ArduinoEditorFrame::OnShowCoreManager, this, ID_MENU_CORE_MANAGER);
+  Bind(wxEVT_MENU, &ArduinoEditorFrame::OnToolsUploadHex, this, ID_MENU_TOOLS_UPLOAD_HEX);
   Bind(wxEVT_MENU, &ArduinoEditorFrame::OnOpenSerialMonitor, this, ID_MENU_SERIAL_MONITOR);
   Bind(wxEVT_MENU, &ArduinoEditorFrame::OnProjectClean, this, ID_MENU_PROJECT_CLEAN);
   Bind(wxEVT_MENU, &ArduinoEditorFrame::OnProjectBuild, this, ID_MENU_PROJECT_BUILD);
@@ -4028,6 +4094,7 @@ void ArduinoEditorFrame::OnSysColoursChanged(wxSysColourChangedEvent &evt) {
   ReplaceMenuItemBitmap(ID_MENU_NAV_FIND_SYMBOL, wxAEArt::Find);
   ReplaceMenuItemBitmap(ID_MENU_LIBRARY_MANAGER, wxAEArt::ListView);
   ReplaceMenuItemBitmap(ID_MENU_CORE_MANAGER, wxAEArt::DevBoard);
+  ReplaceMenuItemBitmap(ID_MENU_TOOLS_UPLOAD_HEX, wxAEArt::Play);
   ReplaceMenuItemBitmap(ID_MENU_SERIAL_MONITOR, wxAEArt::SerMon);
   ReplaceMenuItemBitmap(ID_MENU_PROJECT_BUILD, wxAEArt::Check);
   ReplaceMenuItemBitmap(ID_MENU_PROJECT_UPLOAD, wxAEArt::Play);

@@ -3334,6 +3334,43 @@ void ArduinoCli::UploadAsync(wxEvtHandler *handler) {
   }).detach();
 }
 
+void ArduinoCli::UploadHexFileAsync(const std::string &hexFilePath, wxEvtHandler *handler) {
+  if (!handler) {
+    return;
+  }
+
+  wxWeakRef<wxEvtHandler> weak(handler);
+
+  if (fqbn.empty()) {
+    wxCommandEvent evt(EVT_COMMANDLINE_OUTPUT_MSG);
+    evt.SetInt(-1);
+    evt.SetString(_("Board (FQBN) is not set. Cannot upload HEX file.\n"));
+    QueueUiEvent(weak, evt.Clone());
+    return;
+  }
+
+  if (serialPort.empty()) {
+    wxCommandEvent evt(EVT_COMMANDLINE_OUTPUT_MSG);
+    evt.SetInt(-1);
+    evt.SetString(_("Serial port is not set. Cannot upload HEX file.\n"));
+    QueueUiEvent(weak, evt.Clone());
+    return;
+  }
+
+  std::string args = "-v --no-color upload";
+  args += " -b " + ShellQuote(fqbn);
+  args += " -p " + ShellQuote(serialPort);
+  args += " --input-file " + ShellQuote(hexFilePath);
+
+  if (!programmer.empty()) {
+    args += " --programmer " + ShellQuote(programmer);
+  }
+
+  std::thread([this, weak, args]() {
+    this->RunCliStreaming(args, weak, "upload-hex");
+  }).detach();
+}
+
 void ArduinoCli::InstallLibrariesAsync(const std::vector<ArduinoLibraryInstallSpec> &specs, wxEvtHandler *handler) {
   if (!handler) {
     return;

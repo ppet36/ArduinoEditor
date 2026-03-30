@@ -46,6 +46,7 @@ enum CurrentAction {
   none,
   build,
   upload,
+  uploadhex,
   libinstall,
   libremove,
   libupdateindex,
@@ -222,6 +223,8 @@ private:
   void OnProjectBuild(wxCommandEvent &event);
   bool UploadProject();
   void OnProjectUpload(wxCommandEvent &event);
+  bool UploadHexFile(const wxString &hexPath);
+  void OnToolsUploadHex(wxCommandEvent &event);
   void OnCmdLineOutput(wxCommandEvent &event);
 
   void OnAbout(wxCommandEvent &event);
