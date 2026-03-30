@@ -255,6 +255,7 @@ public:
   static int ExecuteCommand(const std::string &cmd, std::string &output);
 
   inline std::string GetPlatformPath() const { return m_platformPath; }
+  inline std::string GetCorePlatformPath() const { return m_corePlatformPath; }
 
   // Kill for asynchronous currently running process
   bool CancelRunning();

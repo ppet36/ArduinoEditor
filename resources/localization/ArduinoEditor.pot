@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-30 20:11+0200\n"
+"POT-Creation-Date: 2026-03-30 21:38+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -437,7 +437,7 @@ msgid ""
 "  </p>\n"
 msgstr ""
 
-#: ../src/ard_aboutdlg.cpp:329 ../src/ard_ed_frm.cpp:2996
+#: ../src/ard_aboutdlg.cpp:329 ../src/ard_ed_frm.cpp:3000
 msgid "About Arduino Editor"
 msgstr ""
 
@@ -814,7 +814,7 @@ msgstr ""
 msgid "Extra request JSON"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:193 ../src/ard_ed_frm.cpp:4248
+#: ../src/ard_aimdldlg.cpp:193 ../src/ard_ed_frm.cpp:4252
 msgid "Delete"
 msgstr ""
 
@@ -832,7 +832,7 @@ msgid "OK"
 msgstr ""
 
 #: ../src/ard_aimdldlg.cpp:204 ../src/ard_boptdlg.cpp:77
-#: ../src/ard_diff.cpp:120 ../src/ard_ed_frm.cpp:2630 ../src/ard_fmtdlg.cpp:188
+#: ../src/ard_diff.cpp:120 ../src/ard_ed_frm.cpp:2634 ../src/ard_fmtdlg.cpp:188
 #: ../src/utils.cpp:1018
 msgid "Cancel"
 msgstr ""
@@ -1037,7 +1037,7 @@ msgid "Serial port is not set. Cannot upload HEX file.\n"
 msgstr ""
 
 #: ../src/ard_clidiag.cpp:57 ../src/ard_coreinfo.cpp:237
-#: ../src/ard_coreman.cpp:158 ../src/ard_ed_frm.cpp:970
+#: ../src/ard_coreman.cpp:158 ../src/ard_ed_frm.cpp:974
 #: ../src/ard_libinfo.cpp:359 ../src/ard_libman.cpp:199
 msgid "Close"
 msgstr ""
@@ -1064,7 +1064,7 @@ msgstr ""
 
 #: ../src/ard_cliinst.cpp:181 ../src/ard_cliinst.cpp:490
 #: ../src/ard_cliinst.cpp:588 ../src/ard_cliinst.cpp:691
-#: ../src/ard_ed_frm.cpp:1900
+#: ../src/ard_ed_frm.cpp:1904
 msgid "Preparing..."
 msgstr ""
 
@@ -1156,7 +1156,7 @@ msgstr ""
 msgid "Browse"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:324 ../src/ard_ed_frm.cpp:2854 ../src/main.cpp:412
+#: ../src/ard_cliinst.cpp:324 ../src/ard_ed_frm.cpp:2858 ../src/main.cpp:412
 msgid "Exit"
 msgstr ""
 
@@ -1376,7 +1376,7 @@ msgstr ""
 msgid "Version "
 msgstr ""
 
-#: ../src/ard_coreinfo.cpp:174 ../src/ard_examples.cpp:436
+#: ../src/ard_coreinfo.cpp:174 ../src/ard_examples.cpp:608
 #: ../src/ard_libinfo.cpp:296
 msgid "Install..."
 msgstr ""
@@ -1401,8 +1401,8 @@ msgstr ""
 
 #: ../src/ard_coreman.cpp:110 ../src/ard_coreman.cpp:193
 #: ../src/ard_coreman.cpp:351 ../src/ard_coreman.cpp:454
-#: ../src/ard_ed_frm.cpp:1833 ../src/ard_ed_frm.cpp:2393
-#: ../src/ard_ed_frm.cpp:2482 ../src/ard_ed_frm.cpp:4979
+#: ../src/ard_ed_frm.cpp:1837 ../src/ard_ed_frm.cpp:2397
+#: ../src/ard_ed_frm.cpp:2486 ../src/ard_ed_frm.cpp:4983
 #: ../src/ard_libman.cpp:145 ../src/ard_libman.cpp:262
 #: ../src/ard_libman.cpp:433 ../src/ard_libman.cpp:598
 msgid "All"
@@ -1430,12 +1430,12 @@ msgstr ""
 msgid "Core"
 msgstr ""
 
-#: ../src/ard_coreman.cpp:137 ../src/ard_examples.cpp:73
+#: ../src/ard_coreman.cpp:137 ../src/ard_examples.cpp:122
 #: ../src/ard_libman.cpp:179
 msgid "Version"
 msgstr ""
 
-#: ../src/ard_coreman.cpp:138 ../src/ard_examples.cpp:74
+#: ../src/ard_coreman.cpp:138 ../src/ard_examples.cpp:123
 #: ../src/ard_libman.cpp:180
 msgid "Maintainer"
 msgstr ""
@@ -1566,8 +1566,8 @@ msgstr ""
 msgid "Initializing..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:349 ../src/ard_ed_frm.cpp:3818
-#: ../src/ard_ed_frm.cpp:4015
+#: ../src/ard_ed_frm.cpp:349 ../src/ard_ed_frm.cpp:3822
+#: ../src/ard_ed_frm.cpp:4019
 #, c-format
 msgid "Directory '%s' does not exist."
 msgstr ""
@@ -1614,283 +1614,283 @@ msgstr ""
 msgid "Arduino Clang completion initialized for "
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:681 ../src/ard_ed_frm.cpp:685
+#: ../src/ard_ed_frm.cpp:685 ../src/ard_ed_frm.cpp:689
 msgid "Failed create Arduino Clang completion!"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:725 ../src/ard_ed_frm.cpp:1383
+#: ../src/ard_ed_frm.cpp:729 ../src/ard_ed_frm.cpp:1387
 msgid "Initializing Arduino Clang completion..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:729 ../src/ard_ed_frm.cpp:1387
+#: ../src/ard_ed_frm.cpp:733 ../src/ard_ed_frm.cpp:1391
 msgid "Loading board parameters..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:737 ../src/ard_ed_frm.cpp:1391
+#: ../src/ard_ed_frm.cpp:741 ../src/ard_ed_frm.cpp:1395
 msgid "Loading compile parameters..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:777
+#: ../src/ard_ed_frm.cpp:781
 msgid "Error loading default board options."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:783
+#: ../src/ard_ed_frm.cpp:787
 msgid "Board has no options."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:783 ../src/ard_ed_frm.cpp:1526
+#: ../src/ard_ed_frm.cpp:787 ../src/ard_ed_frm.cpp:1530
 msgid "Information"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:791
+#: ../src/ard_ed_frm.cpp:795
 msgid "Error loading board options."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:800
+#: ../src/ard_ed_frm.cpp:804
 msgid "Board settings"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:869 ../src/ard_ed_frm.cpp:926
+#: ../src/ard_ed_frm.cpp:873 ../src/ard_ed_frm.cpp:930
 msgid "The file in the editor is modified. Do you want to save the file?"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:870 ../src/ard_ed_frm.cpp:927
-#: ../src/ard_ed_frm.cpp:4378
+#: ../src/ard_ed_frm.cpp:874 ../src/ard_ed_frm.cpp:931
+#: ../src/ard_ed_frm.cpp:4382
 msgid "Close tab"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:874 ../src/ard_ed_frm.cpp:931
-#: ../src/ard_ed_frm.cpp:1267 ../src/ard_ed_frm.cpp:1292
+#: ../src/ard_ed_frm.cpp:878 ../src/ard_ed_frm.cpp:935
+#: ../src/ard_ed_frm.cpp:1271 ../src/ard_ed_frm.cpp:1296
 msgid "Save error!"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:971
+#: ../src/ard_ed_frm.cpp:975
 msgid "Close Others"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:972
+#: ../src/ard_ed_frm.cpp:976
 msgid "Close All"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1034
+#: ../src/ard_ed_frm.cpp:1038
 #, c-format
 msgid "File %s not found."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1039
+#: ../src/ard_ed_frm.cpp:1043
 msgid "Cannot delete .ino file of the sketch."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1051
+#: ../src/ard_ed_frm.cpp:1055
 msgid ""
 "The file has unsaved changes.\n"
 "Do you really want to delete it?"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1053 ../src/ard_filestree.cpp:440
+#: ../src/ard_ed_frm.cpp:1057 ../src/ard_filestree.cpp:440
 msgid "Delete file"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1065
+#: ../src/ard_ed_frm.cpp:1069
 #, c-format
 msgid "Failed to delete %s."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1105
+#: ../src/ard_ed_frm.cpp:1109
 msgid "File with this name already exists in the filesystem."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1110
+#: ../src/ard_ed_frm.cpp:1114
 msgid "Cannot create file outside of project."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1117
+#: ../src/ard_ed_frm.cpp:1121
 #, c-format
 msgid "Cannot create file '%s'."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1176 ../src/ard_examples.cpp:479
+#: ../src/ard_ed_frm.cpp:1180 ../src/ard_examples.cpp:651
 msgid "Sketch name cannot be empty."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1189
+#: ../src/ard_ed_frm.cpp:1193
 #, c-format
 msgid "Error creating directory '%s'."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1231 ../src/nsketch.cpp:111
+#: ../src/ard_ed_frm.cpp:1235 ../src/nsketch.cpp:111
 msgid "Select sketch directory"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1265
+#: ../src/ard_ed_frm.cpp:1269
 msgid "Saved..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1290
+#: ../src/ard_ed_frm.cpp:1294
 msgid "All saved..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1316
+#: ../src/ard_ed_frm.cpp:1320
 msgid "Serial port changed to "
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1324
+#: ../src/ard_ed_frm.cpp:1328
 msgid "Serial ports refreshed."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1330
+#: ../src/ard_ed_frm.cpp:1334
 msgid "No symbols found."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1330 ../src/ard_finsymdlg.cpp:31
+#: ../src/ard_ed_frm.cpp:1334 ../src/ard_finsymdlg.cpp:31
 msgid "Find symbol"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1381
+#: ../src/ard_ed_frm.cpp:1385
 msgid "Rebuilding project..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1422
+#: ../src/ard_ed_frm.cpp:1426
 msgid "Compilation"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1425
+#: ../src/ard_ed_frm.cpp:1429
 msgid "Upload"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1428
+#: ../src/ard_ed_frm.cpp:1432
 msgid "HEX upload"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1431
+#: ../src/ard_ed_frm.cpp:1435
 msgid "Library installation"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1434
+#: ../src/ard_ed_frm.cpp:1438
 msgid "Library uninstalation"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1437 ../src/ard_libman.cpp:743
+#: ../src/ard_ed_frm.cpp:1441 ../src/ard_libman.cpp:743
 msgid "Update library index"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1441
+#: ../src/ard_ed_frm.cpp:1445
 msgid "Action"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1449
+#: ../src/ard_ed_frm.cpp:1453
 #, c-format
 msgid "Other action \"%s\" running. Please try again later."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1463
+#: ../src/ard_ed_frm.cpp:1467
 #, c-format
 msgid "%s started..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1476
+#: ../src/ard_ed_frm.cpp:1480
 msgid "finished."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1476
+#: ../src/ard_ed_frm.cpp:1480
 msgid "failed."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1487 ../src/ard_ed_frm.cpp:1826
-#: ../src/ard_ed_frm.cpp:2386 ../src/ard_libman.cpp:249
+#: ../src/ard_ed_frm.cpp:1491 ../src/ard_ed_frm.cpp:1830
+#: ../src/ard_ed_frm.cpp:2390 ../src/ard_libman.cpp:249
 msgid "Loading libraries..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1513
+#: ../src/ard_ed_frm.cpp:1517
 #, c-format
 msgid ""
 "Sketch uses %lld bytes (%d%%) of program storage space. Maximum is %lld "
 "bytes.\n"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1519
+#: ../src/ard_ed_frm.cpp:1523
 #, c-format
 msgid ""
 "Global variables use %lld bytes (%d%%) of dynamic memory, leaving %lld bytes "
 "for local variables. Maximum is %lld bytes.\n"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1524
+#: ../src/ard_ed_frm.cpp:1528
 msgid ""
 "Build successful.\n"
 "\t\n"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1527
+#: ../src/ard_ed_frm.cpp:1531
 msgid "Don't show again."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1550
+#: ../src/ard_ed_frm.cpp:1554
 msgid "arduino-cli build diagnostics"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1572 ../src/ard_ed_frm.cpp:2460
+#: ../src/ard_ed_frm.cpp:1576 ../src/ard_ed_frm.cpp:2464
 msgid "Enumerating available boards..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1574
+#: ../src/ard_ed_frm.cpp:1578
 msgid "Loading core list..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1583
+#: ../src/ard_ed_frm.cpp:1587
 #, c-format
 msgid "%s failed. See the CLI output for more information."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1624
+#: ../src/ard_ed_frm.cpp:1628
 msgid "Building project..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1659
+#: ../src/ard_ed_frm.cpp:1663
 msgid "Uploading project..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1670
+#: ../src/ard_ed_frm.cpp:1674
 msgid "Select HEX file"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1673
+#: ../src/ard_ed_frm.cpp:1677
 msgid "HEX files (*.hex)|*.hex"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1697
+#: ../src/ard_ed_frm.cpp:1701
 msgid "Uploading HEX file..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1816
+#: ../src/ard_ed_frm.cpp:1820
 msgid "Resolving missing libraries..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1878 ../src/ard_ed_frm.cpp:3169
+#: ../src/ard_ed_frm.cpp:1882 ../src/ard_ed_frm.cpp:3173
 msgid "Problems"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1906 ../src/ard_ed_frm.cpp:2107
+#: ../src/ard_ed_frm.cpp:1910 ../src/ard_ed_frm.cpp:2111
 msgid "Diagnostics turned off."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:1918
+#: ../src/ard_ed_frm.cpp:1922
 msgid "No problems found."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2086
+#: ../src/ard_ed_frm.cpp:2090
 msgid "Project diagnostics evaluation..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2101
+#: ../src/ard_ed_frm.cpp:2105
 msgid "Diagnostic evaluation..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2117
+#: ../src/ard_ed_frm.cpp:2121
 msgid "Failed to load Arduino libraries from arduino-cli."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2186
+#: ../src/ard_ed_frm.cpp:2190
 #, c-format
 msgid ""
 "Header '%s' was not found, but it looks like it belongs to an installed "
@@ -1905,23 +1905,23 @@ msgid ""
 "Rebuild now?"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2196
+#: ../src/ard_ed_frm.cpp:2200
 msgid "Rebuild required"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2209
+#: ../src/ard_ed_frm.cpp:2213
 msgid ""
 "The following missing headers are claimed to be provided by Arduino "
 "libraries:\n"
 "\n"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2234
+#: ../src/ard_ed_frm.cpp:2238
 #, c-format
 msgid "... and %lu more"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2240
+#: ../src/ard_ed_frm.cpp:2244
 msgid ""
 "\n"
 "Note: Arduino library metadata can be wrong. The Library Manager will be "
@@ -1929,541 +1929,541 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2245
+#: ../src/ard_ed_frm.cpp:2249
 msgid "Missing headers"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2248
+#: ../src/ard_ed_frm.cpp:2252
 msgid "Open Library Manager"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2248
+#: ../src/ard_ed_frm.cpp:2252
 msgid "Ignore"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2283
+#: ../src/ard_ed_frm.cpp:2287
 msgid "Failed to load installed Arduino libraries from arduino-cli."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2405
+#: ../src/ard_ed_frm.cpp:2409
 msgid "Failed to load installed Arduino cores from arduino-cli."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2469
+#: ../src/ard_ed_frm.cpp:2473
 msgid "Failed to load Arduino cores from arduino-cli."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2494
+#: ../src/ard_ed_frm.cpp:2498
 msgid "Failed to load available boards from arduino-cli."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2518
+#: ../src/ard_ed_frm.cpp:2522
 msgid "Resolving libraries..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2626
+#: ../src/ard_ed_frm.cpp:2630
 msgid ""
 "Some files have unsaved changes.\n"
 "Do you want to save them before exiting?"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2627
+#: ../src/ard_ed_frm.cpp:2631
 msgid "Confirm exit"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2630
+#: ../src/ard_ed_frm.cpp:2634
 msgid "Save"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2630
+#: ../src/ard_ed_frm.cpp:2634
 msgid "Discard"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2641
+#: ../src/ard_ed_frm.cpp:2645
 msgid "Some files couldn't be saved."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2641
+#: ../src/ard_ed_frm.cpp:2645
 msgid "Save error"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2798
+#: ../src/ard_ed_frm.cpp:2802
 msgid "New Sketch...\tCtrl+N"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2799
+#: ../src/ard_ed_frm.cpp:2803
 msgid "Create new sketch"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2804
+#: ../src/ard_ed_frm.cpp:2808
 msgid "Open Sketch...\tCtrl+O"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2805
+#: ../src/ard_ed_frm.cpp:2809
 msgid "Open an existing Arduino sketch directory"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2810
+#: ../src/ard_ed_frm.cpp:2814
 msgid "Open recent"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2815
+#: ../src/ard_ed_frm.cpp:2819
 msgid "Sketches"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2820
+#: ../src/ard_ed_frm.cpp:2824
 msgid "Examples...\tCtrl+E"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2821
+#: ../src/ard_ed_frm.cpp:2825
 msgid "Browse and preview Arduino library examples"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2826
+#: ../src/ard_ed_frm.cpp:2830
 msgid "Save\tCtrl+S"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2827
+#: ../src/ard_ed_frm.cpp:2831
 msgid "Save the current file"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2832
+#: ../src/ard_ed_frm.cpp:2836
 msgid "Save All\tCtrl+Shift+S"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2833
+#: ../src/ard_ed_frm.cpp:2837
 msgid "Save all opened files"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2840
+#: ../src/ard_ed_frm.cpp:2844
 msgid "Settings..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2841
+#: ../src/ard_ed_frm.cpp:2845
 msgid "Open configuration (cli, fonts, colors and behavior)"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2855
+#: ../src/ard_ed_frm.cpp:2859
 msgid "Exit the application"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2867
+#: ../src/ard_ed_frm.cpp:2871
 msgid "Back\tAlt-Left"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2868
+#: ../src/ard_ed_frm.cpp:2872
 msgid "Jump back to the previous cursor navigation location"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2873
+#: ../src/ard_ed_frm.cpp:2877
 msgid "Forward\tAlt-Right"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2874
+#: ../src/ard_ed_frm.cpp:2878
 msgid "Go forward in navigation history"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2879
+#: ../src/ard_ed_frm.cpp:2883
 msgid "Find symbol...\tCtrl-Shift-O"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2880
+#: ../src/ard_ed_frm.cpp:2884
 msgid "Find and navigate to any symbol in the current sketch"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2887
+#: ../src/ard_ed_frm.cpp:2891
 msgid "Library manager...\tCtrl+Shift+L"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2888
+#: ../src/ard_ed_frm.cpp:2892
 msgid "Manage Arduino libraries"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2893
+#: ../src/ard_ed_frm.cpp:2897
 msgid "Boards manager...\tCtrl+Shift+B"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2894
+#: ../src/ard_ed_frm.cpp:2898
 msgid "Manage Arduino boards (cores)"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2901
+#: ../src/ard_ed_frm.cpp:2905
 msgid "Upload HEX file..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2902
+#: ../src/ard_ed_frm.cpp:2906
 msgid "Upload HEX file to the connected board using arduino-cli"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2908 ../src/ard_ed_frm.cpp:3670
+#: ../src/ard_ed_frm.cpp:2912 ../src/ard_ed_frm.cpp:3674
 msgid "Serial monitor"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2909
+#: ../src/ard_ed_frm.cpp:2913
 msgid "Shows serial monitor of connected board"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2916
+#: ../src/ard_ed_frm.cpp:2920
 msgid "Build\tCtrl+R"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2917
+#: ../src/ard_ed_frm.cpp:2921
 msgid "Build sketch using arduino-cli"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2922
+#: ../src/ard_ed_frm.cpp:2926
 msgid "Upload\tCtrl+U"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2923
+#: ../src/ard_ed_frm.cpp:2927
 msgid "Upload sketch using arduino-cli"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2930
+#: ../src/ard_ed_frm.cpp:2934
 msgid "Clean\tShift+Ctrl+K"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2931
+#: ../src/ard_ed_frm.cpp:2935
 msgid "Remove build cache and regenerate clang properties"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2940 ../src/ard_ed_frm.cpp:3239
-#: ../src/ard_ed_frm.cpp:3274
+#: ../src/ard_ed_frm.cpp:2944 ../src/ard_ed_frm.cpp:3243
+#: ../src/ard_ed_frm.cpp:3278
 msgid "Output"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2941
+#: ../src/ard_ed_frm.cpp:2945
 msgid "Output window problems / build"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2951
+#: ../src/ard_ed_frm.cpp:2955
 msgid "Sketch browser"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2952
+#: ../src/ard_ed_frm.cpp:2956
 msgid "Show browser for Sketch directory"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2962 ../src/ard_ed_frm.cpp:3272
+#: ../src/ard_ed_frm.cpp:2966 ../src/ard_ed_frm.cpp:3276
 msgid "Class browser"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2963
+#: ../src/ard_ed_frm.cpp:2967
 msgid "Show symbols tree for current editor"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2973 ../src/ard_ed_frm.cpp:3251
-#: ../src/ard_ed_frm.cpp:3276 ../src/ard_setdlg.cpp:1750
+#: ../src/ard_ed_frm.cpp:2977 ../src/ard_ed_frm.cpp:3255
+#: ../src/ard_ed_frm.cpp:3280 ../src/ard_setdlg.cpp:1750
 msgid "AI assistant"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2974
+#: ../src/ard_ed_frm.cpp:2978
 msgid "Show AI chat panel"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2987
+#: ../src/ard_ed_frm.cpp:2991
 msgid "Check for Updates..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2988
+#: ../src/ard_ed_frm.cpp:2992
 msgid "Check GitHub for a newer version of Arduino Editor"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:2995
+#: ../src/ard_ed_frm.cpp:2999
 msgid "&About Arduino Editor...\tShift-F1"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:3006
+#: ../src/ard_ed_frm.cpp:3010
 msgid "&File"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:3007
+#: ../src/ard_ed_frm.cpp:3011
 msgid "&Project"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:3008
+#: ../src/ard_ed_frm.cpp:3012
 msgid "&Tools"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:3009
+#: ../src/ard_ed_frm.cpp:3013
 msgid "&View"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:3010
+#: ../src/ard_ed_frm.cpp:3014
 msgid "&Help"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:3114
+#: ../src/ard_ed_frm.cpp:3118
 msgid "Development board options"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:3116
+#: ../src/ard_ed_frm.cpp:3120
 msgid "Build sketch (Ctrl+R)"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:3118
+#: ../src/ard_ed_frm.cpp:3122
 msgid "Upload sketch (Ctrl+U)"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:3124
+#: ../src/ard_ed_frm.cpp:3128
 msgid "Refresh port list"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:3125
+#: ../src/ard_ed_frm.cpp:3129
 msgid "Open Serial Monitor"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:3170 ../src/ard_setdlg.cpp:1125
+#: ../src/ard_ed_frm.cpp:3174 ../src/ard_setdlg.cpp:1125
 msgid "CLI"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:3208 ../src/ard_ed_frm.cpp:3270
+#: ../src/ard_ed_frm.cpp:3212 ../src/ard_ed_frm.cpp:3274
 msgid "Sketch files"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:3222
+#: ../src/ard_ed_frm.cpp:3226
 msgid "Symbols"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:3562 ../src/sf.cpp:68
+#: ../src/ard_ed_frm.cpp:3566 ../src/sf.cpp:68
 msgid "Arduino Editor"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:3571
+#: ../src/ard_ed_frm.cpp:3575
 msgid "Application initializing..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:3668
+#: ../src/ard_ed_frm.cpp:3672
 msgid ""
 "Serial monitor is available only for local serial ports.\n"
 "\n"
 "Select a serial port in the toolbar."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:3776
+#: ../src/ard_ed_frm.cpp:3780
 msgid "(Empty)"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:3779 ../src/ard_ed_frm.cpp:3805
-#: ../src/ard_ed_frm.cpp:3837
+#: ../src/ard_ed_frm.cpp:3783 ../src/ard_ed_frm.cpp:3809
+#: ../src/ard_ed_frm.cpp:3841
 msgid "Clear history"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:3837
+#: ../src/ard_ed_frm.cpp:3841
 msgid "Do you really want to clear the recent sketches history?"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:3902
+#: ../src/ard_ed_frm.cpp:3906
 msgid "(SketchesDir does not exist)"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:3909
+#: ../src/ard_ed_frm.cpp:3913
 msgid "(Cannot open SketchesDir)"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:3973
+#: ../src/ard_ed_frm.cpp:3977
 msgid "(No sketches found)"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4170 ../src/ard_ed_frm.cpp:4441
+#: ../src/ard_ed_frm.cpp:4174 ../src/ard_ed_frm.cpp:4445
 #, c-format
 msgid "Cannot open '%s' in associated application."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4170 ../src/ard_ed_frm.cpp:4441
+#: ../src/ard_ed_frm.cpp:4174 ../src/ard_ed_frm.cpp:4445
 msgid "Open file"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4181
+#: ../src/ard_ed_frm.cpp:4185
 msgid "Enter new file name:"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4181 ../src/ard_filestree.cpp:423
+#: ../src/ard_ed_frm.cpp:4185 ../src/ard_filestree.cpp:423
 msgid "New file"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4181
+#: ../src/ard_ed_frm.cpp:4185
 msgid "new_file.cpp"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4190
+#: ../src/ard_ed_frm.cpp:4194
 msgid "File name must not contain path separators."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4206
+#: ../src/ard_ed_frm.cpp:4210
 msgid "Folder name:"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4207 ../src/ard_filestree.cpp:424
+#: ../src/ard_ed_frm.cpp:4211 ../src/ard_filestree.cpp:424
 msgid "New folder"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4208
+#: ../src/ard_ed_frm.cpp:4212
 msgid "new_folder"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4217
+#: ../src/ard_ed_frm.cpp:4221
 msgid "Invalid folder name."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4223
+#: ../src/ard_ed_frm.cpp:4227
 msgid "Cannot create folder."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4239
+#: ../src/ard_ed_frm.cpp:4243
 msgid "Cannot delete .ino file of sketch."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4244
+#: ../src/ard_ed_frm.cpp:4248
 #, c-format
 msgid "Do you want to delete folder %s and all its contents?"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4245
+#: ../src/ard_ed_frm.cpp:4249
 #, c-format
 msgid "Do you want to delete file %s?"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4256
+#: ../src/ard_ed_frm.cpp:4260
 msgid "Failed to delete: "
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4273 ../src/ard_renamedlg.cpp:121
+#: ../src/ard_ed_frm.cpp:4277 ../src/ard_renamedlg.cpp:121
 msgid "New name:"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4273
+#: ../src/ard_ed_frm.cpp:4277
 msgid "Rename"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4309
+#: ../src/ard_ed_frm.cpp:4313
 msgid "Rename failed."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4375
+#: ../src/ard_ed_frm.cpp:4379
 msgid ""
 "The file was deleted outside of Arduino Editor.\n"
 "Do you want to keep your unsaved buffer open?"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4376
+#: ../src/ard_ed_frm.cpp:4380
 msgid "File deleted"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4378
+#: ../src/ard_ed_frm.cpp:4382
 msgid "Keep buffer"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4398 ../src/ard_ed_frm.cpp:4413
+#: ../src/ard_ed_frm.cpp:4402 ../src/ard_ed_frm.cpp:4417
 msgid "File reloaded from disk."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4405
+#: ../src/ard_ed_frm.cpp:4409
 msgid ""
 "The file was modified outside of Arduino Editor.\n"
 "Do you want to reload it from disk?"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4406
+#: ../src/ard_ed_frm.cpp:4410
 msgid "File changed"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4408
+#: ../src/ard_ed_frm.cpp:4412
 msgid "Reload"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4408
+#: ../src/ard_ed_frm.cpp:4412
 msgid "Keep editor version"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4448
+#: ../src/ard_ed_frm.cpp:4452
 msgid "No board selected"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4496 ../src/ard_ed_frm.cpp:4596
+#: ../src/ard_ed_frm.cpp:4500 ../src/ard_ed_frm.cpp:4600
 msgid "--- Select board ---"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4711
+#: ../src/ard_ed_frm.cpp:4715
 msgid "Code completion engine is not available."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4716
+#: ../src/ard_ed_frm.cpp:4720
 msgid "Sources contains compilation errors."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4716 ../src/ard_ed_frm.cpp:4728
-#: ../src/ard_ed_frm.cpp:4737 ../src/ard_ed_frm.cpp:4758
-#: ../src/ard_ed_frm.cpp:4768 ../src/ard_ed_frm.cpp:4775
-#: ../src/ard_ed_frm.cpp:4789 ../src/ard_ed_frm.cpp:4817
+#: ../src/ard_ed_frm.cpp:4720 ../src/ard_ed_frm.cpp:4732
+#: ../src/ard_ed_frm.cpp:4741 ../src/ard_ed_frm.cpp:4762
+#: ../src/ard_ed_frm.cpp:4772 ../src/ard_ed_frm.cpp:4779
+#: ../src/ard_ed_frm.cpp:4793 ../src/ard_ed_frm.cpp:4821
 #: ../src/ard_refactor.cpp:473 ../src/ard_refactor.cpp:483
 #: ../src/ard_renamedlg.cpp:71
 msgid "Rename symbol"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4728
+#: ../src/ard_ed_frm.cpp:4732
 msgid "No usages of this symbol were found."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4737
+#: ../src/ard_ed_frm.cpp:4741
 msgid "Symbol is declared outside of sketch directory."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4758
+#: ../src/ard_ed_frm.cpp:4762
 msgid "New name cannot be empty."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4768
+#: ../src/ard_ed_frm.cpp:4772
 msgid "New name is not a valid identifier."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4775
+#: ../src/ard_ed_frm.cpp:4779
 msgid "No occurrences selected."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4789
+#: ../src/ard_ed_frm.cpp:4793
 msgid "No usages of this symbol were found inside the current sketch."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4817
+#: ../src/ard_ed_frm.cpp:4821
 msgid "No matching occurrences to rename were found."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4821
+#: ../src/ard_ed_frm.cpp:4825
 #, c-format
 msgid "Renamed %d occurrences."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4920
+#: ../src/ard_ed_frm.cpp:4924
 #, c-format
 msgid "Updates: %zu libs and %zu boards"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4922
+#: ../src/ard_ed_frm.cpp:4926
 #, c-format
 msgid "Updates: %zu libraries"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4924
+#: ../src/ard_ed_frm.cpp:4928
 #, c-format
 msgid "Updates: %zu boards"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4947
+#: ../src/ard_ed_frm.cpp:4951
 #, c-format
 msgid "Library updates (%zu)..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4949
+#: ../src/ard_ed_frm.cpp:4953
 msgid "Library updates..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4954
+#: ../src/ard_ed_frm.cpp:4958
 #, c-format
 msgid "Board updates (%zu)..."
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:4956
+#: ../src/ard_ed_frm.cpp:4960
 msgid "Board updates..."
 msgstr ""
 
@@ -2721,83 +2721,91 @@ msgstr ""
 msgid "Unable to save file %s."
 msgstr ""
 
-#: ../src/ard_examples.cpp:40
+#: ../src/ard_examples.cpp:89
 msgid "Arduino Library Examples"
 msgstr ""
 
-#: ../src/ard_examples.cpp:64
+#: ../src/ard_examples.cpp:113
 msgid "Filter libraries..."
 msgstr ""
 
-#: ../src/ard_examples.cpp:72
+#: ../src/ard_examples.cpp:121
 msgid "Library"
 msgstr ""
 
-#: ../src/ard_examples.cpp:75
+#: ../src/ard_examples.cpp:124
 msgid "URL"
 msgstr ""
 
-#: ../src/ard_examples.cpp:93
+#: ../src/ard_examples.cpp:142
 msgid "Example"
 msgstr ""
 
-#: ../src/ard_examples.cpp:94 ../src/ard_finsymdlg.cpp:49
+#: ../src/ard_examples.cpp:143 ../src/ard_finsymdlg.cpp:49
 msgid "Path"
 msgstr ""
 
-#: ../src/ard_examples.cpp:283
+#: ../src/ard_examples.cpp:229
+msgid "Core platform"
+msgstr ""
+
+#: ../src/ard_examples.cpp:233
+msgid "Board platform"
+msgstr ""
+
+#: ../src/ard_examples.cpp:455
 msgid ""
 "// Example not found:\n"
 "// "
 msgstr ""
 
-#: ../src/ard_examples.cpp:291 ../src/ard_examples.cpp:336
+#: ../src/ard_examples.cpp:463 ../src/ard_examples.cpp:508
 msgid ""
 "// Cannot open file:\n"
 "// "
 msgstr ""
 
-#: ../src/ard_examples.cpp:311
+#: ../src/ard_examples.cpp:483
 msgid ""
 "// Cannot open directory:\n"
 "// "
 msgstr ""
 
-#: ../src/ard_examples.cpp:325
+#: ../src/ard_examples.cpp:497
 msgid ""
 "// No .ino (or .cpp) file found in:\n"
 "// "
 msgstr ""
 
-#: ../src/ard_examples.cpp:452
+#: ../src/ard_examples.cpp:624
 msgid "Example directory does not exist:\n"
 msgstr ""
 
-#: ../src/ard_examples.cpp:452 ../src/ard_examples.cpp:469
+#: ../src/ard_examples.cpp:624 ../src/ard_examples.cpp:641
 msgid "Install example"
 msgstr ""
 
-#: ../src/ard_examples.cpp:464
+#: ../src/ard_examples.cpp:636
 msgid "example"
 msgstr ""
 
-#: ../src/ard_examples.cpp:468
+#: ../src/ard_examples.cpp:640
 msgid "Enter sketch name:"
 msgstr ""
 
-#: ../src/ard_examples.cpp:485
+#: ../src/ard_examples.cpp:657
 msgid "Sketch name must not contain path separators."
 msgstr ""
 
-#: ../src/ard_examples.cpp:491
+#: ../src/ard_examples.cpp:663
 msgid "Sketches directory is not known."
 msgstr ""
 
-#: ../src/ard_examples.cpp:499
+#: ../src/ard_examples.cpp:671
 msgid "Target sketch directory already exists:\n"
 msgstr ""
 
-#: ../src/ard_examples.cpp:504
+#: ../src/ard_examples.cpp:676
 msgid "Failed to copy example to:\n"
 msgstr ""
 

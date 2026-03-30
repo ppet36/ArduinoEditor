@@ -648,6 +648,10 @@ void ArduinoEditorFrame::OnClangArgsReady(wxThreadEvent &event) {
 
     UpdateStatus(_("Arduino Clang completion initialized for ") + wxString::FromUTF8(arduinoCli->GetBoardName()));
 
+    if (m_examplesFrame) {
+      m_examplesFrame->RefreshLibraries();
+    }
+
     switch (m_clangSettings.resolveMode) {
       case internalResolver:
         if (m_firstInitCompleted) {

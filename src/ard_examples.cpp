@@ -18,10 +18,15 @@
 
 #include "ard_examples.hpp"
 
+#include "ard_ap.hpp"
 #include "ard_libinfo.hpp"
 #include "ard_setdlg.hpp"
 #include "main.hpp"
 #include "utils.hpp"
+#include <algorithm>
+#include <filesystem>
+#include <set>
+#include <system_error>
 #include <wx/dir.h>
 #include <wx/ffile.h>
 #include <wx/filefn.h>
@@ -33,6 +38,50 @@ enum {
   ID_EXAMPLE_INSTALL = wxID_HIGHEST + 5000,
   ID_LIB_FILTER_TIMER
 };
+
+namespace {
+namespace fs = std::filesystem;
+
+wxColour BlendColor(const wxColour &a, const wxColour &b, double t) {
+  t = std::clamp(t, 0.0, 1.0);
+  auto lerp = [t](unsigned char x, unsigned char y) -> unsigned char {
+    return (unsigned char)std::lround((1.0 - t) * (double)x + t * (double)y);
+  };
+  return wxColour(lerp(a.Red(), b.Red()),
+                  lerp(a.Green(), b.Green()),
+                  lerp(a.Blue(), b.Blue()));
+}
+
+std::string BuildPlatformLabel(const std::string &platformPath,
+                               const wxString &roleLabel) {
+  if (platformPath.empty()) {
+    return wxToStd(roleLabel);
+  }
+
+  fs::path p(platformPath);
+  std::string version = p.filename().string();
+  std::string arch = p.parent_path().filename().string();
+  std::string vendor;
+
+  fs::path parent = p.parent_path().parent_path();
+  if (!parent.empty()) {
+    vendor = parent.filename().string();
+  }
+
+  std::string label = wxToStd(roleLabel);
+  if (!vendor.empty() && !arch.empty()) {
+    label += " (" + vendor + ":" + arch + ")";
+  } else if (!arch.empty()) {
+    label += " (" + arch + ")";
+  }
+
+  if (!version.empty() && version != arch) {
+    label += " " + version;
+  }
+
+  return label;
+}
+} // namespace
 
 ArduinoExamplesFrame::ArduinoExamplesFrame(wxWindow *parent, ArduinoCli *cli, wxConfigBase *config)
     : wxFrame(parent,
@@ -155,12 +204,61 @@ void ArduinoExamplesFrame::PopulateLibraries() {
   }
 
   const auto &libs = m_cli->GetInstalledLibraries();
+  std::vector<SourceRow> libraryRows;
+  libraryRows.reserve(libs.size());
+
+  auto addPlatformRow = [this](const std::string &platformPath,
+                               const wxString &roleLabel) {
+    if (platformPath.empty()) {
+      return;
+    }
+
+    SourceRow row;
+    row.isPlatform = true;
+    row.name = "[Platform] " + BuildPlatformLabel(platformPath, roleLabel);
+    row.version = fs::path(platformPath).filename().string();
+    row.maintainer = wxToStd(roleLabel);
+    row.location = platformPath;
+    row.examples = CollectPlatformExamples(platformPath);
+
+    if (!row.examples.empty()) {
+      m_allLibRows.push_back(std::move(row));
+    }
+  };
+
+  addPlatformRow(m_cli->GetCorePlatformPath(), _("Core platform"));
+
+  const std::string platformPath = m_cli->GetPlatformPath();
+  if (platformPath != m_cli->GetCorePlatformPath()) {
+    addPlatformRow(platformPath, _("Board platform"));
+  }
 
   for (const auto &lib : libs) {
     if (lib.latest.examples.empty())
       continue;
 
-    m_allLibRows.push_back(&lib);
+    SourceRow row;
+    row.lib = &lib;
+    row.name = lib.name;
+    row.version = lib.latest.version;
+    row.maintainer = lib.latest.maintainer;
+    row.location = lib.latest.website;
+    row.examples = lib.latest.examples;
+    libraryRows.push_back(std::move(row));
+  }
+
+  std::sort(libraryRows.begin(), libraryRows.end(),
+            [](const SourceRow &a, const SourceRow &b) {
+              const std::string an = ToLower(a.name);
+              const std::string bn = ToLower(b.name);
+              if (an != bn) {
+                return an < bn;
+              }
+              return a.name < b.name;
+            });
+
+  for (auto &row : libraryRows) {
+    m_allLibRows.push_back(std::move(row));
   }
 
   m_libList->Thaw();
@@ -189,14 +287,11 @@ void ArduinoExamplesFrame::ApplyLibraryFilter(const wxString &filter) {
 
   long row = 0;
 
-  for (const auto *lib : m_allLibRows) {
-    if (!lib)
-      continue;
-
-    wxString name = wxString::FromUTF8(lib->name.c_str());
-    wxString ver = wxString::FromUTF8(lib->latest.version.c_str());
-    wxString maint = wxString::FromUTF8(lib->latest.maintainer.c_str());
-    wxString url = wxString::FromUTF8(lib->latest.website.c_str());
+  for (const auto &source : m_allLibRows) {
+    wxString name = wxString::FromUTF8(source.name.c_str());
+    wxString ver = wxString::FromUTF8(source.version.c_str());
+    wxString maint = wxString::FromUTF8(source.maintainer.c_str());
+    wxString url = wxString::FromUTF8(source.location.c_str());
 
     if (!f.empty()) {
       wxString joined = name + wxT(" ") + ver + wxT(" ") + maint + wxT(" ") + url;
@@ -210,7 +305,17 @@ void ArduinoExamplesFrame::ApplyLibraryFilter(const wxString &filter) {
     m_libList->SetItem(idx, 2, maint);
     m_libList->SetItem(idx, 3, url);
 
-    m_libRows.push_back(lib);
+    if (source.isPlatform) {
+      const wxColour listBg = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOX);
+      const wxColour highlight = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
+      const wxColour listFg = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT);
+      const double tint = IsDarkMode() ? 0.32 : 0.20;
+      const double fgTint = IsDarkMode() ? 0.10 : 0.18;
+      m_libList->SetItemBackgroundColour(idx, BlendColor(listBg, highlight, tint));
+      m_libList->SetItemTextColour(idx, BlendColor(listFg, highlight, fgTint));
+    }
+
+    m_libRows.push_back(source);
     ++row;
   }
 
@@ -229,20 +334,19 @@ void ArduinoExamplesFrame::ApplyLibraryFilter(const wxString &filter) {
   m_preview->SetReadOnly(true);
 }
 
-void ArduinoExamplesFrame::PopulateExamplesForLibrary(const ArduinoLibraryInfo *lib) {
+void ArduinoExamplesFrame::PopulateExamplesForSource(const SourceRow *source) {
   m_exampleList->Freeze();
   m_exampleList->DeleteAllItems();
   m_exampleRows.clear();
 
-  if (!lib) {
+  if (!source) {
     m_exampleList->Thaw();
     return;
   }
 
   long row = 0;
-  for (const auto &p : lib->latest.examples) {
+  for (const auto &p : source->examples) {
     ExampleRow exRow;
-    exRow.lib = lib;
     exRow.examplePath = p;
 
     wxString pathWx = wxString::FromUTF8(p.c_str());
@@ -269,6 +373,74 @@ void ArduinoExamplesFrame::PopulateExamplesForLibrary(const ArduinoLibraryInfo *
   m_preview->SetReadOnly(false);
   m_preview->SetText(wxEmptyString);
   m_preview->SetReadOnly(true);
+}
+
+std::vector<std::string> ArduinoExamplesFrame::CollectPlatformExamples(const std::string &platformPath) const {
+  std::vector<std::string> out;
+  if (platformPath.empty()) {
+    return out;
+  }
+
+  std::set<std::string> unique;
+  std::error_code ec;
+
+  auto collectFromRoot = [&](const fs::path &root) {
+    if (root.empty() || !fs::exists(root, ec) || !fs::is_directory(root, ec)) {
+      return;
+    }
+
+    fs::recursive_directory_iterator it(root, ec), end;
+    while (!ec && it != end) {
+      if (!it->is_directory(ec)) {
+        it.increment(ec);
+        continue;
+      }
+
+      const fs::path dirPath = it->path();
+      bool hasSketch = false;
+
+      for (const auto &entry : fs::directory_iterator(dirPath, ec)) {
+        if (ec) {
+          break;
+        }
+
+        if (!entry.is_regular_file(ec)) {
+          continue;
+        }
+
+        const std::string ext = entry.path().extension().string();
+        if (ext == ".ino" || ext == ".pde" || ext == ".cpp") {
+          hasSketch = true;
+          break;
+        }
+      }
+
+      if (hasSketch) {
+        unique.insert(dirPath.string());
+        it.disable_recursion_pending();
+      }
+
+      it.increment(ec);
+    }
+  };
+
+  collectFromRoot(fs::path(platformPath) / "examples");
+
+  fs::path librariesRoot = fs::path(platformPath) / "libraries";
+  if (fs::exists(librariesRoot, ec) && fs::is_directory(librariesRoot, ec)) {
+    for (const auto &dirEntry : fs::directory_iterator(librariesRoot, ec)) {
+      if (ec) {
+        break;
+      }
+      if (!dirEntry.is_directory(ec)) {
+        continue;
+      }
+      collectFromRoot(dirEntry.path() / "examples");
+    }
+  }
+
+  out.assign(unique.begin(), unique.end());
+  return out;
 }
 
 void ArduinoExamplesFrame::LoadExamplePreview(const std::string &examplePath) {
@@ -354,8 +526,8 @@ void ArduinoExamplesFrame::OnLibraryItemSelected(wxListEvent &evt) {
   if (idx < 0 || (size_t)idx >= m_libRows.size())
     return;
 
-  const ArduinoLibraryInfo *lib = m_libRows[(size_t)idx];
-  PopulateExamplesForLibrary(lib);
+  const SourceRow *source = &m_libRows[(size_t)idx];
+  PopulateExamplesForSource(source);
 }
 
 void ArduinoExamplesFrame::OnExampleItemSelected(wxListEvent &evt) {
@@ -417,11 +589,11 @@ void ArduinoExamplesFrame::OnLibraryItemActivated(wxListEvent &evt) {
   if (idx < 0 || (size_t)idx >= m_libRows.size())
     return;
 
-  const ArduinoLibraryInfo *lib = m_libRows[(size_t)idx];
-  if (!lib || !m_cli)
+  const SourceRow &source = m_libRows[(size_t)idx];
+  if (!source.lib || !m_cli)
     return;
 
-  ArduinoLibraryDetailDialog::ShowInstalledLibraryInfo(this, lib, m_config, m_cli);
+  ArduinoLibraryDetailDialog::ShowInstalledLibraryInfo(this, source.lib, m_config, m_cli);
 }
 
 void ArduinoExamplesFrame::OnExampleContextMenu(wxContextMenuEvent &WXUNUSED(evt)) {

@@ -36,8 +36,17 @@ public:
   void RefreshLibraries();
 
 private:
+  struct SourceRow {
+    const ArduinoLibraryInfo *lib = nullptr;
+    bool isPlatform = false;
+    std::string name;
+    std::string version;
+    std::string maintainer;
+    std::string location;
+    std::vector<std::string> examples;
+  };
+
   struct ExampleRow {
-    const ArduinoLibraryInfo *lib;
     std::string examplePath;
   };
 
@@ -53,8 +62,8 @@ private:
   wxTextCtrl *m_libFilterCtrl = nullptr;
   wxTimer m_filterTimer;
 
-  std::vector<const ArduinoLibraryInfo *> m_libRows;
-  std::vector<const ArduinoLibraryInfo *> m_allLibRows; // unfiltered list
+  std::vector<SourceRow> m_libRows;
+  std::vector<SourceRow> m_allLibRows; // unfiltered list
   std::vector<ExampleRow> m_exampleRows;
 
   int ModalMsgDialog(const wxString &message, const wxString &caption = _("Install example"), int styles = wxOK | wxICON_ERROR);
@@ -65,8 +74,9 @@ private:
   void ApplyLibraryFilter(const wxString &filter);
 
   void PopulateLibraries();
-  void PopulateExamplesForLibrary(const ArduinoLibraryInfo *lib);
+  void PopulateExamplesForSource(const SourceRow *source);
   void LoadExamplePreview(const std::string &examplePath);
+  std::vector<std::string> CollectPlatformExamples(const std::string &platformPath) const;
 
   void OnLibraryItemSelected(wxListEvent &evt);
   void OnExampleItemActivated(wxListEvent &evt);
