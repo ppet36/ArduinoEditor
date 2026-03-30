@@ -1749,6 +1749,74 @@ bool ArduinoEditor::Save() {
   }
 
   m_editor->SetSavePoint();
+
+  if (auto *frame = GetOwnerFrame()) {
+    frame->SyncWatchedFile(GetFilePath());
+  }
+
+  return true;
+}
+
+bool ArduinoEditor::ReloadFromDisk() {
+  wxString fn = wxString::FromUTF8(GetFilePath());
+  if (!wxFileExists(fn)) {
+    return false;
+  }
+
+  int line = 1;
+  int column = 1;
+  GetCurrentCursor(line, column);
+  const int firstVisibleLine = m_editor->GetFirstVisibleLine();
+  const int xOffset = m_editor->GetXOffset();
+  const bool wasReadOnly = m_editor->GetReadOnly();
+
+  if (wasReadOnly) {
+    m_editor->SetReadOnly(false);
+  }
+
+  if (!m_editor->LoadFile(fn)) {
+    if (wasReadOnly) {
+      m_editor->SetReadOnly(true);
+    }
+    ModalMsgDialog(wxString::Format(_("Unable to load file %s."), fn));
+    return false;
+  }
+
+#ifdef __WXMAC__
+  {
+    wxString txt = m_editor->GetText();
+    bool changed = false;
+
+    for (size_t i = 0; i < txt.length(); ++i) {
+      if (IsDangerousEmoji(txt[i])) {
+        txt[i] = '?';
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      m_editor->SetText(txt);
+    }
+  }
+#endif
+
+  m_editor->EmptyUndoBuffer();
+  m_editor->SetSavePoint();
+
+  if (wasReadOnly) {
+    m_editor->SetReadOnly(true);
+  }
+
+  Goto(line, column);
+  if (firstVisibleLine >= 0) {
+    m_editor->ScrollToLine(firstVisibleLine);
+  }
+  m_editor->SetXOffset(xOffset);
+
+  if (auto *frame = GetOwnerFrame()) {
+    frame->SyncWatchedFile(GetFilePath());
+  }
+
   return true;
 }
 

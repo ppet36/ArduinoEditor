@@ -27,12 +27,14 @@
 #include "ard_diagview.hpp"
 #include "ard_edit.hpp"
 #include "ard_examples.hpp"
+#include "file_change_monitor.hpp"
 #include "ard_finsymdlg.hpp"
 #include "ard_indic.hpp"
 #include "ard_libman.hpp"
 #include "ard_sermon.hpp"
 #include "ard_setdlg.hpp"
 #include <string>
+#include <memory>
 #include <vector>
 #include <wx/aui/auibook.h>
 #include <wx/aui/framemanager.h>
@@ -114,6 +116,7 @@ private:
 
   ArduinoClassBrowserPanel *m_classBrowser = nullptr;
   void UpdateClassBrowserEditor();
+  std::unique_ptr<FileChangeMonitor> m_fileChangeMonitor;
 
 public:
   void UpdateClassBrowserEditor(int line, int column);
@@ -226,6 +229,7 @@ private:
   bool UploadHexFile(const wxString &hexPath);
   void OnToolsUploadHex(wxCommandEvent &event);
   void OnCmdLineOutput(wxCommandEvent &event);
+  void OnFileMonitorChanged(wxThreadEvent &event);
 
   void OnAbout(wxCommandEvent &event);
   void OnClose(wxCloseEvent &event);
@@ -326,6 +330,11 @@ private:
   void OnBoardChoiceChanged(wxCommandEvent &event);
 
   void ResolveLibrariesOrDiagnostics();
+  void WatchEditorFile(ArduinoEditor *editor);
+  void UnwatchEditorFile(ArduinoEditor *editor);
+  void WatchSketchTree();
+  void HandleMonitoredFileChange(const std::string &path, FileChangeKind kind);
+  void HandleMonitoredDirectoryChange(const std::string &path, FileChangeKind kind);
 
   void OnCheckForUpdates(wxCommandEvent &);
 
@@ -409,4 +418,5 @@ public:
 
   // "Modified" indicator
   void UpdateEditorTabIcon(ArduinoEditor *ed, bool modified, bool readOnly);
+  void SyncWatchedFile(const std::string &path);
 };

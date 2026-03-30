@@ -27,6 +27,7 @@
 #include "ard_ev.hpp"
 #include "ard_filestree.hpp"
 #include "ard_finsymdlg.hpp"
+#include "file_change_monitor.hpp"
 #include "ard_initbrdsel.hpp"
 #include "ard_renamedlg.hpp"
 #include "ard_setdlg.hpp"
@@ -349,6 +350,10 @@ void ArduinoEditorFrame::OpenSketch(const std::string &skp) {
     return;
   }
 
+  if (m_fileChangeMonitor) {
+    m_fileChangeMonitor->Clear();
+  }
+
   UpdateSketchesDir(dirPath);
 
   // ---------------------------------------------------------------------------
@@ -518,6 +523,7 @@ void ArduinoEditorFrame::OpenSketch(const std::string &skp) {
 
     m_notebook->AddPage(editor, inoFileName, /*select=*/true, IMLI_NOTEBOOK_EMPTY);
     m_notebook->SetPageToolTip(m_notebook->GetPageCount() - 1, wxString::FromUTF8(editor->GetFilePath()));
+    WatchEditorFile(editor);
   }
 
   UpdateAiGlobalEditor();
@@ -586,6 +592,8 @@ void ArduinoEditorFrame::OpenSketch(const std::string &skp) {
     m_filesPanel->SetRootPath(dirPath);
     UpdateFilesTreeSelectedFromNotebook();
   }
+
+  WatchSketchTree();
 }
 
 void ArduinoEditorFrame::SaveWorkspaceState() {
@@ -879,6 +887,9 @@ void ArduinoEditorFrame::OnNotebookPageClose(wxAuiNotebookEvent &e) {
       return;
     int p = m_notebook->FindPage(pageToClose);
     if (p != wxNOT_FOUND) {
+      if (auto *editor = dynamic_cast<ArduinoEditor *>(pageToClose)) {
+        UnwatchEditorFile(editor);
+      }
       m_notebook->DeletePage(p);
     }
     UpdateAiGlobalEditor();
@@ -931,6 +942,9 @@ bool ArduinoEditorFrame::ConfirmAndCloseTab(int idx) {
       return;
     int p = m_notebook->FindPage(pageToClose);
     if (p != wxNOT_FOUND) {
+      if (auto *editor = dynamic_cast<ArduinoEditor *>(pageToClose)) {
+        UnwatchEditorFile(editor);
+      }
       m_notebook->DeletePage(p);
     }
     UpdateAiGlobalEditor();
@@ -1065,6 +1079,7 @@ void ArduinoEditorFrame::DeleteSketchFile(const wxString &filename) {
 
     if (ed) {
       if (NormalizeFilename(ed->GetFilePath()) == target) {
+        UnwatchEditorFile(ed);
         m_notebook->DeletePage(i);
         break;
       }
@@ -1116,6 +1131,7 @@ void ArduinoEditorFrame::CreateNewSketchFile(const wxString &filename) {
 
     m_notebook->AddPage(editor, wxString::FromUTF8(filename), /*select=*/true, IMLI_NOTEBOOK_EMPTY);
     m_notebook->SetPageToolTip(m_notebook->GetPageCount() - 1, wxString::FromUTF8(filepath));
+    WatchEditorFile(editor);
     UpdateAiGlobalEditor();
     UpdateClassBrowserEditor();
   } else {
@@ -2685,6 +2701,7 @@ void ArduinoEditorFrame::BindEvents() {
 
   Bind(wxEVT_CLOSE_WINDOW, &ArduinoEditorFrame::OnClose, this);
   Bind(EVT_DIAGNOSTICS_UPDATED, &ArduinoEditorFrame::OnDiagnosticsUpdated, this);
+  Bind(EVT_FILE_MONITOR_CHANGED, &ArduinoEditorFrame::OnFileMonitorChanged, this);
   Bind(wxEVT_TIMER, &ArduinoEditorFrame::OnDiagTimer, this, m_diagTimer.GetId());
   Bind(wxEVT_TIMER, &ArduinoEditorFrame::OnReturnBottomPageTimer, this, m_returnBottomPageTimer.GetId());
 
@@ -3368,6 +3385,7 @@ ArduinoEditor *ArduinoEditorFrame::FindEditorWithFile(const std::string &filenam
 
     m_notebook->AddPage(newEdit, wxString::FromUTF8(basename), /*select=*/false, IMLI_NOTEBOOK_EMPTY);
     m_notebook->SetPageToolTip(m_notebook->GetPageCount() - 1, wxString::FromUTF8(targetFile));
+    WatchEditorFile(newEdit);
     return newEdit;
   }
 
@@ -3430,6 +3448,7 @@ ArduinoEditor *ArduinoEditorFrame::CreateEditorForFile(const std::string &filePa
 
   m_notebook->AddPage(newEdit, wxString::FromUTF8(tabTitle), true, IMLI_NOTEBOOK_EMPTY);
   m_notebook->SetPageToolTip(m_notebook->GetPageCount() - 1, wxString::FromUTF8(filePathNorm));
+  WatchEditorFile(newEdit);
   newEdit->SetReadOnly(!projectFile);
   newEdit->Goto(lineToGo, columnToGo);
   return newEdit;
@@ -3543,6 +3562,7 @@ void ArduinoEditorFrame::OnToggleOutput(wxCommandEvent &event) {
 ArduinoEditorFrame::ArduinoEditorFrame(wxConfigBase *cfg) : wxFrame(nullptr, wxID_ANY, _("Arduino Editor"), wxDefaultPosition, wxSize(1024, 768)), m_auiManager(this), m_diagTimer(this, ID_TIMER_DIAGNOSTIC), m_returnBottomPageTimer(this, ID_TIMER_BOTTOM_PAGE_RETURN), m_cliUpdatesChecked(false),
                                                             m_checkUpdatesTimer(this, ID_TIMER_CHECK_FOR_UPDATES) {
   config = cfg;
+  m_fileChangeMonitor = std::make_unique<FileChangeMonitor>(this);
 
 #ifdef __WXMSW__
   SetIcon(wxICON(IDI_APP_ICON));
@@ -4277,7 +4297,9 @@ void ArduinoEditorFrame::OnSketchTreeRename(wxCommandEvent &evt) {
       }
 
       if (fn.GetFullPath() == wxString::FromUTF8(editor->GetFilePath())) {
+        UnwatchEditorFile(editor);
         editor->SetFilePath(wxToStd(target.GetFullPath()));
+        WatchEditorFile(editor);
         // editor generates relative file from sketchpath
         m_notebook->SetPageText(i, wxString::FromUTF8(editor->GetFileName()));
         break;
@@ -4285,6 +4307,124 @@ void ArduinoEditorFrame::OnSketchTreeRename(wxCommandEvent &evt) {
     }
   } else {
     ModalMsgDialog(_("Rename failed."));
+  }
+}
+
+void ArduinoEditorFrame::OnFileMonitorChanged(wxThreadEvent &event) {
+  const std::string path = wxToStd(event.GetString());
+  const auto kind = static_cast<FileChangeKind>(event.GetInt());
+  const bool isDirectory = (event.GetExtraLong() != 0);
+
+  if (isDirectory) {
+    HandleMonitoredDirectoryChange(path, kind);
+  } else {
+    HandleMonitoredFileChange(path, kind);
+  }
+}
+
+void ArduinoEditorFrame::WatchEditorFile(ArduinoEditor *editor) {
+  if (!m_fileChangeMonitor || !editor) {
+    return;
+  }
+
+  m_fileChangeMonitor->WatchFile(editor->GetFilePath());
+}
+
+void ArduinoEditorFrame::UnwatchEditorFile(ArduinoEditor *editor) {
+  if (!m_fileChangeMonitor || !editor) {
+    return;
+  }
+
+  m_fileChangeMonitor->Unwatch(editor->GetFilePath());
+}
+
+void ArduinoEditorFrame::WatchSketchTree() {
+  if (!m_fileChangeMonitor || !arduinoCli) {
+    return;
+  }
+
+  m_fileChangeMonitor->WatchDirectory(arduinoCli->GetSketchPath(), true);
+}
+
+void ArduinoEditorFrame::HandleMonitoredFileChange(const std::string &path, FileChangeKind kind) {
+  ArduinoEditor *editor = FindEditorWithFile(path, /*allowCreate=*/false);
+  if (!editor) {
+    return;
+  }
+
+  if (kind == FileChangeKind::Deleted) {
+    if (!editor->IsModified()) {
+      for (int i = 0, n = m_notebook->GetPageCount(); i < n; ++i) {
+        auto *pageEditor = dynamic_cast<ArduinoEditor *>(m_notebook->GetPage(i));
+        if (pageEditor == editor) {
+          UnwatchEditorFile(editor);
+          m_notebook->DeletePage(i);
+          break;
+        }
+      }
+
+      if (m_filesPanel) {
+        m_filesPanel->RefreshTree();
+      }
+      RebuildProject(/*withClean=*/true);
+      return;
+    }
+
+    wxMessageDialog dlg(
+        this,
+        _("The file was deleted outside of Arduino Editor.\nDo you want to keep your unsaved buffer open?"),
+        _("File deleted"),
+        wxYES_NO | wxYES_DEFAULT | wxICON_WARNING);
+    dlg.SetYesNoLabels(_("Keep buffer"), _("Close tab"));
+
+    if (dlg.ShowModal() == wxID_NO) {
+      for (int i = 0, n = m_notebook->GetPageCount(); i < n; ++i) {
+        auto *pageEditor = dynamic_cast<ArduinoEditor *>(m_notebook->GetPage(i));
+        if (pageEditor == editor) {
+          UnwatchEditorFile(editor);
+          m_notebook->DeletePage(i);
+          break;
+        }
+      }
+    } else {
+      SyncWatchedFile(path);
+    }
+    return;
+  }
+
+  if (!editor->IsModified()) {
+    if (editor->ReloadFromDisk()) {
+      ResolveLibrariesOrDiagnostics();
+      UpdateStatus(_("File reloaded from disk."));
+    }
+    return;
+  }
+
+  wxMessageDialog dlg(
+      this,
+      _("The file was modified outside of Arduino Editor.\nDo you want to reload it from disk?"),
+      _("File changed"),
+      wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION);
+  dlg.SetYesNoLabels(_("Reload"), _("Keep editor version"));
+
+  if (dlg.ShowModal() == wxID_YES) {
+    if (editor->ReloadFromDisk()) {
+      ResolveLibrariesOrDiagnostics();
+      UpdateStatus(_("File reloaded from disk."));
+    }
+  } else {
+    SyncWatchedFile(path);
+  }
+}
+
+void ArduinoEditorFrame::HandleMonitoredDirectoryChange(const std::string &path, FileChangeKind) {
+  if (!arduinoCli || path != arduinoCli->GetSketchPath()) {
+    return;
+  }
+
+  if (m_filesPanel) {
+    m_filesPanel->RefreshTree();
+    UpdateFilesTreeSelectedFromNotebook();
   }
 }
 
@@ -4868,7 +5008,18 @@ void ArduinoEditorFrame::OnStatusBarLeave(wxMouseEvent &e) {
 }
 
 ArduinoEditorFrame::~ArduinoEditorFrame() {
+  if (m_fileChangeMonitor) {
+    m_fileChangeMonitor->Clear();
+  }
   m_auiManager.UnInit();
+}
+
+void ArduinoEditorFrame::SyncWatchedFile(const std::string &path) {
+  if (!m_fileChangeMonitor) {
+    return;
+  }
+
+  m_fileChangeMonitor->SyncPath(path);
 }
 
 #ifdef __WXMSW__
