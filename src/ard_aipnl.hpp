@@ -56,6 +56,8 @@ private:
   wxTimer m_refreshTimer;
 
   bool m_isBusy{false};
+  bool m_hasStreamingOutput{false};
+  wxString m_lastStreamingMessage;
 
   ArduinoAiActions *m_actions = nullptr;
 

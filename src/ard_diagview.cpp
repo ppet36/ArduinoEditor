@@ -95,7 +95,7 @@ void ArduinoDiagnosticsView::UpdateColors(const EditorColorScheme &colors) {
 }
 
 void ArduinoDiagnosticsView::ApplySettings(const AiSettings &settings) {
-  m_aiEnabled = settings.enabled;
+  m_aiEnabled = settings.enabled && settings.SupportsInteractiveActions();
 }
 
 void ArduinoDiagnosticsView::ShowMessage(const wxString &message) {

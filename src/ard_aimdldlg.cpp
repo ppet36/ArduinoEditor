@@ -24,6 +24,7 @@
 #include <thread>
 #include <wx/button.h>
 #include <wx/checkbox.h>
+#include <wx/choice.h>
 #include <wx/config.h>
 #include <wx/filedlg.h>
 #include <wx/msgdlg.h>
@@ -41,7 +42,10 @@ static nlohmann::json AiModelToJson(const AiModelSettings &m) {
   nlohmann::json j;
   j["id"] = std::string(m.id.utf8_str());
   j["name"] = std::string(m.name.utf8_str());
+  j["providerType"] = (int)m.providerType;
   j["endpointUrl"] = std::string(m.endpointUrl.utf8_str());
+  j["cliPath"] = std::string(m.cliPath.utf8_str());
+  j["cliArgs"] = std::string(m.cliArgs.utf8_str());
   j["model"] = std::string(m.model.utf8_str());
   j["maxIterations"] = m.maxIterations;
   j["requestTimeout"] = m.requestTimeout;
@@ -89,9 +93,25 @@ void ArduinoAiModelDialog::BuildUi() {
   m_nameCtrl = new wxTextCtrl(this, wxID_ANY, m_model.name);
   grid->Add(m_nameCtrl, 1, wxEXPAND);
 
+  grid->Add(new wxStaticText(this, wxID_ANY, _("Provider:")), 0, wxALIGN_CENTER_VERTICAL);
+  wxArrayString providerChoices;
+  providerChoices.Add(_("HTTP API"));
+  providerChoices.Add(_("CLI process"));
+  m_providerChoice = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, providerChoices);
+  m_providerChoice->SetSelection(m_model.providerType == AiProviderType::CliProcess ? 1 : 0);
+  grid->Add(m_providerChoice, 1, wxEXPAND);
+
   grid->Add(new wxStaticText(this, wxID_ANY, _("Endpoint URL:")), 0, wxALIGN_CENTER_VERTICAL);
   m_endpointCtrl = new wxTextCtrl(this, wxID_ANY, m_model.endpointUrl);
   grid->Add(m_endpointCtrl, 1, wxEXPAND);
+
+  grid->Add(new wxStaticText(this, wxID_ANY, _("CLI path:")), 0, wxALIGN_CENTER_VERTICAL);
+  m_cliPathCtrl = new wxTextCtrl(this, wxID_ANY, m_model.cliPath);
+  grid->Add(m_cliPathCtrl, 1, wxEXPAND);
+
+  grid->Add(new wxStaticText(this, wxID_ANY, _("CLI arguments:")), 0, wxALIGN_CENTER_VERTICAL);
+  m_cliArgsCtrl = new wxTextCtrl(this, wxID_ANY, m_model.cliArgs);
+  grid->Add(m_cliArgsCtrl, 1, wxEXPAND);
 
   grid->Add(new wxStaticText(this, wxID_ANY, _("Model:")), 0, wxALIGN_CENTER_VERTICAL);
   m_modelCtrl = new wxTextCtrl(this, wxID_ANY, m_model.model);
@@ -191,6 +211,7 @@ void ArduinoAiModelDialog::BuildUi() {
   Layout();
 
   // events
+  m_providerChoice->Bind(wxEVT_CHOICE, [this](wxCommandEvent &e) { UpdateProviderUi(); UpdateAuthUi(); e.Skip(); });
   m_hasAuth->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent &e) { UpdateAuthUi(); e.Skip(); });
   m_clearKeyBtn->Bind(wxEVT_BUTTON, [this](wxCommandEvent &) { OnClearStoredKey(); });
   m_btnExport->Bind(wxEVT_BUTTON, [this](wxCommandEvent &) { OnExport(); });
@@ -200,7 +221,33 @@ void ArduinoAiModelDialog::BuildUi() {
   Bind(wxEVT_CLOSE_WINDOW, &ArduinoAiModelDialog::OnClose, this);
 
   LoadKeyHint();
+  UpdateProviderUi();
   UpdateAuthUi();
+}
+
+void ArduinoAiModelDialog::UpdateProviderUi() {
+  const bool isCli = m_providerChoice && m_providerChoice->GetSelection() == 1;
+
+  if (m_endpointCtrl)
+    m_endpointCtrl->Enable(!isCli);
+  if (m_cliPathCtrl)
+    m_cliPathCtrl->Enable(isCli);
+  if (m_cliArgsCtrl)
+    m_cliArgsCtrl->Enable(isCli);
+  if (m_modelCtrl)
+    m_modelCtrl->Enable(!isCli);
+  if (m_maxIterCtrl)
+    m_maxIterCtrl->Enable(!isCli);
+  if (m_forceQueryRange)
+    m_forceQueryRange->Enable(!isCli);
+  if (m_fullInfoRequest)
+    m_fullInfoRequest->Enable(!isCli);
+  if (m_floatingWindow)
+    m_floatingWindow->Enable(!isCli);
+  if (m_extraJsonStc)
+    m_extraJsonStc->Enable(!isCli);
+  if (m_hasAuth)
+    m_hasAuth->Enable(!isCli);
 }
 
 void ArduinoAiModelDialog::OnClose(wxCloseEvent &e) {
@@ -218,11 +265,12 @@ int ArduinoAiModelDialog::ModalMsgDialog(const wxString &message, const wxString
 }
 
 void ArduinoAiModelDialog::UpdateAuthUi() {
+  const bool isCli = m_providerChoice && m_providerChoice->GetSelection() == 1;
   bool on = m_hasAuth && m_hasAuth->GetValue();
   if (m_keyCtrl)
-    m_keyCtrl->Enable(on);
+    m_keyCtrl->Enable(!isCli && on);
   if (m_clearKeyBtn)
-    m_clearKeyBtn->Enable(on && m_hasStoredKey);
+    m_clearKeyBtn->Enable(!isCli && on && m_hasStoredKey);
 }
 
 void ArduinoAiModelDialog::LoadKeyHint() {
@@ -264,7 +312,12 @@ void ArduinoAiModelDialog::OnExport() {
   AiModelSettings tmp = m_model;
 
   tmp.name = TrimCopy(m_nameCtrl->GetValue());
+  tmp.providerType = (m_providerChoice && m_providerChoice->GetSelection() == 1)
+                         ? AiProviderType::CliProcess
+                         : AiProviderType::HttpApi;
   tmp.endpointUrl = TrimCopy(m_endpointCtrl->GetValue());
+  tmp.cliPath = TrimCopy(m_cliPathCtrl->GetValue());
+  tmp.cliArgs = TrimCopy(m_cliArgsCtrl->GetValue());
   tmp.model = TrimCopy(m_modelCtrl->GetValue());
   tmp.maxIterations = m_maxIterCtrl->GetValue();
   tmp.requestTimeout = wxAtoi(TrimCopy(m_timeoutCtrl->GetValue()));
@@ -296,8 +349,9 @@ void ArduinoAiModelDialog::OnTest() {
 
   // Validate extra JSON first (it is sent as-is to the endpoint).
   wxString json = m_extraJsonStc ? TrimCopy(m_extraJsonStc->GetText()) : wxString();
+  const bool isCli = m_providerChoice && m_providerChoice->GetSelection() == 1;
   wxString jsonErr;
-  if (!AiClient::CheckExtraRequestJson(json, &jsonErr)) {
+  if (!isCli && !AiClient::CheckExtraRequestJson(json, &jsonErr)) {
     m_testInProgress.store(false);
     ModalMsgDialog(jsonErr, _("Invalid JSON"));
     return;
@@ -308,12 +362,15 @@ void ArduinoAiModelDialog::OnTest() {
 
   settings.id = m_model.id;
   settings.enabled = true;
+  settings.providerType = isCli ? AiProviderType::CliProcess : AiProviderType::HttpApi;
   settings.endpointUrl = TrimCopy(m_endpointCtrl->GetValue());
+  settings.cliPath = TrimCopy(m_cliPathCtrl->GetValue());
+  settings.cliArgs = TrimCopy(m_cliArgsCtrl->GetValue());
   settings.model = TrimCopy(m_modelCtrl->GetValue());
   settings.maxIterations = m_maxIterCtrl->GetValue();
   settings.requestTimeout = wxAtoi(TrimCopy(m_timeoutCtrl->GetValue()));
   settings.extraRequestJson = json;
-  settings.hasAuthentization = m_hasAuth->GetValue();
+  settings.hasAuthentization = !isCli && m_hasAuth->GetValue();
 
   if (settings.hasAuthentization) {
     SaveApiKey();
@@ -323,7 +380,13 @@ void ArduinoAiModelDialog::OnTest() {
   settings.fullInfoRequest = m_fullInfoRequest->GetValue();
   settings.floatingWindow = m_floatingWindow->GetValue();
 
-  if (settings.endpointUrl.empty()) {
+  if (settings.UsesCliProvider()) {
+    if (settings.cliPath.empty()) {
+      m_testInProgress.store(false);
+      ModalMsgDialog(_("CLI path is empty."), _("Validation"));
+      return;
+    }
+  } else if (settings.endpointUrl.empty()) {
     m_testInProgress.store(false);
     ModalMsgDialog(_("Endpoint URL is empty."), _("Validation"));
     return;
@@ -412,26 +475,37 @@ void ArduinoAiModelDialog::OnDelete() {
 void ArduinoAiModelDialog::OnOk() {
   // validate JSON
   wxString json = m_extraJsonStc ? TrimCopy(m_extraJsonStc->GetText()) : wxString();
+  const bool isCli = m_providerChoice && m_providerChoice->GetSelection() == 1;
   wxString err;
-  if (!AiClient::CheckExtraRequestJson(json, &err)) {
+  if (!isCli && !AiClient::CheckExtraRequestJson(json, &err)) {
     ModalMsgDialog(err, _("Invalid JSON"));
     return;
   }
 
   wxString name = TrimCopy(m_nameCtrl->GetValue());
   wxString endpoint = TrimCopy(m_endpointCtrl->GetValue());
+  wxString cliPath = TrimCopy(m_cliPathCtrl->GetValue());
+  wxString cliArgs = TrimCopy(m_cliArgsCtrl->GetValue());
   wxString model = TrimCopy(m_modelCtrl->GetValue());
-  if (endpoint.empty()) {
+  if (isCli) {
+    if (cliPath.empty()) {
+      ModalMsgDialog(_("CLI path is empty."), _("Validation"));
+      return;
+    }
+  } else if (endpoint.empty()) {
     ModalMsgDialog(_("Endpoint URL is empty."), _("Validation"));
     return;
   }
 
   // ---- capture auth data BEFORE EndModal (dialog may be destroyed afterwards) ----
-  const bool doSaveKey = m_hasAuth->GetValue();
+  const bool doSaveKey = !isCli && m_hasAuth->GetValue();
 
   // write back
   m_model.name = name;
+  m_model.providerType = isCli ? AiProviderType::CliProcess : AiProviderType::HttpApi;
   m_model.endpointUrl = endpoint;
+  m_model.cliPath = cliPath;
+  m_model.cliArgs = cliArgs;
   m_model.model = model;
   m_model.maxIterations = m_maxIterCtrl->GetValue();
   m_model.requestTimeout = wxAtoi(TrimCopy(m_timeoutCtrl->GetValue()));

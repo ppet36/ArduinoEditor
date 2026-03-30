@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-30 17:35+0200\n"
+"POT-Creation-Date: 2026-03-30 20:11+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,70 +17,106 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../src/ai_client.cpp:74
+#: ../src/ai_client.cpp:86
 msgid ""
 "Extra JSON request parameters must be a JSON object (e.g. "
 "{\"temperature\":0.2})."
 msgstr ""
 
-#: ../src/ai_client.cpp:82
+#: ../src/ai_client.cpp:94
 #, c-format
 msgid "Invalid extra request JSON: %s"
 msgstr ""
 
-#: ../src/ai_client.cpp:121
+#: ../src/ai_client.cpp:573 ../src/ai_client.cpp:581 ../src/ai_client.cpp:590
+#: ../src/ai_client.cpp:612 ../src/ai_client.cpp:649 ../src/ai_client.cpp:743
+msgid "Failed to execute CLI process."
+msgstr ""
+
+#: ../src/ai_client.cpp:699 ../src/ard_aimdldlg.cpp:386
+#: ../src/ard_aimdldlg.cpp:492
+msgid "CLI path is empty."
+msgstr ""
+
+#: ../src/ai_client.cpp:706
+#, c-format
+msgid "CLI executable was not found: %s"
+msgstr ""
+
+#: ../src/ai_client.cpp:751
+#, c-format
+msgid ""
+"CLI process failed with exit code %d.\n"
+"%s"
+msgstr ""
+
+#: ../src/ai_client.cpp:753
+#, c-format
+msgid "CLI process failed with exit code %d."
+msgstr ""
+
+#: ../src/ai_client.cpp:761
+msgid "CLI process finished without output."
+msgstr ""
+
+#: ../src/ai_client.cpp:780
 msgid "Failed to initialize HTTP client (cURL)."
 msgstr ""
 
-#: ../src/ai_client.cpp:227
+#: ../src/ai_client.cpp:886
 msgid "HTTP request failed: "
 msgstr ""
 
-#: ../src/ai_client.cpp:255
+#: ../src/ai_client.cpp:914
 #, c-format
 msgid "HTTP error %ld from AI endpoint: %s"
 msgstr ""
 
-#: ../src/ai_client.cpp:264
+#: ../src/ai_client.cpp:923
 #, c-format
 msgid ""
 "HTTP error %ld from AI endpoint. Response body:\n"
 "%s"
 msgstr ""
 
-#: ../src/ai_client.cpp:336
+#: ../src/ai_client.cpp:1000
 msgid "No API key found in the system secret store or OPENAI_API_KEY."
 msgstr ""
 
-#: ../src/ai_client.cpp:344 ../src/ai_client.cpp:364 ../src/ai_client.cpp:438
+#: ../src/ai_client.cpp:1008 ../src/ai_client.cpp:1028
+#: ../src/ai_client.cpp:1110
 msgid "AI is not enabled or not configured."
 msgstr ""
 
-#: ../src/ai_client.cpp:415
+#: ../src/ai_client.cpp:1087
 msgid "Could not extract assistant text."
 msgstr ""
 
-#: ../src/ai_client.cpp:490
+#: ../src/ai_client.cpp:1135
+msgid "CLI process failed."
+msgstr ""
+
+#: ../src/ai_client.cpp:1190
 msgid "HTTP request failed."
 msgstr ""
 
-#: ../src/ai_client.cpp:508
+#: ../src/ai_client.cpp:1208
 msgid "Could not extract assistant text from AI response."
 msgstr ""
 
-#: ../src/ai_client.cpp:735
+#: ../src/ai_client.cpp:1435
 msgid ""
 "Could not extract assistant text from AI response.\n"
 "Raw JSON (truncated):\n"
 msgstr ""
 
-#: ../src/ai_client.cpp:816
+#: ../src/ai_client.cpp:1516
 msgid ""
 "Could not extract assistant text from AI response.\n"
 "Raw response (truncated):\n"
 msgstr ""
 
-#: ../src/ai_client.cpp:821
+#: ../src/ai_client.cpp:1521
 #, c-format
 msgid "Failed to parse AI response: %s"
 msgstr ""
@@ -413,65 +449,69 @@ msgstr ""
 msgid "Licenses"
 msgstr ""
 
-#: ../src/ard_ai.cpp:959 ../src/ard_aipnl.cpp:778
+#: ../src/ard_ai.cpp:962 ../src/ard_aipnl.cpp:783
 #, c-format
 msgid "%s (in: %d, out: %d, tot: %d) tokens"
 msgstr ""
 
-#: ../src/ard_ai.cpp:1013
+#: ../src/ard_ai.cpp:1039
 msgid "Another AI action is running."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1014 ../src/ard_ai.cpp:1021 ../src/ard_ai.cpp:3469
-#: ../src/ard_ai.cpp:3775 ../src/ard_ai.cpp:4093 ../src/ard_ai.cpp:4162
-#: ../src/ard_ai.cpp:4248 ../src/ard_ai.cpp:4668
+#: ../src/ard_ai.cpp:1040 ../src/ard_ai.cpp:1047 ../src/ard_ai.cpp:1055
+#: ../src/ard_ai.cpp:3534 ../src/ard_ai.cpp:3840 ../src/ard_ai.cpp:4168
+#: ../src/ard_ai.cpp:4249 ../src/ard_ai.cpp:4335 ../src/ard_ai.cpp:4755
 msgid "Arduino Editor AI"
 msgstr ""
 
-#: ../src/ard_ai.cpp:1020
+#: ../src/ard_ai.cpp:1046
 msgid "AI is disabled. Enable it in Settings -> AI."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1055
+#: ../src/ard_ai.cpp:1054
+msgid "This AI action is available only for HTTP API providers."
+msgstr ""
+
+#: ../src/ard_ai.cpp:1089
 msgid "Please select some code you want to explain."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1056 ../src/ard_ai.cpp:1068 ../src/ard_ai.cpp:1090
-#: ../src/ard_ai.cpp:4117
+#: ../src/ard_ai.cpp:1090 ../src/ard_ai.cpp:1102 ../src/ard_ai.cpp:1124
+#: ../src/ard_ai.cpp:4204
 msgid "AI explain selection"
 msgstr ""
 
-#: ../src/ard_ai.cpp:1067
+#: ../src/ard_ai.cpp:1101
 msgid "The selected text is empty or whitespace only."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1075
+#: ../src/ard_ai.cpp:1109
 msgid ""
 "You are an expert Arduino/C++ assistant integrated into an IDE. Explain the "
 "selected code snippet in a clear and concise way. Focus on what it does, "
 "important details, side-effects and possible pitfalls. Answer in English."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1081
+#: ../src/ard_ai.cpp:1115
 msgid ""
 "Please explain the following C++/Arduino code snippet:\n"
 "\n"
 "```cpp\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:1083 ../src/ard_ai.cpp:1157
+#: ../src/ard_ai.cpp:1117 ../src/ard_ai.cpp:1191
 msgid ""
 "\n"
 "```"
 msgstr ""
 
-#: ../src/ard_ai.cpp:1089 ../src/ard_ai.cpp:1478 ../src/ard_ai.cpp:1591
-#: ../src/ard_ai.cpp:1713 ../src/ard_ai.cpp:1788 ../src/ard_ai.cpp:2184
-#: ../src/ard_ai.cpp:4329 ../src/ard_ai.cpp:4343
+#: ../src/ard_ai.cpp:1123 ../src/ard_ai.cpp:1512 ../src/ard_ai.cpp:1625
+#: ../src/ard_ai.cpp:1747 ../src/ard_ai.cpp:1822 ../src/ard_ai.cpp:2125
+#: ../src/ard_ai.cpp:2249 ../src/ard_ai.cpp:4416 ../src/ard_ai.cpp:4430
 msgid "Failed to start AI request."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1140
+#: ../src/ard_ai.cpp:1174
 msgid ""
 "You are an expert C++/Arduino assistant integrated into an IDE.\n"
 "You will receive:\n"
@@ -488,7 +528,7 @@ msgid ""
 "- Do not add any text outside the comment block."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1154
+#: ../src/ard_ai.cpp:1188
 #, c-format
 msgid ""
 "Generate a documentation comment for the symbol %s in the following C++/"
@@ -497,98 +537,98 @@ msgid ""
 "```cpp\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:1188
+#: ../src/ard_ai.cpp:1222
 msgid "This symbol is already documented."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1188 ../src/ard_ai.cpp:1197 ../src/ard_ai.cpp:1207
-#: ../src/ard_ai.cpp:1269 ../src/ard_ai.cpp:1351 ../src/ard_ai.cpp:1407
-#: ../src/ard_ai.cpp:1468 ../src/ard_ai.cpp:1479 ../src/ard_ai.cpp:1507
-#: ../src/ard_ai.cpp:1518 ../src/ard_ai.cpp:1527 ../src/ard_ai.cpp:1582
-#: ../src/ard_ai.cpp:1592 ../src/ard_ai.cpp:4062 ../src/ard_ai.cpp:4123
-#: ../src/ard_ai.cpp:4149
+#: ../src/ard_ai.cpp:1222 ../src/ard_ai.cpp:1231 ../src/ard_ai.cpp:1241
+#: ../src/ard_ai.cpp:1303 ../src/ard_ai.cpp:1385 ../src/ard_ai.cpp:1441
+#: ../src/ard_ai.cpp:1502 ../src/ard_ai.cpp:1513 ../src/ard_ai.cpp:1541
+#: ../src/ard_ai.cpp:1552 ../src/ard_ai.cpp:1561 ../src/ard_ai.cpp:1616
+#: ../src/ard_ai.cpp:1626 ../src/ard_ai.cpp:4137 ../src/ard_ai.cpp:4210
+#: ../src/ard_ai.cpp:4236
 msgid "AI generate documentation"
 msgstr ""
 
-#: ../src/ard_ai.cpp:1196 ../src/ard_ai.cpp:1506 ../src/ard_ai.cpp:1631
+#: ../src/ard_ai.cpp:1230 ../src/ard_ai.cpp:1540 ../src/ard_ai.cpp:1665
 #: ../src/ard_refactor.cpp:656 ../src/ard_refactor.cpp:915
 #: ../src/ard_refactor.cpp:1127
 msgid "No symbol under the cursor."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1206
+#: ../src/ard_ai.cpp:1240
 msgid "No suitable type or context for documentation at the cursor."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1268
+#: ../src/ard_ai.cpp:1302
 msgid "No documentation comments to insert."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1347
+#: ../src/ard_ai.cpp:1381
 #, c-format
 msgid ""
 "Documentation was generated, but no suitable insertion points were found "
 "(%zu symbol(s))."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1404
+#: ../src/ard_ai.cpp:1438
 #, c-format
 msgid "Documentation generated for %zu symbol(s)."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1467
+#: ../src/ard_ai.cpp:1501
 msgid "No functions or methods found that need documentation."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1517
+#: ../src/ard_ai.cpp:1551
 msgid "Cursor is not on a class or struct declaration."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1526
+#: ../src/ard_ai.cpp:1560
 msgid "Class body range is not available."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1581
+#: ../src/ard_ai.cpp:1615
 msgid "No methods found in the current class that need documentation."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1632 ../src/ard_ai.cpp:1648 ../src/ard_ai.cpp:1657
-#: ../src/ard_ai.cpp:1714 ../src/ard_ai.cpp:4155
+#: ../src/ard_ai.cpp:1666 ../src/ard_ai.cpp:1682 ../src/ard_ai.cpp:1691
+#: ../src/ard_ai.cpp:1748 ../src/ard_ai.cpp:4242
 msgid "AI optimize function or method"
 msgstr ""
 
-#: ../src/ard_ai.cpp:1647
+#: ../src/ard_ai.cpp:1681
 msgid "Cursor is not on a function or method declaration."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1656
+#: ../src/ard_ai.cpp:1690
 msgid "Function or method body range is not available."
 msgstr ""
 
-#: ../src/ard_ai.cpp:1789 ../src/ard_ai.cpp:4129 ../src/ard_ai.cpp:4329
-#: ../src/ard_ai.cpp:4343
+#: ../src/ard_ai.cpp:1823 ../src/ard_ai.cpp:4216 ../src/ard_ai.cpp:4416
+#: ../src/ard_ai.cpp:4430
 msgid "AI solve project errors"
 msgstr ""
 
-#: ../src/ard_ai.cpp:1852
+#: ../src/ard_ai.cpp:1886
 msgid "please "
 msgstr ""
 
-#: ../src/ard_ai.cpp:1854
+#: ../src/ard_ai.cpp:1888
 msgid "pls "
 msgstr ""
 
-#: ../src/ard_ai.cpp:2185 ../src/ard_ai.cpp:4141
+#: ../src/ard_ai.cpp:2126 ../src/ard_ai.cpp:2250 ../src/ard_ai.cpp:4228
 msgid "AI interactive chat"
 msgstr ""
 
-#: ../src/ard_ai.cpp:2334
+#: ../src/ard_ai.cpp:2399
 msgid ""
 "(Loaded previous session context.)\n"
 "\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:2482
+#: ../src/ard_ai.cpp:2547
 #, c-format
 msgid ""
 "\n"
@@ -596,7 +636,7 @@ msgid ""
 "<patch into file %s (%d-%d)>\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:2489
+#: ../src/ard_ai.cpp:2554
 #, c-format
 msgid ""
 "\n"
@@ -604,71 +644,71 @@ msgid ""
 "<info with type %s requested>\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:3451
+#: ../src/ard_ai.cpp:3516
 msgid ""
 "\n"
 "\n"
 "<patch rejected: file_range required>\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:3467
+#: ../src/ard_ai.cpp:3532
 msgid ""
 "AI reached the maximum number of iterations.\n"
 "\t\n"
 "Do you want to continue?"
 msgstr ""
 
-#: ../src/ard_ai.cpp:3472
+#: ../src/ard_ai.cpp:3537
 msgid "Continue"
 msgstr ""
 
-#: ../src/ard_ai.cpp:3472
+#: ../src/ard_ai.cpp:3537
 msgid "Stop"
 msgstr ""
 
-#: ../src/ard_ai.cpp:3480
+#: ../src/ard_ai.cpp:3545
 msgid "AI reached the maximum number of iterations."
 msgstr ""
 
-#: ../src/ard_ai.cpp:3774
+#: ../src/ard_ai.cpp:3839
 msgid "AI patch does not apply to the current file."
 msgstr ""
 
-#: ../src/ard_ai.cpp:3810
+#: ../src/ard_ai.cpp:3875
 #, c-format
 msgid "<info with type %s requested>\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:4035
+#: ../src/ard_ai.cpp:4110
 msgid "AI finished without a clean patch."
 msgstr ""
 
-#: ../src/ard_ai.cpp:4061
+#: ../src/ard_ai.cpp:4136
 msgid "Failed to start AI request for next symbol."
 msgstr ""
 
-#: ../src/ard_ai.cpp:4107
+#: ../src/ard_ai.cpp:4194
 msgid "Unknown AI error."
 msgstr ""
 
-#: ../src/ard_ai.cpp:4116 ../src/ard_ai.cpp:4122 ../src/ard_ai.cpp:4128
-#: ../src/ard_ai.cpp:4140 ../src/ard_ai.cpp:4148 ../src/ard_ai.cpp:4154
-#: ../src/ard_ai.cpp:4161
+#: ../src/ard_ai.cpp:4203 ../src/ard_ai.cpp:4209 ../src/ard_ai.cpp:4215
+#: ../src/ard_ai.cpp:4227 ../src/ard_ai.cpp:4235 ../src/ard_ai.cpp:4241
+#: ../src/ard_ai.cpp:4248
 msgid "AI request failed:\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:4224
+#: ../src/ard_ai.cpp:4311
 msgid ""
 "\n"
 "\n"
 "<patch rejected>"
 msgstr ""
 
-#: ../src/ard_ai.cpp:4248
+#: ../src/ard_ai.cpp:4335
 msgid "New sketch file can not be created!"
 msgstr ""
 
-#: ../src/ard_ai.cpp:4257
+#: ../src/ard_ai.cpp:4344
 #, c-format
 msgid ""
 "\n"
@@ -676,11 +716,11 @@ msgid ""
 "<patch applied into file %s>\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:4318
+#: ../src/ard_ai.cpp:4405
 msgid "<IDE forced error solving>"
 msgstr ""
 
-#: ../src/ard_ai.cpp:4648
+#: ../src/ard_ai.cpp:4735
 #, c-format
 msgid ""
 "\n"
@@ -690,148 +730,169 @@ msgid ""
 "[Review & apply AI changes...](ai://review_patch/%s)\n"
 msgstr ""
 
-#: ../src/ard_ai.cpp:4668
+#: ../src/ard_ai.cpp:4755
 msgid "Patch is no longer available."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:57
+#: ../src/ard_aimdldlg.cpp:61
 msgid "AI model"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:88
+#: ../src/ard_aimdldlg.cpp:92
 msgid "Name:"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:92
+#: ../src/ard_aimdldlg.cpp:96
+msgid "Provider:"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:98
+msgid "HTTP API"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:99
+msgid "CLI process"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:104
 msgid "Endpoint URL:"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:96
+#: ../src/ard_aimdldlg.cpp:108
+msgid "CLI path:"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:112
+msgid "CLI arguments:"
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:116
 msgid "Model:"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:100
+#: ../src/ard_aimdldlg.cpp:120
 msgid "Maximum AI iterations:"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:106
+#: ../src/ard_aimdldlg.cpp:126
 msgid "Request timeout (seconds, 0 = no limit):"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:113
+#: ../src/ard_aimdldlg.cpp:133
 msgid "Force file_range policy (AI must inspect files before PATCH)"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:117
+#: ../src/ard_aimdldlg.cpp:137
 msgid "Keep full AI context (include all requested code and info)"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:121
+#: ../src/ard_aimdldlg.cpp:141
 msgid "Limit AI context to last applied change (floating window)"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:126
+#: ../src/ard_aimdldlg.cpp:146
 msgid "Authentication"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:127
+#: ../src/ard_aimdldlg.cpp:147
 msgid "This endpoint requires an API key"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:132
+#: ../src/ard_aimdldlg.cpp:152
 msgid "API key:"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:137
+#: ../src/ard_aimdldlg.cpp:157
 msgid "Clear stored key"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:143
+#: ../src/ard_aimdldlg.cpp:163
 msgid "The API key is stored using the system's secure keychain."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:149
+#: ../src/ard_aimdldlg.cpp:169
 msgid "Extra request JSON"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:173 ../src/ard_ed_frm.cpp:4248
+#: ../src/ard_aimdldlg.cpp:193 ../src/ard_ed_frm.cpp:4248
 msgid "Delete"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:174
+#: ../src/ard_aimdldlg.cpp:194
 msgid "Export..."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:175
+#: ../src/ard_aimdldlg.cpp:195
 msgid "Test"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:183 ../src/ard_boptdlg.cpp:76
+#: ../src/ard_aimdldlg.cpp:203 ../src/ard_boptdlg.cpp:76
 #: ../src/ard_fmtdlg.cpp:187 ../src/utils.cpp:1017
 msgid "OK"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:184 ../src/ard_boptdlg.cpp:77
-#: ../src/ard_diff.cpp:121 ../src/ard_ed_frm.cpp:2630 ../src/ard_fmtdlg.cpp:188
+#: ../src/ard_aimdldlg.cpp:204 ../src/ard_boptdlg.cpp:77
+#: ../src/ard_diff.cpp:120 ../src/ard_ed_frm.cpp:2630 ../src/ard_fmtdlg.cpp:188
 #: ../src/utils.cpp:1018
 msgid "Cancel"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:243
+#: ../src/ard_aimdldlg.cpp:291
 msgid "A key is already stored. Leave empty to keep it."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:245
+#: ../src/ard_aimdldlg.cpp:293
 msgid "Enter your API key (will be stored securely)."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:281
+#: ../src/ard_aimdldlg.cpp:334
 msgid "Export model to JSON"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:282 ../src/ard_setdlg.cpp:1873
+#: ../src/ard_aimdldlg.cpp:335 ../src/ard_setdlg.cpp:1895
 msgid "JSON files (*.json)|*.json|All files|*.*"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:288
+#: ../src/ard_aimdldlg.cpp:341
 msgid "Failed to write file."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:288
+#: ../src/ard_aimdldlg.cpp:341
 msgid "Export"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:302 ../src/ard_aimdldlg.cpp:417
+#: ../src/ard_aimdldlg.cpp:356 ../src/ard_aimdldlg.cpp:481
 msgid "Invalid JSON"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:328 ../src/ard_aimdldlg.cpp:425
-msgid "Endpoint URL is empty."
-msgstr ""
-
-#: ../src/ard_aimdldlg.cpp:328 ../src/ard_aimdldlg.cpp:350
-#: ../src/ard_aimdldlg.cpp:425
+#: ../src/ard_aimdldlg.cpp:386 ../src/ard_aimdldlg.cpp:391
+#: ../src/ard_aimdldlg.cpp:413 ../src/ard_aimdldlg.cpp:492
+#: ../src/ard_aimdldlg.cpp:496
 msgid "Validation"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:350
+#: ../src/ard_aimdldlg.cpp:391 ../src/ard_aimdldlg.cpp:496
+msgid "Endpoint URL is empty."
+msgstr ""
+
+#: ../src/ard_aimdldlg.cpp:413
 msgid ""
 "API key is required for this endpoint (no key provided and none stored)."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:394
+#: ../src/ard_aimdldlg.cpp:457
 msgid "Connection test succeeded."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:394 ../src/ard_aimdldlg.cpp:396
+#: ../src/ard_aimdldlg.cpp:457 ../src/ard_aimdldlg.cpp:459
 msgid "AI Test"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:396
+#: ../src/ard_aimdldlg.cpp:459
 msgid "Connection test failed."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:452
+#: ../src/ard_aimdldlg.cpp:526
 msgid ""
 "System keyring (Secret Service) is not available in this session.\n"
 "\n"
@@ -843,11 +904,11 @@ msgid ""
 "running."
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:456
+#: ../src/ard_aimdldlg.cpp:530
 msgid "API key not saved"
 msgstr ""
 
-#: ../src/ard_aimdldlg.cpp:494
+#: ../src/ard_aimdldlg.cpp:568
 msgid "Failed to save AI API key to the system secret store."
 msgstr ""
 
@@ -876,33 +937,33 @@ msgstr ""
 msgid "[AI] Failed to load saved session."
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:607
+#: ../src/ard_aipnl.cpp:607 ../src/ard_aipnl.cpp:896
 msgid "AI model thinking..."
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:722
+#: ../src/ard_aipnl.cpp:724
 msgid "[AI] Interactive actions are not available."
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:737
+#: ../src/ard_aipnl.cpp:739
 msgid "[AI] Failed to start interactive chat request."
-msgstr ""
-
-#: ../src/ard_aipnl.cpp:757
-#, c-format
-msgid "%s (in: %lld, out: %lld, tot: %lld) tokens"
 msgstr ""
 
 #: ../src/ard_aipnl.cpp:763
 #, c-format
+msgid "%s (in: %lld, out: %lld, tot: %lld) tokens"
+msgstr ""
+
+#: ../src/ard_aipnl.cpp:769
+#, c-format
 msgid "%s (in: %lld, out: %lld, tot: %lld) tokens, %d calls"
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:805
+#: ../src/ard_aipnl.cpp:820
 msgid "[AI ERROR] Unknown error"
 msgstr ""
 
-#: ../src/ard_aipnl.cpp:807
+#: ../src/ard_aipnl.cpp:822
 #, c-format
 msgid "[AI ERROR] %s"
 msgstr ""
@@ -1111,7 +1172,7 @@ msgstr ""
 msgid "Invalid arduino-cli binary"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:365 ../src/ard_setdlg.cpp:1033
+#: ../src/ard_cliinst.cpp:365 ../src/ard_setdlg.cpp:1047
 msgid "Select arduino-cli executable"
 msgstr ""
 
@@ -1123,7 +1184,7 @@ msgstr ""
 msgid "arduino-cli executable (*.exe)|*.exe|All files (*.*)|*.*"
 msgstr ""
 
-#: ../src/ard_cliinst.cpp:378 ../src/ard_setdlg.cpp:2414
+#: ../src/ard_cliinst.cpp:378 ../src/ard_setdlg.cpp:2447
 msgid "All files (*)|*"
 msgstr ""
 
@@ -1407,88 +1468,88 @@ msgstr ""
 msgid "Uninstall core"
 msgstr ""
 
-#: ../src/ard_diagview.cpp:22 ../src/ard_finsymdlg.cpp:47
+#: ../src/ard_diagview.cpp:40 ../src/ard_finsymdlg.cpp:47
 #: ../src/ard_renamedlg.cpp:146
 msgid "File"
 msgstr ""
 
-#: ../src/ard_diagview.cpp:23 ../src/ard_finsymdlg.cpp:48
+#: ../src/ard_diagview.cpp:41 ../src/ard_finsymdlg.cpp:48
 #: ../src/ard_orginc.cpp:57 ../src/ard_renamedlg.cpp:147
 msgid "Line"
 msgstr ""
 
-#: ../src/ard_diagview.cpp:24 ../src/ard_renamedlg.cpp:148
+#: ../src/ard_diagview.cpp:42 ../src/ard_renamedlg.cpp:148
 msgid "Column"
 msgstr ""
 
-#: ../src/ard_diagview.cpp:25 ../src/ard_mdwidget.cpp:146
+#: ../src/ard_diagview.cpp:43 ../src/ard_mdwidget.cpp:146
 msgid "Message"
 msgstr ""
 
-#: ../src/ard_diagview.cpp:398
+#: ../src/ard_diagview.cpp:416
 msgid "Copy problem"
 msgstr ""
 
-#: ../src/ard_diagview.cpp:399
+#: ../src/ard_diagview.cpp:417
 msgid "Copy all problems"
 msgstr ""
 
-#: ../src/ard_diagview.cpp:403
+#: ../src/ard_diagview.cpp:421
 msgid "Solve error with AI"
 msgstr ""
 
-#: ../src/ard_diff.cpp:42
+#: ../src/ard_diff.cpp:41
 msgid "Review AI Changes"
 msgstr ""
 
-#: ../src/ard_diff.cpp:87 ../src/ard_pop.cpp:29
+#: ../src/ard_diff.cpp:86 ../src/ard_pop.cpp:29
 msgid "AI explanation"
 msgstr ""
 
-#: ../src/ard_diff.cpp:120
+#: ../src/ard_diff.cpp:119
 msgid "Apply"
 msgstr ""
 
-#: ../src/ard_diff.cpp:238
+#: ../src/ard_diff.cpp:237
 msgid "No changes to review."
 msgstr ""
 
-#: ../src/ard_diff.cpp:240
+#: ../src/ard_diff.cpp:239
 msgid "Empty"
 msgstr ""
 
-#: ../src/ard_diff.cpp:255
+#: ../src/ard_diff.cpp:254
 #, c-format
 msgid "Deleted file: %s"
 msgstr ""
 
-#: ../src/ard_diff.cpp:257
+#: ../src/ard_diff.cpp:256
 #, c-format
 msgid "File: %s"
 msgstr ""
 
-#: ../src/ard_diff.cpp:273
+#: ../src/ard_diff.cpp:272
 msgid "Original"
 msgstr ""
 
-#: ../src/ard_diff.cpp:274
+#: ../src/ard_diff.cpp:273
 msgid "Deleted"
 msgstr ""
 
-#: ../src/ard_diff.cpp:274
+#: ../src/ard_diff.cpp:273
 msgid "Modified"
 msgstr ""
 
-#: ../src/ard_diff.cpp:314
+#: ../src/ard_diff.cpp:313
 msgid "Show full file"
 msgstr ""
 
-#: ../src/ard_diff.cpp:352
+#: ../src/ard_diff.cpp:351
 #, c-format
 msgid "New file: %s"
 msgstr ""
 
-#: ../src/ard_diff.cpp:601
+#: ../src/ard_diff.cpp:600
 #, c-format
 msgid "-------- change block #%zu (aligned lines %d-%d) --------"
 msgstr ""
@@ -2092,7 +2153,7 @@ msgid "Show symbols tree for current editor"
 msgstr ""
 
 #: ../src/ard_ed_frm.cpp:2973 ../src/ard_ed_frm.cpp:3251
-#: ../src/ard_ed_frm.cpp:3276 ../src/ard_setdlg.cpp:1736
+#: ../src/ard_ed_frm.cpp:3276 ../src/ard_setdlg.cpp:1750
 msgid "AI assistant"
 msgstr ""
 
@@ -2152,7 +2213,7 @@ msgstr ""
 msgid "Open Serial Monitor"
 msgstr ""
 
-#: ../src/ard_ed_frm.cpp:3170 ../src/ard_setdlg.cpp:1111
+#: ../src/ard_ed_frm.cpp:3170 ../src/ard_setdlg.cpp:1125
 msgid "CLI"
 msgstr ""
 
@@ -2641,7 +2702,7 @@ msgstr ""
 msgid "AI optimizes function or method."
 msgstr ""
 
-#: ../src/ard_edit.cpp:1401 ../src/ard_setdlg.cpp:1979
+#: ../src/ard_edit.cpp:1401 ../src/ard_setdlg.cpp:2004
 msgid "AI"
 msgstr ""
 
@@ -2826,11 +2887,11 @@ msgstr ""
 msgid "Background activity"
 msgstr ""
 
-#: ../src/ard_initbrdsel.cpp:11
+#: ../src/ard_initbrdsel.cpp:29
 msgid "Select development board"
 msgstr ""
 
-#: ../src/ard_initbrdsel.cpp:18
+#: ../src/ard_initbrdsel.cpp:36
 #, c-format
 msgid ""
 "No development board is configured for this sketch.\n"
@@ -2841,19 +2902,19 @@ msgid ""
 "selector."
 msgstr ""
 
-#: ../src/ard_initbrdsel.cpp:25
+#: ../src/ard_initbrdsel.cpp:43
 msgid "Recently used boards:"
 msgstr ""
 
-#: ../src/ard_initbrdsel.cpp:33
+#: ../src/ard_initbrdsel.cpp:51
 msgid "Use selected"
 msgstr ""
 
-#: ../src/ard_initbrdsel.cpp:34
+#: ../src/ard_initbrdsel.cpp:52
 msgid "Select board..."
 msgstr ""
 
-#: ../src/ard_initbrdsel.cpp:35
+#: ../src/ard_initbrdsel.cpp:53
 msgid "Continue without board"
 msgstr ""
 
@@ -3080,71 +3141,71 @@ msgid ""
 "Within each group, items are ordered alphabetically."
 msgstr ""
 
-#: ../src/ard_plotview.cpp:62
+#: ../src/ard_plotview.cpp:80
 msgid "Fixed Y range"
 msgstr ""
 
-#: ../src/ard_plotview.cpp:66
+#: ../src/ard_plotview.cpp:84
 msgid "Enable fixed Y range"
 msgstr ""
 
-#: ../src/ard_plotview.cpp:73
+#: ../src/ard_plotview.cpp:91
 msgid "Y min:"
 msgstr ""
 
-#: ../src/ard_plotview.cpp:75
+#: ../src/ard_plotview.cpp:93
 msgid "Y max:"
 msgstr ""
 
-#: ../src/ard_plotview.cpp:112
+#: ../src/ard_plotview.cpp:130
 msgid "Please enter valid numbers for Y min / Y max."
 msgstr ""
 
-#: ../src/ard_plotview.cpp:112
+#: ../src/ard_plotview.cpp:130
 msgid "Invalid input"
 msgstr ""
 
-#: ../src/ard_plotview.cpp:191
+#: ../src/ard_plotview.cpp:209
 msgid "Visible time window (seconds)"
 msgstr ""
 
-#: ../src/ard_plotview.cpp:452
+#: ../src/ard_plotview.cpp:470
 msgid "Fixed Y range..."
 msgstr ""
 
-#: ../src/ard_plotview.cpp:457
+#: ../src/ard_plotview.cpp:475
 msgid "Save plot as image..."
 msgstr ""
 
-#: ../src/ard_plotview.cpp:463 ../src/ard_sermon.cpp:828
+#: ../src/ard_plotview.cpp:481 ../src/ard_sermon.cpp:828
 #: ../src/ard_sermon.cpp:893
 msgid "Clear"
 msgstr ""
 
-#: ../src/ard_plotview.cpp:521
+#: ../src/ard_plotview.cpp:539
 msgid "Unable to create bitmap for export."
 msgstr ""
 
-#: ../src/ard_plotview.cpp:521 ../src/ard_plotview.cpp:533
-#: ../src/ard_plotview.cpp:592
+#: ../src/ard_plotview.cpp:539 ../src/ard_plotview.cpp:551
+#: ../src/ard_plotview.cpp:610
 msgid "Save plot"
 msgstr ""
 
-#: ../src/ard_plotview.cpp:533
+#: ../src/ard_plotview.cpp:551
 msgid "Unable to create graphics context for export."
 msgstr ""
 
-#: ../src/ard_plotview.cpp:549
+#: ../src/ard_plotview.cpp:567
 msgid "Save plot as image"
 msgstr ""
 
-#: ../src/ard_plotview.cpp:552
+#: ../src/ard_plotview.cpp:570
 msgid ""
 "PNG image (*.png)|*.png|JPEG image (*.jpg;*.jpeg)|*.jpg;*.jpeg|BMP image "
 "(*.bmp)|*.bmp"
 msgstr ""
 
-#: ../src/ard_plotview.cpp:592
+#: ../src/ard_plotview.cpp:610
 msgid "Failed to save image file."
 msgstr ""
 
@@ -3568,67 +3629,67 @@ msgid ""
 "[INFO] Serial monitor unblocked - port re-opened.\n"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:712
+#: ../src/ard_setdlg.cpp:723
 msgid "Settings"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:725 ../src/ard_setdlg.cpp:1666
+#: ../src/ard_setdlg.cpp:736 ../src/ard_setdlg.cpp:1680
 msgid "Default"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:749
+#: ../src/ard_setdlg.cpp:763
 msgid "Language"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:752
+#: ../src/ard_setdlg.cpp:766
 msgid "User interface language:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:760
+#: ../src/ard_setdlg.cpp:774
 msgid "System language"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:761
+#: ../src/ard_setdlg.cpp:775
 msgid "English"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:817
+#: ../src/ard_setdlg.cpp:831
 msgid "Language change will take effect after restarting the application."
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:828
+#: ../src/ard_setdlg.cpp:842
 msgid "Updates"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:859
+#: ../src/ard_setdlg.cpp:873
 msgid "every"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:868
+#: ../src/ard_setdlg.cpp:882
 msgid "day(s)"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:886
+#: ../src/ard_setdlg.cpp:900
 msgid "Automatically check for application updates "
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:894
+#: ../src/ard_setdlg.cpp:908
 msgid "Automatically check for library updates "
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:902
+#: ../src/ard_setdlg.cpp:916
 msgid "Automatically check for board package updates "
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:909
+#: ../src/ard_setdlg.cpp:923
 msgid "External files"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:914
+#: ../src/ard_setdlg.cpp:928
 msgid "Open external C/C++ source files inside the IDE (when possible)"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:920
+#: ../src/ard_setdlg.cpp:934
 msgid ""
 "When this option is disabled, the following command is used to open C/C++ "
 "source files that are outside the current sketch/project.\n"
@@ -3636,287 +3697,287 @@ msgid ""
 "All other file types will be opened with the system's default application."
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:939 ../src/ard_setdlg.cpp:988
-#: ../src/ard_setdlg.cpp:1016
+#: ../src/ard_setdlg.cpp:953 ../src/ard_setdlg.cpp:1002
+#: ../src/ard_setdlg.cpp:1030
 msgid "Browse..."
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:968
+#: ../src/ard_setdlg.cpp:982
 msgid "General"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:982
+#: ../src/ard_setdlg.cpp:996
 msgid "Sketches directory:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1009
+#: ../src/ard_setdlg.cpp:1023
 msgid "arduino-cli executable:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1026
+#: ../src/ard_setdlg.cpp:1040
 msgid ""
 "arduino-cli.exe|arduino-cli.exe|Executable files (*.exe)|*.exe|All files "
 "(*.*)|*.*"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1028
+#: ../src/ard_setdlg.cpp:1042
 msgid "arduino-cli|arduino-cli|All files (*)|*"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1048
+#: ../src/ard_setdlg.cpp:1062
 msgid "Additional Boards Manager URLs (one per line):"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1069
+#: ../src/ard_setdlg.cpp:1083
 msgid "Allow unsafe install"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1078
+#: ../src/ard_setdlg.cpp:1092
 msgid "Show resource usage after successful build"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1087
+#: ../src/ard_setdlg.cpp:1101
 msgid "Network proxy:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1092
+#: ../src/ard_setdlg.cpp:1106
 msgid "user:pass@host:port OR host:port"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1097
+#: ../src/ard_setdlg.cpp:1111
 msgid "Network connection timeout (seconds, 0 = no limit):"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1136
+#: ../src/ard_setdlg.cpp:1150
 msgid "Font"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1138
+#: ../src/ard_setdlg.cpp:1152
 msgid "Editor font:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1144
+#: ../src/ard_setdlg.cpp:1158
 msgid "Colors"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1163
+#: ../src/ard_setdlg.cpp:1177
 msgid "Light theme"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1164
+#: ../src/ard_setdlg.cpp:1178
 msgid "Dark theme"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1167
+#: ../src/ard_setdlg.cpp:1181
 msgid "Text:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1174
+#: ../src/ard_setdlg.cpp:1188
 msgid "Background:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1181
+#: ../src/ard_setdlg.cpp:1195
 msgid "Installed list color:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1188
+#: ../src/ard_setdlg.cpp:1202
 msgid "Updatable list color:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1195
+#: ../src/ard_setdlg.cpp:1209
 msgid "Deprecated list color:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1202
+#: ../src/ard_setdlg.cpp:1216
 msgid "Line numbers (text):"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1209
+#: ../src/ard_setdlg.cpp:1223
 msgid "Line numbers (background):"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1216
+#: ../src/ard_setdlg.cpp:1230
 msgid "Selection:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1223
+#: ../src/ard_setdlg.cpp:1237
 msgid "Right edge:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1230
+#: ../src/ard_setdlg.cpp:1244
 msgid "Whitespace:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1237
+#: ../src/ard_setdlg.cpp:1251
 msgid "Brace match:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1244
+#: ../src/ard_setdlg.cpp:1258
 msgid "Brace mismatch:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1251
+#: ../src/ard_setdlg.cpp:1265
 msgid "Comments:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1258
+#: ../src/ard_setdlg.cpp:1272
 msgid "Strings:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1265
+#: ../src/ard_setdlg.cpp:1279
 msgid "Numbers:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1272
+#: ../src/ard_setdlg.cpp:1286
 msgid "Keywords #1:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1279
+#: ../src/ard_setdlg.cpp:1293
 msgid "Keywords #2:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1286
+#: ../src/ard_setdlg.cpp:1300
 msgid "Preprocessor:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1293
+#: ../src/ard_setdlg.cpp:1307
 msgid "Current line background:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1300
+#: ../src/ard_setdlg.cpp:1314
 msgid "Calltip text:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1307
+#: ../src/ard_setdlg.cpp:1321
 msgid "Calltip background:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1314
+#: ../src/ard_setdlg.cpp:1328
 msgid "Error:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1321
+#: ../src/ard_setdlg.cpp:1335
 msgid "Warning:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1328
+#: ../src/ard_setdlg.cpp:1342
 msgid "Note:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1335
+#: ../src/ard_setdlg.cpp:1349
 msgid "Symbol highlight:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1342
+#: ../src/ard_setdlg.cpp:1356
 msgid "AI chat - user messages:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1349
+#: ../src/ard_setdlg.cpp:1363
 msgid "AI chat - assistant messages:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1356
+#: ../src/ard_setdlg.cpp:1370
 msgid "AI chat - system messages:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1363
+#: ../src/ard_setdlg.cpp:1377
 msgid "AI chat - info messages:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1370
+#: ../src/ard_setdlg.cpp:1384
 msgid "AI chat - error messages:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1394
+#: ../src/ard_setdlg.cpp:1408
 msgid "Editor behavior"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1400
+#: ../src/ard_setdlg.cpp:1414
 msgid "Tab width:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1408
+#: ../src/ard_setdlg.cpp:1422
 msgid "Use tabs (instead of spaces):"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1415
+#: ../src/ard_setdlg.cpp:1429
 msgid "Auto indent:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1422
+#: ../src/ard_setdlg.cpp:1436
 msgid "Open sketches in the same window:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1425
+#: ../src/ard_setdlg.cpp:1439
 msgid ""
 "When enabled, opening a sketch will reuse this window and close the "
 "currently open sketch. When disabled, each sketch opens in a new editor "
 "window (like Arduino IDE)."
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1430
+#: ../src/ard_setdlg.cpp:1444
 msgid "Clang format:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1433
+#: ../src/ard_setdlg.cpp:1447
 msgid "Setup..."
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1434
+#: ../src/ard_setdlg.cpp:1448
 msgid ""
 "Configure advanced clang-format overrides (used when there is no .clang-"
 "format in the sketch)."
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1442
+#: ../src/ard_setdlg.cpp:1456
 msgid "View && layout"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1448
+#: ../src/ard_setdlg.cpp:1462
 msgid "Show line numbers:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1455
+#: ../src/ard_setdlg.cpp:1469
 msgid "Show whitespace:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1462
+#: ../src/ard_setdlg.cpp:1476
 msgid "Word wrap:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1469
+#: ../src/ard_setdlg.cpp:1483
 msgid "Show right edge:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1476
+#: ../src/ard_setdlg.cpp:1490
 msgid "Edge column:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1487
+#: ../src/ard_setdlg.cpp:1501
 msgid "Highlight current line:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1494
+#: ../src/ard_setdlg.cpp:1508
 msgid "Highlight symbols:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1501
+#: ../src/ard_setdlg.cpp:1515
 msgid "Highlight matching braces:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1508
+#: ../src/ard_setdlg.cpp:1522
 msgid "Display hover info:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1533
+#: ../src/ard_setdlg.cpp:1547
 msgid "Editor"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1540 ../src/ard_setdlg.cpp:1729
+#: ../src/ard_setdlg.cpp:1554 ../src/ard_setdlg.cpp:1743
 msgid "Clang/LLVM"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1549
+#: ../src/ard_setdlg.cpp:1563
 msgid ""
 "Diagnostics mode:\n"
 "- Off - diagnostics will not be generated.\n"
@@ -3924,39 +3985,39 @@ msgid ""
 "- Whole project - all source files belonging to the sketch."
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1556 ../src/ard_setdlg.cpp:1602
-#: ../src/ard_setdlg.cpp:1665
+#: ../src/ard_setdlg.cpp:1570 ../src/ard_setdlg.cpp:1616
+#: ../src/ard_setdlg.cpp:1679
 msgid "Off"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1557
+#: ../src/ard_setdlg.cpp:1571
 msgid "Translation unit"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1558
+#: ../src/ard_setdlg.cpp:1572
 msgid "Whole project"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1574
+#: ../src/ard_setdlg.cpp:1588
 msgid "Resolve after save"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1576
+#: ../src/ard_setdlg.cpp:1590
 msgid "Diagnostics are resolved only after saving the file."
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1578
+#: ../src/ard_setdlg.cpp:1592
 msgid "Show diagnostics only for sketch files"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1581
+#: ../src/ard_setdlg.cpp:1595
 msgid ""
 "When enabled, diagnostics are shown only for files in the current sketch. "
 "When disabled, all diagnostics reported by Clang are shown, including those "
 "from libraries and the toolchain."
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1595
+#: ../src/ard_setdlg.cpp:1609
 msgid ""
 "Completion mode:\n"
 "- Off - code completion is disabled.\n"
@@ -3964,30 +4025,30 @@ msgid ""
 "- While writing - dynamic code completion while typing."
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1603
+#: ../src/ard_setdlg.cpp:1617
 msgid "Only on request"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1604
+#: ../src/ard_setdlg.cpp:1618
 msgid "While writing"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1625
+#: ../src/ard_setdlg.cpp:1639
 msgid ""
 "Library && include resolution mode:\n"
 "- Internal resolver - fast, but may miss some include paths.\n"
 "- Compile-commands resolver - slower, but the most accurate."
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1632
+#: ../src/ard_setdlg.cpp:1646
 msgid "Internal resolver"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1633
+#: ../src/ard_setdlg.cpp:1647
 msgid "Compile-commands resolver"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1657
+#: ../src/ard_setdlg.cpp:1671
 msgid ""
 "Warnings mode:\n"
 "- Off - disables compiler warnings (equivalent to -w).\n"
@@ -3998,90 +4059,89 @@ msgid ""
 "etc.)."
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1667
+#: ../src/ard_setdlg.cpp:1681
 msgid "Arduino-like"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1668
+#: ../src/ard_setdlg.cpp:1682
 msgid "Strict"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1669
+#: ../src/ard_setdlg.cpp:1683
 msgid "Custom"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1701
+#: ../src/ard_setdlg.cpp:1715
 msgid "Behavior"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1707
+#: ../src/ard_setdlg.cpp:1721
 msgid "Autocompletion delay (ms):"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1716
+#: ../src/ard_setdlg.cpp:1730
 msgid "Resolve diagnostics delay (ms):"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1741
+#: ../src/ard_setdlg.cpp:1755
 msgid "Enable AI-powered features (code fixes, explanations, ...)"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1753
+#: ../src/ard_setdlg.cpp:1767
 msgid ""
-"AI integration uses an HTTP(S) API endpoint.\n"
-"You can connect either to a cloud provider (e.g. OpenAI-compatible API)\n"
-"or to a local server exposing a compatible endpoint."
+"AI integration can use either an HTTP(S) API endpoint\n"
+"or an external CLI tool for interactive chat output."
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1761
+#: ../src/ard_setdlg.cpp:1774
 msgid "Model"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1765
+#: ../src/ard_setdlg.cpp:1778
 msgid "Active model:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1782
+#: ../src/ard_setdlg.cpp:1795
 msgid "(unnamed)"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1852
+#: ../src/ard_setdlg.cpp:1871
 msgid "Add..."
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1853
+#: ../src/ard_setdlg.cpp:1872
 msgid "Import..."
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1859
+#: ../src/ard_setdlg.cpp:1878
 msgid "New model"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1872
+#: ../src/ard_setdlg.cpp:1894
 msgid "Import model from JSON"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1880
+#: ../src/ard_setdlg.cpp:1902
 msgid "Failed to read file."
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1880 ../src/ard_setdlg.cpp:1911
+#: ../src/ard_setdlg.cpp:1902 ../src/ard_setdlg.cpp:1936
 msgid "Import"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1911
+#: ../src/ard_setdlg.cpp:1936
 msgid "Invalid JSON file."
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1920
+#: ../src/ard_setdlg.cpp:1945
 msgid "Chat history"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1925
+#: ../src/ard_setdlg.cpp:1950
 msgid "Store AI chat sessions inside the sketch folder"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1940
+#: ../src/ard_setdlg.cpp:1965
 msgid ""
 "When enabled, the IDE may save the AI conversation transcript (including "
 "code snippets)\n"
@@ -4092,59 +4152,59 @@ msgid ""
 "Enable only if you understand the risks."
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1950
+#: ../src/ard_setdlg.cpp:1975
 msgid "Session title:"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1954
+#: ../src/ard_setdlg.cpp:1979
 msgid "Use date only (no summarization)"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1955
+#: ../src/ard_setdlg.cpp:1980
 msgid "Generate from first message (no extra tokens)"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1956
+#: ../src/ard_setdlg.cpp:1981
 msgid "Generate with AI from first message (uses tokens)"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:1967
+#: ../src/ard_setdlg.cpp:1992
 msgid ""
 "Controls how saved chat sessions are labeled in the session list.\n"
 "The title is generated only once, when the session starts."
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:2322
+#: ../src/ard_setdlg.cpp:2355
 msgid "Select sketches directory"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:2371
+#: ../src/ard_setdlg.cpp:2404
 msgid ""
 "This will replace your current Custom warning flags with the selected "
 "preset.\n"
 "Do you want to continue?"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:2373
+#: ../src/ard_setdlg.cpp:2406
 msgid "Confirmation"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:2386
+#: ../src/ard_setdlg.cpp:2419
 msgid ""
 "Enter custom warning flags.\n"
 "Tip: one flag per line is easiest to read (e.g. -Wall, -Wextra, -Wno-shadow, "
 "-Wformat=2)."
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:2388
+#: ../src/ard_setdlg.cpp:2421
 msgid "Custom warning flags"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:2412
+#: ../src/ard_setdlg.cpp:2445
 msgid "Executable files (*.exe)|*.exe|All files (*.*)|*.*"
 msgstr ""
 
-#: ../src/ard_setdlg.cpp:2419
+#: ../src/ard_setdlg.cpp:2452
 msgid "Select external program"
 msgstr ""
 
@@ -4200,27 +4260,27 @@ msgstr ""
 msgid "You are running the latest version (%s)."
 msgstr ""
 
-#: ../src/ard_valsview.cpp:89
+#: ../src/ard_valsview.cpp:107
 #, c-format
 msgid "Last update: %s ago"
 msgstr ""
 
-#: ../src/ard_valsview.cpp:300
+#: ../src/ard_valsview.cpp:318
 #, c-format
 msgid "%ld ms"
 msgstr ""
 
-#: ../src/ard_valsview.cpp:308
+#: ../src/ard_valsview.cpp:326
 #, c-format
 msgid "%ld sec"
 msgstr ""
 
-#: ../src/ard_valsview.cpp:316
+#: ../src/ard_valsview.cpp:334
 #, c-format
 msgid "%ld:%02ld min"
 msgstr ""
 
-#: ../src/ard_valsview.cpp:322
+#: ../src/ard_valsview.cpp:340
 #, c-format
 msgid "%ld:%02ld hour"
 msgstr ""

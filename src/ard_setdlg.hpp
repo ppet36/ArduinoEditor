@@ -156,15 +156,24 @@ enum AiSummarizationChatMode {
   aiModelSumarization
 };
 
+enum class AiProviderType {
+  HttpApi = 0,
+  CliProcess = 1
+};
+
 struct AiSettings {
   bool enabled = false; // Master switch - enables AI
   // sessions persistence
   bool storeChatHistory = false;
   AiSummarizationChatMode summarizeChatSessionMode = noSumarization;
 
+  AiProviderType providerType = AiProviderType::HttpApi;
   wxString id;                       // Model id.
   wxString name;                     // User name
   wxString endpointUrl;              // e.q. https://api.openai.com/v1/responses
+  wxString cliPath;                  // full path to CLI executable
+  wxString cliArgs;                  // optional command-line arguments
+  wxString cliWorkingDir;            // transient runtime working directory for CLI providers
   wxString model;                    // e.q. gpt-4.1, gpt-5.1-codex, deepseek-coder, ...
   int maxIterations;                 // Maximum number of iterations
   int requestTimeout;                // Request timeout for single call
@@ -177,12 +186,17 @@ struct AiSettings {
 
   void Load(wxConfigBase *cfg);
   void Save(wxConfigBase *cfg) const;
+  bool UsesCliProvider() const { return providerType == AiProviderType::CliProcess; }
+  bool SupportsInteractiveActions() const { return !UsesCliProvider(); }
 };
 
 struct AiModelSettings {
   wxString id;          // stable identifier (for selection + keychain)
   wxString name;        // profile username (displayed in choice)
+  AiProviderType providerType = AiProviderType::HttpApi;
   wxString endpointUrl; // https://.../v1/responses
+  wxString cliPath;     // full path to CLI executable
+  wxString cliArgs;     // optional command-line arguments
   wxString model;       // gpt-4.1, ...
   int maxIterations = 5;
   int requestTimeout = 60;           // in seconds (0 = no limit)

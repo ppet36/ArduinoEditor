@@ -715,6 +715,8 @@ void ArduinoAiChatPanel::SendCurrentInput() {
 
   // Clean input
   m_inputCtrl->SetText(wxEmptyString);
+  m_hasStreamingOutput = false;
+  m_lastStreamingMessage.Clear();
 
   if (!m_actions) {
     if (m_historyPanel) {
@@ -750,6 +752,10 @@ void ArduinoAiChatPanel::OnChatSuccess(wxThreadEvent &event) {
   if (m_historyPanel && !answer.IsEmpty()) {
     wxString info;
     wxString model = m_actions->GetSettings().model;
+    auto *cl = m_actions->GetClient();
+    if (cl) {
+      model = cl->GetModelName();
+    }
     AiTokenTotals totals = event.GetPayload<AiTokenTotals>();
 
     if (totals.HasAny()) {
@@ -769,7 +775,6 @@ void ArduinoAiChatPanel::OnChatSuccess(wxThreadEvent &event) {
       }
     } else {
       // Fallback (should be rare): use the last call's token info directly from the client.
-      auto *cl = m_actions->GetClient();
       if (cl) {
         int inTok = cl->GetLastInputTokens();
         int outTok = cl->GetLastOutputTokens();
@@ -787,8 +792,18 @@ void ArduinoAiChatPanel::OnChatSuccess(wxThreadEvent &event) {
         wxT("%x %X"), // locale-dependent date + time
         wxDateTime::Local);
 
-    m_historyPanel->AppendMarkdown(answer, AiMarkdownRole::Assistant, info, time);
+    const wxString trimmedAnswer = TrimCopy(answer);
+    const wxString trimmedLastStream = TrimCopy(m_lastStreamingMessage);
+
+    if (!m_hasStreamingOutput) {
+      m_historyPanel->AppendMarkdown(answer, AiMarkdownRole::Assistant, info, time);
+    } else if (trimmedAnswer != trimmedLastStream) {
+      m_historyPanel->AppendMarkdown(wxT("\n\n---\n\n") + answer, AiMarkdownRole::Assistant, info, time);
+    }
   }
+
+  m_hasStreamingOutput = false;
+  m_lastStreamingMessage.Clear();
 
   RefreshSessionList();
 }
@@ -810,6 +825,9 @@ void ArduinoAiChatPanel::OnChatError(wxThreadEvent &event) {
   if (m_historyPanel) {
     m_historyPanel->AppendMarkdown(msg, AiMarkdownRole::Error);
   }
+
+  m_hasStreamingOutput = false;
+  m_lastStreamingMessage.Clear();
 
   // Keep the choice labels (message counts) in sync even on errors.
   RefreshSessionList();
@@ -866,6 +884,24 @@ void ArduinoAiChatPanel::OnSessionTitleUpdated(wxThreadEvent &event) {
   m_currentSessionId = sid;
 }
 
-void ArduinoAiChatPanel::OnChatProgress(wxThreadEvent &WXUNUSED(event)) {
-  // Currently not supported
+void ArduinoAiChatPanel::OnChatProgress(wxThreadEvent &event) {
+  if (!m_inputCtrl || !m_isBusy)
+    return;
+
+  wxString msg = event.GetString();
+  if (msg.IsEmpty()) {
+    return;
+  }
+
+  wxString placeholder = wxT("  ") + _("AI model thinking...") + wxT("  ");
+  m_inputCtrl->SetText(placeholder);
+  m_inputCtrl->StartStyling(0);
+  m_inputCtrl->SetStyling((int)placeholder.length() * 2, kStylePlaceholder);
+  m_inputCtrl->GotoPos(0);
+
+  if (m_historyPanel) {
+    m_historyPanel->AppendMarkdown(msg, AiMarkdownRole::Assistant);
+    m_hasStreamingOutput = true;
+    m_lastStreamingMessage = msg;
+  }
 }

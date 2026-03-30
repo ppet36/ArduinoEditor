@@ -207,7 +207,10 @@ static void SaveAiModels(wxConfigBase *cfg, const std::vector<AiModelSettings> &
 
     cfg->Write(base + wxT("/Id"), m.id);
     cfg->Write(base + wxT("/Name"), m.name);
+    cfg->Write(base + wxT("/ProviderType"), (long)m.providerType);
     cfg->Write(base + wxT("/EndpointUrl"), m.endpointUrl);
+    cfg->Write(base + wxT("/CliPath"), m.cliPath);
+    cfg->Write(base + wxT("/CliArgs"), m.cliArgs);
     cfg->Write(base + wxT("/Model"), m.model);
 
     cfg->Write(base + wxT("/MaxIterations"), (long)m.maxIterations);
@@ -601,7 +604,12 @@ void ClangSettings::AppendWarningFlags(std::vector<const char *> &out) const {
 
 void AiSettings::Load(wxConfigBase *cfg) {
   ConfigReadBool(cfg, wxT("AI/Enabled"), enabled, false);
+  long providerTypeLong = (long)AiProviderType::HttpApi;
+  cfg->Read(wxT("AI/ProviderType"), &providerTypeLong, (long)AiProviderType::HttpApi);
+  providerType = static_cast<AiProviderType>(providerTypeLong);
   ConfigReadString(cfg, wxT("AI/EndpointUrl"), endpointUrl, wxEmptyString);
+  ConfigReadString(cfg, wxT("AI/CliPath"), cliPath, wxEmptyString);
+  ConfigReadString(cfg, wxT("AI/CliArgs"), cliArgs, wxEmptyString);
   ConfigReadString(cfg, wxT("AI/Model"), model, wxEmptyString);
   ConfigReadString(cfg, wxT("AI/ID"), id, wxEmptyString);
   ConfigReadString(cfg, wxT("AI/Name"), name, wxEmptyString);
@@ -623,7 +631,10 @@ void AiSettings::Load(wxConfigBase *cfg) {
 
 void AiSettings::Save(wxConfigBase *cfg) const {
   cfg->Write(wxT("AI/Enabled"), enabled);
+  cfg->Write(wxT("AI/ProviderType"), (long)providerType);
   cfg->Write(wxT("AI/EndpointUrl"), endpointUrl);
+  cfg->Write(wxT("AI/CliPath"), cliPath);
+  cfg->Write(wxT("AI/CliArgs"), cliArgs);
   cfg->Write(wxT("AI/Model"), model);
   cfg->Write(wxT("AI/ID"), id);
   cfg->Write(wxT("AI/Name"), name);
@@ -723,7 +734,10 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
     AiModelSettings m;
     m.id = GenAiModelId();
     m.name = _("Default");
+    m.providerType = m_aiSettings.providerType;
     m.endpointUrl = TrimCopy(m_aiSettings.endpointUrl);
+    m.cliPath = TrimCopy(m_aiSettings.cliPath);
+    m.cliArgs = TrimCopy(m_aiSettings.cliArgs);
     m.model = TrimCopy(m_aiSettings.model);
     m.maxIterations = m_aiSettings.maxIterations;
     m.requestTimeout = m_aiSettings.requestTimeout;
@@ -1750,9 +1764,8 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
   auto *aiInfo = new wxStaticText(
       aiPage,
       wxID_ANY,
-      _("AI integration uses an HTTP(S) API endpoint.\n"
-        "You can connect either to a cloud provider (e.g. OpenAI-compatible API)\n"
-        "or to a local server exposing a compatible endpoint."));
+      _("AI integration can use either an HTTP(S) API endpoint\n"
+        "or an external CLI tool for interactive chat output."));
   aiMainBox->Add(aiInfo, 0, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, 5);
 
   aiSizer->Add(aiMainBox, 0, wxALL | wxEXPAND, 10);
@@ -1781,6 +1794,12 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
     if (n.empty())
       n = _("(unnamed)");
     wxString mm = TrimCopy(m.model);
+    if (m.providerType == AiProviderType::CliProcess) {
+      wxString cli = TrimCopy(m.cliPath);
+      if (!cli.empty())
+        return wxString::Format(wxT("%s  -  CLI (%s)"), n, cli);
+      return wxString::Format(wxT("%s  -  CLI"), n);
+    }
     if (!mm.empty())
       return wxString::Format(wxT("%s  -  %s"), n, mm);
     return n;
@@ -1857,7 +1876,10 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
       AiModelSettings m;
       m.id = GenAiModelId();
       m.name = _("New model");
+      m.providerType = m_aiSettings.providerType;
       m.endpointUrl = TrimCopy(m_aiSettings.endpointUrl);
+      m.cliPath = TrimCopy(m_aiSettings.cliPath);
+      m.cliArgs = TrimCopy(m_aiSettings.cliArgs);
       m.model = TrimCopy(m_aiSettings.model);
 
       ArduinoAiModelDialog dlg(this, m, m_config);
@@ -1889,7 +1911,10 @@ ArduinoEditorSettingsDialog::ArduinoEditorSettingsDialog(wxWindow *parent,
         AiModelSettings m;
         m.id = GenAiModelId();
         m.name = wxString::FromUTF8(j.value("name", std::string()));
+        m.providerType = static_cast<AiProviderType>(j.value("providerType", (int)AiProviderType::HttpApi));
         m.endpointUrl = wxString::FromUTF8(j.value("endpointUrl", std::string()));
+        m.cliPath = wxString::FromUTF8(j.value("cliPath", std::string()));
+        m.cliArgs = wxString::FromUTF8(j.value("cliArgs", std::string()));
         m.model = wxString::FromUTF8(j.value("model", std::string()));
         m.maxIterations = j.value("maxIterations", 5);
         m.requestTimeout = j.value("requestTimeout", 60);
@@ -2065,7 +2090,12 @@ void ArduinoEditorSettingsDialog::LoadAiModels(wxConfigBase *cfg, std::vector<Ai
     AiModelSettings m;
     cfg->Read(base + wxT("/Id"), &m.id, wxEmptyString);
     cfg->Read(base + wxT("/Name"), &m.name, wxEmptyString);
+    long providerTypeLong = (long)AiProviderType::HttpApi;
+    cfg->Read(base + wxT("/ProviderType"), &providerTypeLong, (long)AiProviderType::HttpApi);
+    m.providerType = static_cast<AiProviderType>(providerTypeLong);
     cfg->Read(base + wxT("/EndpointUrl"), &m.endpointUrl, wxEmptyString);
+    cfg->Read(base + wxT("/CliPath"), &m.cliPath, wxEmptyString);
+    cfg->Read(base + wxT("/CliArgs"), &m.cliArgs, wxEmptyString);
     cfg->Read(base + wxT("/Model"), &m.model, wxEmptyString);
 
     cfg->Read(base + wxT("/MaxIterations"), &m.maxIterations, 5L);
@@ -2088,7 +2118,10 @@ void ArduinoEditorSettingsDialog::LoadAiModels(wxConfigBase *cfg, std::vector<Ai
 void ArduinoEditorSettingsDialog::ApplyModelToAiSettings(const AiModelSettings &m, AiSettings &settings) {
   settings.id = m.id;
   settings.name = m.name;
+  settings.providerType = m.providerType;
   settings.endpointUrl = m.endpointUrl;
+  settings.cliPath = m.cliPath;
+  settings.cliArgs = m.cliArgs;
   settings.model = m.model;
   settings.maxIterations = m.maxIterations;
   settings.requestTimeout = m.requestTimeout;

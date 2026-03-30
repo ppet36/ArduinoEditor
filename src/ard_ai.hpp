@@ -136,10 +136,12 @@ public:
   void OptimizeFunctionOrMethod();
 
   AiSettings GetSettings() const;
+  bool SupportsInteractiveActions() const;
   AiClient *GetClient();
 
 private:
   AiClient *m_client = nullptr;
+  wxString m_clientCacheKey;
 
   // *** AI structures ***
   struct SolveSession {
@@ -261,6 +263,7 @@ private:
 
   void OnAiSimpleChatSuccess(wxThreadEvent &event);
   void OnAiSimpleChatError(wxThreadEvent &event);
+  void OnAiSimpleChatProgress(wxThreadEvent &event);
   void OnDiagnosticsUpdated(wxThreadEvent &evt);
 
   void InsertAiGeneratedDocComment(const wxString &reply);

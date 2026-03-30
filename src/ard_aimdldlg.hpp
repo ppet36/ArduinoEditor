@@ -30,6 +30,7 @@ class wxTextCtrl;
 class wxCheckBox;
 class wxSpinCtrl;
 class wxButton;
+class wxChoice;
 
 struct AiModelSettings;
 
@@ -43,6 +44,7 @@ public:
 
 private:
   void BuildUi();
+  void UpdateProviderUi();
   void UpdateAuthUi();
   void LoadKeyHint();
   void OnClearStoredKey();
@@ -67,7 +69,10 @@ private:
   std::thread m_testThread;
 
   wxTextCtrl *m_nameCtrl = nullptr;
+  wxChoice *m_providerChoice = nullptr;
   wxTextCtrl *m_endpointCtrl = nullptr;
+  wxTextCtrl *m_cliPathCtrl = nullptr;
+  wxTextCtrl *m_cliArgsCtrl = nullptr;
   wxTextCtrl *m_modelCtrl = nullptr;
 
   wxSpinCtrl *m_maxIterCtrl = nullptr;

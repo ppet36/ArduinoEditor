@@ -1204,13 +1204,13 @@ int ArduinoEditor::RefactorRenameSymbol(std::vector<JumpTarget> occs,
 }
 
 void ArduinoEditor::AiExplainSelection() {
-  if (m_aiActions) {
+  if (m_aiActions && m_aiSettings.enabled && m_aiSettings.SupportsInteractiveActions()) {
     m_aiActions->ExplainSelection();
   }
 }
 
 void ArduinoEditor::AiGenerateDocCommentForSymbol() {
-  if (m_aiActions) {
+  if (m_aiActions && m_aiSettings.enabled && m_aiSettings.SupportsInteractiveActions()) {
     m_aiActions->GenerateDocCommentForSymbol();
   }
 }
@@ -1365,7 +1365,7 @@ void ArduinoEditor::OnContextMenu(wxContextMenuEvent &event) {
 
   // --- AI submenu ---
   wxMenu *aiMenu = nullptr;
-  if (m_aiSettings.enabled) {
+  if (m_aiSettings.enabled && m_aiSettings.SupportsInteractiveActions()) {
     aiMenu = new wxMenu;
 
     AddMenuItemWithArt(aiMenu,
@@ -2900,25 +2900,25 @@ void ArduinoEditor::UpdateTabReadOnlyIndicator() {
 }
 
 void ArduinoEditor::AiSolveError(const ArduinoParseError &error) {
-  if (m_aiActions && m_aiSettings.enabled) {
+  if (m_aiActions && m_aiSettings.enabled && m_aiSettings.SupportsInteractiveActions()) {
     m_aiActions->SolveProjectError(error);
   }
 }
 
 void ArduinoEditor::AiGenerateDocCommentsForCurrentFile() {
-  if (m_aiActions && m_aiSettings.enabled) {
+  if (m_aiActions && m_aiSettings.enabled && m_aiSettings.SupportsInteractiveActions()) {
     m_aiActions->GenerateDocCommentsForCurrentFile();
   }
 }
 
 void ArduinoEditor::AiGenerateDocCommentsForCurrentClass() {
-  if (m_aiActions && m_aiSettings.enabled) {
+  if (m_aiActions && m_aiSettings.enabled && m_aiSettings.SupportsInteractiveActions()) {
     m_aiActions->GenerateDocCommentsForCurrentClass();
   }
 }
 
 void ArduinoEditor::AiOptimizeFunctionOrMethod() {
-  if (m_aiActions && m_aiSettings.enabled) {
+  if (m_aiActions && m_aiSettings.enabled && m_aiSettings.SupportsInteractiveActions()) {
     m_aiActions->OptimizeFunctionOrMethod();
   }
 }

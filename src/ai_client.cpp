@@ -22,9 +22,11 @@
 
 #include <wx/defs.h>
 #include <wx/event.h>
+#include <wx/filename.h>
 #include <wx/log.h>
 #include <wx/secretstore.h>
 #include <wx/sstream.h>
+#include <wx/weakref.h>
 
 #include <set>
 #include <string>
@@ -34,6 +36,16 @@
 #include <curl/curl.h>
 #include <mutex>
 #include <thread>
+#include <cstdio>
+
+#if defined(__WXMSW__)
+#include <windows.h>
+#else
+#include <array>
+#include <cstdio>
+#include <memory>
+#include <sys/wait.h>
+#endif
 
 using json = nlohmann::json;
 
@@ -104,6 +116,653 @@ static void MergeExtraNoOverride(json &dst,
 static bool IsChatCompletionsEndpoint(const wxString &url) {
   wxString u = url.Lower();
   return u.Contains(wxT("/v1/chat/completions"));
+}
+
+static wxString BuildCliPrompt(const wxString &systemPrompt, const wxString &userPrompt) {
+  wxString prompt;
+  wxString sys = TrimCopy(systemPrompt);
+  if (!sys.IsEmpty()) {
+    prompt << wxT("SYSTEM:\n") << sys << wxT("\n\n");
+  }
+  prompt << userPrompt;
+  return prompt;
+}
+
+static bool IsCodexCliExecutable(const wxString &cliPath) {
+  wxFileName fn(cliPath);
+  wxString name = fn.GetName().Lower();
+  return name == wxT("codex") || name == wxT("codex-cli");
+}
+
+static bool IsClaudeCliExecutable(const wxString &cliPath) {
+  wxFileName fn(cliPath);
+  wxString name = fn.GetName().Lower();
+  return name == wxT("claude") || name == wxT("claude-code");
+}
+
+struct CliInvocation {
+  wxString command;
+  wxString captureFile;
+  wxString promptFile;
+  wxString workingDir;
+  bool jsonStream{false};
+};
+
+static bool FinalizeCliInvocationResult(const CliInvocation &inv,
+                                        int rc,
+                                        const wxString &streamText,
+                                        wxString &responseOut,
+                                        wxString *errorOut);
+
+static void QueueAiProgress(wxEvtHandler *target, const wxString &text) {
+  if (!target)
+    return;
+  auto *evt = new wxThreadEvent(wxEVT_AI_SIMPLE_CHAT_PROGRESS);
+  evt->SetString(text);
+  wxQueueEvent(target, evt);
+}
+
+static void DebugCliStdout(const wxString &text) {
+#ifdef AI_DEBUG
+  if (text.IsEmpty())
+    return;
+  std::fprintf(stdout, "[AICLI-DEBUG] %s\n", wxToStd(text).c_str());
+  std::fflush(stdout);
+#else
+  (void)text;
+#endif
+}
+
+static void AppendUniqueWithSpacing(wxString &dst, const wxString &src) {
+  if (src.IsEmpty())
+    return;
+  if (!dst.IsEmpty() && !dst.EndsWith(wxT("\n")) && !src.StartsWith(wxT("\n"))) {
+    dst << wxT("\n");
+  }
+  dst << src;
+}
+
+static void CollectCliJsonText(const json &node,
+                               const std::set<std::string> &preferredKeys,
+                               wxString &out,
+                               int depth = 0) {
+  if (depth > 6)
+    return;
+
+  if (node.is_string()) {
+    AppendUniqueWithSpacing(out, wxString::FromUTF8(node.get<std::string>().c_str()));
+    return;
+  }
+
+  if (node.is_array()) {
+    for (const auto &item : node) {
+      CollectCliJsonText(item, preferredKeys, out, depth + 1);
+    }
+    return;
+  }
+
+  if (!node.is_object())
+    return;
+
+  for (auto it = node.begin(); it != node.end(); ++it) {
+    if (!preferredKeys.empty() && !preferredKeys.count(it.key()))
+      continue;
+    CollectCliJsonText(it.value(), {}, out, depth + 1);
+  }
+
+  if (!preferredKeys.empty())
+    return;
+
+  for (auto it = node.begin(); it != node.end(); ++it) {
+    CollectCliJsonText(it.value(), preferredKeys, out, depth + 1);
+  }
+}
+
+static wxString ExtractClaudeMessageText(const json &msg) {
+  wxString text;
+
+  try {
+    if (msg.contains("content") && msg["content"].is_array()) {
+      for (const auto &part : msg["content"]) {
+        if (!part.is_object())
+          continue;
+        if (part.contains("text") && part["text"].is_string()) {
+          AppendUniqueWithSpacing(text, wxString::FromUTF8(part["text"].get<std::string>().c_str()));
+        }
+      }
+    } else {
+      CollectCliJsonText(msg, {"text", "message", "content"}, text);
+    }
+  } catch (...) {
+  }
+
+  return text;
+}
+
+static wxString ExtractCliJsonProgressText(const json &event) {
+  const std::string method = event.value("method", "");
+  const std::string type = event.value("type", "");
+  const json *payload = event.contains("params") ? &event["params"] : &event;
+
+  wxString text;
+  if (!type.empty()) {
+    if (type == "thread.started" || type == "thread.completed" ||
+        type == "turn.started" || type == "turn.completed") {
+      return wxEmptyString;
+    }
+
+    if (type == "system" || type == "user") {
+      return wxEmptyString;
+    }
+
+    if (type == "assistant" && event.contains("message") && event["message"].is_object()) {
+      return ExtractClaudeMessageText(event["message"]);
+    }
+
+    if (type == "result") {
+      if (event.value("subtype", "") == "success") {
+        return wxEmptyString;
+      }
+      CollectCliJsonText(event, {"result", "message", "text", "stderr"}, text);
+      return text;
+    }
+
+    if ((type == "item.started" || type == "item.completed") &&
+        event.contains("item") && event["item"].is_object()) {
+      const json &item = event["item"];
+      const std::string itemType = item.value("type", "");
+
+      if (itemType == "agent_message") {
+        CollectCliJsonText(item, {"text", "message", "content"}, text);
+        return text;
+      }
+
+      if (itemType == "command_execution") {
+        return wxEmptyString;
+      }
+    }
+
+    if (type.find("error") != std::string::npos) {
+      CollectCliJsonText(event, {"message", "text", "stderr"}, text);
+      return text;
+    }
+
+    if (type.find("delta") != std::string::npos ||
+        type.find("message") != std::string::npos ||
+        type.find("item") != std::string::npos ||
+        type.find("plan") != std::string::npos ||
+        type.find("tool") != std::string::npos) {
+      CollectCliJsonText(event, {"delta", "text", "content", "message", "stdout", "stderr"}, text);
+      return text;
+    }
+  }
+
+  if (method.find("item/agentMessage/delta") != std::string::npos) {
+    CollectCliJsonText(*payload, {"delta", "text", "content", "message"}, text);
+    return text;
+  }
+
+  if (method.find("item/plan/delta") != std::string::npos) {
+    CollectCliJsonText(*payload, {"delta", "text", "message"}, text);
+    return text;
+  }
+
+  if (method.find("progress") != std::string::npos) {
+    CollectCliJsonText(*payload, {"message", "text", "delta", "stdout", "stderr"}, text);
+    return text;
+  }
+
+  if (method.find("error") != std::string::npos) {
+    CollectCliJsonText(*payload, {"message", "text", "stderr"}, text);
+    return text;
+  }
+
+  if (!type.empty()) {
+    CollectCliJsonText(event, {"delta", "text", "content", "message", "stdout", "stderr"}, text);
+    return text;
+  }
+
+  return wxEmptyString;
+}
+
+static bool ExtractCliFinalResponseText(const wxString &rawText, wxString &out) {
+  out.clear();
+
+  std::string raw = wxToStd(rawText);
+  wxString lastAssistant;
+  wxString lastResult;
+
+  size_t pos = 0;
+  while (pos < raw.size()) {
+    size_t end = raw.find('\n', pos);
+    if (end == std::string::npos)
+      end = raw.size();
+    std::string line = raw.substr(pos, end - pos);
+    pos = end + 1;
+
+    while (!line.empty() && (line.back() == '\r' || line.back() == ' ' || line.back() == '\t'))
+      line.pop_back();
+    size_t start = 0;
+    while (start < line.size() && (line[start] == ' ' || line[start] == '\t'))
+      start++;
+    if (start > 0)
+      line.erase(0, start);
+    if (line.empty())
+      continue;
+
+    json evt;
+    try {
+      evt = json::parse(line);
+    } catch (...) {
+      continue;
+    }
+
+    const std::string type = evt.value("type", "");
+    if (type == "assistant" && evt.contains("message") && evt["message"].is_object()) {
+      wxString piece = ExtractClaudeMessageText(evt["message"]);
+      if (!piece.IsEmpty())
+        lastAssistant = piece;
+      continue;
+    }
+
+    if (type == "result" && evt.value("subtype", "") == "success" &&
+        evt.contains("result") && evt["result"].is_string()) {
+      wxString piece = wxString::FromUTF8(evt["result"].get<std::string>().c_str());
+      if (!piece.IsEmpty())
+        lastResult = piece;
+      continue;
+    }
+
+    if (type == "item.completed" && evt.contains("item") && evt["item"].is_object()) {
+      const json &item = evt["item"];
+      if (item.value("type", "") == "agent_message") {
+        wxString piece = ExtractClaudeMessageText(item);
+        if (!piece.IsEmpty())
+          lastAssistant = piece;
+      }
+    }
+  }
+
+  if (!lastResult.IsEmpty()) {
+    out = lastResult;
+    return true;
+  }
+
+  if (!lastAssistant.IsEmpty()) {
+    out = lastAssistant;
+    return true;
+  }
+
+  return false;
+}
+
+static void QueueCliJsonProgressEvents(wxEvtHandler *target,
+                                       const std::string &chunk,
+                                       std::string &lineBuffer) {
+  lineBuffer.append(chunk);
+
+  size_t pos = 0;
+  while (pos < lineBuffer.size()) {
+    size_t end = lineBuffer.find('\n', pos);
+    if (end == std::string::npos)
+      break;
+
+    std::string line = lineBuffer.substr(pos, end - pos);
+    pos = end + 1;
+
+    while (!line.empty() && (line.back() == '\r' || line.back() == ' ' || line.back() == '\t'))
+      line.pop_back();
+    size_t start = 0;
+    while (start < line.size() && (line[start] == ' ' || line[start] == '\t'))
+      start++;
+    if (start > 0)
+      line.erase(0, start);
+    if (line.empty())
+      continue;
+
+    DebugCliStdout(wxString::Format(wxT("JSON line: %s"), wxString::FromUTF8(line.c_str())));
+
+    try {
+      json evt = json::parse(line);
+      wxString text = ExtractCliJsonProgressText(evt);
+      if (!text.IsEmpty()) {
+        DebugCliStdout(wxString::Format(wxT("Extracted progress: %s"), text));
+        QueueAiProgress(target, text);
+      } else {
+        DebugCliStdout(wxT("Extracted progress: <empty>"));
+      }
+    } catch (...) {
+      DebugCliStdout(wxT("JSON parse failed for progress line."));
+    }
+  }
+
+  if (pos > 0) {
+    lineBuffer.erase(0, pos);
+  }
+}
+
+static void FlushCliJsonProgressEvents(wxEvtHandler *target, std::string &lineBuffer) {
+  if (lineBuffer.empty())
+    return;
+
+  DebugCliStdout(wxString::Format(wxT("JSON tail: %s"), wxString::FromUTF8(lineBuffer.c_str())));
+
+  try {
+    json evt = json::parse(lineBuffer);
+    wxString text = ExtractCliJsonProgressText(evt);
+    if (!text.IsEmpty()) {
+      DebugCliStdout(wxString::Format(wxT("Extracted tail progress: %s"), text));
+      QueueAiProgress(target, text);
+    } else {
+      DebugCliStdout(wxT("Extracted tail progress: <empty>"));
+    }
+  } catch (...) {
+    DebugCliStdout(wxT("JSON parse failed for progress tail."));
+  }
+
+  lineBuffer.clear();
+}
+
+static wxString BuildCliShellCommand(const CliInvocation &inv) {
+  wxString cmd = inv.command;
+  if (TrimCopy(inv.workingDir).IsEmpty()) {
+    return cmd + wxT(" 2>&1");
+  }
+
+  const wxString quotedDir = wxString::FromUTF8(ShellQuote(wxToStd(inv.workingDir)).c_str());
+
+#if defined(__WXMSW__)
+  return wxString::Format(wxT("cmd.exe /C cd /D %s && (%s) 2>&1"), quotedDir, cmd);
+#else
+  return wxString::Format(wxT("cd %s && (%s) 2>&1"), quotedDir, cmd);
+#endif
+}
+
+static CliInvocation BuildCliCommand(const AiSettings &settings,
+                                     const wxString &systemPrompt,
+                                     const wxString &userPrompt) {
+  CliInvocation inv;
+  wxString prompt = BuildCliPrompt(systemPrompt, userPrompt);
+  wxString args = settings.cliArgs;
+  bool autoCodexExec = false;
+  bool autoClaudePrint = false;
+
+  if (TrimCopy(args).IsEmpty() && IsCodexCliExecutable(settings.cliPath)) {
+    wxString capturePath = wxFileName::CreateTempFileName(wxT("ardedit_codex_"));
+    wxString promptPath = wxFileName::CreateTempFileName(wxT("ardedit_codex_prompt_"));
+    if (!capturePath.IsEmpty() && !promptPath.IsEmpty() && WriteTextFile(promptPath, prompt)) {
+      inv.captureFile = capturePath;
+      inv.promptFile = promptPath;
+      args = wxString::Format(wxT("exec --json --full-auto --color never --skip-git-repo-check --output-last-message %s"),
+                              wxString::FromUTF8(ShellQuote(wxToStd(capturePath)).c_str()));
+      if (!TrimCopy(settings.cliWorkingDir).IsEmpty()) {
+        args << wxT(" -C ") << wxString::FromUTF8(ShellQuote(wxToStd(settings.cliWorkingDir)).c_str());
+      }
+      args << wxT(" -");
+      autoCodexExec = true;
+      inv.jsonStream = true;
+    }
+  } else if (TrimCopy(args).IsEmpty() && IsClaudeCliExecutable(settings.cliPath)) {
+    wxString promptPath = wxFileName::CreateTempFileName(wxT("ardedit_claude_prompt_"));
+    if (!promptPath.IsEmpty() && WriteTextFile(promptPath, userPrompt)) {
+      inv.promptFile = promptPath;
+      args = wxT("-p --output-format stream-json --permission-mode acceptEdits");
+      if (!TrimCopy(systemPrompt).IsEmpty()) {
+        args << wxT(" --append-system-prompt ")
+             << wxString::FromUTF8(ShellQuote(wxToStd(systemPrompt)).c_str());
+      }
+      if (!TrimCopy(settings.cliWorkingDir).IsEmpty()) {
+        args << wxT(" --cwd ")
+             << wxString::FromUTF8(ShellQuote(wxToStd(settings.cliWorkingDir)).c_str());
+      }
+      autoClaudePrint = true;
+      inv.jsonStream = true;
+    }
+  }
+
+  const bool hasPromptPlaceholder = args.Contains(wxT("${prompt}"));
+
+  args.Replace(wxT("${prompt}"), wxString::FromUTF8(ShellQuote(wxToStd(prompt)).c_str()));
+  args.Replace(wxT("${system_prompt}"), wxString::FromUTF8(ShellQuote(wxToStd(systemPrompt)).c_str()));
+  args.Replace(wxT("${user_prompt}"), wxString::FromUTF8(ShellQuote(wxToStd(userPrompt)).c_str()));
+  args.Replace(wxT("${model}"), wxString::FromUTF8(ShellQuote(wxToStd(settings.model)).c_str()));
+
+  wxString cmd = wxString::FromUTF8(ShellQuote(wxToStd(settings.cliPath)).c_str());
+  if (!TrimCopy(args).IsEmpty()) {
+    cmd << wxT(" ") << args;
+  }
+  if ((autoCodexExec || autoClaudePrint) && !inv.promptFile.IsEmpty()) {
+#if defined(__WXMSW__)
+    cmd = wxString::Format(wxT("cmd.exe /C type %s ^| %s"),
+                           wxString::FromUTF8(ShellQuote(wxToStd(inv.promptFile)).c_str()),
+                           cmd);
+#else
+    cmd << wxT(" < ") << wxString::FromUTF8(ShellQuote(wxToStd(inv.promptFile)).c_str());
+#endif
+  } else if (!hasPromptPlaceholder) {
+    cmd << wxT(" ") << wxString::FromUTF8(ShellQuote(wxToStd(prompt)).c_str());
+  }
+  if (autoCodexExec) {
+    APP_DEBUG_LOG("AICLI: Auto-configured codex exec mode.");
+  }
+  if (autoClaudePrint) {
+    APP_DEBUG_LOG("AICLI: Auto-configured claude print mode.");
+  }
+  inv.command = cmd;
+  inv.workingDir = settings.cliWorkingDir;
+  return inv;
+}
+
+static int RunCliCommandStreaming(const CliInvocation &inv,
+                                  wxEvtHandler *target,
+                                  wxString &outputOut,
+                                  wxString *errorOut) {
+  outputOut.clear();
+
+#if defined(__WXMSW__)
+  wxString shellCmd = BuildCliShellCommand(inv);
+
+  SECURITY_ATTRIBUTES sa{};
+  sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+  sa.bInheritHandle = TRUE;
+
+  HANDLE hRead = NULL;
+  HANDLE hWrite = NULL;
+  if (!CreatePipe(&hRead, &hWrite, &sa, 0)) {
+    if (errorOut)
+      *errorOut = _("Failed to execute CLI process.");
+    return -1;
+  }
+
+  if (!SetHandleInformation(hRead, HANDLE_FLAG_INHERIT, 0)) {
+    CloseHandle(hRead);
+    CloseHandle(hWrite);
+    if (errorOut)
+      *errorOut = _("Failed to execute CLI process.");
+    return -1;
+  }
+
+  int wlen = MultiByteToWideChar(CP_UTF8, 0, wxToStd(shellCmd).c_str(), -1, nullptr, 0);
+  if (wlen <= 0) {
+    CloseHandle(hRead);
+    CloseHandle(hWrite);
+    if (errorOut)
+      *errorOut = _("Failed to execute CLI process.");
+    return -1;
+  }
+
+  std::wstring wcmd;
+  wcmd.resize(wlen - 1);
+  MultiByteToWideChar(CP_UTF8, 0, wxToStd(shellCmd).c_str(), -1, &wcmd[0], wlen);
+
+  STARTUPINFOW si{};
+  si.cb = sizeof(STARTUPINFOW);
+  si.dwFlags |= STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
+  si.hStdOutput = hWrite;
+  si.hStdError = hWrite;
+  si.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+  si.wShowWindow = SW_HIDE;
+
+  PROCESS_INFORMATION pi{};
+  BOOL ok = CreateProcessW(nullptr, wcmd.data(), nullptr, nullptr, TRUE, CREATE_NO_WINDOW, nullptr, nullptr, &si, &pi);
+  CloseHandle(hWrite);
+  if (!ok) {
+    CloseHandle(hRead);
+    if (errorOut)
+      *errorOut = _("Failed to execute CLI process.");
+    return -1;
+  }
+
+  std::string raw;
+  std::string jsonLineBuffer;
+  char buffer[512];
+  DWORD bytesRead = 0;
+  while (ReadFile(hRead, buffer, sizeof(buffer), &bytesRead, nullptr) && bytesRead > 0) {
+    raw.append(buffer, bytesRead);
+    if (inv.jsonStream) {
+      QueueCliJsonProgressEvents(target, std::string(buffer, bytesRead), jsonLineBuffer);
+    } else {
+      QueueAiProgress(target, wxString::FromUTF8(std::string(buffer, bytesRead).c_str()));
+    }
+  }
+  if (inv.jsonStream) {
+    FlushCliJsonProgressEvents(target, jsonLineBuffer);
+  }
+  CloseHandle(hRead);
+
+  WaitForSingleObject(pi.hProcess, INFINITE);
+  DWORD exitCode = 0;
+  if (!GetExitCodeProcess(pi.hProcess, &exitCode)) {
+    exitCode = (DWORD)-1;
+  }
+  CloseHandle(pi.hProcess);
+  CloseHandle(pi.hThread);
+
+  outputOut = wxString::FromUTF8(raw.c_str());
+  return (int)exitCode;
+#else
+  wxString shellCmd = BuildCliShellCommand(inv);
+  using PipeCloser = int (*)(FILE *);
+  std::unique_ptr<FILE, PipeCloser> pipe(popen(wxToStd(shellCmd).c_str(), "r"), pclose);
+  if (!pipe) {
+    if (errorOut)
+      *errorOut = _("Failed to execute CLI process.");
+    return -1;
+  }
+
+  std::array<char, 512> buffer{};
+  std::string raw;
+  std::string jsonLineBuffer;
+  while (!feof(pipe.get())) {
+    const size_t bytesRead = fread(buffer.data(), 1, buffer.size(), pipe.get());
+    if (bytesRead == 0) {
+      if (ferror(pipe.get())) {
+        break;
+      }
+      continue;
+    }
+
+    raw.append(buffer.data(), bytesRead);
+    if (inv.jsonStream) {
+      QueueCliJsonProgressEvents(target, std::string(buffer.data(), bytesRead), jsonLineBuffer);
+    } else {
+      QueueAiProgress(target, wxString::FromUTF8(std::string(buffer.data(), bytesRead).c_str()));
+    }
+  }
+  if (inv.jsonStream) {
+    FlushCliJsonProgressEvents(target, jsonLineBuffer);
+  }
+
+  int status = pclose(pipe.release());
+  int rc = -1;
+  if (status >= 0) {
+    if (WIFEXITED(status))
+      rc = WEXITSTATUS(status);
+    else if (WIFSIGNALED(status))
+      rc = -WTERMSIG(status);
+  }
+  outputOut = wxString::FromUTF8(raw.c_str());
+  return rc;
+#endif
+}
+
+static bool RunCliCommand(const AiSettings &settings,
+                          const wxString &systemPrompt,
+                          const wxString &userPrompt,
+                          wxString &responseOut,
+                          wxString *errorOut) {
+  responseOut.clear();
+
+  const wxString cliPath = TrimCopy(settings.cliPath);
+  if (cliPath.IsEmpty()) {
+    if (errorOut)
+      *errorOut = _("CLI path is empty.");
+    return false;
+  }
+
+  wxFileName cliFn(cliPath);
+  if (cliFn.IsAbsolute() && !cliFn.FileExists()) {
+    if (errorOut)
+      *errorOut = wxString::Format(_("CLI executable was not found: %s"), cliPath);
+    return false;
+  }
+
+  CliInvocation inv = BuildCliCommand(settings, systemPrompt, userPrompt);
+  APP_DEBUG_LOG("AICLI: CLI COMMAND: %s", wxToStd(BuildCliShellCommand(inv)).c_str());
+
+  std::string outputUtf8;
+  int rc = ArduinoCli::ExecuteCommand(wxToStd(BuildCliShellCommand(inv)), outputUtf8);
+  return FinalizeCliInvocationResult(inv, rc, wxString::FromUTF8(outputUtf8.c_str()), responseOut, errorOut);
+}
+
+static bool FinalizeCliInvocationResult(const CliInvocation &inv,
+                                        int rc,
+                                        const wxString &streamText,
+                                        wxString &responseOut,
+                                        wxString *errorOut) {
+  responseOut = streamText;
+
+  if (!inv.captureFile.IsEmpty()) {
+    std::string capturedUtf8;
+    if (LoadFileToString(wxToStd(inv.captureFile), capturedUtf8) && !capturedUtf8.empty()) {
+      responseOut = wxString::FromUTF8(capturedUtf8.c_str());
+    }
+    wxRemoveFile(inv.captureFile);
+  } else if (inv.jsonStream) {
+    wxString extracted;
+    if (ExtractCliFinalResponseText(streamText, extracted) && !extracted.IsEmpty()) {
+      responseOut = extracted;
+    }
+  }
+  if (!inv.promptFile.IsEmpty()) {
+    wxRemoveFile(inv.promptFile);
+  }
+
+  if (rc == -1) {
+    if (errorOut) {
+      *errorOut = responseOut.IsEmpty() ? _("Failed to execute CLI process.") : responseOut;
+    }
+    return false;
+  }
+
+  if (rc != 0) {
+    if (errorOut) {
+      if (!responseOut.IsEmpty()) {
+        *errorOut = wxString::Format(_("CLI process failed with exit code %d.\n%s"), rc, responseOut);
+      } else {
+        *errorOut = wxString::Format(_("CLI process failed with exit code %d."), rc);
+      }
+    }
+    return false;
+  }
+
+  if (responseOut.IsEmpty()) {
+    if (errorOut)
+      *errorOut = _("CLI process finished without output.");
+    return false;
+  }
+
+  return true;
 }
 
 bool HttpPostWithCurl(const AiSettings &settings,
@@ -286,11 +945,16 @@ bool AiClient::IsEnabled() const {
   if (!m_settings.enabled)
     return false;
 
-  if (m_settings.endpointUrl.empty())
-    return false;
+  if (m_settings.UsesCliProvider()) {
+    if (m_settings.cliPath.empty())
+      return false;
+  } else {
+    if (m_settings.endpointUrl.empty())
+      return false;
 
-  if (m_settings.model.empty())
-    return false;
+    if (m_settings.model.empty())
+      return false;
+  }
 
   return true;
 }
@@ -366,6 +1030,14 @@ bool AiClient::SimpleChat(const wxString &systemPrompt,
     return false;
   }
 
+  if (m_settings.UsesCliProvider()) {
+    const bool ok = RunCliCommand(m_settings, systemPrompt, userPrompt, assistantReply, errorOut);
+    m_lastInputTokens.store(0, std::memory_order_relaxed);
+    m_lastOutputTokens.store(0, std::memory_order_relaxed);
+    m_lastTotalTokens.store(0, std::memory_order_relaxed);
+    return ok;
+  }
+
   // Responses API style: instructions + input
   json j = json::object();
   j["model"] = std::string(m_settings.model.utf8_str());
@@ -438,6 +1110,34 @@ bool AiClient::SimpleChatAsync(const wxString &systemPrompt,
     evt->SetString(_("AI is not enabled or not configured."));
     wxQueueEvent(handler, evt);
     return false;
+  }
+
+  if (m_settings.UsesCliProvider()) {
+    wxEvtHandler *target = handler;
+    wxString systemCopy = systemPrompt;
+    wxString userCopy = userPrompt;
+
+    std::thread([systemCopy, userCopy, target, this]() {
+      CliInvocation inv = BuildCliCommand(m_settings, systemCopy, userCopy);
+      APP_DEBUG_LOG("AICLI: CLI COMMAND: %s", wxToStd(BuildCliShellCommand(inv)).c_str());
+
+      wxString streamed;
+      wxString err;
+      int rc = RunCliCommandStreaming(inv, target, streamed, &err);
+
+      wxString reply;
+      if (FinalizeCliInvocationResult(inv, rc, streamed, reply, &err)) {
+        auto *evt = new wxThreadEvent(wxEVT_AI_SIMPLE_CHAT_SUCCESS);
+        evt->SetString(reply);
+        wxQueueEvent(target, evt);
+      } else {
+        auto *evt = new wxThreadEvent(wxEVT_AI_SIMPLE_CHAT_ERROR);
+        evt->SetString(err.IsEmpty() ? _("CLI process failed.") : err);
+        wxQueueEvent(target, evt);
+      }
+    }).detach();
+
+    return true;
   }
 
   json j = json::object();
@@ -848,5 +1548,11 @@ int AiClient::GetLastTotalTokens() const {
 }
 
 wxString AiClient::GetModelName() const {
+  if (m_settings.UsesCliProvider()) {
+    wxFileName fn(m_settings.cliPath);
+    if (!fn.GetFullName().IsEmpty())
+      return fn.GetFullName();
+    return m_settings.cliPath;
+  }
   return m_settings.model;
 }

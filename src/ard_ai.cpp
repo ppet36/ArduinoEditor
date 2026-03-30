@@ -277,6 +277,9 @@ static wxString interactiveChatRouterSystemPrompt = wxT(
     "prefetch is optional; include it only if it is very likely needed immediately.\n"
     "Keep prefetch short (0-2 items).\n");
 
+static wxString interactiveChatCliSystemPrompt = wxT(
+    "");
+
 // --------- AI persistence helpers ------------
 
 static std::string NowUtcIso8601() {
@@ -968,6 +971,7 @@ ArduinoAiActions::ArduinoAiActions(ArduinoEditor *editor)
   // events
   Bind(wxEVT_AI_SIMPLE_CHAT_SUCCESS, &ArduinoAiActions::OnAiSimpleChatSuccess, this);
   Bind(wxEVT_AI_SIMPLE_CHAT_ERROR, &ArduinoAiActions::OnAiSimpleChatError, this);
+  Bind(wxEVT_AI_SIMPLE_CHAT_PROGRESS, &ArduinoAiActions::OnAiSimpleChatProgress, this);
   Bind(wxEVT_AI_SUMMARIZATION_UPDATED, &ArduinoAiActions::OnAiSummarizationUpdated, this);
 }
 
@@ -979,15 +983,33 @@ ArduinoAiActions::~ArduinoAiActions() {
 }
 
 AiClient *ArduinoAiActions::GetClient() {
-  if (m_client) {
+  if (!m_editor)
+    return nullptr;
+
+  AiSettings st = m_editor->m_aiSettings;
+  st.cliWorkingDir = wxString::FromUTF8(GetSketchRoot());
+  wxString cacheKey;
+  cacheKey << (int)st.providerType << wxT("|")
+           << st.id << wxT("|")
+           << st.endpointUrl << wxT("|")
+           << st.cliPath << wxT("|")
+           << st.cliArgs << wxT("|")
+           << st.cliWorkingDir << wxT("|")
+           << st.model << wxT("|")
+           << st.extraRequestJson << wxT("|")
+           << st.hasAuthentization;
+
+  if (m_client && cacheKey == m_clientCacheKey) {
     return m_client;
   }
 
-  if (m_editor) {
-    return (m_client = new AiClient(m_editor->m_aiSettings));
+  if (m_client) {
+    delete m_client;
+    m_client = nullptr;
   }
 
-  return nullptr;
+  m_clientCacheKey = cacheKey;
+  return (m_client = new AiClient(st));
 }
 
 void ArduinoAiActions::SetCurrentEditor(ArduinoEditor *editor) {
@@ -996,6 +1018,10 @@ void ArduinoAiActions::SetCurrentEditor(ArduinoEditor *editor) {
 
 AiSettings ArduinoAiActions::GetSettings() const {
   return m_editor->m_aiSettings;
+}
+
+bool ArduinoAiActions::SupportsInteractiveActions() const {
+  return m_editor && m_editor->m_aiSettings.SupportsInteractiveActions();
 }
 
 void ArduinoAiActions::RebuildProject() {
@@ -1018,6 +1044,14 @@ bool ArduinoAiActions::StartAction(Action action) {
   if (!m_editor || !m_editor->m_aiSettings.enabled) {
     m_editor->ModalMsgDialog(
         _("AI is disabled. Enable it in Settings -> AI."),
+        _("Arduino Editor AI"),
+        wxOK | wxICON_INFORMATION);
+    return false;
+  }
+
+  if (m_editor->m_aiSettings.UsesCliProvider() && action != Action::InteractiveChat) {
+    m_editor->ModalMsgDialog(
+        _("This AI action is available only for HTTP API providers."),
         _("Arduino Editor AI"),
         wxOK | wxICON_INFORMATION);
     return false;
@@ -2064,6 +2098,37 @@ bool ArduinoAiActions::StartInteractiveChat(const wxString &userText, wxEvtHandl
   }
 
   AppendChatEvent("user", userText);
+
+  if (m_editor->m_aiSettings.UsesCliProvider()) {
+    wxString promptForCli;
+    promptForCli << wxT("You are working directly inside the current Arduino sketch workspace.\n");
+    promptForCli << wxT("Inspect files and edit them yourself when the user asks for code changes.\n");
+    promptForCli << wxT("Do not just describe manual edits unless you are blocked from changing files.\n");
+    promptForCli << wxT("After you finish, reply briefly in Markdown with what you changed or found.\n");
+
+    const wxString curFile = GetPromptCurrentFile();
+    if (!curFile.IsEmpty()) {
+      promptForCli << wxT("Current file: ") << curFile << wxT("\n");
+    }
+
+    const wxString fqbn = wxString::FromUTF8(m_editor->arduinoCli ? m_editor->arduinoCli->GetBoardName() : std::string());
+    if (!fqbn.IsEmpty()) {
+      promptForCli << wxT("Current board FQBN: ") << fqbn << wxT("\n");
+    }
+
+    promptForCli << wxT("\nConversation so far:\n");
+    promptForCli << m_chatTranscript;
+
+    if (!client->SimpleChatAsync(interactiveChatCliSystemPrompt, promptForCli, this)) {
+      StopCurrentAction();
+      m_editor->ModalMsgDialog(
+          _("Failed to start AI request."),
+          _("AI interactive chat"),
+          wxOK | wxICON_ERROR);
+      return false;
+    }
+    return true;
+  }
 
   // ---------------- Router phase (async) ----------------
   // bump router sequence to ignore stale router results
@@ -4027,6 +4092,16 @@ void ArduinoAiActions::OnAiSimpleChatSuccess(wxThreadEvent &event) {
     }
 
     case Action::InteractiveChat: {
+      if (m_editor->m_aiSettings.UsesCliProvider()) {
+        AppendAssistantPlaintextToTranscript(reply);
+        AppendChatEvent("assistant", reply);
+        m_interactiveChatPayload = reply;
+        SendDoneEventToOrigin();
+        m_solveSession.finished = true;
+        StopCurrentAction();
+        break;
+      }
+
       bool done = ApplyAiModelSolution(reply);
       if (!done) {
         return;
@@ -4095,6 +4170,18 @@ void ArduinoAiActions::OnAiSimpleChatSuccess(wxThreadEvent &event) {
       }
       break;
   }
+}
+
+void ArduinoAiActions::OnAiSimpleChatProgress(wxThreadEvent &event) {
+  if (!m_origin)
+    return;
+
+  if (m_currentAction != Action::InteractiveChat)
+    return;
+
+  wxThreadEvent evt(wxEVT_AI_SIMPLE_CHAT_PROGRESS);
+  evt.SetString(event.GetString());
+  wxPostEvent(m_origin, evt);
 }
 
 void ArduinoAiActions::OnAiSimpleChatError(wxThreadEvent &event) {
