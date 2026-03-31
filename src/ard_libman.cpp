@@ -173,16 +173,18 @@ void ArduinoLibraryManagerFrame::BuildUi() {
 
     m_listCtrl->SetImageList(CreateListCtrlSortIndicatorImageList(m_listCtrl->GetForegroundColour()), wxIMAGE_LIST_SMALL);
 
-    // order: Name, Category, Version, Maintainer
+    // order: Name, Category, Version, Installed, Maintainer
     m_colLabels[0] = _("Name");
     m_colLabels[1] = _("Category");
     m_colLabels[2] = _("Version");
-    m_colLabels[3] = _("Maintainer");
+    m_colLabels[3] = _("Installed");
+    m_colLabels[4] = _("Maintainer");
 
     m_listCtrl->AppendColumn(m_colLabels[0], wxLIST_FORMAT_LEFT, 250);
     m_listCtrl->AppendColumn(m_colLabels[1], wxLIST_FORMAT_LEFT, 140);
     m_listCtrl->AppendColumn(m_colLabels[2], wxLIST_FORMAT_LEFT, 90);
-    m_listCtrl->AppendColumn(m_colLabels[3], wxLIST_FORMAT_LEFT, 220);
+    m_listCtrl->AppendColumn(m_colLabels[3], wxLIST_FORMAT_LEFT, 110);
+    m_listCtrl->AppendColumn(m_colLabels[4], wxLIST_FORMAT_LEFT, 220);
 
     topSizer->Add(m_listCtrl, 1, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, 8);
   }
@@ -303,6 +305,14 @@ void ArduinoLibraryManagerFrame::ApplyFilter() {
                   sa = A.latest.version;
                   break;
                 case 3:
+                  for (const auto &inst : m_installedLibraries) {
+                    if (inst.name == A.name) {
+                      sa = inst.latest.version;
+                      break;
+                    }
+                  }
+                  break;
+                case 4:
                   sa = A.latest.maintainer;
                   break;
                 default:
@@ -321,6 +331,14 @@ void ArduinoLibraryManagerFrame::ApplyFilter() {
                   sb = B.latest.version;
                   break;
                 case 3:
+                  for (const auto &inst : m_installedLibraries) {
+                    if (inst.name == B.name) {
+                      sb = inst.latest.version;
+                      break;
+                    }
+                  }
+                  break;
+                case 4:
                   sb = B.latest.maintainer;
                   break;
                 default:
@@ -345,6 +363,14 @@ void ArduinoLibraryManagerFrame::ApplyFilter() {
   for (size_t row = 0; row < m_filteredIndices.size(); ++row) {
     int libIndex = m_filteredIndices[row];
     const auto &lib = m_allLibraries[(size_t)libIndex];
+    wxString installedVersion;
+
+    for (const auto &inst : m_installedLibraries) {
+      if (inst.name == lib.name) {
+        installedVersion = wxString::FromUTF8(inst.latest.version.c_str());
+        break;
+      }
+    }
 
     long item = m_listCtrl->InsertItem((long)row,
                                        wxString::FromUTF8(lib.name.c_str()));
@@ -353,6 +379,8 @@ void ArduinoLibraryManagerFrame::ApplyFilter() {
     m_listCtrl->SetItem(item, 2,
                         wxString::FromUTF8(lib.latest.version.c_str()));
     m_listCtrl->SetItem(item, 3,
+                        installedVersion);
+    m_listCtrl->SetItem(item, 4,
                         wxString::FromUTF8(lib.latest.maintainer.c_str()));
 
     m_listCtrl->SetItemData(item, (long)libIndex);
@@ -362,7 +390,7 @@ void ArduinoLibraryManagerFrame::ApplyFilter() {
   }
 
   // 4) auto-resize columns after filling (point 4)
-  for (int col = 0; col < 4; ++col) {
+  for (int col = 0; col < 5; ++col) {
     m_listCtrl->SetColumnWidth(col, wxLIST_AUTOSIZE_USEHEADER);
   }
 
@@ -375,7 +403,7 @@ void ArduinoLibraryManagerFrame::UpdateColumnHeaders() {
   if (!m_listCtrl)
     return;
 
-  for (int col = 0; col < 4; ++col) {
+  for (int col = 0; col < 5; ++col) {
     wxListItem item;
     item.SetId(col);
     item.SetMask(wxLIST_MASK_TEXT | wxLIST_MASK_IMAGE);

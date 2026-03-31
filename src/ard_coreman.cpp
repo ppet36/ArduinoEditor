@@ -132,16 +132,18 @@ void ArduinoCoreManagerFrame::BuildUi() {
 
     m_listCtrl->SetImageList(CreateListCtrlSortIndicatorImageList(m_listCtrl->GetForegroundColour()), wxIMAGE_LIST_SMALL);
 
-    // Name (id), Version, Maintainer, Boards
+    // Core, Version, Installed, Maintainer, Boards
     m_colLabels[0] = _("Core");
     m_colLabels[1] = _("Version");
-    m_colLabels[2] = _("Maintainer");
-    m_colLabels[3] = _("Boards");
+    m_colLabels[2] = _("Installed");
+    m_colLabels[3] = _("Maintainer");
+    m_colLabels[4] = _("Boards");
 
     m_listCtrl->AppendColumn(m_colLabels[0], wxLIST_FORMAT_LEFT, 220);
     m_listCtrl->AppendColumn(m_colLabels[1], wxLIST_FORMAT_LEFT, 90);
-    m_listCtrl->AppendColumn(m_colLabels[2], wxLIST_FORMAT_LEFT, 180);
-    m_listCtrl->AppendColumn(m_colLabels[3], wxLIST_FORMAT_LEFT, 260);
+    m_listCtrl->AppendColumn(m_colLabels[2], wxLIST_FORMAT_LEFT, 110);
+    m_listCtrl->AppendColumn(m_colLabels[3], wxLIST_FORMAT_LEFT, 180);
+    m_listCtrl->AppendColumn(m_colLabels[4], wxLIST_FORMAT_LEFT, 260);
 
     topSizer->Add(m_listCtrl, 1, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, 8);
   }
@@ -227,9 +229,13 @@ void ArduinoCoreManagerFrame::ApplyFilter() {
                   sa = A.latestVersion;
                   break;
                 case 2:
-                  sa = A.maintainer;
+                  sa = A.installedVersion;
                   break;
                 case 3: {
+                  sa = A.maintainer;
+                  break;
+                }
+                case 4: {
                   // boards as a string (only for sort)
                   for (const auto &rel : A.releases) {
                     for (const auto &b : rel.boards) {
@@ -253,9 +259,13 @@ void ArduinoCoreManagerFrame::ApplyFilter() {
                   sb = B.latestVersion;
                   break;
                 case 2:
-                  sb = B.maintainer;
+                  sb = B.installedVersion;
                   break;
                 case 3: {
+                  sb = B.maintainer;
+                  break;
+                }
+                case 4: {
                   for (const auto &rel : B.releases) {
                     for (const auto &b : rel.boards) {
                       if (!sb.empty())
@@ -290,6 +300,7 @@ void ArduinoCoreManagerFrame::ApplyFilter() {
 
     wxString idStr = wxString::FromUTF8(core.id.c_str());
     wxString verStr = wxString::FromUTF8(core.latestVersion.c_str());
+    wxString installedStr = wxString::FromUTF8(core.installedVersion.c_str());
     wxString maintStr = wxString::FromUTF8(core.maintainer.c_str());
 
     // boards (only names from the latest release, if it exists)
@@ -307,8 +318,9 @@ void ArduinoCoreManagerFrame::ApplyFilter() {
 
     long item = m_listCtrl->InsertItem((long)row, idStr);
     m_listCtrl->SetItem(item, 1, verStr);
-    m_listCtrl->SetItem(item, 2, maintStr);
-    m_listCtrl->SetItem(item, 3, boardsStr);
+    m_listCtrl->SetItem(item, 2, installedStr);
+    m_listCtrl->SetItem(item, 3, maintStr);
+    m_listCtrl->SetItem(item, 4, boardsStr);
 
     m_listCtrl->SetItemData(item, (long)coreIndex);
 
@@ -316,7 +328,7 @@ void ArduinoCoreManagerFrame::ApplyFilter() {
   }
 
   // auto-size
-  for (int col = 0; col < 4; ++col) {
+  for (int col = 0; col < 5; ++col) {
     m_listCtrl->SetColumnWidth(col, wxLIST_AUTOSIZE_USEHEADER);
   }
 
@@ -329,7 +341,7 @@ void ArduinoCoreManagerFrame::UpdateColumnHeaders() {
   if (!m_listCtrl)
     return;
 
-  for (int col = 0; col < 4; ++col) {
+  for (int col = 0; col < 5; ++col) {
     wxListItem item;
     item.SetId(col);
     item.SetMask(wxLIST_MASK_TEXT | wxLIST_MASK_IMAGE);

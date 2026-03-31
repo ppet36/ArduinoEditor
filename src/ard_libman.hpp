@@ -69,7 +69,7 @@ private:
 
   bool m_refreshOnShow = false;
 
-  wxString m_colLabels[4];
+  wxString m_colLabels[5];
 
   int m_contextLibIndex = -1;
   std::map<int, std::string> m_versionMenuMap;

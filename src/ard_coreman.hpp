@@ -97,7 +97,7 @@ private:
 
   int m_sortColumn = 0;
   bool m_sortAscending = true;
-  wxString m_colLabels[4];
+  wxString m_colLabels[5];
 
   std::vector<int> m_filteredIndices;
   int m_contextCoreIndex = -1;
