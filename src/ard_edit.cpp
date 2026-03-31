@@ -291,18 +291,13 @@ ArduinoEditor::ArduinoEditor(wxWindow *parent,
   m_editor->Bind(wxEVT_STC_SAVEPOINTREACHED, &ArduinoEditor::OnSavePointReached, this);
   m_editor->Bind(wxEVT_STC_MODIFIED, &ArduinoEditor::OnChanged, this);
   // - disable font resizing
-  m_editor->Bind(wxEVT_MOUSEWHEEL, [this](wxMouseEvent &evt) {
-#if defined(__APPLE__)
-    if (evt.CmdDown())
-#else
-    if (evt.ControlDown())
-#endif
-    {
-      m_editor->SetZoom(0);
-      return; // block zooming
-    }
-    evt.Skip();
-  });
+  m_editor->Bind(wxEVT_MOUSEWHEEL, &ArduinoEditor::OnEditorMouseWheel, this);
+  m_editor->Bind(wxEVT_MOTION, &ArduinoEditor::OnEditorMouseMotion, this);
+  m_editor->Bind(wxEVT_MIDDLE_DOWN, &ArduinoEditor::OnEditorMouseButton, this);
+  m_editor->Bind(wxEVT_RIGHT_DOWN, &ArduinoEditor::OnEditorMouseButton, this);
+  m_editor->Bind(wxEVT_LEFT_UP, &ArduinoEditor::OnEditorMouseButton, this);
+  m_editor->Bind(wxEVT_MIDDLE_UP, &ArduinoEditor::OnEditorMouseButton, this);
+  m_editor->Bind(wxEVT_RIGHT_UP, &ArduinoEditor::OnEditorMouseButton, this);
 
   // def. find
   m_editor->Bind(wxEVT_LEFT_DOWN, &ArduinoEditor::OnEditorLeftDown, this);
@@ -1222,7 +1217,8 @@ void ArduinoEditor::OnFindClose(wxFindDialogEvent &WXUNUSED(event)) {
 }
 
 void ArduinoEditor::OnContextMenu(wxContextMenuEvent &event) {
-  m_editor->CallTipCancel();
+  CancelHover();
+  m_contextMenuActive = true;
 
   // Position in the client coordinates of the editor
   wxPoint pt = event.GetPosition();
@@ -1457,6 +1453,7 @@ void ArduinoEditor::OnContextMenu(wxContextMenuEvent &event) {
   menu.Bind(wxEVT_MENU_HIGHLIGHT, &ArduinoEditor::OnPopupMenuHighlight, this); // for statusbar help
 
   m_editor->PopupMenu(&menu, pt);
+  m_contextMenuActive = false;
 
   // After using the menu, we unbind the handler to prevent accumulating binds
   menu.Unbind(wxEVT_MENU_HIGHLIGHT, &ArduinoEditor::OnPopupMenuHighlight, this);
@@ -2508,7 +2505,7 @@ void ArduinoEditor::OnSavePointReached(wxStyledTextEvent &evt) {
 }
 
 void ArduinoEditor::OnDwellStart(wxStyledTextEvent &event) {
-  if (!m_editor->HasFocus() || !m_displayHoverInfo) {
+  if (!m_editor->HasFocus() || !m_displayHoverInfo || m_contextMenuActive) {
     return;
   }
 
@@ -2579,17 +2576,22 @@ void ArduinoEditor::OnDwellStart(wxStyledTextEvent &event) {
   m_editor->CallTipShow(pos, wxTip);
 }
 
-void ArduinoEditor::CancelCallTip() {
+void ArduinoEditor::CancelHover() {
   if (m_editor->CallTipActive()) {
     m_editor->CallTipCancel();
   }
 }
 
+void ArduinoEditor::CancelCallTip() {
+  CancelHover();
+}
+
 void ArduinoEditor::OnDwellEnd(wxStyledTextEvent &WXUNUSED(event)) {
-  CancelCallTip();
+  CancelHover();
 }
 
 void ArduinoEditor::OnEditorLeftDown(wxMouseEvent &event) {
+  CancelHover();
 #ifdef __WXMAC__
   bool goTo = event.CmdDown();
 #else
@@ -2805,12 +2807,38 @@ void ArduinoEditor::GetCurrentCursor(int &line, int &column) {
 }
 
 void ArduinoEditor::OnEditorKillFocus(wxFocusEvent &event) {
-  CancelCallTip();
+  CancelHover();
   event.Skip();
 }
 
 void ArduinoEditor::OnEditorMouseLeave(wxMouseEvent &event) {
-  CancelCallTip();
+  CancelHover();
+  event.Skip();
+}
+
+void ArduinoEditor::OnEditorMouseMotion(wxMouseEvent &event) {
+  if (event.Dragging()) {
+    CancelHover();
+  }
+  event.Skip();
+}
+
+void ArduinoEditor::OnEditorMouseWheel(wxMouseEvent &event) {
+  CancelHover();
+#if defined(__APPLE__)
+  if (event.CmdDown())
+#else
+  if (event.ControlDown())
+#endif
+  {
+    m_editor->SetZoom(0);
+    return; // block zooming
+  }
+  event.Skip();
+}
+
+void ArduinoEditor::OnEditorMouseButton(wxMouseEvent &event) {
+  CancelHover();
   event.Skip();
 }
 

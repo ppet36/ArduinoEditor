@@ -91,6 +91,7 @@ private:
   bool m_symbolHighlightEnabled = true;
   bool m_highlightMatchingBraces = true;
   bool m_displayHoverInfo = true;
+  bool m_contextMenuActive = false;
 
   wxTimer m_flashTimer;
   int m_flashLine = -1;
@@ -123,6 +124,9 @@ private:
 
   void OnEditorKillFocus(wxFocusEvent &event);
   void OnEditorMouseLeave(wxMouseEvent &event);
+  void OnEditorMouseMotion(wxMouseEvent &event);
+  void OnEditorMouseWheel(wxMouseEvent &event);
+  void OnEditorMouseButton(wxMouseEvent &event);
   void OnEditorUpdateUI(wxStyledTextEvent &event);
 
   // Keyboard shortcuts (Ctrl+F, Ctrl+H, F3 etc.)
@@ -135,6 +139,7 @@ private:
   // Hover
   void OnDwellStart(wxStyledTextEvent &event);
   void OnDwellEnd(wxStyledTextEvent &event);
+  void CancelHover();
   // Def. search
   void OnEditorLeftDown(wxMouseEvent &event);
   void GotoSymbolDefinition();
