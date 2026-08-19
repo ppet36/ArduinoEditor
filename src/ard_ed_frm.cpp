@@ -74,6 +74,7 @@ enum {
   ID_MENU_PROJECT_BUILD,
   ID_MENU_PROJECT_UPLOAD,
   ID_MENU_TOOLS_UPLOAD_HEX,
+  ID_MENU_TOOLS_EXPORT_HEX,
   ID_MENU_VIEW_OUTPUT,
   ID_MENU_VIEW_SKETCHES,
   ID_MENU_VIEW_SYMBOLS,
@@ -1503,6 +1504,10 @@ void ArduinoEditorFrame::FinalizeCurrentAction(bool successful) {
           m_runUploadAfterCompile = false;
           UploadProject();
           return;
+        } else if (m_exportHexAfterCompile) {
+          m_exportHexAfterCompile = false;
+          ExportCompiledHex();
+          return;
         } else {
           bool showDialog;
           if (!config->Read(wxT("CompileSuccessDialog"), &showDialog)) {
@@ -1564,6 +1569,7 @@ void ArduinoEditorFrame::FinalizeCurrentAction(bool successful) {
         }
       }
       m_runUploadAfterCompile = false;
+      m_exportHexAfterCompile = false;
       break;
     case upload:
     case uploadhex:
@@ -1607,11 +1613,13 @@ void ArduinoEditorFrame::EnableUIActions(bool enable) {
   m_menuBar->Enable(ID_MENU_PROJECT_BUILD, enable);
   m_menuBar->Enable(ID_MENU_PROJECT_UPLOAD, enable);
   m_menuBar->Enable(ID_MENU_TOOLS_UPLOAD_HEX, enable);
+  m_menuBar->Enable(ID_MENU_TOOLS_EXPORT_HEX, enable);
   m_menuBar->Enable(ID_MENU_PROJECT_CLEAN, enable);
 }
 
 void ArduinoEditorFrame::OnProjectBuild(wxCommandEvent &WXUNUSED(event)) {
   m_runUploadAfterCompile = false;
+  m_exportHexAfterCompile = false;
   BuildProject();
 }
 
@@ -1635,6 +1643,7 @@ bool ArduinoEditorFrame::BuildProject() {
 }
 
 void ArduinoEditorFrame::OnProjectUpload(wxCommandEvent &WXUNUSED(event)) {
+  m_exportHexAfterCompile = false;
   std::vector<SketchFileBuffer> files;
   CollectEditorSources(files);
   uint64_t currentSum = CcSumCode(files);
@@ -1645,6 +1654,62 @@ void ArduinoEditorFrame::OnProjectUpload(wxCommandEvent &WXUNUSED(event)) {
   } else {
     UploadProject();
   }
+}
+
+void ArduinoEditorFrame::OnToolsExportHex(wxCommandEvent &WXUNUSED(event)) {
+  if (!arduinoCli || !CanPerformAction(build)) {
+    return;
+  }
+
+  m_runUploadAfterCompile = false;
+
+  std::vector<SketchFileBuffer> files;
+  CollectEditorSources(files);
+  const uint64_t currentSum = CcSumCode(files);
+  const std::string compiledHexPath = arduinoCli->GetCompiledHexPath();
+  if (m_lastSuccessfulCompileCodeSum != 0 &&
+      currentSum == m_lastSuccessfulCompileCodeSum &&
+      !compiledHexPath.empty()) {
+    ExportCompiledHex();
+    return;
+  }
+
+  m_exportHexAfterCompile = true;
+  if (!BuildProject()) {
+    m_exportHexAfterCompile = false;
+  }
+}
+
+bool ArduinoEditorFrame::ExportCompiledHex() {
+  if (!arduinoCli) {
+    return false;
+  }
+
+  const std::string compiledHexPath = arduinoCli->GetCompiledHexPath();
+  if (compiledHexPath.empty()) {
+    ModalMsgDialog(_("The compiled HEX file could not be found."), _("Export HEX file"));
+    return false;
+  }
+
+  const wxString sourcePath = wxString::FromUTF8(compiledHexPath);
+  wxFileDialog dlg(this,
+                   _("Export compiled HEX file"),
+                   wxEmptyString,
+                   wxFileName(sourcePath).GetFullName(),
+                   _("HEX files (*.hex)|*.hex"),
+                   wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+  if (dlg.ShowModal() != wxID_OK) {
+    return false;
+  }
+
+  if (!wxCopyFile(sourcePath, dlg.GetPath(), true)) {
+    ModalMsgDialog(wxString::Format(_("Unable to save the compiled HEX file to:\n%s"), dlg.GetPath()),
+                   _("Export HEX file"));
+    return false;
+  }
+
+  UpdateStatus(_("Compiled HEX file exported."));
+  return true;
 }
 
 bool ArduinoEditorFrame::UploadProject() {
@@ -2901,6 +2966,12 @@ wxMenuBar *ArduinoEditorFrame::CreateMenuBar() {
   navMenu->AppendSeparator();
 
   AddMenuItemWithArt(navMenu,
+                     ID_MENU_TOOLS_EXPORT_HEX,
+                     _("Export compiled HEX..."),
+                     _("Save the compiled sketch as a HEX file"),
+                     wxAEArt::FileSaveAs);
+
+  AddMenuItemWithArt(navMenu,
                      ID_MENU_TOOLS_UPLOAD_HEX,
                      _("Upload HEX file..."),
                      _("Upload HEX file to the connected board using arduino-cli"),
@@ -3025,6 +3096,7 @@ wxMenuBar *ArduinoEditorFrame::CreateMenuBar() {
   Bind(wxEVT_MENU, &ArduinoEditorFrame::OnFindSymbol, this, ID_MENU_NAV_FIND_SYMBOL);
   Bind(wxEVT_MENU, &ArduinoEditorFrame::OnShowLibraryManager, this, ID_MENU_LIBRARY_MANAGER);
   Bind(wxEVT_MENU, &ArduinoEditorFrame::OnShowCoreManager, this, ID_MENU_CORE_MANAGER);
+  Bind(wxEVT_MENU, &ArduinoEditorFrame::OnToolsExportHex, this, ID_MENU_TOOLS_EXPORT_HEX);
   Bind(wxEVT_MENU, &ArduinoEditorFrame::OnToolsUploadHex, this, ID_MENU_TOOLS_UPLOAD_HEX);
   Bind(wxEVT_MENU, &ArduinoEditorFrame::OnOpenSerialMonitor, this, ID_MENU_SERIAL_MONITOR);
   Bind(wxEVT_MENU, &ArduinoEditorFrame::OnProjectClean, this, ID_MENU_PROJECT_CLEAN);
@@ -4118,6 +4190,7 @@ void ArduinoEditorFrame::OnSysColoursChanged(wxSysColourChangedEvent &evt) {
   ReplaceMenuItemBitmap(ID_MENU_NAV_FIND_SYMBOL, wxAEArt::Find);
   ReplaceMenuItemBitmap(ID_MENU_LIBRARY_MANAGER, wxAEArt::ListView);
   ReplaceMenuItemBitmap(ID_MENU_CORE_MANAGER, wxAEArt::DevBoard);
+  ReplaceMenuItemBitmap(ID_MENU_TOOLS_EXPORT_HEX, wxAEArt::FileSaveAs);
   ReplaceMenuItemBitmap(ID_MENU_TOOLS_UPLOAD_HEX, wxAEArt::Play);
   ReplaceMenuItemBitmap(ID_MENU_SERIAL_MONITOR, wxAEArt::SerMon);
   ReplaceMenuItemBitmap(ID_MENU_PROJECT_BUILD, wxAEArt::Check);

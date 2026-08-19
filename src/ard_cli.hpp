@@ -305,6 +305,7 @@ public:
   void GetBoardOptionsAsync(wxEvtHandler *handler);
 
   void CompileAsync(wxEvtHandler *handler);
+  std::string GetCompiledHexPath() const;
   MemUsage GetLastCompileUsage() const;
   void ClearLastCompileUsage();
 

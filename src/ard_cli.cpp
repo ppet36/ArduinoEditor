@@ -3230,6 +3230,10 @@ void ArduinoCli::CompileAsync(wxEvtHandler *handler) {
 
   // BUILD: some subdirectory in /tmp
   fs::path buildPath = fs::temp_directory_path() / ("arduino_edit_build_" + fs::path(sketchPath).filename().string());
+  // The output directory is not a cache. Clear it so artifacts left by a
+  // previous board configuration can never be uploaded or exported.
+  fs::remove_all(buildPath, ec);
+  ec.clear();
   fs::create_directories(buildPath, ec);
 
   // args without binary (this is handled by RunCliStreaming)
@@ -3242,6 +3246,50 @@ void ArduinoCli::CompileAsync(wxEvtHandler *handler) {
   std::thread([this, weak, args]() {
     this->RunCliStreaming(args, weak, "compile");
   }).detach();
+}
+
+std::string ArduinoCli::GetCompiledHexPath() const {
+  const fs::path outputPath =
+      fs::temp_directory_path() / ("arduino_edit_build_" + fs::path(sketchPath).filename().string());
+  const fs::path expectedHex = outputPath / (fs::path(sketchPath).filename().string() + ".ino.hex");
+
+  std::error_code ec;
+  if (fs::is_regular_file(expectedHex, ec)) {
+    return expectedHex.string();
+  }
+
+  fs::path candidate;
+  size_t candidateCount = 0;
+  fs::directory_iterator it(outputPath, ec);
+  const fs::directory_iterator end;
+  while (!ec && it != end) {
+    const fs::directory_entry &entry = *it;
+    std::error_code entryEc;
+    if (entry.is_regular_file(entryEc)) {
+      std::string filename = entry.path().filename().string();
+      std::string lowerFilename = filename;
+      std::transform(lowerFilename.begin(), lowerFilename.end(), lowerFilename.begin(), [](unsigned char ch) {
+        return static_cast<char>(std::tolower(ch));
+      });
+
+      constexpr const char *hexSuffix = ".hex";
+      constexpr const char *bootloaderSuffix = ".with_bootloader.hex";
+      const bool isHex = lowerFilename.size() >= std::char_traits<char>::length(hexSuffix) &&
+                         lowerFilename.compare(lowerFilename.size() - std::char_traits<char>::length(hexSuffix),
+                                               std::char_traits<char>::length(hexSuffix), hexSuffix) == 0;
+      const bool isBootloaderHex =
+          lowerFilename.size() >= std::char_traits<char>::length(bootloaderSuffix) &&
+          lowerFilename.compare(lowerFilename.size() - std::char_traits<char>::length(bootloaderSuffix),
+                                std::char_traits<char>::length(bootloaderSuffix), bootloaderSuffix) == 0;
+      if (isHex && !isBootloaderHex) {
+        candidate = entry.path();
+        ++candidateCount;
+      }
+    }
+    it.increment(ec);
+  }
+
+  return candidateCount == 1 ? candidate.string() : std::string{};
 }
 
 MemUsage ArduinoCli::GetLastCompileUsage() const {

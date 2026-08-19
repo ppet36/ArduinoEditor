@@ -136,6 +136,7 @@ private:
 
   uint64_t m_lastSuccessfulCompileCodeSum = 0;
   bool m_runUploadAfterCompile = false;
+  bool m_exportHexAfterCompile = false;
 
   CurrentAction m_action = none;
 
@@ -228,6 +229,8 @@ private:
   void OnProjectUpload(wxCommandEvent &event);
   bool UploadHexFile(const wxString &hexPath);
   void OnToolsUploadHex(wxCommandEvent &event);
+  void OnToolsExportHex(wxCommandEvent &event);
+  bool ExportCompiledHex();
   void OnCmdLineOutput(wxCommandEvent &event);
   void OnFileMonitorChanged(wxThreadEvent &event);
 
