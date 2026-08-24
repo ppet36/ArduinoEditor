@@ -191,8 +191,8 @@ struct AiSettings {
 };
 
 struct AiModelSettings {
-  wxString id;          // stable identifier (for selection + keychain)
-  wxString name;        // profile username (displayed in choice)
+  wxString id;   // stable identifier (for selection + keychain)
+  wxString name; // profile username (displayed in choice)
   AiProviderType providerType = AiProviderType::HttpApi;
   wxString endpointUrl; // https://.../v1/responses
   wxString cliPath;     // full path to CLI executable

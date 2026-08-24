@@ -33,10 +33,10 @@
 
 #include <nlohmann/json.hpp>
 
+#include <cstdio>
 #include <curl/curl.h>
 #include <mutex>
 #include <thread>
-#include <cstdio>
 
 #if defined(__WXMSW__)
 #include <windows.h>

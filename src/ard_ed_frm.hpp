@@ -27,14 +27,14 @@
 #include "ard_diagview.hpp"
 #include "ard_edit.hpp"
 #include "ard_examples.hpp"
-#include "file_change_monitor.hpp"
 #include "ard_finsymdlg.hpp"
 #include "ard_indic.hpp"
 #include "ard_libman.hpp"
 #include "ard_sermon.hpp"
 #include "ard_setdlg.hpp"
-#include <string>
+#include "file_change_monitor.hpp"
 #include <memory>
+#include <string>
 #include <vector>
 #include <wx/aui/auibook.h>
 #include <wx/aui/framemanager.h>
