@@ -3344,7 +3344,7 @@ void ArduinoCli::TryParseCompileUsageLine(const std::string &line) {
   }
 }
 
-void ArduinoCli::UploadAsync(wxEvtHandler *handler) {
+void ArduinoCli::UploadAsync(wxEvtHandler *handler, const std::optional<std::string> &uploadPassword) {
   if (!handler) {
     return;
   }
@@ -3367,6 +3367,9 @@ void ArduinoCli::UploadAsync(wxEvtHandler *handler) {
   std::string args = "-v --no-color upload";
   args += " -b " + ShellQuote(fqbn);
   args += " -p " + ShellQuote(serialPort);
+  if (uploadPassword.has_value()) {
+    args += " --upload-field " + ShellQuote("password=" + *uploadPassword);
+  }
 
   // If a programmer is selected, we upload using "upload using programmer"
   // -> arduino-cli upload --programmer <id> ...
@@ -3382,7 +3385,9 @@ void ArduinoCli::UploadAsync(wxEvtHandler *handler) {
   }).detach();
 }
 
-void ArduinoCli::UploadHexFileAsync(const std::string &hexFilePath, wxEvtHandler *handler) {
+void ArduinoCli::UploadHexFileAsync(const std::string &hexFilePath,
+                                    wxEvtHandler *handler,
+                                    const std::optional<std::string> &uploadPassword) {
   if (!handler) {
     return;
   }
@@ -3408,6 +3413,9 @@ void ArduinoCli::UploadHexFileAsync(const std::string &hexFilePath, wxEvtHandler
   std::string args = "-v --no-color upload";
   args += " -b " + ShellQuote(fqbn);
   args += " -p " + ShellQuote(serialPort);
+  if (uploadPassword.has_value()) {
+    args += " --upload-field " + ShellQuote("password=" + *uploadPassword);
+  }
   args += " --input-file " + ShellQuote(hexFilePath);
 
   if (!programmer.empty()) {

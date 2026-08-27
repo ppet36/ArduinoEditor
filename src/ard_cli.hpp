@@ -27,6 +27,7 @@
 #include <memory>
 #include <mutex>
 #include <nlohmann/json.hpp>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <variant>
@@ -309,8 +310,11 @@ public:
   MemUsage GetLastCompileUsage() const;
   void ClearLastCompileUsage();
 
-  void UploadAsync(wxEvtHandler *handler);
-  void UploadHexFileAsync(const std::string &hexFilePath, wxEvtHandler *handler);
+  void UploadAsync(wxEvtHandler *handler,
+                   const std::optional<std::string> &uploadPassword = std::nullopt);
+  void UploadHexFileAsync(const std::string &hexFilePath,
+                          wxEvtHandler *handler,
+                          const std::optional<std::string> &uploadPassword = std::nullopt);
   void BurnBootloaderAsync(wxEvtHandler *handler);
 
   std::string BuildFqbnFromOptions(const std::vector<ArduinoBoardOption> &options);

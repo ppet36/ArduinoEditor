@@ -1712,9 +1712,37 @@ bool ArduinoEditorFrame::ExportCompiledHex() {
   return true;
 }
 
+bool ArduinoEditorFrame::PromptForOtaPassword(std::optional<std::string> &password) {
+  password.reset();
+
+  const std::string selectedPort = arduinoCli ? arduinoCli->GetSerialPort() : std::string();
+  const auto port = std::find_if(m_serialPorts.begin(), m_serialPorts.end(),
+                                 [&selectedPort](const SerialPortInfo &info) {
+                                   return info.address == selectedPort;
+                                 });
+  if (port == m_serialPorts.end() || port->protocol != "network") {
+    return true;
+  }
+
+  wxPasswordEntryDialog dlg(this,
+                            _("Enter the password for OTA upload:"),
+                            _("OTA upload"));
+  if (dlg.ShowModal() != wxID_OK) {
+    return false;
+  }
+
+  password = wxToStd(dlg.GetValue());
+  return true;
+}
+
 bool ArduinoEditorFrame::UploadProject() {
   if (arduinoCli) {
     if (CanPerformAction(upload)) {
+      std::optional<std::string> uploadPassword;
+      if (!PromptForOtaPassword(uploadPassword)) {
+        return false;
+      }
+
       if (SaveAll()) {
         if (m_buildOutputCtrl) {
           m_buildOutputCtrl->Clear();
@@ -1726,7 +1754,7 @@ bool ArduinoEditorFrame::UploadProject() {
         }
 
         StartProcess(_("Uploading project..."), ID_PROCESS_CLI, ArduinoActivityState::Background, /*canBeTerminated=*/true);
-        arduinoCli->UploadAsync(this);
+        arduinoCli->UploadAsync(this, uploadPassword);
         return true;
       }
     }
@@ -1754,6 +1782,11 @@ bool ArduinoEditorFrame::UploadHexFile(const wxString &hexPath) {
   }
 
   if (CanPerformAction(uploadhex)) {
+    std::optional<std::string> uploadPassword;
+    if (!PromptForOtaPassword(uploadPassword)) {
+      return false;
+    }
+
     if (m_buildOutputCtrl) {
       m_buildOutputCtrl->Clear();
     }
@@ -1764,7 +1797,7 @@ bool ArduinoEditorFrame::UploadHexFile(const wxString &hexPath) {
     }
 
     StartProcess(_("Uploading HEX file..."), ID_PROCESS_CLI, ArduinoActivityState::Background, /*canBeTerminated=*/true);
-    arduinoCli->UploadHexFileAsync(wxToStd(hexPath), this);
+    arduinoCli->UploadHexFileAsync(wxToStd(hexPath), this, uploadPassword);
     return true;
   }
 

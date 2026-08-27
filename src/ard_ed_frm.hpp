@@ -225,6 +225,7 @@ private:
   void CleanProjectIfFqbnChanged(const std::string &newFqbn);
   bool BuildProject();
   void OnProjectBuild(wxCommandEvent &event);
+  bool PromptForOtaPassword(std::optional<std::string> &password);
   bool UploadProject();
   void OnProjectUpload(wxCommandEvent &event);
   bool UploadHexFile(const wxString &hexPath);

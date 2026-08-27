@@ -1874,6 +1874,14 @@ msgid "Compiled HEX file exported."
 msgstr ""
 
 #: ../src/ard_ed_frm.cpp:1728
+msgid "Enter the password for OTA upload:"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1729
+msgid "OTA upload"
+msgstr ""
+
+#: ../src/ard_ed_frm.cpp:1728
 msgid "Uploading project..."
 msgstr ""
 

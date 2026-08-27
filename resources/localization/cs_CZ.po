@@ -2315,6 +2315,14 @@ msgid "Compiled HEX file exported."
 msgstr "Kompilovaný HEX soubor byl exportován."
 
 #: ../src/ard_ed_frm.cpp:1728
+msgid "Enter the password for OTA upload:"
+msgstr "Zadejte heslo pro OTA upload:"
+
+#: ../src/ard_ed_frm.cpp:1729
+msgid "OTA upload"
+msgstr "OTA upload"
+
+#: ../src/ard_ed_frm.cpp:1728
 msgid "Uploading project..."
 msgstr "Upload projektu na desku..."
 
