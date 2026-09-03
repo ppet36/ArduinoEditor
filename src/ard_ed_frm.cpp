@@ -1573,6 +1573,16 @@ void ArduinoEditorFrame::FinalizeCurrentAction(bool successful) {
       break;
     case upload:
     case uploadhex:
+      if (m_pendingOtaPassword.has_value()) {
+        const auto &[address, password] = *m_pendingOtaPassword;
+        if (successful) {
+          m_otaPasswords[address] = password;
+        } else {
+          // A previously valid password may have changed. Ask again next time.
+          m_otaPasswords.erase(address);
+        }
+        m_pendingOtaPassword.reset();
+      }
       if (m_serialMonitor) {
         m_serialMonitor->Unblock();
       }
@@ -1724,6 +1734,12 @@ bool ArduinoEditorFrame::PromptForOtaPassword(std::optional<std::string> &passwo
     return true;
   }
 
+  const auto remembered = m_otaPasswords.find(selectedPort);
+  if (remembered != m_otaPasswords.end()) {
+    password = remembered->second;
+    return true;
+  }
+
   wxPasswordEntryDialog dlg(this,
                             _("Enter the password for OTA upload:"),
                             _("OTA upload"));
@@ -1749,6 +1765,9 @@ bool ArduinoEditorFrame::UploadProject() {
         }
 
         SetCurrentAction(upload);
+        if (uploadPassword.has_value()) {
+          m_pendingOtaPassword = std::make_pair(arduinoCli->GetSerialPort(), *uploadPassword);
+        }
         if (m_serialMonitor) {
           m_serialMonitor->Block();
         }
@@ -1792,6 +1811,9 @@ bool ArduinoEditorFrame::UploadHexFile(const wxString &hexPath) {
     }
 
     SetCurrentAction(uploadhex);
+    if (uploadPassword.has_value()) {
+      m_pendingOtaPassword = std::make_pair(arduinoCli->GetSerialPort(), *uploadPassword);
+    }
     if (m_serialMonitor) {
       m_serialMonitor->Block();
     }

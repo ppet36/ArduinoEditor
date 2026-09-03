@@ -34,7 +34,9 @@
 #include "ard_setdlg.hpp"
 #include "file_change_monitor.hpp"
 #include <memory>
+#include <optional>
 #include <string>
+#include <unordered_map>
 #include <vector>
 #include <wx/aui/auibook.h>
 #include <wx/aui/framemanager.h>
@@ -139,6 +141,8 @@ private:
   bool m_exportHexAfterCompile = false;
 
   CurrentAction m_action = none;
+  std::unordered_map<std::string, std::string> m_otaPasswords;
+  std::optional<std::pair<std::string, std::string>> m_pendingOtaPassword;
 
   std::vector<ArduinoEditor *> GetAllEditors(bool onlyEditable = false);
 
