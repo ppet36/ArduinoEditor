@@ -419,3 +419,48 @@ make -f Makefile.win64 zip_win64
 - Ensure all required system dependencies are installed.
 - Verify that the correct toolchain is selected for each platform.
 - Check build logs for missing libraries or incompatible targets.
+
+---
+
+## Publishing a release
+
+The release build and GitHub publication are deliberately separate, so an
+interrupted upload can be retried without rebuilding all platforms.
+
+One-time prerequisites:
+
+```bash
+gh auth login -h github.com
+codex login
+```
+
+Build all signed release packages, then create an annotated version tag and a
+draft GitHub Release with AI-generated release notes:
+
+```bash
+scripts/build-release.sh
+scripts/publish-release.sh
+```
+
+The version is read from `build/version.mk`. The publish script verifies the
+branch, commit, tag and expected artifacts, generates `SHA256SUMS`, and uploads
+the six platform packages plus the checksum file. It never publishes the
+release directly.
+
+To inspect the generated notes and checksums without creating a tag or changing
+anything on GitHub, use:
+
+```bash
+scripts/publish-release.sh --dry-run
+```
+
+After reviewing and, if necessary, editing the draft on GitHub, publish it from
+the terminal (replace the tag with the current version):
+
+```bash
+gh release edit v1.0.5 --repo ppet36/ArduinoEditor --draft=false --latest
+```
+
+Re-running the publish script for an existing draft preserves its release notes
+and uploads only missing assets. It refuses to overwrite an asset whose size is
+different.
