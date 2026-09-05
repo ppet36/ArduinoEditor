@@ -629,6 +629,28 @@ static int ExecWinCommandHidden(const std::string &cmdUtf8, std::string &output)
 
 static unsigned int g_execCounter = 1;
 
+static void RedactCliSecrets(std::string &text, const std::vector<std::string> &sensitiveValues) {
+  static const std::array<const char *, 4> markers = {"--auth=", "--auth ", "-a ", "password="};
+  for (const std::string &secret : sensitiveValues) {
+    if (secret.empty())
+      continue;
+    for (const char *marker : markers) {
+      size_t searchFrom = 0;
+      while ((searchFrom = text.find(marker, searchFrom)) != std::string::npos) {
+        size_t valuePos = searchFrom + std::strlen(marker);
+        if (valuePos < text.size() && (text[valuePos] == '\'' || text[valuePos] == '"'))
+          ++valuePos;
+        if (text.compare(valuePos, secret.size(), secret) == 0) {
+          text.replace(valuePos, secret.size(), "***");
+          searchFrom = valuePos + 3;
+        } else {
+          searchFrom = valuePos;
+        }
+      }
+    }
+  }
+}
+
 /**
  * Synchronous execution of command. Output stored to output parameter and
  * return value of process is returned.
@@ -703,7 +725,11 @@ bool ArduinoCli::CancelRunning() {
 /**
  * Asynchronous execution of command.
  */
-int ArduinoCli::RunCliStreaming(const std::string &args, const wxWeakRef<wxEvtHandler> &weak, const char *finishedLabel) {
+int ArduinoCli::RunCliStreaming(const std::string &args,
+                                const wxWeakRef<wxEvtHandler> &weak,
+                                const char *finishedLabel,
+                                const std::string &loggedArgs,
+                                const std::vector<std::string> &sensitiveValues) {
   unsigned int index = (g_execCounter++);
 
   int rc = -1;
@@ -714,7 +740,8 @@ int ArduinoCli::RunCliStreaming(const std::string &args, const wxWeakRef<wxEvtHa
 
 #if defined(__WXMSW__)
   std::string cmd = GetCliBaseCommand() + " " + args;
-  APP_DEBUG_LOG("CLI: %04u STREAM EXEC: %s", index, cmd.c_str());
+  const std::string loggedCmd = GetCliBaseCommand() + " " + (loggedArgs.empty() ? args : loggedArgs);
+  APP_DEBUG_LOG("CLI: %04u STREAM EXEC: %s", index, loggedCmd.c_str());
 
   SECURITY_ATTRIBUTES sa{};
   sa.nLength = sizeof(SECURITY_ATTRIBUTES);
@@ -729,7 +756,7 @@ int ArduinoCli::RunCliStreaming(const std::string &args, const wxWeakRef<wxEvtHa
     evt.SetInt(-1);
     evt.SetString(wxT("Failed to create pipe for arduino-cli.\n"));
     QueueUiEvent(weak, evt.Clone());
-    APP_DEBUG_LOG("CLI: %04u STREAM ERROR: %s", index, cmd.c_str());
+    APP_DEBUG_LOG("CLI: %04u STREAM ERROR: %s", index, loggedCmd.c_str());
     return -1;
   }
 
@@ -741,7 +768,7 @@ int ArduinoCli::RunCliStreaming(const std::string &args, const wxWeakRef<wxEvtHa
     evt.SetInt(-1);
     evt.SetString(wxT("Failed to configure pipe for arduino-cli.\n"));
     QueueUiEvent(weak, evt.Clone());
-    APP_DEBUG_LOG("CLI: %04u STREAM ERROR: %s", index, cmd.c_str());
+    APP_DEBUG_LOG("CLI: %04u STREAM ERROR: %s", index, loggedCmd.c_str());
     return -1;
   }
 
@@ -756,7 +783,7 @@ int ArduinoCli::RunCliStreaming(const std::string &args, const wxWeakRef<wxEvtHa
     evt.SetInt(-1);
     evt.SetString(wxString::Format(wxT("MultiByteToWideChar failed, error %lu\n"), err));
     QueueUiEvent(weak, evt.Clone());
-    APP_DEBUG_LOG("CLI: %04u STREAM ERROR MultiByteToWideChar(%lu): %s", index, err, cmd.c_str());
+    APP_DEBUG_LOG("CLI: %04u STREAM ERROR MultiByteToWideChar(%lu): %s", index, err, loggedCmd.c_str());
     return -1;
   }
 
@@ -795,7 +822,7 @@ int ArduinoCli::RunCliStreaming(const std::string &args, const wxWeakRef<wxEvtHa
     evt.SetInt(-1);
     evt.SetString(wxString::Format(wxT("Failed to start arduino-cli (error %lu).\n"), err));
     QueueUiEvent(weak, evt.Clone());
-    APP_DEBUG_LOG("CLI: %04u STREAM ERROR CreateProcessW(%lu): %s", index, err, cmd.c_str());
+    APP_DEBUG_LOG("CLI: %04u STREAM ERROR CreateProcessW(%lu): %s", index, err, loggedCmd.c_str());
     return -1;
   }
 
@@ -832,6 +859,8 @@ int ArduinoCli::RunCliStreaming(const std::string &args, const wxWeakRef<wxEvtHa
         line.pop_back();
       }
 
+      RedactCliSecrets(line, sensitiveValues);
+
       if (m_cancelRequested.load()) {
         TerminateProcess(pi.hProcess, 1);
         break;
@@ -853,6 +882,7 @@ int ArduinoCli::RunCliStreaming(const std::string &args, const wxWeakRef<wxEvtHa
   CloseHandle(hRead);
 
   if (!partial.empty()) {
+    RedactCliSecrets(partial, sensitiveValues);
     wxCommandEvent evt(EVT_COMMANDLINE_OUTPUT_MSG);
     evt.SetInt(0);
     evt.SetString(wxString::FromUTF8(partial.c_str()));
@@ -884,7 +914,9 @@ int ArduinoCli::RunCliStreaming(const std::string &args, const wxWeakRef<wxEvtHa
 
   // Binary + args + redirect stderr->stdout
   std::string cmd = "echo " + marker + "$$; exec " + GetCliBaseCommand() + " " + args + " 2>&1";
-  APP_DEBUG_LOG("CLI: %04u STREAM EXEC: %s", index, cmd.c_str());
+  const std::string loggedCmd = "echo " + marker + "$$; exec " + GetCliBaseCommand() + " " +
+                                (loggedArgs.empty() ? args : loggedArgs) + " 2>&1";
+  APP_DEBUG_LOG("CLI: %04u STREAM EXEC: %s", index, loggedCmd.c_str());
 
   using PipeCloser = int (*)(FILE *);
 
@@ -897,7 +929,7 @@ int ArduinoCli::RunCliStreaming(const std::string &args, const wxWeakRef<wxEvtHa
     evt.SetInt(-1);
     evt.SetString(wxT("Failed to start arduino-cli.\n"));
     QueueUiEvent(weak, evt.Clone());
-    APP_DEBUG_LOG("CLI: %04u STREAM ERROR: %s", index, cmd.c_str());
+    APP_DEBUG_LOG("CLI: %04u STREAM ERROR: %s", index, loggedCmd.c_str());
     return -1;
   }
 
@@ -942,6 +974,8 @@ int ArduinoCli::RunCliStreaming(const std::string &args, const wxWeakRef<wxEvtHa
         continue;
       }
 
+      RedactCliSecrets(line, sensitiveValues);
+
       wxCommandEvent evt(EVT_COMMANDLINE_OUTPUT_MSG);
       evt.SetInt(0);
       evt.SetString(wxString::FromUTF8(line));
@@ -956,6 +990,7 @@ int ArduinoCli::RunCliStreaming(const std::string &args, const wxWeakRef<wxEvtHa
   }
 
   if (!partial.empty()) {
+    RedactCliSecrets(partial, sensitiveValues);
     wxCommandEvent evt(EVT_COMMANDLINE_OUTPUT_MSG);
     evt.SetInt(0);
     evt.SetString(wxString::FromUTF8(partial));
@@ -3365,23 +3400,33 @@ void ArduinoCli::UploadAsync(wxEvtHandler *handler, const std::optional<std::str
   fs::create_directories(buildPath, ec);
 
   std::string args = "-v --no-color upload";
+  std::string loggedArgs = args;
   args += " -b " + ShellQuote(fqbn);
+  loggedArgs += " -b " + ShellQuote(fqbn);
   args += " -p " + ShellQuote(serialPort);
+  loggedArgs += " -p " + ShellQuote(serialPort);
   if (uploadPassword.has_value()) {
     args += " --upload-field " + ShellQuote("password=" + *uploadPassword);
+    loggedArgs += " --upload-field " + ShellQuote("password=***");
   }
 
   // If a programmer is selected, we upload using "upload using programmer"
   // -> arduino-cli upload --programmer <id> ...
   if (!programmer.empty()) {
     args += " --programmer " + ShellQuote(programmer);
+    loggedArgs += " --programmer " + ShellQuote(programmer);
   }
 
   args += " --input-dir " + ShellQuote(buildPath.string());
+  loggedArgs += " --input-dir " + ShellQuote(buildPath.string());
   args += " " + ShellQuote(sketchPath);
+  loggedArgs += " " + ShellQuote(sketchPath);
 
-  std::thread([this, weak, args]() {
-    this->RunCliStreaming(args, weak, "upload");
+  const std::vector<std::string> sensitiveValues = uploadPassword.has_value()
+                                                       ? std::vector<std::string>{*uploadPassword}
+                                                       : std::vector<std::string>{};
+  std::thread([this, weak, args, loggedArgs, sensitiveValues]() {
+    this->RunCliStreaming(args, weak, "upload", loggedArgs, sensitiveValues);
   }).detach();
 }
 
@@ -3411,19 +3456,28 @@ void ArduinoCli::UploadHexFileAsync(const std::string &hexFilePath,
   }
 
   std::string args = "-v --no-color upload";
+  std::string loggedArgs = args;
   args += " -b " + ShellQuote(fqbn);
+  loggedArgs += " -b " + ShellQuote(fqbn);
   args += " -p " + ShellQuote(serialPort);
+  loggedArgs += " -p " + ShellQuote(serialPort);
   if (uploadPassword.has_value()) {
     args += " --upload-field " + ShellQuote("password=" + *uploadPassword);
+    loggedArgs += " --upload-field " + ShellQuote("password=***");
   }
   args += " --input-file " + ShellQuote(hexFilePath);
+  loggedArgs += " --input-file " + ShellQuote(hexFilePath);
 
   if (!programmer.empty()) {
     args += " --programmer " + ShellQuote(programmer);
+    loggedArgs += " --programmer " + ShellQuote(programmer);
   }
 
-  std::thread([this, weak, args]() {
-    this->RunCliStreaming(args, weak, "upload-hex");
+  const std::vector<std::string> sensitiveValues = uploadPassword.has_value()
+                                                       ? std::vector<std::string>{*uploadPassword}
+                                                       : std::vector<std::string>{};
+  std::thread([this, weak, args, loggedArgs, sensitiveValues]() {
+    this->RunCliStreaming(args, weak, "upload-hex", loggedArgs, sensitiveValues);
   }).detach();
 }
 

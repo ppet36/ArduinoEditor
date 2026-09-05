@@ -291,6 +291,8 @@ public:
 
   long AutoDetectSerialBaudRate(const std::vector<SketchFileBuffer> &files);
   long AutoDetectSerialBaudRate();
+  std::optional<std::string> AutoDetectOtaPassword(const std::vector<SketchFileBuffer> &files);
+  std::optional<std::string> AutoDetectOtaPassword();
 
   bool IsReady() { return m_ready; }
   void SetReady(bool ready = true) { m_ready = ready; }

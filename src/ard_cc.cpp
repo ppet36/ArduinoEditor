@@ -1086,6 +1086,257 @@ static CXChildVisitResult BaudDetectVisitor(CXCursor cur, CXCursor, CXClientData
   return CXChildVisit_Recurse;
 }
 
+static bool CursorTokensContain(CXTranslationUnit tu, CXCursor cur, const char *needle) {
+  CXToken *tokens = nullptr;
+  unsigned count = 0;
+  clang_tokenize(tu, clang_getCursorExtent(cur), &tokens, &count);
+  bool found = false;
+  for (unsigned i = 0; tokens && i < count; ++i) {
+    if (cxStringToStd(clang_getTokenSpelling(tu, tokens[i])) == needle) {
+      found = true;
+      break;
+    }
+  }
+  if (tokens)
+    clang_disposeTokens(tu, tokens, count);
+  return found;
+}
+
+static std::optional<std::string> EvalCursorAsConstantString(CXTranslationUnit tu,
+                                                              CXCursor cur,
+                                                              std::unordered_set<std::string> &visited,
+                                                              unsigned depth = 0) {
+  if (clang_Cursor_isNull(cur) || depth > 16)
+    return std::nullopt;
+
+  if (CXEvalResult er = clang_Cursor_Evaluate(cur)) {
+    const CXEvalResultKind kind = clang_EvalResult_getKind(er);
+    if (kind == CXEval_StrLiteral || kind == CXEval_ObjCStrLiteral || kind == CXEval_CFStr) {
+      const char *value = clang_EvalResult_getAsStr(er);
+      std::optional<std::string> result = value ? std::optional<std::string>(value) : std::nullopt;
+      clang_EvalResult_dispose(er);
+      return result;
+    }
+    clang_EvalResult_dispose(er);
+  }
+
+  const CXCursorKind kind = clang_getCursorKind(cur);
+  if (kind == CXCursor_DeclRefExpr) {
+    CXCursor decl = clang_getCursorReferenced(cur);
+    if (clang_Cursor_isNull(decl) || clang_getCursorKind(decl) != CXCursor_VarDecl)
+      return std::nullopt;
+
+    // Do not infer a value from a mutable variable which may have been reassigned.
+    if (!CursorTokensContain(tu, decl, "const") && !CursorTokensContain(tu, decl, "constexpr"))
+      return std::nullopt;
+
+    const std::string usr = GetCursorUsr(decl);
+    if (!usr.empty() && !visited.insert(usr).second)
+      return std::nullopt;
+
+    struct ChildData {
+      CXTranslationUnit tu;
+      std::unordered_set<std::string> *visited;
+      unsigned depth;
+      std::set<std::string> values;
+    } data{tu, &visited, depth, {}};
+    clang_visitChildren(
+        decl,
+        [](CXCursor child, CXCursor, CXClientData clientData) {
+          auto *d = static_cast<ChildData *>(clientData);
+          if (auto value = EvalCursorAsConstantString(d->tu, child, *d->visited, d->depth + 1))
+            d->values.insert(*value);
+          return CXChildVisit_Continue;
+        },
+        &data);
+    if (data.values.size() == 1)
+      return *data.values.begin();
+    return std::nullopt;
+  }
+
+  switch (kind) {
+    case CXCursor_UnexposedExpr:
+    case CXCursor_ParenExpr:
+    case CXCursor_CStyleCastExpr:
+    case CXCursor_CXXStaticCastExpr:
+    case CXCursor_CXXFunctionalCastExpr: {
+      struct ChildData {
+        CXTranslationUnit tu;
+        std::unordered_set<std::string> *visited;
+        unsigned depth;
+        std::set<std::string> values;
+      } data{tu, &visited, depth, {}};
+      clang_visitChildren(
+          cur,
+          [](CXCursor child, CXCursor, CXClientData clientData) {
+            auto *d = static_cast<ChildData *>(clientData);
+            if (auto value = EvalCursorAsConstantString(d->tu, child, *d->visited, d->depth + 1))
+              d->values.insert(*value);
+            return CXChildVisit_Continue;
+          },
+          &data);
+      if (data.values.size() == 1)
+        return *data.values.begin();
+      break;
+    }
+    default:
+      break;
+  }
+  return std::nullopt;
+}
+
+static bool ParseSimpleCStringLiteral(const std::string &text, std::string &out) {
+  out.clear();
+  size_t pos = 0;
+  auto skipSpace = [&]() {
+    while (pos < text.size() && std::isspace(static_cast<unsigned char>(text[pos])))
+      ++pos;
+  };
+
+  skipSpace();
+  bool foundLiteral = false;
+  while (pos < text.size() && text[pos] == '"') {
+    foundLiteral = true;
+    ++pos;
+    bool closed = false;
+    while (pos < text.size()) {
+      char ch = text[pos++];
+      if (ch == '"') {
+        closed = true;
+        break;
+      }
+      if (ch != '\\') {
+        out.push_back(ch);
+        continue;
+      }
+      if (pos >= text.size())
+        return false;
+      switch (text[pos++]) {
+        case '\\': out.push_back('\\'); break;
+        case '"': out.push_back('"'); break;
+        case '\'': out.push_back('\''); break;
+        case 'n': out.push_back('\n'); break;
+        case 'r': out.push_back('\r'); break;
+        case 't': out.push_back('\t'); break;
+        case '0': out.push_back('\0'); break;
+        default: return false; // Avoid guessing uncommon C escape sequences.
+      }
+    }
+    if (!closed)
+      return false;
+    skipSpace();
+  }
+
+  if (!foundLiteral)
+    return false;
+  // A trailing comment is harmless; any other expression is not a simple constant string.
+  return pos == text.size() || text.compare(pos, 2, "//") == 0 || text.compare(pos, 2, "/*") == 0;
+}
+
+static std::unordered_map<std::string, std::set<std::string>>
+CollectObjectStringMacros(const std::vector<SketchFileBuffer> &files) {
+  std::unordered_map<std::string, std::set<std::string>> macros;
+  const std::regex definePattern(
+      R"(^[ \t]*#[ \t]*define[ \t]+([A-Za-z_][A-Za-z0-9_]*)[ \t]+(.*)$)");
+  for (const auto &file : files) {
+    size_t start = 0;
+    while (start <= file.code.size()) {
+      const size_t end = file.code.find('\n', start);
+      const std::string line = file.code.substr(start, end == std::string::npos ? std::string::npos : end - start);
+      std::smatch match;
+      if (std::regex_match(line, match, definePattern)) {
+        std::string value;
+        if (ParseSimpleCStringLiteral(match[2].str(), value))
+          macros[match[1].str()].insert(std::move(value));
+      }
+      if (end == std::string::npos)
+        break;
+      start = end + 1;
+    }
+  }
+  return macros;
+}
+
+static bool IsArduinoOtaSetPasswordCall(CXTranslationUnit tu,
+                                        CXCursor callCur,
+                                        std::string &outArgumentIdentifier) {
+  outArgumentIdentifier.clear();
+
+  CXCursor referenced = clang_getCursorReferenced(callCur);
+  if (clang_Cursor_isNull(referenced))
+    referenced = clang_getCursorDefinition(callCur);
+  if (clang_Cursor_isNull(referenced) ||
+      cxStringToStd(clang_getCursorSpelling(referenced)) != "setPassword") {
+    return false;
+  }
+
+  CXToken *tokens = nullptr;
+  unsigned count = 0;
+  clang_tokenize(tu, clang_getCursorExtent(callCur), &tokens, &count);
+  bool found = false;
+  for (unsigned i = 2; tokens && i < count; ++i) {
+    const std::string method = cxStringToStd(clang_getTokenSpelling(tu, tokens[i]));
+    const std::string op = cxStringToStd(clang_getTokenSpelling(tu, tokens[i - 1]));
+    const std::string base = cxStringToStd(clang_getTokenSpelling(tu, tokens[i - 2]));
+    if (method == "setPassword" && (op == "." || op == "->") && base == "ArduinoOTA") {
+      found = true;
+      if (i + 2 < count && cxStringToStd(clang_getTokenSpelling(tu, tokens[i + 1])) == "(") {
+        const std::string argument = cxStringToStd(clang_getTokenSpelling(tu, tokens[i + 2]));
+        if (!argument.empty() &&
+            (std::isalpha(static_cast<unsigned char>(argument[0])) || argument[0] == '_') &&
+            std::all_of(argument.begin() + 1, argument.end(), [](unsigned char ch) {
+              return std::isalnum(ch) || ch == '_';
+            })) {
+          outArgumentIdentifier = argument;
+        }
+      }
+      break;
+    }
+  }
+  if (tokens)
+    clang_disposeTokens(tu, tokens, count);
+  return found;
+}
+
+struct OtaPasswordDetectData {
+  CXTranslationUnit tu = nullptr;
+  std::string mainFileNorm;
+  std::set<std::string> found;
+  const std::unordered_map<std::string, std::set<std::string>> *stringMacros = nullptr;
+};
+
+static CXChildVisitResult OtaPasswordDetectVisitor(CXCursor cur, CXCursor, CXClientData clientData) {
+  auto *data = static_cast<OtaPasswordDetectData *>(clientData);
+  CXFile file = nullptr;
+  unsigned line = 0, column = 0, offset = 0;
+  clang_getSpellingLocation(clang_getCursorLocation(cur), &file, &line, &column, &offset);
+  if (file) {
+    const std::string filename = cxStringToStd(clang_getFileName(file));
+    if (!filename.empty() && NormalizePathForClangCompare(filename) != data->mainFileNorm)
+      return CXChildVisit_Recurse;
+  }
+
+  std::string argumentIdentifier;
+  if (clang_getCursorKind(cur) == CXCursor_CallExpr &&
+      IsArduinoOtaSetPasswordCall(data->tu, cur, argumentIdentifier)) {
+    const int argc = clang_Cursor_getNumArguments(cur);
+    bool resolved = false;
+    if (argc >= 1) {
+      std::unordered_set<std::string> visited;
+      if (auto value = EvalCursorAsConstantString(data->tu, clang_Cursor_getArgument(cur, 0), visited)) {
+        data->found.insert(*value);
+        resolved = true;
+      }
+    }
+    if (!resolved && !argumentIdentifier.empty() && data->stringMacros) {
+      const auto macro = data->stringMacros->find(argumentIdentifier);
+      if (macro != data->stringMacros->end() && macro->second.size() == 1)
+        data->found.insert(*macro->second.begin());
+    }
+  }
+  return CXChildVisit_Recurse;
+}
+
 } // namespace
 
 // -------------------------------------------------------------------------------
@@ -5338,6 +5589,48 @@ long ArduinoCodeCompletion::AutoDetectSerialBaudRate() {
   std::vector<SketchFileBuffer> files;
   CollectSketchFiles(files);
   return AutoDetectSerialBaudRate(files);
+}
+
+std::optional<std::string> ArduinoCodeCompletion::AutoDetectOtaPassword(const std::vector<SketchFileBuffer> &files) {
+  std::lock_guard<std::mutex> lock(m_ccMutex);
+  ScopeTimer timer("CC: AutoDetectOtaPassword(%zu files)", files.size());
+  if (!m_ready || files.empty())
+    return std::nullopt;
+
+  const SketchFileBuffer *ino = nullptr;
+  for (const auto &file : files) {
+    if (hasSuffix(file.filename, ".ino")) {
+      ino = &file;
+      break;
+    }
+  }
+  if (!ino)
+    return std::nullopt;
+
+  CcFilesSnapshotGuard guard(&files);
+  int addedLines = 0;
+  std::string mainFile;
+  CXTranslationUnit tu = GetTranslationUnitNoReparse(ino->filename, ino->code, &addedLines, &mainFile);
+  if (!tu)
+    return std::nullopt;
+
+  OtaPasswordDetectData data;
+  data.tu = tu;
+  data.mainFileNorm = NormalizePathForClangCompare(!mainFile.empty() ? mainFile : GetClangFilename(ino->filename));
+  const auto stringMacros = CollectObjectStringMacros(files);
+  data.stringMacros = &stringMacros;
+  clang_visitChildren(clang_getTranslationUnitCursor(tu), &OtaPasswordDetectVisitor, &data);
+
+  APP_DEBUG_LOG("CC: AutoDetectOtaPassword() found %zu distinct value(s)", data.found.size());
+  if (data.found.size() != 1)
+    return std::nullopt;
+  return *data.found.begin();
+}
+
+std::optional<std::string> ArduinoCodeCompletion::AutoDetectOtaPassword() {
+  std::vector<SketchFileBuffer> files;
+  CollectSketchFiles(files);
+  return AutoDetectOtaPassword(files);
 }
 
 void ArduinoCodeCompletion::ApplySettings(const ClangSettings &settings) {

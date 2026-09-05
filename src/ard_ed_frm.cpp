@@ -1722,7 +1722,7 @@ bool ArduinoEditorFrame::ExportCompiledHex() {
   return true;
 }
 
-bool ArduinoEditorFrame::PromptForOtaPassword(std::optional<std::string> &password) {
+bool ArduinoEditorFrame::PromptForOtaPassword(std::optional<std::string> &password, bool detectFromSource) {
   password.reset();
 
   const std::string selectedPort = arduinoCli ? arduinoCli->GetSerialPort() : std::string();
@@ -1740,9 +1740,16 @@ bool ArduinoEditorFrame::PromptForOtaPassword(std::optional<std::string> &passwo
     return true;
   }
 
+  wxString initialValue;
+  if (detectFromSource && completion) {
+    if (auto detected = completion->AutoDetectOtaPassword())
+      initialValue = wxString::FromUTF8(*detected);
+  }
+
   wxPasswordEntryDialog dlg(this,
                             _("Enter the password for OTA upload:"),
-                            _("OTA upload"));
+                            _("OTA upload"),
+                            initialValue);
   if (dlg.ShowModal() != wxID_OK) {
     return false;
   }
@@ -1755,7 +1762,7 @@ bool ArduinoEditorFrame::UploadProject() {
   if (arduinoCli) {
     if (CanPerformAction(upload)) {
       std::optional<std::string> uploadPassword;
-      if (!PromptForOtaPassword(uploadPassword)) {
+      if (!PromptForOtaPassword(uploadPassword, /*detectFromSource=*/true)) {
         return false;
       }
 

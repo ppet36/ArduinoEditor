@@ -225,7 +225,11 @@ private:
 
   std::atomic<bool> m_cancelAsync{false};
 
-  int RunCliStreaming(const std::string &args, const wxWeakRef<wxEvtHandler> &weak, const char *finishedLabel);
+  int RunCliStreaming(const std::string &args,
+                      const wxWeakRef<wxEvtHandler> &weak,
+                      const char *finishedLabel,
+                      const std::string &loggedArgs = {},
+                      const std::vector<std::string> &sensitiveValues = {});
 
   bool GetBoardOptions(const std::string &fqbn, std::vector<ArduinoBoardOption> &outOptions);
   std::vector<std::string> BuildClangArgsFromCompileCommands(const std::string &inoBaseName);
