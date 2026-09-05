@@ -1103,9 +1103,9 @@ static bool CursorTokensContain(CXTranslationUnit tu, CXCursor cur, const char *
 }
 
 static std::optional<std::string> EvalCursorAsConstantString(CXTranslationUnit tu,
-                                                              CXCursor cur,
-                                                              std::unordered_set<std::string> &visited,
-                                                              unsigned depth = 0) {
+                                                             CXCursor cur,
+                                                             std::unordered_set<std::string> &visited,
+                                                             unsigned depth = 0) {
   if (clang_Cursor_isNull(cur) || depth > 16)
     return std::nullopt;
 
@@ -1212,14 +1212,29 @@ static bool ParseSimpleCStringLiteral(const std::string &text, std::string &out)
       if (pos >= text.size())
         return false;
       switch (text[pos++]) {
-        case '\\': out.push_back('\\'); break;
-        case '"': out.push_back('"'); break;
-        case '\'': out.push_back('\''); break;
-        case 'n': out.push_back('\n'); break;
-        case 'r': out.push_back('\r'); break;
-        case 't': out.push_back('\t'); break;
-        case '0': out.push_back('\0'); break;
-        default: return false; // Avoid guessing uncommon C escape sequences.
+        case '\\':
+          out.push_back('\\');
+          break;
+        case '"':
+          out.push_back('"');
+          break;
+        case '\'':
+          out.push_back('\'');
+          break;
+        case 'n':
+          out.push_back('\n');
+          break;
+        case 'r':
+          out.push_back('\r');
+          break;
+        case 't':
+          out.push_back('\t');
+          break;
+        case '0':
+          out.push_back('\0');
+          break;
+        default:
+          return false; // Avoid guessing uncommon C escape sequences.
       }
     }
     if (!closed)
