@@ -35,6 +35,16 @@ require_file() {
     [ -s "$1" ] || die "Expected artifact is missing or empty: $1"
 }
 
+run_remote() {
+    host="$1"
+    remote_command="$2"
+    quoted_command="$(printf '%q' "$remote_command")"
+
+    # A login shell loads ~/.bash_profile, which provides the Homebrew PATH on
+    # the Apple Silicon builder (notably wx-config).
+    ssh "${SSH_OPTS[@]}" "$host" "bash -lc $quoted_command"
+}
+
 cleanup() {
     status=$?
     trap - EXIT INT TERM
@@ -82,7 +92,7 @@ remote_preflight() {
         remote_commands="$remote_commands command -v '$command_name' >/dev/null 2>&1 || { echo 'Missing remote command: $command_name' >&2; exit 1; };"
     done
 
-    ssh "${SSH_OPTS[@]}" "$host" \
+    run_remote "$host" \
         "set -e; test -d '$repo/.git'; test \"\$(uname -s)\" = '$expected_os'; test \"\$(uname -m)\" = '$expected_arch'; $remote_commands"
 }
 
@@ -90,7 +100,7 @@ sync_remote() {
     host="$1"
     repo="$2"
 
-    ssh "${SSH_OPTS[@]}" "$host" \
+    run_remote "$host" \
         "set -e; cd '$repo'; git checkout '$BRANCH'; git fetch origin '$BRANCH'; git reset --hard 'origin/$BRANCH'; git pull --ff-only origin '$BRANCH'; test \"\$(git rev-parse HEAD)\" = '$COMMIT'; test -z \"\$(git status --porcelain --untracked-files=all)\""
 }
 
@@ -141,10 +151,10 @@ file "$BUILD_DIR/ArduinoEditor-x86_64.app/Contents/MacOS/ArduinoEditor" | grep -
 step "macOS Apple Silicon bundle"
 sync_remote "$ARM_HOST" "$ARM_REPO"
 ARM_ARCHIVE="/tmp/ArduinoEditor-arm64-$VERSION-$COMMIT.zip"
-ssh "${SSH_OPTS[@]}" "$ARM_HOST" \
+run_remote "$ARM_HOST" \
     "set -e; cd '$ARM_REPO/build'; make -f Makefile.macos clean; make -f Makefile.macos bundle; test -x ArduinoEditor-arm64.app/Contents/MacOS/ArduinoEditor; file ArduinoEditor-arm64.app/Contents/MacOS/ArduinoEditor | grep -q arm64; rm -f '$ARM_ARCHIVE'; ditto -c -k --keepParent ArduinoEditor-arm64.app '$ARM_ARCHIVE'"
 scp "${SSH_OPTS[@]}" "$ARM_HOST:$ARM_ARCHIVE" "$TEMP_DIR/ArduinoEditor-arm64.zip"
-ssh "${SSH_OPTS[@]}" "$ARM_HOST" "rm -f '$ARM_ARCHIVE'"
+run_remote "$ARM_HOST" "rm -f '$ARM_ARCHIVE'"
 rm -rf "$BUILD_DIR/ArduinoEditor-arm64.app"
 ditto -x -k "$TEMP_DIR/ArduinoEditor-arm64.zip" "$BUILD_DIR"
 [ -x "$BUILD_DIR/ArduinoEditor-arm64.app/Contents/MacOS/ArduinoEditor" ] || die "Apple Silicon app bundle was not transferred"
@@ -173,7 +183,7 @@ file "$LINUX_APPIMAGE" | grep -q 'x86-64' || die "Linux AppImage has the wrong a
 
 step "Raspberry Pi AppImage and DEB"
 sync_remote "$RPI_HOST" "$RPI_REPO"
-ssh "${SSH_OPTS[@]}" "$RPI_HOST" \
+run_remote "$RPI_HOST" \
     "set -e; cd '$RPI_REPO/build'; make -f Makefile.rpi clean; make -f Makefile.rpi; test -s 'ArduinoEditor-rpi-aarch64-$VERSION.AppImage'; test -s 'arduino-editor_rpi_arm64_$VERSION.deb'; file 'ArduinoEditor-rpi-aarch64-$VERSION.AppImage' | grep -q aarch64; dpkg-deb --info 'arduino-editor_rpi_arm64_$VERSION.deb' >/dev/null"
 rm -f "$RPI_APPIMAGE" "$RPI_DEB"
 scp "${SSH_OPTS[@]}" \
